@@ -1,0 +1,19 @@
+{
+  "name": "Unity Lab",
+  "short_name": "Unity Lab",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f5f7",
+  "theme_color": "#13283a",
+  "lang": "de",
+  "description": "Lokales UNITY-Forschungslabor mit hypothetischem Simulationsdepot",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

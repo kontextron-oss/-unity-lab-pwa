@@ -4,6 +4,7 @@ const data=JSON.parse(fs.readFileSync('data/market.json','utf8'));
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/unityComparisonView\(\)/);
 assert.match(html,/<script src="\.\/dashboard\.js"><\/script>/);
+assert.match(html,/<script src="\.\/charts\.js"><\/script>/);
 const CATALOG=[
   {name:'ABB',ticker:'ABBN',isin:'CH0012221716',currency:'CHF',exchange:'SIX'},
   {name:'Schneider Electric',ticker:'SU',isin:'FR0000121972',currency:'EUR',exchange:'Paris'},
@@ -16,6 +17,7 @@ const sandbox={
  render(){},
 };
 vm.createContext(sandbox);
+vm.runInContext(fs.readFileSync('charts.js','utf8'),sandbox);
 vm.runInContext(fs.readFileSync('dashboard.js','utf8'),sandbox);
 (async()=>{
  await new Promise(resolve=>setTimeout(resolve,100));
@@ -27,5 +29,7 @@ vm.runInContext(fs.readFileSync('dashboard.js','utf8'),sandbox);
  assert.match(result.page,/Keine Kauf-Freigabe/);
  assert.match(result.page,/Schneider Electric/);
  assert.match(result.detail,/Ist ein Kauf sinnvoll/);
+ assert.match(result.detail,/<svg/);
+ assert.match(result.page,/unity-sparkline/);
  console.log('Dashboard: data loaded, metrics calculated, 2 stocks compared, buy-veto visible.');
 })().catch(e=>{console.error(e);process.exitCode=1});

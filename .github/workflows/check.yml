@@ -1,0 +1,28 @@
+name: Validate Unity Lab JavaScript
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check analysis module
+        run: node --check analysis.js
+      - name: Check inline application script
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          assert s.count('<script>')==1
+          Path('/tmp/unity-inline.js').write_text(s.split('<script>')[1].split('</script>')[0])
+          assert 'analysis.js' in s
+          assert "indexedDB.open('unity-lab',2)" in s
+          PY
+          node --check /tmp/unity-inline.js

@@ -76,7 +76,15 @@ function unityComparisonView(){
     '<label style="max-width:290px;margin-top:10px">Vergleich sortieren<select id="unity-sort"><option value="strength" '+(unitySort==='strength'?'selected':'')+'>Technische Stärke</option><option value="3m" '+(unitySort==='3m'?'selected':'')+'>Kursentwicklung 3 Monate</option><option value="name" '+(unitySort==='name'?'selected':'')+'>Name A–Z</option></select></label>';
   const rows=unityRows();
   if(!rows.length)return h+'<p>Noch keine Aktien in deiner persönlichen Liste. Wähle „Alle 15 Aktien“.</p></section>';
-  h+='<div class="tablewrap"><table><thead><tr><th>Aktie</th><th>Schlusskurs / Datum</th><th>3 Monate</th><th>12 Monate</th><th>Technische Lage</th><th>Kaufurteil</th></tr></thead><tbody>';
+  h+='<div class="unity-mobile-list">';
+  for(const {s,x,m} of rows){
+    h+='<button type="button" class="unity-mobile-row" data-unity-isin="'+esc(s.isin)+'"><span class="unity-mobile-head"><strong>'+esc(s.name)+'</strong><span>'+ (m?number(m.last,2)+' '+esc(s.currency):'Kurs fehlt')+' <span aria-hidden="true">›</span></span></span>'+
+    '<span class="tiny muted">'+esc(m?.signal||'Keine Referenzdaten')+' · '+esc(x?.date||'')+'</span>'+
+    '<span class="unity-mobile-metrics"><span>3 Monate <b>'+unityPct(m?.r63)+'</b></span><span>12 Monate <b>'+unityPct(m?.r252)+'</b></span><span>Technik <b>'+(m?m.technicalIndex+'/100':'–')+'</b></span></span>'+
+    '<span class="tiny">Kauf: <b>nicht freigegeben</b> · Bewertung fehlt</span></button>';
+  }
+  h+='</div>';
+  h+='<div class="tablewrap unity-comparison-table"><table><thead><tr><th>Aktie</th><th>Schlusskurs / Datum</th><th>3 Monate</th><th>12 Monate</th><th>Technische Lage</th><th>Kaufurteil</th></tr></thead><tbody>';
   for(const {s,x,m} of rows){
     h+='<tr><td><button type="button" class="secondary" data-unity-isin="'+esc(s.isin)+'" style="text-align:left;white-space:normal"><b>'+esc(s.name)+'</b><br><span class="tiny">'+esc(s.ticker)+'</span></button></td>'+
       '<td>'+(m?number(m.last,2)+' '+esc(s.currency)+'<br><span class="tiny muted">'+esc(x.date)+'</span>':'–')+'</td>'+

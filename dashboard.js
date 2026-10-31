@@ -69,7 +69,7 @@ function unityDataNotice(){
 function unityComparisonView(){
   let h='<section class="panel" id="unity-dashboard"><h2>UNITY Marktüberblick · automatischer Vergleich</h2>'+
     '<p>Hier werden alle verfügbaren Aktien <b>automatisch miteinander verglichen</b>. Du musst keine Kennzahlen eingeben. Der technische Vergleich ist noch <b>keine vollständige Kaufanalyse</b>.</p>'+
-    '<div class="hint"><strong>Aktuelle Kaufentscheidung: keine Aktie freigegeben.</strong> Nicht, weil alle Unternehmen schlecht sind, sondern weil verifizierte Bewertung, Bilanz, Prognosen, Earnings und aktuelle Börsenkurse für ein belastbares Kaufurteil fehlen.</div>'+
+    '<div class="hint"><strong>Keine Kauf-Freigabe für die beobachteten Aktien.</strong> Nicht, weil alle Unternehmen schlecht sind, sondern weil verifizierte Bewertung, Bilanz, Prognosen, Earnings und aktuelle Börsenkurse für ein belastbares Kaufurteil fehlen.</div>'+
     unityDataNotice();
   if(!unityMarket)return h+'</section>';
   h+='<div class="actions"><button type="button" class="'+(unityScope==='all'?'primary':'secondary')+'" data-unity-scope="all">Alle 15 Aktien</button><button type="button" class="'+(unityScope==='mine'?'primary':'secondary')+'" data-unity-scope="mine">Meine Aktien</button></div>'+

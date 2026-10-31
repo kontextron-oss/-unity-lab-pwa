@@ -95,7 +95,7 @@ function unityComparisonView(){
   h+='</div>';
   h+='<div class="tablewrap unity-comparison-table"><table><thead><tr><th>Aktie</th><th>Schlusskurs / Datum</th><th>3 Monate</th><th>12 Monate</th><th>Technische Lage</th><th>Kaufurteil</th></tr></thead><tbody>';
   for(const {s,x,m} of rows){
-    h+='<tr><td><button type="button" class="secondary" '+(s.isin?'data-unity-isin="'+esc(s.isin)+'"':'data-analyze="'+esc(s.id)+'"')+' style="text-align:left;white-space:normal"><b>'+esc(s.name)+'</b><br><span class="tiny">'+esc(s.ticker)+'</span></button></td>'+
+    h+='<tr><td><button type="button" class="secondary" '+(s.isin?'data-unity-isin="'+esc(s.isin)+'"':'data-analyze="'+esc(s.id)+'"')+' style="text-align:left;white-space:normal"><b>'+esc(s.name)+'</b><br><span class="tiny">'+esc(s.ticker)+'</span></button>'+(x?unityChartSvg(x,'3M',true,false):'')+'</td>'+
       '<td>'+(m?number(m.last,2)+' '+esc(s.currency)+'<br><span class="tiny muted">'+esc(x.date)+'</span>':'–')+'</td>'+
       '<td class="'+(m?.r63>=0?'positive':'negative')+'">'+(m?unityPct(m.r63):'–')+'</td>'+
       '<td class="'+(m?.r252>=0?'positive':'negative')+'">'+(m?unityPct(m.r252):'–')+'</td>'+

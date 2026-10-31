@@ -17,6 +17,7 @@ jobs:
         run: |
           node --check analysis.js
           node --check datafeeds.js
+          node --check publicfeed.js
           node --check sw.js
       - name: Check inline application script
         run: |
@@ -25,7 +26,7 @@ jobs:
           s=Path('index.html').read_text()
           assert s.count('<script>')==1
           Path('/tmp/unity-inline.js').write_text(s.split('<script>')[1].split('</script>')[0])
-          assert 'analysis.js' in s and 'datafeeds.js' in s
+          assert 'analysis.js' in s and 'datafeeds.js' in s and 'publicfeed.js' in s
           assert "indexedDB.open('unity-lab',2)" in s
           PY
           node --check /tmp/unity-inline.js

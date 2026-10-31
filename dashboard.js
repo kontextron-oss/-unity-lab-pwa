@@ -66,7 +66,9 @@ function unityDataNotice(){
   if(!unityMarket)return '<p class="muted">Vergleichsdaten werden automatisch geladen …</p>';
   const at=unityMarket.generatedAt||'unbekannt';
   const count=Object.keys(unityMarket.items||{}).length;
-  return '<p class="tiny muted">Datenstand der Referenzdatei: '+esc(at)+' · '+count+' von 15 Aktien mit Kursverlauf · '+esc(unityMarket.source||'inoffizielle Quelle')+'. Kurse sind verzögerte Tageswerte und nicht unabhängig verifiziert.</p>';
+  const hours=(Date.now()-Date.parse(at))/3600000;
+  const status=Number.isFinite(hours)&&hours>=0&&hours<=24?'Letzte Datei-Aktualisierung vor '+number(hours,1)+' Stunden':'Achtung: Datei-Aktualisierung älter als 24 Stunden oder Zeitstempel ungültig';
+  return '<p class="tiny muted"><b>'+esc(status)+'</b> · '+esc(at)+' · '+count+' von 15 Aktien mit Kursverlauf · '+esc(unityMarket.source||'inoffizielle Quelle')+'. Dies ist kein Echtzeit-Feed.</p><button type="button" class="secondary" id="unity-reload-market">Verfügbare Daten erneut abrufen</button>';
 }
 function unityComparisonView(){
   let h='<section class="panel" id="unity-dashboard"><h2>UNITY Marktüberblick · automatischer Vergleich</h2>'+
@@ -86,7 +88,7 @@ function unityComparisonView(){
   h+='<div class="unity-mobile-list">';
   for(const {s,x,m} of rows){
     h+='<button type="button" class="unity-mobile-row" '+(s.isin?'data-unity-isin="'+esc(s.isin)+'"':'data-analyze="'+esc(s.id)+'"')+'><span class="unity-mobile-head"><strong>'+esc(s.name)+'</strong><span>'+ (m?number(m.last,2)+' '+esc(s.currency):'Kurs fehlt')+' <span aria-hidden="true">›</span></span></span>'+
-    '<span class="tiny muted">'+esc(m?.signal||'Keine Referenzdaten')+' · '+esc(x?.date||'')+'</span>'+
+    (x?unityChartSvg(x,'3M',true,false):'<span class="chart-empty">Keine Kursreihe</span>')+'<span class="tiny muted">'+esc(m?.signal||'Keine Referenzdaten')+' · '+esc(x?.date||'')+'</span>'+
     '<span class="unity-mobile-metrics"><span>3 Monate <b>'+unityPct(m?.r63)+'</b></span><span>12 Monate <b>'+unityPct(m?.r252)+'</b></span><span>Technik <b>'+(m?m.technicalIndex+'/100':'–')+'</b></span></span>'+
     '<span class="tiny">Kauf: <b>nicht freigegeben</b> · Bewertung fehlt</span></button>';
   }
@@ -113,7 +115,7 @@ function unityCompanyView(isin,comparison=false){
     '<div class="metric"><small>3 Monate</small><strong>'+unityPct(m.r63)+'</strong></div>'+
     '<div class="metric"><small>12 Monate</small><strong>'+unityPct(m.r252)+'</strong></div>'+
     '<div class="metric"><small>Abstand zum Jahreshoch</small><strong>'+unityPct(m.drawdown)+'</strong></div></div>'+
-    '<h3>Was bedeutet das?</h3><p><b>Technischer Befund:</b> '+esc(m.signal)+'. '+esc(m.note)+' '+esc(m.timing)+'</p>'+
+    unityChartPanel(x)+    '<h3>Was bedeutet das?</h3><p><b>Technischer Befund:</b> '+esc(m.signal)+'. '+esc(m.note)+' '+esc(m.timing)+'</p>'+
     '<p><b>Einordnung im Vergleich:</b> Technischer Vergleichsindex '+m.technicalIndex+'/100. Ein hoher Wert bedeutet eine vergleichsweise starke Kurslage, nicht dass die Aktie billig ist.</p>'+
     '<p><b>Ist ein Kauf sinnvoll?</b> <strong>Derzeit nicht belastbar entscheidbar.</strong> Für ein Ja oder Nein müssen der Kurs gegen einen begründeten Unternehmenswert, aktuelle Geschäftsberichte, Gewinnprognosen, Bilanzrisiken und der nächste Earnings-Termin geprüft werden.</p>'+
     '<p class="tiny muted">Berechnungsgrundlage: '+esc(x.providerSymbol||c.ticker)+' · '+esc(x.exchange||c.exchange)+' · Schlusskurse bis '+esc(x.date)+' · inoffizieller Datenfeed. Kein Echtzeitkurs. '+(m.stale?'Achtung: Datenstand veraltet.':'')+'</p>';

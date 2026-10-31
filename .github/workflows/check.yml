@@ -31,3 +31,6 @@ jobs:
           assert "indexedDB.open('unity-lab',2)" in s
           PY
           node --check /tmp/unity-inline.js
+
+      - name: Test comparative dashboard and missing-data veto
+        run: node tests/dashboard.cjs

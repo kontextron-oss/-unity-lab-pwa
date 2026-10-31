@@ -1,4 +1,4 @@
-# Unity Lab 0.3.0
+# Unity Lab 0.3.1
 
 Local-first PWA for hypothetical stock transactions and investment strategy research.
 
@@ -38,3 +38,10 @@ Under UNITY-Analyse, the Twelve Data connector supports manual on-demand quote, 
 All retrieved values appear in a preview. Import requires explicit confirmation; existing ROE and earnings dates are never silently overwritten. Currency mismatches block import; foreign-currency quotes require a user-supplied EUR FX rate. Timestamps and source metadata are recorded. Imported provider data do not automatically certify earnings, financial statements or guidance; no automatic buy recommendation is issued.
 
 A data feed alone is not independent verification. Confirm price, exchange, currency, reporting dates and fundamentals with official market/issuer sources before making investment decisions. No API credentials should be entered into repository files.
+
+
+## Keyless curated daily reference feed (0.3.1)
+
+A scheduled GitHub Actions job (`scripts/refresh_market.py`) retrieves an experimental delayed daily chart reference for the 15 ISINs in the built-in watchlist. The source is the unofficial Yahoo Finance chart endpoint, not an official exchange or licensed real-time feed. The generated `data/market.json` contains 260 daily closes, source symbol, currency, exchange, latest date, generation time, and errors. The browser fetches it from GitHub raw content, shows a preview and requires explicit confirmation to import a quote or history. Non-EUR positions require a separately entered EUR exchange rate. The automatic provider does not supply independently verified financial statements, earnings or operational trading recommendations. Data may be delayed, unavailable, restricted, or wrong. Do not use it for execution without checking an official exchange/issuer source. Confirm provider rights before production or commercial use.
+
+If the scheduled job fails, the previous valid snapshot is retained and older dates remain visible. This pilot is not a substitute for a properly licensed market data provider. No keys are embedded in the application.

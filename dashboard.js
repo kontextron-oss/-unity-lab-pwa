@@ -78,6 +78,11 @@ function unityComparisonView(){
     '<label style="max-width:290px;margin-top:10px">Vergleich sortieren<select id="unity-sort"><option value="strength" '+(unitySort==='strength'?'selected':'')+'>Technische Stärke</option><option value="3m" '+(unitySort==='3m'?'selected':'')+'>Kursentwicklung 3 Monate</option><option value="name" '+(unitySort==='name'?'selected':'')+'>Name A–Z</option></select></label>';
   const rows=unityRows();
   if(!rows.length)return h+'<p>Noch keine Aktien in deiner persönlichen Liste. Wähle „Alle Aktien“.</p></section>';
+  const comparable=rows.filter(r=>r.m&&!r.m.stale);
+  const positive=comparable.filter(r=>r.m.trend==='Aufwärtstrend').length;
+  const negative=comparable.filter(r=>r.m.trend==='Abwärtstrend').length;
+  const leading=[...comparable].sort((a,b)=>b.m.technicalIndex-a.m.technicalIndex).slice(0,4);
+  h+='<div class="hint"><b>Automatisches Marktbild:</b> '+positive+' Aktien im Aufwärtstrend, '+negative+' im Abwärtstrend, '+(comparable.length-positive-negative)+' uneinheitlich ('+comparable.length+' auswertbare Kursverläufe).<br><b>Technisch auffällige Beobachtungskandidaten:</b> '+(leading.length?leading.map(r=>esc(r.s.name)+' ('+r.m.technicalIndex+'/100)').join(' · '):'keine belastbaren Kursdaten')+'. <span class="tiny">Dies ist eine Trend-Rangfolge, keine Kaufempfehlung.</span></div>';
   h+='<div class="unity-mobile-list">';
   for(const {s,x,m} of rows){
     h+='<button type="button" class="unity-mobile-row" '+(s.isin?'data-unity-isin="'+esc(s.isin)+'"':'data-analyze="'+esc(s.id)+'"')+'><span class="unity-mobile-head"><strong>'+esc(s.name)+'</strong><span>'+ (m?number(m.last,2)+' '+esc(s.currency):'Kurs fehlt')+' <span aria-hidden="true">›</span></span></span>'+

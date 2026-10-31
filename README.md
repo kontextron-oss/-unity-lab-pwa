@@ -1,4 +1,4 @@
-# Unity Lab 0.2.0
+# Unity Lab 0.3.0
 
 Local-first PWA for hypothetical stock transactions and investment strategy research.
 
@@ -29,3 +29,12 @@ Never commit private portfolios, passwords, API keys, or pCloud credentials.
 - Manual fundamentals with source notes, immutable analysis snapshots, CSV price history, non-destructive historical imports.
 - Backup format v2 exports all stores and accepts legacy v1 backups without deleting new data.
 - The heuristic scoring model is **not backtested**; full automated fundamentals, earnings verification, intraday quotes, pCloud sync and portfolio-aware decisions are future work.
+
+
+## Market data connector (0.3.0)
+
+Under UNITY-Analyse, the Twelve Data connector supports manual on-demand quote, statistics and earnings-calendar lookups. A personal Twelve Data API key is required and is kept only in the browser form, not persisted or committed. The earnings calendar costs 40 provider credits per request and may require a higher subscription. Coverage and CORS depend on the provider.
+
+All retrieved values appear in a preview. Import requires explicit confirmation; existing ROE and earnings dates are never silently overwritten. Currency mismatches block import; foreign-currency quotes require a user-supplied EUR FX rate. Timestamps and source metadata are recorded. Imported provider data do not automatically certify earnings, financial statements or guidance; no automatic buy recommendation is issued.
+
+A data feed alone is not independent verification. Confirm price, exchange, currency, reporting dates and fundamentals with official market/issuer sources before making investment decisions. No API credentials should be entered into repository files.

@@ -1,4 +1,4 @@
-# Unity Lab 0.3.1
+# Unity Lab 0.4.0
 
 Local-first PWA for hypothetical stock transactions and investment strategy research.
 
@@ -45,3 +45,10 @@ A data feed alone is not independent verification. Confirm price, exchange, curr
 A scheduled GitHub Actions job (`scripts/refresh_market.py`) retrieves an experimental delayed daily chart reference for the 15 ISINs in the built-in watchlist. The source is the unofficial Yahoo Finance chart endpoint, not an official exchange or licensed real-time feed. The generated `data/market.json` contains 260 daily closes, source symbol, currency, exchange, latest date, generation time, and errors. The browser fetches it from GitHub raw content, shows a preview and requires explicit confirmation to import a quote or history. Non-EUR positions require a separately entered EUR exchange rate. The automatic provider does not supply independently verified financial statements, earnings or operational trading recommendations. Data may be delayed, unavailable, restricted, or wrong. Do not use it for execution without checking an official exchange/issuer source. Confirm provider rights before production or commercial use.
 
 If the scheduled job fails, the previous valid snapshot is retained and older dates remain visible. This pilot is not a substitute for a properly licensed market data provider. No keys are embedded in the application.
+
+
+## Unity Lab 0.4.0: automatic comparative research overview
+
+The app opens with an automatically populated comparative overview of all 15 curated equities, with an option to filter to the user's saved watchlist. It fetches the existing dated market snapshot and computes trend, 3-month/12-month returns, RSI, SMA50/200, drawdown, and a clearly labelled **technical comparison index**. Selecting a company opens a plain-language interpretation; the same interpretation appears at the top of its stock analysis page. No manual quote import is needed for these comparisons.
+
+**Important:** The comparison index is not the full UNITY score, an AI-generated recommendation, or a fair-value estimate. There is no autonomous ChatGPT reasoning service in this static GitHub Pages PWA. All securities are marked **no operational buy approval** because independently verified fundamentals, earnings, forecasts, and sufficiently current market data are missing. The next architecture milestone is a secure server-side analysis pipeline with reliable licensed data and independently verified source provenance; do not place OpenAI API keys or financial-provider secrets in public frontend files. The PWA must never present technical strength as evidence that a stock is cheap.

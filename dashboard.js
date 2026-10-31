@@ -49,10 +49,12 @@ function unityMetrics(x){
   return {last,ma50,ma200,rsi,r21,r63,r252,drawdown,trend,technicalIndex,signal,note,timing,stale};
 }
 function unityRows(){
-  const saved=new Set(stocks().map(s=>s.isin).filter(Boolean));
-  const rows=CATALOG.filter(s=>unityScope==='all'||saved.has(s.isin)).map(s=>{
+  const savedStocks=stocks(),saved=new Set(savedStocks.map(s=>s.isin).filter(Boolean));
+  const extras=savedStocks.filter(s=>!CATALOG.some(c=>c.isin&&c.isin===s.isin));
+  const universe=[...CATALOG,...extras];
+  const rows=universe.filter(s=>unityScope==='all'||savedStocks.some(x=>x.id===s.id||(s.isin&&x.isin===s.isin))).map(s=>{
     const x=unityMarketItem(s.isin);
-    return {s,x,m:unityMetrics(x),owned:saved.has(s.isin)}
+    return {s,x,m:unityMetrics(x),owned:saved.has(s.isin)||extras.includes(s)}
   });
   rows.sort((a,b)=>unitySort==='name'?a.s.name.localeCompare(b.s.name):
     unitySort==='3m'?(b.m?.r63??-999)-(a.m?.r63??-999):
@@ -68,17 +70,17 @@ function unityDataNotice(){
 }
 function unityComparisonView(){
   let h='<section class="panel" id="unity-dashboard"><h2>UNITY Marktüberblick · automatischer Vergleich</h2>'+
-    '<p>Hier werden alle verfügbaren Aktien <b>automatisch miteinander verglichen</b>. Du musst keine Kennzahlen eingeben. Der technische Vergleich ist noch <b>keine vollständige Kaufanalyse</b>.</p>'+
+    '<p>Hier werden die 15 Referenzaktien und deine zusätzlich gespeicherten Werte <b>automatisch miteinander verglichen</b>. Du musst keine Kennzahlen eingeben. Der technische Vergleich ist noch <b>keine vollständige Kaufanalyse</b>.</p>'+
     '<div class="hint"><strong>Keine Kauf-Freigabe für die beobachteten Aktien.</strong> Nicht, weil alle Unternehmen schlecht sind, sondern weil verifizierte Bewertung, Bilanz, Prognosen, Earnings und aktuelle Börsenkurse für ein belastbares Kaufurteil fehlen.</div>'+
     unityDataNotice();
   if(!unityMarket)return h+'</section>';
-  h+='<div class="actions"><button type="button" class="'+(unityScope==='all'?'primary':'secondary')+'" data-unity-scope="all">Alle 15 Aktien</button><button type="button" class="'+(unityScope==='mine'?'primary':'secondary')+'" data-unity-scope="mine">Meine Aktien</button></div>'+
+  h+='<div class="actions"><button type="button" class="'+(unityScope==='all'?'primary':'secondary')+'" data-unity-scope="all">Alle Aktien</button><button type="button" class="'+(unityScope==='mine'?'primary':'secondary')+'" data-unity-scope="mine">Meine Aktien</button></div>'+
     '<label style="max-width:290px;margin-top:10px">Vergleich sortieren<select id="unity-sort"><option value="strength" '+(unitySort==='strength'?'selected':'')+'>Technische Stärke</option><option value="3m" '+(unitySort==='3m'?'selected':'')+'>Kursentwicklung 3 Monate</option><option value="name" '+(unitySort==='name'?'selected':'')+'>Name A–Z</option></select></label>';
   const rows=unityRows();
-  if(!rows.length)return h+'<p>Noch keine Aktien in deiner persönlichen Liste. Wähle „Alle 15 Aktien“.</p></section>';
+  if(!rows.length)return h+'<p>Noch keine Aktien in deiner persönlichen Liste. Wähle „Alle Aktien“.</p></section>';
   h+='<div class="unity-mobile-list">';
   for(const {s,x,m} of rows){
-    h+='<button type="button" class="unity-mobile-row" data-unity-isin="'+esc(s.isin)+'"><span class="unity-mobile-head"><strong>'+esc(s.name)+'</strong><span>'+ (m?number(m.last,2)+' '+esc(s.currency):'Kurs fehlt')+' <span aria-hidden="true">›</span></span></span>'+
+    h+='<button type="button" class="unity-mobile-row" '+(s.isin?'data-unity-isin="'+esc(s.isin)+'"':'data-analyze="'+esc(s.id)+'"')+'><span class="unity-mobile-head"><strong>'+esc(s.name)+'</strong><span>'+ (m?number(m.last,2)+' '+esc(s.currency):'Kurs fehlt')+' <span aria-hidden="true">›</span></span></span>'+
     '<span class="tiny muted">'+esc(m?.signal||'Keine Referenzdaten')+' · '+esc(x?.date||'')+'</span>'+
     '<span class="unity-mobile-metrics"><span>3 Monate <b>'+unityPct(m?.r63)+'</b></span><span>12 Monate <b>'+unityPct(m?.r252)+'</b></span><span>Technik <b>'+(m?m.technicalIndex+'/100':'–')+'</b></span></span>'+
     '<span class="tiny">Kauf: <b>nicht freigegeben</b> · Bewertung fehlt</span></button>';
@@ -93,12 +95,12 @@ function unityComparisonView(){
       '<td>'+(m?'<b>'+esc(m.stale?'Daten veraltet':m.trend)+'</b><br><span class="tiny">'+esc(m.signal)+' · Vergleichsindex '+m.technicalIndex+'/100</span>':'Daten fehlen')+'</td>'+
       '<td><b>Keine Freigabe</b><br><span class="tiny muted">Bewertung / Ereignisse fehlen</span></td></tr>';
   }
-  h+='</tbody></table></div><p class="tiny muted">Der Vergleichsindex von 0 bis 100 bewertet ausschließlich Kursverlauf, RSI und gleitende Durchschnitte. Er ist kein UNITY-Gesamtscore und kein Kaufsignal. Die Tabelle enthält auch Aktien, die noch nicht in deiner persönlichen Beobachtungsliste stehen.</p></section>';
+  h+='</tbody></table></div><p class="tiny muted">Der Vergleichsindex von 0 bis 100 bewertet ausschließlich Kursverlauf, RSI und gleitende Durchschnitte. Er ist kein UNITY-Gesamtscore und kein Kaufsignal. Zusätzliche Aktien bleiben sichtbar, auch wenn für sie noch keine Kursdatenquelle angebunden ist.</p></section>';
   if(unitySelectedIsin)h+=unityCompanyView(unitySelectedIsin,true);
   return h;
 }
 function unityCompanyView(isin,comparison=false){
-  const c=CATALOG.find(s=>s.isin===isin),x=unityMarketItem(isin),m=unityMetrics(x);
+  const c=CATALOG.find(s=>s.isin===isin)||stocks().find(s=>s.isin===isin),x=unityMarketItem(isin),m=unityMetrics(x);
   if(!c)return '<div class="panel">Für diese Aktie liegt noch kein automatischer Kursvergleich vor.</div>';
   let h='<section class="panel" id="unity-company-detail"><h2>'+esc(c.name)+' · verständliche Auswertung</h2>';
   if(!m)return h+'<p>Für diese Aktie liegen derzeit keine ausreichend vollständigen historischen Referenzkurse vor. Eine Einschätzung wird nicht erfunden.</p></section>';

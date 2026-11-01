@@ -27,7 +27,7 @@ async function unityHomeShift(sid,delta){
 }
 const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr'],['3Y','3J'],['6Y','6J']];
 function unityHomeQuote(s){
-  const x=unityMarketItem(s.isin),m=x?unityMetrics(x):null;
+  const x=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
   return {x,m,quality,valid:!!m&&!m.stale&&!!quality?.canCompare};
 }
@@ -118,7 +118,7 @@ function unityHomeDetail(sid){
   let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>Aktienansicht</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
   const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
   if(x)h+=unityChartPanel(x);
-  else h+='<p class="home-missing">Kein überprüfbarer Tageskursverlauf vorhanden. Es wird keine Kurve erfunden.</p>';
+  else h+='<p class="home-missing">'+(s.providerSymbol?'Internationale Kursreihe wird geladen, sofern die externe Quelle erreichbar ist.':'Kein überprüfbarer Tageskursverlauf vorhanden. Es wird keine Kurve erfunden.')+'</p>';
   if(dq)h+='<p class="home-price-time">'+esc(dq.label)+': <b>'+number(dq.price,2)+' '+esc(s.currency)+'</b> · '+(dq.quotedAt?esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}))+' MEZ/MESZ':esc(dq.date))+' · '+esc(dq.exchange)+'</p>';
   h+=unityHomeSecurityDetails(s,x);
   h+=unityHomeTradeActions(s);
@@ -150,13 +150,13 @@ function unityHomeSecurityDetails(s,x){
   return h;
 }
 function unityHomeTradeActions(s){
-  const p=depotPosition(s),market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):unityMarketItem(s.isin),mode=unityHomeTradeMode;
+  const p=depotPosition(s),market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),mode=unityHomeTradeMode;
   let h='<div class="home-trade-actions"><button type="button" class="home-buy-button" data-home-trade="BUY">＋ Kaufen · Simulation</button>'+
     '<button type="button" class="home-sell-button" data-home-trade="SELL" '+(p.qty>0?'':'disabled')+'>− Verkaufen · Simulation</button></div>';
   if(!p.qty)h+='<p class="tiny muted">Für einen Testverkauf zunächst eine simulierte Position kaufen.</p>';
   if(mode!=='BUY'&&mode!=='SELL')return h;
   const sell=mode==='SELL',fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
-  const eod=unityMarketItem(s.isin),verified=eod&&unityDataQuality(eod,s.isin)?.canCompare;
+  const eod=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),verified=eod&&unityDataQuality(eod,s.isin)?.canCompare;
   const available=verified&&market&&Number(market.price)>0&&fx&&fx.rate>0;
   h+='<form class="home-trade-form" id="home-trade-form"><h3>'+(sell?'Testverkauf':'Testkauf')+' · '+esc(s.name)+'</h3>'+
     '<p class="tiny muted">Nur Simulation, kein echter Börsenauftrag. Kurs und EUR-Umrechnung werden automatisch übernommen. Der Börsenkurs ist ein unverbindlicher Referenzwert, kein ausführbarer Kauf-/Verkaufspreis.</p>'+
@@ -174,7 +174,7 @@ function unityHomeTradeActions(s){
 function unityHomeUpdateTradeEstimate(form){
   const el=form.querySelector('#home-trade-estimate'),s=stocks().find(x=>x.id===form.elements.instrumentId?.value);
   if(!el||!s)return;
-  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):unityMarketItem(s.isin);
+  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
   const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
   const n=Number(form.elements.quantity?.value);
   el.textContent=n>0&&market&&fx?'Voraussichtlicher Testbetrag: '+euro(n*market.price*fx.rate)+' (ohne Gebühren / Spread)':'Voraussichtlicher Testbetrag: –';
@@ -184,10 +184,10 @@ async function unityHomeSaveTrade(data){
   const s=stocks().find(x=>x.id===data.instrumentId);if(!s)throw Error('Aktie nicht gefunden.');
   const type=data.type;if(type!=='BUY'&&type!=='SELL')throw Error('Ungültige Buchungsart.');
   const quantity=Number(data.quantity),at=new Date();
-  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):unityMarketItem(s.isin);
+  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
   const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
   if(!(quantity>0&&Number.isFinite(quantity)))throw Error('Bitte eine gültige Stückzahl eingeben.');
-  const daily=unityMarketItem(s.isin);
+  const daily=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
   if(!daily||!unityDataQuality(daily,s.isin)?.canCompare||!market||!(Number(market.price)>0))throw Error('Kein ausreichend aktueller und geprüfter Referenzkurs verfügbar. Testhandel nicht möglich.');
   if(!rate||!(rate.rate>0))throw Error('Automatischer EUR-Wechselkurs fehlt oder ist veraltet. Testhandel nicht möglich.');
   const price=Number(market.price),fx=rate.rate;
@@ -235,7 +235,7 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
   if(b.dataset.homeSort){unityHomeSort=b.dataset.homeSort==='priority'?'priority':'manual';render();return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
-  if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);return}
   if(b.hasAttribute('data-home-close')){unityHomeSelected='';unityHomeTradeMode='';render();return}
   if(b.dataset.homeAnalyze){selectedUnityStock=b.dataset.homeAnalyze;activeTab='analysis';render();document.getElementById('app')?.scrollIntoView({block:'start'});return}
   if(b.hasAttribute('data-home-add')){activeTab='stocks';render();document.getElementById('catalog-search')?.scrollIntoView({block:'start'});document.getElementById('catalog-search')?.focus();return}

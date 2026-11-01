@@ -154,7 +154,8 @@ function unityHomeTradeActions(s){
   if(!p.qty)h+='<p class="tiny muted">Für einen Testverkauf zunächst eine simulierte Position kaufen.</p>';
   if(mode!=='BUY'&&mode!=='SELL')return h;
   const sell=mode==='SELL',fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
-  const available=market&&Number(market.price)>0&&fx&&fx.rate>0;
+  const eod=unityMarketItem(s.isin),verified=eod&&unityDataQuality(eod,s.isin)?.canCompare;
+  const available=verified&&market&&Number(market.price)>0&&fx&&fx.rate>0;
   h+='<form class="home-trade-form" id="home-trade-form"><h3>'+(sell?'Testverkauf':'Testkauf')+' · '+esc(s.name)+'</h3>'+
     '<p class="tiny muted">Nur Simulation, kein echter Börsenauftrag. Kurs und EUR-Umrechnung werden automatisch übernommen. Der Börsenkurs ist ein unverbindlicher Referenzwert, kein ausführbarer Kauf-/Verkaufspreis.</p>'+
     '<input type="hidden" name="instrumentId" value="'+esc(s.id)+'"><input type="hidden" name="type" value="'+mode+'">'+
@@ -184,7 +185,8 @@ async function unityHomeSaveTrade(data){
   const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):unityMarketItem(s.isin);
   const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
   if(!(quantity>0&&Number.isFinite(quantity)))throw Error('Bitte eine gültige Stückzahl eingeben.');
-  if(!market||!(Number(market.price)>0))throw Error('Kein belastbarer Referenzkurs verfügbar. Testhandel nicht möglich.');
+  const daily=unityMarketItem(s.isin);
+  if(!daily||!unityDataQuality(daily,s.isin)?.canCompare||!market||!(Number(market.price)>0))throw Error('Kein ausreichend aktueller und geprüfter Referenzkurs verfügbar. Testhandel nicht möglich.');
   if(!rate||!(rate.rate>0))throw Error('Automatischer EUR-Wechselkurs fehlt oder ist veraltet. Testhandel nicht möglich.');
   const price=Number(market.price),fx=rate.rate;
   if(type==='SELL'){

@@ -56,6 +56,7 @@ def get_chart(symbol):
 
 def build():
     previous = {}
+    run_at = dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')
     if OUTPUT.exists():
         try:
             previous = json.loads(OUTPUT.read_text(encoding="utf-8")).get("items", {})
@@ -83,9 +84,17 @@ def build():
                 day = dt.datetime.fromtimestamp(ts, tz=dt.timezone.utc).date().isoformat()
                 points.append({"date": day, "close": round(float(close), 5)})
             points = sorted({x["date"]: x for x in points}.values(), key=lambda x: x["date"])[-260:]
-            if len(points) < 26:
-                raise ValueError("too few valid daily closes")
+            if len(points) < 200:
+                raise ValueError("fewer than 200 valid daily closes")
+            if any(points[i]["date"] >= points[i+1]["date"] for i in range(len(points)-1)):
+                raise ValueError("duplicate or unordered trading dates")
             latest = points[-1]
+            today = dt.datetime.now(dt.timezone.utc).date()
+            last_date = dt.date.fromisoformat(latest["date"])
+            if last_date > today:
+                raise ValueError("latest quote date lies in the future")
+            if (today-last_date).days > 14:
+                raise ValueError("latest quote is more than 14 calendar days old")
             # Date-only precision is deliberate: timestamps are not treated as intraday.
             items[isin] = {
                 "name": name,
@@ -97,6 +106,8 @@ def build():
                 "date": latest["date"],
                 "points": points,
                 "source": "Yahoo Finance chart (unofficial delayed reference)",
+                "lastSuccessfulFetchAt": run_at,
+                "quotePrecision": "day",
             }
             print(f"OK {name}: {latest['close']} {currency} ({latest['date']})", flush=True)
         except Exception as ex:
@@ -109,7 +120,10 @@ def build():
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "schemaVersion": 1,
-        "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "generatedAt": run_at,
+        "lastAttemptAt": run_at,
+        "successfulSymbols": len(STOCKS)-len(errors),
+        "failedSymbols": len(errors),
         "source": "Yahoo Finance chart (unofficial, delayed, no accuracy guarantee)",
         "scope": "Curated UNITY watchlist only; not an official exchange feed",
         "items": items,

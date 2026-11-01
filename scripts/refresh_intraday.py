@@ -77,6 +77,7 @@ def extract_quote(chart, isin, symbol, currency, name, now):
     }
 
 def build():
+    print('Pilot: four European symbols; timestamps reflect 15m bars, not guaranteed exchange latency.', flush=True)
     now = dt.datetime.now(dt.timezone.utc)
     previous = {}
     if OUTPUT.exists():

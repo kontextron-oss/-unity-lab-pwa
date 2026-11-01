@@ -7,7 +7,7 @@ let instruments=[s1,s2,s3],transactions=[],events=[],refreshes=0,sequence=0;
 const sandbox={Date,Math,Number,Array,JSON,Set,Map,
  stocks:()=>instruments,cache:{instruments,transactions},
  unityMarket:{generatedAt:'2026-10-30T20:00:00Z'},unityMarketLoading:false,
- unityMarketItem:()=>null,unityDisplayQuote:()=>({price:240,currency:'EUR',date:'2026-10-30',precision:'day',source:'test EOD'}),unityEuroRate:currency=>({rate:currency==='EUR'?1:1.08,date:'2026-10-30',source:'test ECB'}),unityMetrics:()=>null,unityDataQuality:()=>({canCompare:false}),
+ unityMarketItem:()=>({price:240,date:'2026-10-30'}),unityDisplayQuote:()=>({price:240,currency:'EUR',date:'2026-10-30',precision:'day',source:'test EOD'}),unityEuroRate:currency=>({rate:currency==='EUR'?1:1.08,date:'2026-10-30',source:'test ECB'}),unityMetrics:()=>null,unityDataQuality:()=>({canCompare:true}),
  unityChartData:()=>[],unityCalc:()=>({veto:[]}),unityChartPanel:()=>'<svg/>',
  depotPositions:()=>[],depotPosition:()=>({qty:2,cost:100,pnl:NaN,buys:1,sells:0}),
  depotMoney:n=>Number(n).toFixed(2)+' €',depotTradeHistory:()=>'<div>history</div>',

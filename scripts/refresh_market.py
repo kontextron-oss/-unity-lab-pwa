@@ -27,6 +27,7 @@ STOCKS = [
     ("US74762E1029", "PWR", "USD", "Quanta Services"),
     ("FR0000044448", "NEX.PA", "EUR", "Nexans"),
     ("DE0006231004", "IFX.DE", "EUR", "Infineon"),
+    ("DE000A2NB601", "JEN.DE", "EUR", "Jenoptik AG"),
 ]
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "market.json"

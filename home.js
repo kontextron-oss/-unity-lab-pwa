@@ -30,7 +30,7 @@ function unityHomeQuote(s){
   const x=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
   const technical=!!m&&!m.stale&&Array.isArray(x?.points)&&x.points.length>=200;
-  return {x,m,quality,technical,valid:technical&&!!quality?.canCompare};
+  return {x,m,quality,technical,valid:!!m&&!m.stale&&!!quality?.canCompare};
 }
 function unityHomeMovement(x,range){
   const a=unityChartData(x,range);

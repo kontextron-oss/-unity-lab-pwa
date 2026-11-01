@@ -2,7 +2,7 @@
  * The CORS relay is a third-party service. Yahoo endpoints are unofficial and
  * neither exchange-verified nor licensed for trading decisions. Fail closed. */
 const unityDiscoveryProxy='https://proxy.cors.dev/';
-const unityDynamicItems=new Map(),unityDynamicPending=new Map(),unityDynamicErrors=new Map();
+const unityDynamicItems=new Map(),unityDynamicPending=new Map(),unityDynamicErrors=new Map();let unityDynamicQueueQuiet=false;
 const unityYahooSymbolValid=s=>typeof s==='string'&&/^[A-Za-z0-9.^=\-]{1,28}$/.test(s);
 async function unityDiscoveryFetch(url,signal){
   const response=await fetch(unityDiscoveryProxy+url,{credentials:'omit',signal,cache:'no-store'});
@@ -80,7 +80,7 @@ async function unityPersistDynamicHistory(s,item){
   await put('histories',record);
   if(typeof cache!=='undefined'&&Array.isArray(cache.histories)){const i=cache.histories.findIndex(x=>x.id===record.id);if(i>=0)cache.histories[i]=record;else cache.histories.push(record)}
 }
-async function unityLoadDynamicStock(s,{quiet=false}={}){
+async function unityLoadDynamicStock(s){
   if(!s?.providerSymbol||!unityYahooSymbolValid(s.providerSymbol))return;
   const symbol=s.providerSymbol.toUpperCase();
   const cached=unityDynamicItems.get(symbol);
@@ -92,7 +92,7 @@ async function unityLoadDynamicStock(s,{quiet=false}={}){
       if(item.currency!==s.currency)throw Error('Währungsabweichung: '+item.currency+' statt '+s.currency);
       unityDynamicItems.set(symbol,item);await unityPersistDynamicHistory(s,item);unityDynamicErrors.delete(symbol);
     }catch(e){unityDynamicErrors.set(symbol,String(e.message||e))}
-    finally{unityDynamicPending.delete(symbol);if(!quiet&&typeof render==='function'&&typeof db!=='undefined'&&db)render()}
+    finally{unityDynamicPending.delete(symbol);if(!unityDynamicQueueQuiet&&typeof render==='function'&&typeof db!=='undefined'&&db)render()}
   })();
   unityDynamicPending.set(symbol,task);
   return task;
@@ -100,8 +100,8 @@ async function unityLoadDynamicStock(s,{quiet=false}={}){
 async function unityLoadDynamicQueue(list){
   const unique=[],seen=new Set();
   for(const s of list||[]){const symbol=String(s?.providerSymbol||'').toUpperCase();if(s?.id&&unityYahooSymbolValid(symbol)&&!seen.has(symbol)){seen.add(symbol);unique.push(s)}}
-  for(const s of unique)await unityLoadDynamicStock(s,{quiet:true});
-  if(typeof render==='function'&&typeof db!=='undefined'&&db)render();
+  unityDynamicQueueQuiet=true;
+  try{for(const stock of unique)await unityLoadDynamicStock(stock)}finally{unityDynamicQueueQuiet=false;if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
 }
 
 /* Headline-only news discovery. Headlines are NOT investment signals and are

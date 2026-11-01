@@ -97,11 +97,12 @@ async function unityLoadDynamicStock(s){
   unityDynamicPending.set(symbol,task);
   return task;
 }
-async function unityLoadDynamicQueue(list){
-  const unique=[],seen=new Set();
+async function unityLoadDynamicQueue(list,onProgress=null){
+  const unique=[],seen=new Set();let ok=0,failed=0;
   for(const s of list||[]){const symbol=String(s?.providerSymbol||'').toUpperCase();if(s?.id&&unityYahooSymbolValid(symbol)&&!seen.has(symbol)){seen.add(symbol);unique.push(s)}}
   unityDynamicQueueQuiet=true;
-  try{for(const stock of unique)await unityLoadDynamicStock(stock)}finally{unityDynamicQueueQuiet=false;if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
+  try{for(let i=0;i<unique.length;i++){const stock=unique[i];await unityLoadDynamicStock(stock);if(unityDynamicErrors.has(String(stock.providerSymbol).toUpperCase()))failed++;else ok++;if(typeof onProgress==='function')onProgress({total:unique.length,done:i+1,ok,failed,stock})}}finally{unityDynamicQueueQuiet=false;if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
+  return {total:unique.length,ok,failed};
 }
 
 /* Headline-only news discovery. Headlines are NOT investment signals and are

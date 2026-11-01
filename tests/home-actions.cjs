@@ -52,7 +52,7 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
  assert.equal(await vm.runInContext("unityHomeSaveTrade("+JSON.stringify(chfBuy)+")",sandbox),true);
  assert.equal(transactions[2].price,240);
  assert.equal(transactions[2].fx,1.08);
- assert.equal(transactions[2].amount*transactions[2].fx,259.20000000000005);
+ assert.ok(Math.abs(transactions[2].amount*transactions[2].fx-259.2)<0.000001);
  assert.match(vm.runInContext("unityHomeTradeActions("+JSON.stringify(s1)+")",sandbox),/Automatische EUR-Umrechnung|Kaufen · Simulation/);
  assert.match(vm.runInContext("unityHomeSecurityDetails("+JSON.stringify(s2)+",null)",sandbox),/BID\/ASK/);
  console.log('Mobile reorder persisted; test buy/sell validated and recorded without real orders.');

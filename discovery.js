@@ -3,6 +3,8 @@
  * neither exchange-verified nor licensed for trading decisions. Fail closed. */
 const unityDiscoveryProxy='https://proxy.cors.dev/';
 const UNITY_FETCH_TIMEOUT_MS=9000;
+const UNITY_HISTORY_BATCH_SIZE=5,UNITY_HISTORY_BATCH_PAUSE_MS=7000;
+const unityHistoryPause=ms=>typeof setTimeout==='function'?new Promise(resolve=>setTimeout(resolve,ms)):Promise.resolve();
 const unityDynamicItems=new Map(),unityDynamicPending=new Map(),unityDynamicErrors=new Map();let unityDynamicQueueQuiet=false;let unityDynamicProgress={total:0,done:0,ok:0,failed:0,active:''};
 const unityYahooSymbolValid=s=>typeof s==='string'&&/^[A-Za-z0-9.^=\-]{1,28}$/.test(s);
 async function unityDiscoveryFetch(url,signal){
@@ -113,7 +115,14 @@ async function unityLoadDynamicQueue(list,onProgress=null,force=false){
   unityDynamicProgress={total:unique.length,done:0,ok:0,failed:0,active:''};
   const report=stock=>{done++;if(unityDynamicErrors.has(String(stock.providerSymbol).toUpperCase()))failed++;else ok++;unityDynamicProgress={total:unique.length,done,ok,failed,active:''};if(typeof onProgress==='function')onProgress({total:unique.length,done,ok,failed,stock});if(typeof render==='function'&&typeof db!=='undefined'&&db)render()};
   let cursor=0;
-  const worker=async()=>{while(cursor<unique.length){const stock=unique[cursor++];unityDynamicProgress={total:unique.length,done,ok,failed,active:stock.name||stock.ticker||''};if(typeof render==='function'&&typeof db!=='undefined'&&db)render();await unityLoadDynamicStock(stock,force);report(stock)}};
+  const worker=async()=>{while(cursor<unique.length){
+    const stock=unique[cursor++];unityDynamicProgress={total:unique.length,done,ok,failed,active:stock.name||stock.ticker||''};if(typeof render==='function'&&typeof db!=='undefined'&&db)render();
+    await unityLoadDynamicStock(stock,force);
+    const retryable=/HTTP 429|antwortet nicht rechtzeitig|Failed to fetch|Netzwerk/i.test(String(unityDynamicErrors.get(String(stock.providerSymbol).toUpperCase())||''));
+    if(retryable){unityDynamicProgress={total:unique.length,done,ok,failed,active:'Warte kurz · zweiter Versuch für '+(stock.name||stock.ticker||'')};if(typeof render==='function'&&typeof db!=='undefined'&&db)render();await unityHistoryPause(UNITY_HISTORY_BATCH_PAUSE_MS);await unityLoadDynamicStock(stock,true)}
+    report(stock);
+    if(done<unique.length&&done%UNITY_HISTORY_BATCH_SIZE===0){unityDynamicProgress={total:unique.length,done,ok,failed,active:'Kurze Pause · nächste Charge folgt automatisch'};if(typeof render==='function'&&typeof db!=='undefined'&&db)render();await unityHistoryPause(UNITY_HISTORY_BATCH_PAUSE_MS)}
+  }};
   try{await Promise.all(Array.from({length:Math.min(1,unique.length)},worker));}
   finally{unityDynamicQueueQuiet=false;unityDynamicProgress={...unityDynamicProgress,active:''};if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
   return {total:unique.length,ok,failed};

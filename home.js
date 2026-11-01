@@ -70,8 +70,9 @@ function unityHome(){
     const change=valid?unityHomeMovement(x,unityHomeRange):NaN;
     const rising=Number.isFinite(change)&&change>0,falling=Number.isFinite(change)&&change<0;
     const cls=rising?'home-up':falling?'home-down':'home-flat';
+    const p=depotPosition(s);
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Gedrückt halten und Aktie verschieben" aria-label="'+esc(s.name)+' verschieben">☰</button><button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small></span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+(p.qty>0?'<small class="home-position-label">'+number(p.qty,4)+' Stück im Testdepot'+(Number.isFinite(p.pnl)?' · '+(p.pnl>=0?'+':'')+depotMoney(p.pnl):'')+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+(valid?unityPct(change):'–')+'</strong><small>'+(x?number(Number(x.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(x?esc(x.date):'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button></div>';
   }
   h+='</section>';
@@ -145,9 +146,20 @@ async function unityHomeSaveTrade(data){
     const available=depotLedger(s.id,at.toISOString().slice(0,10)).qty;
     if(quantity>available+1e-8)throw Error('Nicht genügend simulierte Aktien am gewählten Datum. Verfügbar: '+number(available,4));
   }
+  const decision=unityHomeDecision(s),quote=unityMarketItem(s.isin);
   const t={id:id(),instrumentId:s.id,type,quantity,price,fx,amount:quantity*price,
     decidedAt:at.toISOString(),executedAt:at.toISOString(),note:String(data.note||'').trim(),
+    decisionSnapshot:{action:decision.action,buy:decision.buy,sell:decision.sell,
+      technicalIndex:Number.isFinite(decision.index)?decision.index:null,
+      quoteDate:quote?.date||null,quotePrice:Number.isFinite(Number(quote?.price))?Number(quote.price):null,
+      reason:decision.reason,source:'UNITY EOD-Analyse · keine Handelsfreigabe'},
     source:'UNITY Lab · Testhandel',createdAt:new Date().toISOString()};
+  // Check the entire simulated timeline; a backdated sale may invalidate a later sale.
+  let running=0;
+  for(const item of [...depotActiveTrades(s.id),t].sort((a,b)=>a.executedAt.localeCompare(b.executedAt)||a.createdAt.localeCompare(b.createdAt))){
+    running+=item.type==='BUY'?Number(item.quantity):-Number(item.quantity);
+    if(running < -1e-8)throw Error('Der Testhandel würde zu einem negativen Bestand in der Buchungshistorie führen.');
+  }
   if(!confirm((type==='BUY'?'Testkauf':'Testverkauf')+' von '+number(quantity,4)+' Stück '+s.name+' zu '+number(price,2)+' '+s.currency+' speichern? Dies ist KEIN echter Börsenauftrag.'))return false;
   await put('transactions',t);await audit(type==='BUY'?'BUY_ADD':'SELL_ADD',t.id,'Simuliert · '+s.ticker);
   await refresh();return true;

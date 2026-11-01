@@ -2,12 +2,20 @@
  * The CORS relay is a third-party service. Yahoo endpoints are unofficial and
  * neither exchange-verified nor licensed for trading decisions. Fail closed. */
 const unityDiscoveryProxy='https://proxy.cors.dev/';
+const UNITY_FETCH_TIMEOUT_MS=9000;
 const unityDynamicItems=new Map(),unityDynamicPending=new Map(),unityDynamicErrors=new Map();let unityDynamicQueueQuiet=false;
 const unityYahooSymbolValid=s=>typeof s==='string'&&/^[A-Za-z0-9.^=\-]{1,28}$/.test(s);
 async function unityDiscoveryFetch(url,signal){
-  const response=await fetch(unityDiscoveryProxy+url,{credentials:'omit',signal,cache:'no-store'});
-  if(!response.ok)throw Error('Externe Börsenquelle nicht erreichbar (HTTP '+response.status+')');
-  return response.json();
+  const controller=typeof AbortController==='function'?new AbortController():null;
+  const timer=setTimeout(()=>controller?.abort(),UNITY_FETCH_TIMEOUT_MS);
+  try{
+    const response=await fetch(unityDiscoveryProxy+url,{credentials:'omit',signal:controller?.signal||signal,cache:'no-store'});
+    if(!response.ok)throw Error('Externe Börsenquelle nicht erreichbar (HTTP '+response.status+')');
+    return response.json();
+  }catch(e){
+    if(e?.name==='AbortError')throw Error('Externe Kursquelle antwortet nicht rechtzeitig');
+    throw e;
+  }finally{clearTimeout(timer)}
 }
 async function unitySearchWorldwide(query,signal){
   const term=String(query||'').trim();
@@ -27,7 +35,7 @@ async function unitySearchWorldwide(query,signal){
 }
 async function unityFetchWorldwideHistory(symbol,signal){
   if(!unityYahooSymbolValid(symbol))throw Error('Ungültiges Börsenkürzel');
-  const url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?range=10y&interval=1d&events=false';
+  const url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?range=6y&interval=1d&events=false';
   const data=await unityDiscoveryFetch(url,signal);
   const chart=data?.chart?.result?.[0],meta=chart?.meta||{};
   if(!chart||String(meta.symbol||'').toUpperCase()!==symbol.toUpperCase())throw Error('Börsenkürzel stimmt nicht mit der Kursquelle überein');
@@ -98,10 +106,14 @@ async function unityLoadDynamicStock(s){
   return task;
 }
 async function unityLoadDynamicQueue(list,onProgress=null){
-  const unique=[],seen=new Set();let ok=0,failed=0;
+  const unique=[],seen=new Set();let ok=0,failed=0,done=0;
   for(const s of list||[]){const symbol=String(s?.providerSymbol||'').toUpperCase();if(s?.id&&unityYahooSymbolValid(symbol)&&!seen.has(symbol)){seen.add(symbol);unique.push(s)}}
   unityDynamicQueueQuiet=true;
-  try{for(let i=0;i<unique.length;i++){const stock=unique[i];await unityLoadDynamicStock(stock);if(unityDynamicErrors.has(String(stock.providerSymbol).toUpperCase()))failed++;else ok++;if(typeof onProgress==='function')onProgress({total:unique.length,done:i+1,ok,failed,stock})}}finally{unityDynamicQueueQuiet=false;if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
+  const report=stock=>{done++;if(unityDynamicErrors.has(String(stock.providerSymbol).toUpperCase()))failed++;else ok++;if(typeof onProgress==='function')onProgress({total:unique.length,done,ok,failed,stock});if(typeof render==='function'&&typeof db!=='undefined'&&db)render()};
+  let cursor=0;
+  const worker=async()=>{while(cursor<unique.length){const stock=unique[cursor++];await unityLoadDynamicStock(stock);report(stock)}};
+  try{await Promise.all(Array.from({length:Math.min(3,unique.length)},worker));}
+  finally{unityDynamicQueueQuiet=false;if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
   return {total:unique.length,ok,failed};
 }
 

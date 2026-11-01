@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-01T11:37:34+00:00",
+  "generatedAt": "2026-11-01T11:37:50+00:00",
   "source": "XBRL International filings.xbrl.org",
   "scope": "Four European pilot issuers; partial annual filings, no live valuations",
   "items": {
@@ -14,7 +14,7 @@
       "status": "no-esef-route",
       "metrics": {},
       "latestFiling": null,
-      "checkedAt": "2026-11-01T11:37:34+00:00",
+      "checkedAt": "2026-11-01T11:37:50+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -73,7 +73,7 @@
         "validationErrors": 0,
         "validationWarnings": 0
       },
-      "checkedAt": "2026-11-01T11:37:34+00:00",
+      "checkedAt": "2026-11-01T11:37:50+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -84,14 +84,12 @@
       "reportCurrency": "EUR",
       "investorRelations": "https://www.siemens-energy.com/global/en/home/investor-relations.html",
       "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
-      "status": "source-unavailable",
+      "status": "no-filing-found",
       "metrics": {},
       "latestFiling": null,
-      "checkedAt": "2026-11-01T11:37:34+00:00",
+      "checkedAt": "2026-11-01T11:37:50+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
-      "errors": [
-        "ESEF API: HTTP Error 404: NOT FOUND"
-      ]
+      "errors": []
     },
     "DE0006231004": {
       "name": "Infineon",
@@ -100,14 +98,12 @@
       "reportCurrency": "EUR",
       "investorRelations": "https://www.infineon.com/cms/en/about-infineon/investor/",
       "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
-      "status": "source-unavailable",
+      "status": "no-filing-found",
       "metrics": {},
       "latestFiling": null,
-      "checkedAt": "2026-11-01T11:37:34+00:00",
+      "checkedAt": "2026-11-01T11:37:50+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
-      "errors": [
-        "ESEF API: HTTP Error 404: NOT FOUND"
-      ]
+      "errors": []
     }
   }
 }

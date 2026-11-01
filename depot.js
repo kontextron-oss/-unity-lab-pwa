@@ -24,16 +24,17 @@ function depotLedger(id,asOf=null){
 function depotMarket(s){
   const item=typeof unityMarketItem==='function'?unityMarketItem(s.isin):null;
   const quality=item?unityDataQuality(item,s.isin):null;
-  const q=quote(s.id);
-  const recentFx=q&&Number(q.fx)>0&&Number.isFinite(Date.parse(q.quotedAt))&&(Date.now()-Date.parse(q.quotedAt))<8*86400000;
-  if(item&&quality?.canCompare){
-    if(s.currency==='EUR')return {price:item.price,fx:1,date:item.date,source:'Verzögerter Börsenschlusskurs',item};
-    if(recentFx)return {price:item.price,fx:Number(q.fx),date:item.date,source:'Verzögerter Schlusskurs · manuell erfasster FX',item};
+  const display=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
+  const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):(s.currency==='EUR'?{rate:1,source:'EUR',date:new Date().toISOString().slice(0,10)}:null);
+  if(item&&quality?.canCompare&&fx&&fx.rate>0){
+    const market=display&&display.precision==='15m-bar'?display:item;
+    return {price:market.price,fx:fx.rate,date:market.date,
+      source:market.precision==='15m-bar'?'Inoffizieller 15-Minuten-Kursbalken · EZB-Referenz-FX':'Verzögerter Schlusskurs · EZB-Referenz-FX',
+      fxSource:fx.source,fxDate:fx.date,item};
   }
-  // Do not use stale or unverified manual quotes as "current".
-  if(!item&&q&&recentFx&&Number(q.price)>0)return {price:q.price,fx:q.fx,date:q.quotedAt.slice(0,10),source:'Manueller Referenzkurs · ungeprüft',item:null};
   return null;
 }
+
 function depotPosition(s){
   const l=depotLedger(s.id),market=depotMarket(s);
   const value=l.qty>0&&market?l.qty*market.price*market.fx:NaN;
@@ -63,7 +64,7 @@ function depotOverview(){
     }
     h+='</div>';
   }
-  h+='<p class="tiny muted">Kurse: verzögerte Tagesschlusskurse; keine Echtzeit. Der Depotwert berücksichtigt nur erfasste Simulationstransaktionen. Ohne historische EUR-Wechselkurse wird keine erfundene Gesamtdepotkurve gezeichnet.</p>'+
+  h+='<p class="tiny muted">Kurse: zeitgestempelte Pilotbalken oder verzögerte Tagesschlusskurse; keine garantierte Echtzeit. EUR-Umrechnung: EZB-Referenzkurs, kein handelbarer Bankenkurs. Der Depotwert berücksichtigt nur erfasste Simulationstransaktionen. Ohne historische EUR-Wechselkurse wird keine erfundene Gesamtdepotkurve gezeichnet.</p>'+
     '<div class="actions"><button type="button" class="secondary" data-tab-target="trades">Käufe und Verkäufe ansehen</button></div></section>';
   if(depotSelectedId)h+=depotDetail(depotSelectedId);
   return h;

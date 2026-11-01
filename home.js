@@ -3,7 +3,16 @@
    This is not a live broker account, nor a real-time trading signal. */
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='manual';
 const UNITY_FIRST_TWENTY=['ABBN','SU','ETN','ENR','VRT','NDX1','PRY','LR','SIE','BEAN','GEV','NVT','HUBB','PWR','NEX','IFX','JEN','AMD','DWS','TKA'];
-const unityPilotStocks=()=>unityHomeStocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase()));
+const unityPilotStocks=()=>stocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())).sort((a,b)=>UNITY_FIRST_TWENTY.indexOf(String(a.ticker||'').toUpperCase())-UNITY_FIRST_TWENTY.indexOf(String(b.ticker||'').toUpperCase()));
+async function unityEnsurePilotTwenty(){
+  const missing=(typeof CATALOG==='undefined'?[]:CATALOG).filter(ref=>UNITY_FIRST_TWENTY.includes(String(ref.ticker||'').toUpperCase())&&!stocks().some(s=>String(s.ticker||'').toUpperCase()===String(ref.ticker||'').toUpperCase()&&String(s.exchange||'').toLowerCase()===String(ref.exchange||'').toLowerCase()));
+  for(const ref of missing){
+    const stock={id:id(),name:ref.name,ticker:ref.ticker,isin:ref.isin||'',exchange:ref.exchange,currency:ref.currency,providerSymbol:ref.providerSymbol||'',createdAt:new Date().toISOString(),catalogSource:'UNITY erste Analysegruppe'};
+    await put('instruments',stock);await audit('STOCK_PILOT_ADD',stock.id,stock.ticker);
+  }
+  if(missing.length)await refresh();
+  return unityPilotStocks();
+}
 const unityHomeStocks=()=>stocks().filter(s=>!s.watchHidden).sort((a,b)=>{
   const aa=Number.isFinite(Number(a.watchOrder))&&a.watchOrder!==undefined?Number(a.watchOrder):Infinity;
   const bb=Number.isFinite(Number(b.watchOrder))&&b.watchOrder!==undefined?Number(b.watchOrder):Infinity;
@@ -307,8 +316,11 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-capital')){activeTab='trades';render();document.getElementById('depot-capital')?.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.hasAttribute('data-home-trades')){activeTab='trades';render();return}
   if(b.hasAttribute('data-home-reload')){
-    unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();
-    if(typeof unityRefreshDynamicHistories==='function')unityRefreshDynamicHistories(unityPilotStocks(),p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
+    (async()=>{
+      const group=await unityEnsurePilotTwenty();
+      unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();
+      if(typeof unityRefreshDynamicHistories==='function')unityRefreshDynamicHistories(group,p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
+    })().catch(err=>alert(err.message||String(err)));
     return
   }
 });

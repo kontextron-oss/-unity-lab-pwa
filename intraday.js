@@ -15,7 +15,7 @@ function unityIntradayItem(isin){
   return item;
 }
 function unityDisplayQuote(s){
-  const daily=unityMarketItem(s.isin),pilot=unityIntradayItem(s.isin);
+  const daily=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),pilot=unityIntradayItem(s.isin);
   if(pilot&&(!daily||pilot.quotedAt.slice(0,10)>daily.date)){
     return {price:pilot.price,currency:pilot.currency,exchange:pilot.exchange||s.exchange,
       date:pilot.quotedAt.slice(0,10),quotedAt:pilot.quotedAt,precision:'15m-bar',

@@ -239,15 +239,37 @@ async function searchOnline(){const input=document.getElementById('online-search
   renderOnlineResults();
  }catch(e){if(request!==onlineRequest||e.name==='AbortError')return;onlineStatus('Online-Suche derzeit nicht erreichbar: '+(e.message||'Netzwerkfehler')+'. Der Offline-Katalog und die manuelle Eingabe funktionieren weiter.')}
 }
+async function resolveWorldwideIsin(candidate){
+ if(!candidate?.name||!candidate.providerSymbol)return '';
+ try{
+  const term=candidate.name.slice(0,70),data=await wikiFetch({action:'wbsearchentities',search:term,language:'en',type:'item',limit:'8'});
+  const ids=(data.search||[]).map(x=>x.id).filter(x=>/^Q\d+$/.test(x));
+  if(!ids.length)return '';
+  const response=await wikiFetch({action:'wbgetentities',ids:ids.join('|'),props:'claims|labels',languages:'en|de'});
+  const key=candidate.providerSymbol.split('.')[0].toUpperCase(),possible=[];
+  for(const entity of Object.values(response.entities||{})){
+   const claims=entity.claims||{};
+   const tickers=(claims.P249||[]).filter(activeClaim).map(claimString).map(x=>x.toUpperCase());
+   for(const exchange of (claims.P414||[]).filter(activeClaim))for(const q of exchange.qualifiers?.P249||[])
+    if(typeof q.datavalue?.value==='string')tickers.push(q.datavalue.value.toUpperCase());
+   if(!tickers.includes(key)&&!tickers.includes(candidate.providerSymbol.toUpperCase()))continue;
+   for(const c of (claims.P946||[]).filter(activeClaim)){
+    const isin=cleanIsin(claimString(c));
+    if(isin)possible.push(isin);
+   }
+  }
+  return [...new Set(possible)].length===1?possible[0]:'';
+ }catch(e){return ''}
+}
 async function addOnlineStock(index){const s=onlineResults[index];if(!s)throw Error('Suchergebnis nicht mehr vorhanden.');if(catalogPresent(s))throw Error('Die Aktie ist bereits in deiner Beobachtungsliste.');
  if(s.searchKind==='yahoo'){
    if(typeof unityFetchWorldwideHistory!=='function')throw Error('Kursprüfung nicht geladen');
    const chart=await unityFetchWorldwideHistory(s.providerSymbol);
-   const isin=s.isin||'';
+   const isin=s.isin||await resolveWorldwideIsin(s);
    const obj={id:id(),name:s.name,ticker:s.ticker,providerSymbol:s.providerSymbol,isin,
      exchange:chart.exchange,currency:chart.currency,note:s.note||'',createdAt:new Date().toISOString(),
      catalogSource:'Yahoo Finance (inoffiziell) über cors.dev',quality:'external-unverified',
-     sourceCheckedAt:new Date().toISOString()};
+     sourceCheckedAt:new Date().toISOString(),isinSource:isin?'Wikidata (nicht börslich bestätigt)':'offen'};
    if(!confirm('Aktie automatisch hinzufügen?\\n\\n'+obj.name+' · '+obj.ticker+'\\n'+obj.exchange+' · '+obj.currency+
      '\\nLetzter verfügbarer Schlusskurs: '+number(chart.price,2)+' '+chart.currency+' ('+chart.date+')'+
      '\\n\\nQuelle: inoffiziell über einen externen CORS-Dienst. Keine börslich geprüften Daten, keine operative Kaufempfehlung.'+

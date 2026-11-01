@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - scripts/refresh_fundamentals.py
+      - tests/test_fundamentals.py
       - .github/workflows/fundamentals-pilot.yml
   schedule:
     - cron: '35 7 * * 1,4'
@@ -26,7 +27,7 @@ jobs:
           python-version: '3.12'
       - name: Validate fundamentals parser
         run: python -m unittest discover -s tests -p 'test_fundamentals.py'
-      - name: Fetch source-backed ESEF filing data
+      - name: Fetch XBRL filings and issuer primary disclosures
         run: python scripts/refresh_fundamentals.py
       - name: Commit snapshot without changing local app data
         run: |

@@ -70,7 +70,7 @@ function unityDataNotice(){
   const count=Object.keys(unityMarket.items||{}).length;
   const hours=(Date.now()-Date.parse(at))/3600000;
   const status=Number.isFinite(hours)&&hours>=0&&hours<=24?'Letzte Datei-Aktualisierung vor '+number(hours,1)+' Stunden':'Achtung: Datei-Aktualisierung älter als 24 Stunden oder Zeitstempel ungültig';
-  return '<p class="tiny muted"><b>'+esc(status)+'</b> · '+esc(at)+' · '+count+' von 15 Aktien mit Kursverlauf · '+esc(unityMarket.source||'inoffizielle Quelle')+'. Dies ist kein Echtzeit-Feed.</p><button type="button" class="secondary" id="unity-reload-market">Verfügbare Daten erneut abrufen</button>'+unityDataStatusPanel(unityMarket);
+  return '<p class="tiny muted"><b>'+esc(status)+'</b> · '+esc(at)+' · '+count+' von '+CATALOG.length+' Aktien mit Kursverlauf · '+esc(unityMarket.source||'inoffizielle Quelle')+'. Dies ist kein Echtzeit-Feed.</p><button type="button" class="secondary" id="unity-reload-market">Verfügbare Daten erneut abrufen</button>'+unityDataStatusPanel(unityMarket);
 }
 function unityComparisonView(){
   let h='<section class="panel" id="unity-dashboard"><h2>UNITY Marktüberblick · automatischer Vergleich</h2>'+

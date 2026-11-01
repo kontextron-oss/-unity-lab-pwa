@@ -1,0 +1,31 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync('index.html','utf8'),css=html.split('<style>')[1].split('</style>')[0];
+assert.match(html,/name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/);
+assert.match(css,/input,select,textarea\{font-size:16px/);
+assert.match(css,/grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/);
+assert.match(css,/\.unity-main-chart\{width:100%;max-width:100%;height:auto/);
+assert.match(css,/overflow-x:clip/);
+const ctx={Date,Math,Number,Object,Array,JSON,esc:x=>String(x),number:(n,d)=>Number(n).toFixed(d),unityPct:n=>Number(n).toFixed(1)+' %',document:{addEventListener(){}},render(){}};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync('charts.js','utf8'),ctx);
+const points=[];
+for(let y=2019;y<=2026;y++)for(let m=0;m<12;m++)for(let d=1;d<=28;d+=7){
+ const date=[y,String(m+1).padStart(2,'0'),String(d).padStart(2,'0')].join('-');
+ if(date<='2026-10-30')points.push({date,close:100+(y-2019)*5+m/3+d/50});
+}
+const item={name:'Test',points,price:points.at(-1).close,date:points.at(-1).date,currency:'EUR',exchange:'Paris'};
+ctx.item=item;
+const selected=vm.runInContext("unityChartData(item,'6Y')",ctx);
+assert.ok(selected.length>200);
+const cutoff=new Date(points.at(-1).date+'T12:00:00Z');cutoff.setUTCFullYear(cutoff.getUTCFullYear()-6);
+assert.ok(Date.parse(selected[0].date+'T12:00:00Z')>=cutoff.getTime());
+assert.ok(Date.parse(selected[0].date+'T12:00:00Z')-cutoff.getTime()<31*86400000);
+const three=vm.runInContext("unityChartData(item,'3Y')",ctx);
+assert.ok(three.length<selected.length);
+const chart=vm.runInContext("unityChartPanel(item)",ctx);
+assert.match(chart,/data-chart-range="6Y"/);
+assert.match(chart,/SMA 50 · 50 Börsentage/);
+assert.match(chart,/SMA 200 · 200 Börsentage/);
+assert.match(chart,/unity-legend-sma50/);
+assert.match(chart,/unity-legend-sma200/);
+console.log('iPhone Safari responsive viewport, 7 single-row ranges, true 6Y calendar data, explicit SMA legends passed.');

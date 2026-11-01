@@ -151,7 +151,7 @@ async function unityHomeSaveTrade(data){
     decidedAt:at.toISOString(),executedAt:at.toISOString(),note:String(data.note||'').trim(),
     decisionSnapshot:{action:decision.action,buy:decision.buy,sell:decision.sell,
       technicalIndex:Number.isFinite(decision.index)?decision.index:null,
-      quoteDate:quote?.date||null,quotePrice:Number.isFinite(Number(quote?.price))?Number(quote.price):null,
+      quoteDate:quote?.date||null,quotePrice:quote&&Number.isFinite(Number(quote.price))?Number(quote.price):null,
       reason:decision.reason,source:'UNITY EOD-Analyse · keine Handelsfreigabe'},
     source:'UNITY Lab · Testhandel',createdAt:new Date().toISOString()};
   // Check the entire simulated timeline; a backdated sale may invalidate a later sale.

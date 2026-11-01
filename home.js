@@ -39,7 +39,7 @@ function unityHomeDecision(s){
   const {x,m,quality,valid}=unityHomeQuote(s);
   if(!x||!m)return {action:'Nicht bewertbar',buy:'Nicht entscheidbar',sell:'Nicht entscheidbar',reason:'Für diese Aktie fehlen ausreichend belastbare Kursdaten.',technical:'Keine Daten',confidence:'Keine ausreichende Datenbasis'};
   if(!valid)return {action:'Daten prüfen',buy:'Nicht freigegeben',sell:'Nicht entscheidbar',reason:'Der Kursstand ist nicht aktuell genug oder die Datenprüfung ist fehlgeschlagen.',technical:m.trend,confidence:'Datenqualität unzureich'};
-  const a=unityCalc(s),gaps=a.veto||[];
+  const a=unityCalc(s),gaps=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;if(candidate?.status==='candidate')return {action:candidate.action,buy:candidate.buy,sell:'Individuell prüfen',reason:candidate.reason,technical:m.trend,confidence:'Kandidatenmodus · vollständige operative Freigabe steht noch aus',index:candidate.score,gaps:gaps.slice(0,5),rsi:m.rsi,condition:candidate.condition};
   const positive=m.trend==='Aufwärtstrend';
   const negative=m.trend==='Abwärtstrend';
   const risk=m.rsi>=70?'Der RSI ist hoch; Rückschlagrisiko beachten.':m.rsi<35?'Der RSI ist niedrig; eine Bodenbildung ist nicht bestätigt.':'';
@@ -56,7 +56,8 @@ function unityHomeSignal(s){
   const {x,m,valid,quality}=unityHomeQuote(s);
   if(!x||!m)return {kind:'warning',label:'Daten fehlen',icon:'!',detail:'Keine belastbare Kursreihe vorhanden.',rank:3};
   if(!valid)return {kind:'warning',label:'Daten prüfen',icon:'!',detail:quality?.detail||'Kursdaten nicht aktuell oder unplausibel.',rank:3};
-  const a=unityCalc(s),veto=a.veto||[];
+  const a=unityCalc(s),veto=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;
+  if(candidate?.status==='candidate')return {kind:'buy',label:candidate.buy,icon:'+',detail:candidate.reason+' '+candidate.condition,rank:0};
   if(veto.length)return {kind:'warning',label:'Analyse offen',icon:'!',detail:'Technik: '+m.trend+'. '+veto.length+' Prüfbedingungen für eine Handelsentscheidung noch offen.',rank:3};
   // Future fully sourced evaluation can explicitly emit these actions after all vetoes clear.
   const action=String(a.action||'').trim();
@@ -87,7 +88,7 @@ function unityHome(){
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p></section>';
   const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
-    '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufsignale</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
+    '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufkandidaten</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
     '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Handlungsbedarf</button></div>'+
     '<p class="home-sort-hint">☰ Aktie ziehen oder mit ↑ ↓ nach oben/unten verschieben. Reihenfolge bleibt gespeichert. Orange bedeutet: noch keine belastbare Kauf-/Verkaufsentscheidung. Bei Pilotkursen: „Aktuell“ = Veränderung zum letzten Schlusskurs.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';

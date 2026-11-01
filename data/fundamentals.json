@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-01T11:37:50+00:00",
+  "generatedAt": "2026-11-01T11:38:12+00:00",
   "source": "XBRL International filings.xbrl.org",
   "scope": "Four European pilot issuers; partial annual filings, no live valuations",
   "items": {
@@ -13,8 +13,11 @@
       "note": "Schweizer Emittent: ESEF-Berichterstattung nicht voraussetzbar; Konzern berichtet in USD.",
       "status": "no-esef-route",
       "metrics": {},
+      "priorMetrics": {},
+      "derived": {},
       "latestFiling": null,
-      "checkedAt": "2026-11-01T11:37:50+00:00",
+      "priorFiling": null,
+      "checkedAt": "2026-11-01T11:38:12+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -63,6 +66,90 @@
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr.json"
         }
       },
+      "priorMetrics": {
+        "revenue": {
+          "value": 38153000000.0,
+          "currency": "EUR",
+          "periodEnd": "2024-12-31",
+          "concept": "ifrs-full:RevenueFromContractsWithCustomers",
+          "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
+        },
+        "netIncome": {
+          "value": 4439000000.0,
+          "currency": "EUR",
+          "periodEnd": "2024-12-31",
+          "concept": "ifrs-full:ProfitLoss",
+          "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
+        },
+        "assets": {
+          "value": 65943000000.0,
+          "currency": "EUR",
+          "periodEnd": "2024-12-31",
+          "concept": "ifrs-full:Assets",
+          "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
+        },
+        "equity": {
+          "value": 31280000000.0,
+          "currency": "EUR",
+          "periodEnd": "2024-12-31",
+          "concept": "ifrs-full:Equity",
+          "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
+        },
+        "operatingCashFlow": {
+          "value": 5580000000.0,
+          "currency": "EUR",
+          "periodEnd": "2024-12-31",
+          "concept": "ifrs-full:CashFlowsFromUsedInOperatingActivities",
+          "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
+        }
+      },
+      "derived": {
+        "netMargin": {
+          "value": 10.84,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "netIncome",
+            "revenue"
+          ]
+        },
+        "equityRatio": {
+          "value": 39.13,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "equity",
+            "assets"
+          ]
+        },
+        "operatingCashFlowMargin": {
+          "value": 15.27,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "operatingCashFlow",
+            "revenue"
+          ]
+        },
+        "revenueGrowth": {
+          "value": 5.24,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "priorPeriodEnd": "2024-12-31",
+          "basis": [
+            "revenue"
+          ]
+        },
+        "netIncomeGrowth": {
+          "value": -1.98,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "priorPeriodEnd": "2024-12-31",
+          "basis": [
+            "netIncome"
+          ]
+        }
+      },
       "latestFiling": {
         "id": "969500A1YF1XUYYXS284-2025-12-31-ESEF-FR-0",
         "periodEnd": "2025-12-31",
@@ -73,7 +160,17 @@
         "validationErrors": 0,
         "validationWarnings": 0
       },
-      "checkedAt": "2026-11-01T11:37:50+00:00",
+      "priorFiling": {
+        "id": "969500A1YF1XUYYXS284-2024-12-31-ESEF-FR-0",
+        "periodEnd": "2024-12-31",
+        "published": "2025-03-26 09:48:35",
+        "reportUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr/reports/ixbrlviewer.html",
+        "jsonUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json",
+        "filingSystem": "ESEF",
+        "validationErrors": 0,
+        "validationWarnings": 0
+      },
+      "checkedAt": "2026-11-01T11:38:12+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -86,8 +183,11 @@
       "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
       "status": "no-filing-found",
       "metrics": {},
+      "priorMetrics": {},
+      "derived": {},
       "latestFiling": null,
-      "checkedAt": "2026-11-01T11:37:50+00:00",
+      "priorFiling": null,
+      "checkedAt": "2026-11-01T11:38:12+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -100,8 +200,11 @@
       "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
       "status": "no-filing-found",
       "metrics": {},
+      "priorMetrics": {},
+      "derived": {},
       "latestFiling": null,
-      "checkedAt": "2026-11-01T11:37:50+00:00",
+      "priorFiling": null,
+      "checkedAt": "2026-11-01T11:38:12+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     }

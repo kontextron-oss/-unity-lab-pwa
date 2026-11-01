@@ -56,3 +56,6 @@ jobs:
 
       - name: Test pilot quote timestamp, validation and EOD fallback
         run: node tests/intraday.cjs
+
+      - name: Test automatic ECB FX conversion and stale-rate veto
+        run: node tests/fx.cjs

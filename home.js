@@ -153,32 +153,48 @@ function unityHomeTradeActions(s){
     '<button type="button" class="home-sell-button" data-home-trade="SELL" '+(p.qty>0?'':'disabled')+'>− Verkaufen · Simulation</button></div>';
   if(!p.qty)h+='<p class="tiny muted">Für einen Testverkauf zunächst eine simulierte Position kaufen.</p>';
   if(mode!=='BUY'&&mode!=='SELL')return h;
-  const sell=mode==='SELL',eur=s.currency==='EUR',fx=eur?'1':'',price=market&&Number(market.price)>0?Number(market.price).toFixed(2):'';
+  const sell=mode==='SELL',fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+  const available=market&&Number(market.price)>0&&fx&&fx.rate>0;
   h+='<form class="home-trade-form" id="home-trade-form"><h3>'+(sell?'Testverkauf':'Testkauf')+' · '+esc(s.name)+'</h3>'+
-    '<p class="tiny muted">Nur eine Simulation. Es wird keine Order an eine Bank oder Börse gesendet. Der Kurs ist ein Vorschlag auf Basis des letzten verfügbaren Schlusskurses, kein ausführbarer Echtzeitkurs.</p>'+
+    '<p class="tiny muted">Nur Simulation, kein echter Börsenauftrag. Kurs und EUR-Umrechnung werden automatisch übernommen. Der Börsenkurs ist ein unverbindlicher Referenzwert, kein ausführbarer Kauf-/Verkaufspreis.</p>'+
     '<input type="hidden" name="instrumentId" value="'+esc(s.id)+'"><input type="hidden" name="type" value="'+mode+'">'+
     '<label>Stückzahl<input type="number" name="quantity" step="any" min="0.000001" '+(sell?'max="'+String(Number(p.qty.toFixed(6)))+'"':'')+' required placeholder="'+(sell?'Maximal '+number(p.qty,4):'z. B. 5')+'"></label>'+
-    '<label>Simulierter Kurs ('+esc(s.currency)+')<input type="number" name="price" step="any" min="0.000001" value="'+esc(price)+'" required></label>'+
-    '<label>EUR je 1 '+esc(s.currency)+'<input type="number" name="fx" step="any" min="0.000001" value="'+fx+'" '+(eur?'readonly':'required')+' placeholder="'+(eur?'1':'Aktuellen Wechselkurs eintragen')+'"></label>'+
-    '<label>Zeitpunkt<input type="datetime-local" name="executedAt" value="'+localNow()+'" required></label>'+
-    '<label class="full">Notiz zur Entscheidung<textarea name="note" maxlength="1000" placeholder="Warum kaufst oder verkaufst du testweise?"></textarea></label>'+
-    '<div class="full home-trade-confirm"><button class="primary" type="submit">'+(sell?'Testverkauf speichern':'Testkauf speichern')+'</button><button type="button" class="secondary" data-home-trade-cancel>Abbrechen</button></div></form>';
+    '<div class="home-trade-auto full"><b>Aktienkurs:</b> '+(market?number(market.price,2)+' '+esc(s.currency):'Kein verifizierbarer Referenzkurs')+
+    '<small>'+(market?esc(market.precision==='15m-bar'?'15-Minuten-Kursbalken · '+new Date(market.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}):'Börsenschlusskurs · '+market.date):'Kursdaten fehlen')+'</small></div>'+
+    '<div class="home-trade-auto full"><b>Automatische EUR-Umrechnung:</b> '+(fx?number(fx.rate,6)+' € je '+esc(s.currency):'Noch kein gültiger Wechselkurs verfügbar')+
+    '<small>'+(fx?esc(fx.source)+' · '+esc(fx.date):'Für diese Währung muss zunächst eine aktuelle EZB-Referenz verfügbar sein.')+'</small></div>'+
+    '<div class="home-trade-total full" id="home-trade-estimate" aria-live="polite">Voraussichtlicher Testbetrag: –</div>'+
+    '<label class="full">Notiz (optional)<textarea name="note" maxlength="1000" placeholder="Eigene Beobachtung"></textarea></label>'+
+    '<div class="full home-trade-confirm"><button class="primary" type="submit" '+(available?'':'disabled')+'>'+(sell?'Testverkauf speichern':'Testkauf speichern')+'</button><button type="button" class="secondary" data-home-trade-cancel>Abbrechen</button></div></form>';
   return h;
 }
+function unityHomeUpdateTradeEstimate(form){
+  const el=form.querySelector('#home-trade-estimate'),s=stocks().find(x=>x.id===form.elements.instrumentId?.value);
+  if(!el||!s)return;
+  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):unityMarketItem(s.isin);
+  const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+  const n=Number(form.elements.quantity?.value);
+  el.textContent=n>0&&market&&fx?'Voraussichtlicher Testbetrag: '+euro(n*market.price*fx.rate)+' (ohne Gebühren / Spread)':'Voraussichtlicher Testbetrag: –';
+}
+
 async function unityHomeSaveTrade(data){
   const s=stocks().find(x=>x.id===data.instrumentId);if(!s)throw Error('Aktie nicht gefunden.');
   const type=data.type;if(type!=='BUY'&&type!=='SELL')throw Error('Ungültige Buchungsart.');
-  const quantity=Number(data.quantity),price=Number(data.price),fx=Number(data.fx),at=new Date(data.executedAt);
-  if(!(quantity>0&&price>0&&fx>0))throw Error('Stückzahl, Kurs und EUR-Wechselkurs müssen positiv sein.');
-  if(!Number.isFinite(at.getTime())||at.getTime()>Date.now()+60000)throw Error('Ungültiger oder zukünftiger Ausführungszeitpunkt.');
-  if(s.currency==='EUR'&&fx!==1)throw Error('Für EUR muss der Wechselkurs 1 sein.');
+  const quantity=Number(data.quantity),at=new Date();
+  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):unityMarketItem(s.isin);
+  const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+  if(!(quantity>0&&Number.isFinite(quantity)))throw Error('Bitte eine gültige Stückzahl eingeben.');
+  if(!market||!(Number(market.price)>0))throw Error('Kein belastbarer Referenzkurs verfügbar. Testhandel nicht möglich.');
+  if(!rate||!(rate.rate>0))throw Error('Automatischer EUR-Wechselkurs fehlt oder ist veraltet. Testhandel nicht möglich.');
+  const price=Number(market.price),fx=rate.rate;
   if(type==='SELL'){
     const available=depotLedger(s.id,at.toISOString().slice(0,10)).qty;
     if(quantity>available+1e-8)throw Error('Nicht genügend simulierte Aktien am gewählten Datum. Verfügbar: '+number(available,4));
   }
-  const decision=unityHomeDecision(s),quote=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):unityMarketItem(s.isin);
+  const decision=unityHomeDecision(s),quote=market;
   const t={id:id(),instrumentId:s.id,type,quantity,price,fx,amount:quantity*price,
     decidedAt:at.toISOString(),executedAt:at.toISOString(),note:String(data.note||'').trim(),
+    fxSource:rate.source,fxReferenceDate:rate.date,priceSource:market.source||null,
     decisionSnapshot:{action:decision.action,buy:decision.buy,sell:decision.sell,
       technicalIndex:Number.isFinite(decision.index)?decision.index:null,
       quoteDate:quote?.date||null,quoteObservedAt:quote?.quotedAt||null,quotePrecision:quote?.precision||'day',quotePrice:quote&&Number.isFinite(Number(quote.price))?Number(quote.price):null,
@@ -190,7 +206,7 @@ async function unityHomeSaveTrade(data){
     running+=item.type==='BUY'?Number(item.quantity):-Number(item.quantity);
     if(running < -1e-8)throw Error('Der Testhandel würde zu einem negativen Bestand in der Buchungshistorie führen.');
   }
-  if(!confirm((type==='BUY'?'Testkauf':'Testverkauf')+' von '+number(quantity,4)+' Stück '+s.name+' zu '+number(price,2)+' '+s.currency+' speichern? Dies ist KEIN echter Börsenauftrag.'))return false;
+  if(!confirm((type==='BUY'?'Testkauf':'Testverkauf')+' von '+number(quantity,4)+' Stück '+s.name+' zu '+number(price,2)+' '+s.currency+' (ca. '+euro(quantity*price*fx)+') speichern? EZB-Referenzkurs '+rate.date+'. Dies ist KEIN echter Börsenauftrag.'))return false;
   await put('transactions',t);await audit(type==='BUY'?'BUY_ADD':'SELL_ADD',t.id,'Simuliert · '+s.ticker);
   await refresh();return true;
 }
@@ -221,14 +237,14 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-add')){activeTab='stocks';render();document.getElementById('catalog-search')?.scrollIntoView({block:'start'});document.getElementById('catalog-search')?.focus();return}
   if(b.hasAttribute('data-home-all')){unityScope='all';activeTab='stocks';render();return}
   if(b.hasAttribute('data-home-trades')){activeTab='trades';render();return}
-  if(b.hasAttribute('data-home-reload')){unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();return}
+  if(b.hasAttribute('data-home-reload')){unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();return}
 });
 // Recheck the published EOD snapshot when the user returns to the app.
 // A refreshed snapshot is not a live quote stream.
 let unityHomeLastCheck=Date.now();
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&Date.now()-unityHomeLastCheck>15*60000){
-    unityHomeLastCheck=Date.now();unityLoadMarket();
+    unityHomeLastCheck=Date.now();unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();
   }
 });
 
@@ -267,3 +283,5 @@ document.addEventListener('submit',async e=>{
     if(saved){unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({block:'start'})}
   }catch(err){alert(err.message||String(err))}
 });
+
+document.addEventListener('input',e=>{if(e.target.closest?.('#home-trade-form')&&e.target.name==='quantity')unityHomeUpdateTradeEstimate(e.target.form)});

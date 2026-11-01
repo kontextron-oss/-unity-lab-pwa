@@ -88,11 +88,11 @@ async function unityPersistDynamicHistory(s,item){
   await put('histories',record);
   if(typeof cache!=='undefined'&&Array.isArray(cache.histories)){const i=cache.histories.findIndex(x=>x.id===record.id);if(i>=0)cache.histories[i]=record;else cache.histories.push(record)}
 }
-async function unityLoadDynamicStock(s){
+async function unityLoadDynamicStock(s,force=false){
   if(!s?.providerSymbol||!unityYahooSymbolValid(s.providerSymbol))return;
   const symbol=s.providerSymbol.toUpperCase();
   const cached=unityDynamicItems.get(symbol);
-  if(cached&&Date.now()-Date.parse(cached.lastSuccessfulFetchAt)<30*60000)return;
+  if(!force&&cached&&Date.now()-Date.parse(cached.lastSuccessfulFetchAt)<30*60000)return;
   if(unityDynamicPending.has(symbol))return unityDynamicPending.get(symbol);
   const task=(async()=>{
     try{
@@ -105,17 +105,18 @@ async function unityLoadDynamicStock(s){
   unityDynamicPending.set(symbol,task);
   return task;
 }
-async function unityLoadDynamicQueue(list,onProgress=null){
+async function unityLoadDynamicQueue(list,onProgress=null,force=false){
   const unique=[],seen=new Set();let ok=0,failed=0,done=0;
   for(const s of list||[]){const symbol=String(s?.providerSymbol||'').toUpperCase();if(s?.id&&unityYahooSymbolValid(symbol)&&!seen.has(symbol)){seen.add(symbol);unique.push(s)}}
   unityDynamicQueueQuiet=true;
   const report=stock=>{done++;if(unityDynamicErrors.has(String(stock.providerSymbol).toUpperCase()))failed++;else ok++;if(typeof onProgress==='function')onProgress({total:unique.length,done,ok,failed,stock});if(typeof render==='function'&&typeof db!=='undefined'&&db)render()};
   let cursor=0;
-  const worker=async()=>{while(cursor<unique.length){const stock=unique[cursor++];await unityLoadDynamicStock(stock);report(stock)}};
+  const worker=async()=>{while(cursor<unique.length){const stock=unique[cursor++];await unityLoadDynamicStock(stock,force);report(stock)}};
   try{await Promise.all(Array.from({length:Math.min(3,unique.length)},worker));}
   finally{unityDynamicQueueQuiet=false;if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
   return {total:unique.length,ok,failed};
 }
+function unityRefreshDynamicHistories(list,onProgress=null){return unityLoadDynamicQueue(list,onProgress,true)}
 
 /* Headline-only news discovery. Headlines are NOT investment signals and are
  * never fed into the automated buy/sell gate without source verification. */

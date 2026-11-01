@@ -2,6 +2,7 @@
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
 let unityHomeRange='1M',unityHomeSelected='';
+const unityHomeStocks=()=>stocks().filter(s=>!s.watchHidden);
 const unityHomePeriods=[['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr'],['3Y','3J'],['6Y','6J']];
 function unityHomeQuote(s){
   const x=unityMarketItem(s.isin),m=x?unityMetrics(x):null;
@@ -28,7 +29,7 @@ function unityHomeDecision(s){
     gaps:gaps.slice(0,5),rsi:m.rsi};
 }
 function unityHome(){
-  const selected=stocks(),pos=typeof depotPositions==='function'?depotPositions():[];
+  const selected=unityHomeStocks(),pos=typeof depotPositions==='function'?depotPositions():[];
   const allValid=pos.length>0&&pos.every(p=>Number.isFinite(p.value));
   const value=allValid?pos.reduce((n,p)=>n+p.value,0):NaN;
   const nUp=selected.filter(s=>unityHomeQuote(s).valid&&unityHomeQuote(s).m.trend==='Aufwärtstrend').length;
@@ -58,7 +59,7 @@ function unityHome(){
   return h;
 }
 function unityHomeDetail(sid){
-  const s=stocks().find(x=>x.id===sid);
+  const s=unityHomeStocks().find(x=>x.id===sid);
   if(!s)return '';
   const {x,m,valid}=unityHomeQuote(s),d=unityHomeDecision(s);
   let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>Aktienansicht</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
@@ -73,8 +74,17 @@ function unityHomeDetail(sid){
     '<p class="tiny muted">Die Analyse berechnet vorhandene Kennzahlen automatisch. Fehlende Bilanz-, Bewertungs- und Ereignisdaten werden als offene Prüfpunkte angezeigt, nicht geschätzt.</p></section>';
   return h;
 }
+
+function unityHomeManagePanel(){
+  let h='<section class="panel" id="home-manage"><h2>Meine Aktienauswahl verwalten</h2><p class="muted">Bestimme, welche Aktien auf der Startseite erscheinen. Ausblenden entfernt keine Buchungen, Kursdaten oder Analysen.</p>';
+  if(!stocks().length)h+='<p>Noch keine Aktien gespeichert. Wähle unten eine Aktie aus dem Katalog.</p>';
+  for(const s of stocks())h+='<div class="home-manage-row"><div><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.isin||s.exchange)+'</small></div><button type="button" class="'+(s.watchHidden?'secondary':'primary')+'" data-home-toggle="'+esc(s.id)+'">'+(s.watchHidden?'Auf Startseite zeigen':'Ausblenden')+'</button></div>';
+  return h+'</section>';
+}
+
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.homeToggle){const stock=stocks().find(s=>s.id===b.dataset.homeToggle);if(stock){put('instruments',{...stock,watchHidden:!stock.watchHidden}).then(()=>audit('WATCHLIST_TOGGLE',stock.id,!stock.watchHidden?'hidden':'shown')).then(refresh).catch(err=>alert(err.message||String(err)))}return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
   if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.hasAttribute('data-home-close')){unityHomeSelected='';render();return}

@@ -112,14 +112,16 @@ function unityHome(){
   return h;
 }
 function unityHomeDetail(sid){
-  const s=unityHomeStocks().find(x=>x.id===sid);
+  const s=stocks().find(x=>x.id===sid);
   if(!s)return '';
   const {x,m,valid}=unityHomeQuote(s),d=unityHomeDecision(s),signal=unityHomeSignal(s);
   let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>Aktienansicht</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
   const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
   if(x)h+=unityChartPanel(x);
-  else h+='<p class="home-missing">'+(s.providerSymbol?'Internationale Kursreihe wird geladen, sofern die externe Quelle erreichbar ist.':'Kein überprüfbarer Tageskursverlauf vorhanden. Es wird keine Kurve erfunden.')+'</p>';
+  else h+='<p class="home-missing">'+(s.providerSymbol?(typeof unityDynamicErrors!=='undefined'&&unityDynamicErrors.get(s.providerSymbol.toUpperCase())?'Kursquelle derzeit nicht erreichbar: '+esc(unityDynamicErrors.get(s.providerSymbol.toUpperCase())):'Internationale Kursreihe wird geladen, sofern die externe Quelle erreichbar ist.'):'Kein überprüfbarer Tageskursverlauf vorhanden. Es wird keine Kurve erfunden.')+'</p>';
   if(dq)h+='<p class="home-price-time">'+esc(dq.label)+': <b>'+number(dq.price,2)+' '+esc(s.currency)+'</b> · '+(dq.quotedAt?esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}))+' MEZ/MESZ':esc(dq.date))+' · '+esc(dq.exchange)+'</p>';
+  if(s.providerSymbol)h+='<p class="tiny muted">Weltweiter Kursabruf: inoffizielle Yahoo-Daten über cors.dev, nicht börslich geprüft. Keine Handelsfreigabe; Suchanfrage und Symbol werden an externe Dienste übertragen.</p>';
+  if(s.note)h+='<p><b>Unternehmensbereich:</b> '+esc(s.note)+'</p>';
   h+=unityHomeSecurityDetails(s,x);
   h+=unityHomeTradeActions(s);
   h+='<div class="home-decision home-decision-'+signal.kind+'"><div class="home-decision-head"><span>UNITY-Entscheidung: <b class="home-signal home-signal-'+signal.kind+'">'+signal.icon+' '+esc(signal.label)+'</b></span><strong>'+esc(d.action)+'</strong></div><p class="home-signal-reason">'+esc(signal.detail)+'</p>'+
@@ -235,10 +237,11 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
   if(b.dataset.homeSort){unityHomeSort=b.dataset.homeSort==='priority'?'priority':'manual';render();return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
+  if(b.dataset.analyze){unityHomeSelected=b.dataset.analyze;unityHomeTradeMode='';activeTab='overview';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);return}
   if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);return}
   if(b.hasAttribute('data-home-close')){unityHomeSelected='';unityHomeTradeMode='';render();return}
   if(b.dataset.homeAnalyze){selectedUnityStock=b.dataset.homeAnalyze;activeTab='analysis';render();document.getElementById('app')?.scrollIntoView({block:'start'});return}
-  if(b.hasAttribute('data-home-add')){activeTab='stocks';render();document.getElementById('catalog-search')?.scrollIntoView({block:'start'});document.getElementById('catalog-search')?.focus();return}
+  if(b.hasAttribute('data-home-add')){activeTab='stocks';render();document.getElementById('online-search')?.scrollIntoView({block:'start'});document.getElementById('online-search')?.focus();return}
   if(b.hasAttribute('data-home-all')){unityScope='all';activeTab='stocks';render();return}
   if(b.hasAttribute('data-home-trades')){activeTab='trades';render();return}
   if(b.hasAttribute('data-home-reload')){unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();return}

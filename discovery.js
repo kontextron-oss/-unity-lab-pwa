@@ -7,7 +7,7 @@ const unityDynamicItems=new Map(),unityDynamicPending=new Map(),unityDynamicErro
 const unityYahooSymbolValid=s=>typeof s==='string'&&/^[A-Za-z0-9.^=\-]{1,28}$/.test(s);
 async function unityDiscoveryFetch(url,signal){
   const controller=typeof AbortController==='function'?new AbortController():null;
-  const timer=setTimeout(()=>controller?.abort(),UNITY_FETCH_TIMEOUT_MS);
+  const timer=typeof setTimeout==='function'?setTimeout(()=>controller?.abort(),UNITY_FETCH_TIMEOUT_MS):null;
   try{
     const response=await fetch(unityDiscoveryProxy+url,{credentials:'omit',signal:controller?.signal||signal,cache:'no-store'});
     if(!response.ok)throw Error('Externe Börsenquelle nicht erreichbar (HTTP '+response.status+')');
@@ -15,7 +15,7 @@ async function unityDiscoveryFetch(url,signal){
   }catch(e){
     if(e?.name==='AbortError')throw Error('Externe Kursquelle antwortet nicht rechtzeitig');
     throw e;
-  }finally{clearTimeout(timer)}
+  }finally{if(timer!==null&&typeof clearTimeout==='function')clearTimeout(timer)}
 }
 async function unitySearchWorldwide(query,signal){
   const term=String(query||'').trim();

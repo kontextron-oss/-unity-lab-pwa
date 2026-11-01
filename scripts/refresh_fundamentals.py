@@ -67,7 +67,7 @@ def find_filings(lei):
     result=[]
     for item in data.get("data", []):
         attrs=item.get("attributes") or {}
-        fid=str(item.get("id") or "")
+        fid=str(attrs.get("fxo_id") or "")
         # IDs contain the LEI and must never resolve to another group company.
         if not fid.startswith(lei+"-"): continue
         period=attrs.get("period_end") or attrs.get("period-end") or ""
@@ -76,8 +76,8 @@ def find_filings(lei):
         viewer=safe_link(attrs.get("viewer_url") or attrs.get("viewer-url"))
         result.append({"id":fid,"periodEnd":period[:10],"published":attrs.get("published"),
                        "reportUrl":viewer,"jsonUrl":json_url,
-                       "filingSystem":attrs.get("filing_system") or attrs.get("filing-system"),
-                       "validationErrors":attrs.get("errors"),"validationWarnings":attrs.get("warnings")})
+                       "filingSystem":"ESEF" if "-ESEF-" in fid else "Other",
+                       "validationErrors":attrs.get("error_count"),"validationWarnings":attrs.get("warning_count")})
     return sorted(result,key=lambda x:x["periodEnd"],reverse=True)
 
 def period_end(value):

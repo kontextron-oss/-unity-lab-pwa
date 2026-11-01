@@ -86,7 +86,7 @@ function unityHome(){
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p></section>';
-  if(capital)h+='<div class="home-capital-summary"><button type="button" class="secondary" data-tab-target="trades">Einzahlungen und Kapital verwalten</button></div>';
+  if(capital)h+='<div class="home-capital-summary"><button type="button" class="secondary" data-home-capital>＋ Geld einzahlen</button></div>';
   const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
     '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufkandidaten</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
@@ -252,6 +252,7 @@ document.addEventListener('click',e=>{
   if(b.dataset.homeAnalyze){selectedUnityStock=b.dataset.homeAnalyze;activeTab='analysis';render();document.getElementById('app')?.scrollIntoView({block:'start'});return}
   if(b.hasAttribute('data-home-add')){activeTab='stocks';render();document.getElementById('online-search')?.scrollIntoView({block:'start'});document.getElementById('online-search')?.focus();return}
   if(b.hasAttribute('data-home-all')){unityScope='all';activeTab='stocks';render();return}
+  if(b.hasAttribute('data-home-capital')){activeTab='trades';render();document.getElementById('depot-capital')?.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.hasAttribute('data-home-trades')){activeTab='trades';render();return}
   if(b.hasAttribute('data-home-reload')){unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();return}
 });

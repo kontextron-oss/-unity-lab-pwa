@@ -432,6 +432,8 @@ setTimeout(async()=>{
   try{
     await unityEnrichCatalogStocks();
     if(typeof unityHydrateDynamicHistories==='function')unityHydrateDynamicHistories(stocks());
+    const stock=stocks().find(x=>x.providerSymbol);
+    if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);
     if(typeof unityLoadDynamicQueue==='function')unityLoadDynamicQueue(stocks(),p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).catch(()=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen später erneut prüfen'});
   }catch(e){const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen später erneut prüfen'}
 },80);if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js?v=0.13.11').catch(()=>{});}catch(e){document.getElementById('db-status').textContent='Speicherfehler';document.getElementById('app').innerHTML='<div class="alert">Die lokale Datenbank konnte nicht geöffnet werden: '+esc(e.message)+'</div>'}})();});

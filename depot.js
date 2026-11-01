@@ -1,7 +1,7 @@
 'use strict';
 /* Local-only hypothetical portfolio; transaction history is append-only with voids.
    Real broker holdings are NOT connected or inferred from screenshots. */
-let depotSelectedId='';
+let depotSelectedId='',depotRange='1Y';
 const depotActiveTrades=id=>[...cache.transactions].filter(t=>t.instrumentId===id&&!t.voidedAt&&(t.type==='BUY'||t.type==='SELL')).sort((a,b)=>a.executedAt.localeCompare(b.executedAt)||a.createdAt.localeCompare(b.createdAt));
 function depotLedger(id,asOf=null){
   let qty=0,cost=0,realized=0,buys=0,sells=0;
@@ -48,15 +48,18 @@ function depotOverview(){
   const realized=stocks().reduce((n,s)=>n+depotLedger(s.id).realized,0);
   let h='<section class="panel depot-panel" id="depot-overview"><div class="depot-title"><h2>Mein Depot · Überblick</h2><span class="depot-sim">Simulation · lokal gespeichert</span></div>'+
     '<div class="depot-totals"><div><small>Aktueller Positionswert</small><strong>'+depotMoney(value)+'</strong></div><div><small>Einstand offener Positionen</small><strong>'+depotMoney(cost)+'</strong></div><div><small>Offener Gewinn / Verlust</small><strong>'+depotMoney(value-cost)+'</strong></div><div><small>Realisierter Gewinn / Verlust</small><strong>'+depotMoney(realized)+'</strong></div></div>';
+  h+='<div class="depot-range" aria-label="Zeitraum der Depot-Kursverläufe">'+[['1W','Woche'],['1M','Monat'],['1Y','Jahr'],['3Y','3 Jahre'],['6Y','6 Jahre']].map(([r,label])=>'<button type="button" data-depot-range="'+r+'" class="'+(depotRange===r?'active':'')+'">'+label+'</button>').join('')+'</div>';
   if(!pos.length)h+='<p class="muted">Noch keine simulierten Depotpositionen. Deine tatsächlichen Depotbestände sind nicht verbunden. Du kannst Aktien im Simulationsdepot erfassen; vorhandene Daten bleiben unverändert.</p>';
   else{
     if(!complete)h+='<p class="depot-warning">Der Gesamtwert ist unvollständig: Für mindestens eine Position fehlt ein verwendbarer Kurs oder aktueller EUR-Wechselkurs. Es wird kein Gesamtwert geschätzt.</p>';
     h+='<div class="depot-rows">';
     for(const p of pos){
       const m=p.market?.item?unityMetrics(p.market.item):null;
+      const segment=p.market?.item?unityChartData(p.market.item,depotRange):[];
+      const segmentPct=segment.length>1?(segment.at(-1).close/segment[0].close-1)*100:NaN;
       h+='<button type="button" class="depot-row" data-depot-open="'+esc(p.s.id)+'"><span class="depot-row-top"><strong>'+esc(p.s.name)+'</strong><span class="'+(p.pnl>=0?'positive':'negative')+'">'+(Number.isFinite(p.pnl)&&p.cost>0?unityPct(p.pnl/p.cost*100):'Bewertung offen')+'</span></span>'+
-        '<span class="depot-row-chart">'+(p.market?.item?unityChartSvg(p.market.item,'3M',true,false):'<span class="chart-empty">Kursreihe nicht verfügbar</span>')+'</span>'+
-        '<span class="depot-row-bottom"><span>'+number(p.qty,4)+' Stück · Einstand '+depotMoney(p.cost)+'</span><span>'+ (p.market?number(p.market.price,2)+' '+esc(p.s.currency):'Kurs fehlt')+' ›</span></span></button>';
+        '<span class="depot-row-chart">'+(p.market?.item?unityChartSvg(p.market.item,depotRange,true,false):'<span class="chart-empty">Kursreihe nicht verfügbar</span>')+'</span>'+
+        '<span class="depot-row-bottom"><span>'+number(p.qty,4)+' Stück · Einstand '+depotMoney(p.cost)+'</span><span>'+ (p.market?number(p.market.price,2)+' '+esc(p.s.currency):'Kurs fehlt')+' ›</span></span><span class="tiny muted">Kursentwicklung im Zeitraum: '+unityPct(segmentPct)+'</span></button>';
     }
     h+='</div>';
   }
@@ -104,6 +107,7 @@ function depotSellForm(){
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.depotRange){depotRange=b.dataset.depotRange;render();return}
   if(b.dataset.depotOpen){depotSelectedId=b.dataset.depotOpen;render();document.getElementById('depot-detail')?.scrollIntoView({behavior:'smooth',block:'start'})}
   if(b.id==='depot-close'){depotSelectedId='';render()}
   if(b.dataset.tabTarget){activeTab=b.dataset.tabTarget;render();document.getElementById('app')?.scrollIntoView({block:'start'})}

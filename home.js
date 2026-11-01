@@ -32,6 +32,24 @@ function unityHomeQuote(s){
   const technical=!!m&&!m.stale&&Array.isArray(x?.points)&&x.points.length>=200;
   return {x,m,quality,technical,valid:!!m&&!m.stale&&!!quality?.canCompare};
 }
+function unityHomeDataState(s){
+  const symbol=String(s?.providerSymbol||'').toUpperCase();
+  const dynamic=typeof unityDynamicItems!=='undefined'&&unityDynamicItems.has(symbol);
+  const loading=!!(symbol&&typeof unityDynamicPending!=='undefined'&&unityDynamicPending.has(symbol));
+  const error=symbol&&typeof unityDynamicErrors!=='undefined'?unityDynamicErrors.get(symbol):'';
+  const technical=unityHomeQuote(s).technical;
+  if(loading)return {kind:'loading',label:'wird ausgelesen'};
+  if(error)return {kind:'failed',label:'Quelle nicht erreichbar',detail:error};
+  if(technical)return {kind:'ready',label:dynamic?'technisch ausgewertet':'Kursreihe vorhanden'};
+  if(!symbol)return {kind:'missing',label:'keine Kursquelle zugeordnet'};
+  return {kind:'waiting',label:'noch nicht geprüft'};
+}
+function unityHomeAnalysisStatus(selected){
+  const states=selected.map(unityHomeDataState),count=k=>states.filter(x=>x.kind===k).length;
+  const p=typeof unityDynamicProgress!=='undefined'?unityDynamicProgress:{total:0,done:0,ok:0,failed:0,active:''};
+  const live=p.total?'Auslesen '+p.done+'/'+p.total+(p.active?' · '+p.active:''):'Bereit – „Kursdaten erneut prüfen“ starten';
+  return '<section class="home-analysis-status" aria-live="polite"><strong>Analyse-Datenstatus</strong><span class="home-analysis-live">'+esc(live)+'</span><small>'+count('ready')+' technisch ausgewertet · '+count('loading')+' wird geladen · '+count('waiting')+' noch nicht geprüft · '+count('failed')+' Quelle nicht erreichbar · '+count('missing')+' ohne Kursquelle</small></section>';
+}
 function unityHomeMovement(x,range){
   const a=unityChartData(x,range);
   return a.length>=2?(Number(a.at(-1).close)/Number(a[0].close)-1)*100:NaN;
@@ -58,10 +76,12 @@ function unityHomeDecision(s){
    turn a row green/red; delayed EOD technical trends never authorize a trade. */
 function unityHomeSignal(s){
   const {x,m,valid,technical,quality}=unityHomeQuote(s);
-  const loading=!!(s?.providerSymbol&&typeof unityDynamicPending!=='undefined'&&unityDynamicPending.has(String(s.providerSymbol).toUpperCase()));
+  const state=unityHomeDataState(s);
   if(!x||!m){
-    if(loading)return {kind:'technical',label:'Kursreihe wird geladen',icon:'…',detail:'Sechs Jahre Tageskurse werden abgerufen und danach technisch ausgewertet.',rank:2};
-    return {kind:'warning',label:'Daten fehlen',icon:'!',detail:'Keine belastbare Kursreihe vorhanden.',rank:3};
+    if(state.kind==='loading')return {kind:'technical',label:'Kursreihe wird geladen',icon:'…',detail:'Sechs Jahre Tageskurse werden abgerufen und danach technisch ausgewertet.',rank:2};
+    if(state.kind==='failed')return {kind:'warning',label:'Kursquelle nicht erreichbar',icon:'!',detail:state.detail||'Die externe Quelle hat keine Daten geliefert.',rank:3};
+    if(state.kind==='missing')return {kind:'warning',label:'Kursquelle fehlt',icon:'!',detail:'Für diese Aktie ist noch keine kostenlose Kursquelle zugeordnet.',rank:3};
+    return {kind:'warning',label:'Daten noch nicht geprüft',icon:'!',detail:'Mit „Kursdaten erneut prüfen“ wird die Kursreihe geladen.',rank:3};
   }
   const a=unityCalc(s),veto=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;
   if(!valid){
@@ -96,7 +116,7 @@ function unityHome(){
   else h+='<div class="home-big-number">0,00 €</div><p class="home-value-label">Fiktives Depot · bitte Startkapital oder Einzahlung anlegen</p>';
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
-    '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p>'+
+    '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p>'+unityHomeAnalysisStatus(selected)+
     (capital?'<form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening||capital.funded||0).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form>':'')+'</section>';
   const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+

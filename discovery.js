@@ -112,7 +112,7 @@ async function unityLoadDynamicQueue(list,onProgress=null,force=false){
   const report=stock=>{done++;if(unityDynamicErrors.has(String(stock.providerSymbol).toUpperCase()))failed++;else ok++;if(typeof onProgress==='function')onProgress({total:unique.length,done,ok,failed,stock});if(typeof render==='function'&&typeof db!=='undefined'&&db)render()};
   let cursor=0;
   const worker=async()=>{while(cursor<unique.length){const stock=unique[cursor++];await unityLoadDynamicStock(stock,force);report(stock)}};
-  try{await Promise.all(Array.from({length:Math.min(3,unique.length)},worker));}
+  try{await Promise.all(Array.from({length:Math.min(1,unique.length)},worker));}
   finally{unityDynamicQueueQuiet=false;if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
   return {total:unique.length,ok,failed};
 }

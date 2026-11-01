@@ -42,7 +42,7 @@ class FundamentalsTests(unittest.TestCase):
     def test_official_issuer_highlights_parse_without_cross_mixing(self):
         abb='<html><body>ABB 2025 KEY FIGURES REVENUES in mn $33,220 FREE CASHFLOW in mn $4,566</body></html>'
         x=mod.parse_official_highlights(abb,mod.OFFICIAL_SOURCES["CH0012221716"])
-        self.assertEqual(x["revenue"]["value"],33_200_000_000)
+        self.assertEqual(x["revenue"]["value"],33_220_000_000)
         self.assertEqual(x["freeCashFlow"]["value"],4_566_000_000)
         self.assertEqual(x["freeCashFlow"]["currency"],"USD")
         inf='<html><body>Infineon FY 2025: Revenue €14.662 billion; positive Adjusted Free Cash Flow of €1.803 billion</body></html>'

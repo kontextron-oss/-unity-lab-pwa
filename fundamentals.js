@@ -45,7 +45,7 @@ function unityFundPilotPanel(s){
    if(report.reportUrl)h+='<p><a href="'+esc(report.reportUrl)+'" target="_blank" rel="noopener noreferrer">Originalbericht im XBRL-Archiv ansehen</a></p>';
   }
   const official=item.officialHighlights;
-  if(official&&official.sourceType==='issuer-press-release'){
+  if(official&&['issuer-press-release','issuer-primary-disclosure'].includes(official.sourceType)){
     h+='<h4>Offizielle Unternehmensmeldung · Geschäftsjahr '+esc(official.fiscalYear)+'</h4>';
     if(official.stale)h+='<p class="tiny muted">Achtung: Die letzte automatische Quellenprüfung ist fehlgeschlagen. Dies ist ein älterer geprüfter Datenstand.</p>';
     const officialFacts=Object.values(official.facts||{});

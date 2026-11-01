@@ -13,7 +13,7 @@ const transactions=[
 ];
 const sandbox={
  cache:{transactions,instruments:[stock]},stocks:()=>[stock],quote:()=>({price:115,fx:1,quotedAt:new Date().toISOString()}),
- unityMarketItem:()=>null,unityChartSvg:()=>'<svg></svg>',unityChartPanel:()=>'<svg></svg>',unityMetrics:()=>null,
+ unityMarketItem:()=>({price:115,date:'2026-10-30',exchange:'Paris',points:[{date:'2026-10-30',close:115}]}),unityChartSvg:()=>'<svg></svg>',unityChartPanel:()=>'<svg></svg>',unityMetrics:()=>null,
  unityDataQuality:()=>({canCompare:true}),document:{addEventListener(){}},render(){},Date,Math,Number,Array,JSON,
  number:(n,d=2)=>Number(n).toFixed(d),euro:n=>Number(n).toFixed(2)+' €',esc:s=>String(s??''),
  localNow:()=>new Date().toISOString(),audit:async()=>{},refresh:async()=>{},put:async()=>{},

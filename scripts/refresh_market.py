@@ -11,384 +11,69 @@ import urllib.parse
 import urllib.request
 
 STOCKS = [
-    [
-        "CH0012221716",
-        "ABBN.SW",
-        "CHF",
-        "ABB"
-    ],
-    [
-        "FR0000121972",
-        "SU.PA",
-        "EUR",
-        "Schneider Electric"
-    ],
-    [
-        "IE00B8KQN827",
-        "ETN",
-        "USD",
-        "Eaton"
-    ],
-    [
-        "DE000ENER6Y0",
-        "ENR.DE",
-        "EUR",
-        "Siemens Energy"
-    ],
-    [
-        "US92537N1081",
-        "VRT",
-        "USD",
-        "Vertiv"
-    ],
-    [
-        "DE000A0D6554",
-        "NDX1.DE",
-        "EUR",
-        "Nordex"
-    ],
-    [
-        "IT0004176001",
-        "PRY.MI",
-        "EUR",
-        "Prysmian"
-    ],
-    [
-        "FR0010307819",
-        "LR.PA",
-        "EUR",
-        "Legrand"
-    ],
-    [
-        "DE0007236101",
-        "SIE.DE",
-        "EUR",
-        "Siemens"
-    ],
-    [
-        "CH1101098163",
-        "BEAN.SW",
-        "CHF",
-        "Belimo"
-    ],
-    [
-        "US36828A1016",
-        "GEV",
-        "USD",
-        "GE Vernova"
-    ],
-    [
-        "IE00BDVJJQ56",
-        "NVT",
-        "USD",
-        "nVent Electric"
-    ],
-    [
-        "US4435106079",
-        "HUBB",
-        "USD",
-        "Hubbell"
-    ],
-    [
-        "US74762E1029",
-        "PWR",
-        "USD",
-        "Quanta Services"
-    ],
-    [
-        "FR0000044448",
-        "NEX.PA",
-        "EUR",
-        "Nexans"
-    ],
-    [
-        "DE0006231004",
-        "IFX.DE",
-        "EUR",
-        "Infineon"
-    ],
-    [
-        "DE000A2NB601",
-        "JEN.DE",
-        "EUR",
-        "Jenoptik AG"
-    ],
-    [
-        "@AMD",
-        "AMD",
-        "USD",
-        "AMD"
-    ],
-    [
-        "@DWS.DE",
-        "DWS.DE",
-        "EUR",
-        "DWS Group"
-    ],
-    [
-        "@TKA.DE",
-        "TKA.DE",
-        "EUR",
-        "Thyssenkrupp"
-    ],
-    [
-        "@CBK.DE",
-        "CBK.DE",
-        "EUR",
-        "Commerzbank"
-    ],
-    [
-        "@RBI.VI",
-        "RBI.VI",
-        "EUR",
-        "Raiffeisen Bank International"
-    ],
-    [
-        "@VOD.L",
-        "VOD.L",
-        "GBP",
-        "Vodafone Group"
-    ],
-    [
-        "@ARKK",
-        "ARKK",
-        "USD",
-        "ARK Innovation ETF"
-    ],
-    [
-        "@AAPL",
-        "AAPL",
-        "USD",
-        "Apple"
-    ],
-    [
-        "@MSFT",
-        "MSFT",
-        "USD",
-        "Microsoft"
-    ],
-    [
-        "@SONY",
-        "SONY",
-        "USD",
-        "Sony Group"
-    ],
-    [
-        "@GOOG",
-        "GOOG",
-        "USD",
-        "Alphabet Inc. Class C"
-    ],
-    [
-        "@TSLA",
-        "TSLA",
-        "USD",
-        "Tesla"
-    ],
-    [
-        "@DB1.DE",
-        "DB1.DE",
-        "EUR",
-        "Deutsche Börse"
-    ],
-    [
-        "@SPY5.DE",
-        "SPY5.DE",
-        "EUR",
-        "SPDR S&P 500 UCITS ETF"
-    ],
-    [
-        "@ANX.PA",
-        "ANX.PA",
-        "EUR",
-        "Amundi Nasdaq-100 UCITS ETF"
-    ],
-    [
-        "@SAP.DE",
-        "SAP.DE",
-        "EUR",
-        "SAP"
-    ],
-    [
-        "@UBSG.SW",
-        "UBSG.SW",
-        "CHF",
-        "UBS Group"
-    ],
-    [
-        "@FME.DE",
-        "FME.DE",
-        "EUR",
-        "Fresenius Medical Care"
-    ],
-    [
-        "@NVDA",
-        "NVDA",
-        "USD",
-        "NVIDIA"
-    ],
-    [
-        "@TTWO",
-        "TTWO",
-        "USD",
-        "Take-Two Interactive"
-    ],
-    [
-        "@AMZN",
-        "AMZN",
-        "USD",
-        "Amazon"
-    ],
-    [
-        "@IBM",
-        "IBM",
-        "USD",
-        "IBM"
-    ],
-    [
-        "@VWRL.L",
-        "VWRL.L",
-        "GBP",
-        "Vanguard FTSE All-World UCITS ETF"
-    ],
-    [
-        "@BRK-B",
-        "BRK-B",
-        "USD",
-        "Berkshire Hathaway B"
-    ],
-    [
-        "@DANSKE.CO",
-        "DANSKE.CO",
-        "DKK",
-        "Danske Bank"
-    ],
-    [
-        "@KBC.BR",
-        "KBC.BR",
-        "EUR",
-        "KBC Group"
-    ],
-    [
-        "@BAYN.DE",
-        "BAYN.DE",
-        "EUR",
-        "Bayer"
-    ],
-    [
-        "@META",
-        "META",
-        "USD",
-        "Meta Platforms"
-    ],
-    [
-        "@ADBE",
-        "ADBE",
-        "USD",
-        "Adobe"
-    ],
-    [
-        "@HAL",
-        "HAL",
-        "USD",
-        "Halliburton"
-    ],
-    [
-        "@PYPL",
-        "PYPL",
-        "USD",
-        "PayPal"
-    ],
-    [
-        "@1810.HK",
-        "1810.HK",
-        "HKD",
-        "Xiaomi"
-    ],
-    [
-        "@NEE",
-        "NEE",
-        "USD",
-        "NextEra Energy"
-    ],
-    [
-        "@IBN",
-        "IBN",
-        "USD",
-        "ICICI Bank ADR"
-    ],
-    [
-        "@UN01.DE",
-        "UN01.DE",
-        "EUR",
-        "Uniper"
-    ],
-    [
-        "@SZG.DE",
-        "SZG.DE",
-        "EUR",
-        "Salzgitter"
-    ],
-    [
-        "@WUW.DE",
-        "WUW.DE",
-        "EUR",
-        "Wüstenrot & Württembergische"
-    ],
-    [
-        "@TATASTEEL.NS",
-        "TATASTEEL.NS",
-        "INR",
-        "Tata Steel"
-    ],
-    [
-        "@SBIN.NS",
-        "SBIN.NS",
-        "INR",
-        "State Bank of India"
-    ],
-    [
-        "@LHA.DE",
-        "LHA.DE",
-        "EUR",
-        "Lufthansa"
-    ],
-    [
-        "@NAS.OL",
-        "NAS.OL",
-        "NOK",
-        "Norwegian Air Shuttle"
-    ],
-    [
-        "@JUN3.DE",
-        "JUN3.DE",
-        "EUR",
-        "Jungheinrich"
-    ],
-    [
-        "@AAF.L",
-        "AAF.L",
-        "GBP",
-        "Airtel Africa"
-    ],
-    [
-        "@SOL-USD",
-        "SOL-USD",
-        "USD",
-        "Solana"
-    ],
-    [
-        "@ADA-USD",
-        "ADA-USD",
-        "USD",
-        "Cardano"
-    ],
-    [
-        "@ETC-USD",
-        "ETC-USD",
-        "USD",
-        "Ethereum Classic"
-    ]
+    ("CH0012221716", "ABBN.SW", "CHF", "ABB"),
+    ("FR0000121972", "SU.PA", "EUR", "Schneider Electric"),
+    ("IE00B8KQN827", "ETN", "USD", "Eaton"),
+    ("DE000ENER6Y0", "ENR.DE", "EUR", "Siemens Energy"),
+    ("US92537N1081", "VRT", "USD", "Vertiv"),
+    ("DE000A0D6554", "NDX1.DE", "EUR", "Nordex"),
+    ("IT0004176001", "PRY.MI", "EUR", "Prysmian"),
+    ("FR0010307819", "LR.PA", "EUR", "Legrand"),
+    ("DE0007236101", "SIE.DE", "EUR", "Siemens"),
+    ("CH1101098163", "BEAN.SW", "CHF", "Belimo"),
+    ("US36828A1016", "GEV", "USD", "GE Vernova"),
+    ("IE00BDVJJQ56", "NVT", "USD", "nVent Electric"),
+    ("US4435106079", "HUBB", "USD", "Hubbell"),
+    ("US74762E1029", "PWR", "USD", "Quanta Services"),
+    ("FR0000044448", "NEX.PA", "EUR", "Nexans"),
+    ("DE0006231004", "IFX.DE", "EUR", "Infineon"),
+    ("DE000A2NB601", "JEN.DE", "EUR", "Jenoptik AG"),
+    ("@AMD", "AMD", "USD", "AMD"),
+    ("@DWS.DE", "DWS.DE", "EUR", "DWS Group"),
+    ("@TKA.DE", "TKA.DE", "EUR", "Thyssenkrupp"),
+    ("@CBK.DE", "CBK.DE", "EUR", "Commerzbank"),
+    ("@RBI.VI", "RBI.VI", "EUR", "Raiffeisen Bank International"),
+    ("@VOD.L", "VOD.L", "GBP", "Vodafone Group"),
+    ("@ARKK", "ARKK", "USD", "ARK Innovation ETF"),
+    ("@AAPL", "AAPL", "USD", "Apple"),
+    ("@MSFT", "MSFT", "USD", "Microsoft"),
+    ("@SONY", "SONY", "USD", "Sony Group"),
+    ("@GOOG", "GOOG", "USD", "Alphabet Inc. Class C"),
+    ("@TSLA", "TSLA", "USD", "Tesla"),
+    ("@DB1.DE", "DB1.DE", "EUR", "Deutsche Börse"),
+    ("@SPY5.DE", "SPY5.DE", "EUR", "SPDR S&P 500 UCITS ETF"),
+    ("@ANX.PA", "ANX.PA", "EUR", "Amundi Nasdaq-100 UCITS ETF"),
+    ("@SAP.DE", "SAP.DE", "EUR", "SAP"),
+    ("@UBSG.SW", "UBSG.SW", "CHF", "UBS Group"),
+    ("@FME.DE", "FME.DE", "EUR", "Fresenius Medical Care"),
+    ("@NVDA", "NVDA", "USD", "NVIDIA"),
+    ("@TTWO", "TTWO", "USD", "Take-Two Interactive"),
+    ("@AMZN", "AMZN", "USD", "Amazon"),
+    ("@IBM", "IBM", "USD", "IBM"),
+    ("@VWRL.L", "VWRL.L", "GBP", "Vanguard FTSE All-World UCITS ETF"),
+    ("@BRK-B", "BRK-B", "USD", "Berkshire Hathaway B"),
+    ("@DANSKE.CO", "DANSKE.CO", "DKK", "Danske Bank"),
+    ("@KBC.BR", "KBC.BR", "EUR", "KBC Group"),
+    ("@BAYN.DE", "BAYN.DE", "EUR", "Bayer"),
+    ("@META", "META", "USD", "Meta Platforms"),
+    ("@ADBE", "ADBE", "USD", "Adobe"),
+    ("@HAL", "HAL", "USD", "Halliburton"),
+    ("@PYPL", "PYPL", "USD", "PayPal"),
+    ("@1810.HK", "1810.HK", "HKD", "Xiaomi"),
+    ("@NEE", "NEE", "USD", "NextEra Energy"),
+    ("@IBN", "IBN", "USD", "ICICI Bank ADR"),
+    ("@UN01.DE", "UN01.DE", "EUR", "Uniper"),
+    ("@SZG.DE", "SZG.DE", "EUR", "Salzgitter"),
+    ("@WUW.DE", "WUW.DE", "EUR", "Wüstenrot & Württembergische"),
+    ("@TATASTEEL.NS", "TATASTEEL.NS", "INR", "Tata Steel"),
+    ("@SBIN.NS", "SBIN.NS", "INR", "State Bank of India"),
+    ("@LHA.DE", "LHA.DE", "EUR", "Lufthansa"),
+    ("@NAS.OL", "NAS.OL", "NOK", "Norwegian Air Shuttle"),
+    ("@JUN3.DE", "JUN3.DE", "EUR", "Jungheinrich"),
+    ("@AAF.L", "AAF.L", "GBP", "Airtel Africa"),
+    ("@SOL-USD", "SOL-USD", "USD", "Solana"),
+    ("@ADA-USD", "ADA-USD", "USD", "Cardano"),
+    ("@ETC-USD", "ETC-USD", "USD", "Ethereum Classic"),
 ]
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "market.json"

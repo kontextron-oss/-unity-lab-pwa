@@ -62,3 +62,6 @@ jobs:
 
       - name: Test iPhone chart responsiveness, SMA legend and 6-year period
         run: node tests/iphone-chart.cjs
+
+      - name: Test single unified stock list and actions
+        run: node tests/unified-watchlist.cjs

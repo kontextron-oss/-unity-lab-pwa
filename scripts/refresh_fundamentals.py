@@ -284,6 +284,7 @@ def build():
                 row["officialHighlights"]=official_highlights(isin)
                 if row["status"] in {"no-esef-route","no-filing-found","source-unavailable"}:
                     row["status"]="issuer-release-only"
+                    row["source"]="Offizielle Emittentenmeldung (nicht ESEF)"
             except (ValueError,urllib.error.URLError,TimeoutError,LookupError) as ex:
                 row["errors"].append("Offizielle Meldung: "+str(ex)[:140])
                 previous_official=(old.get(isin) or {}).get("officialHighlights")

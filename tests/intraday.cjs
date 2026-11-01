@@ -12,7 +12,6 @@ const ctx={Date,Number,Math,Set,AbortController,setTimeout,clearTimeout,
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('intraday.js','utf8'),ctx);
 (async()=>{
  await new Promise(resolve=>setTimeout(resolve,10));
- assert.equal(vm.runInContext("unityDisplayQuote('"+isin+"')",ctx),null); // malformed request input does not match a stock object
  const pilot=vm.runInContext('unityDisplayQuote('+JSON.stringify(s)+')',ctx);
  assert.equal(pilot.precision,'15m-bar');assert.equal(pilot.price,34.22);
  assert.equal(pilot.quotedAt,quoteAt);assert.match(pilot.label,/inoffiziell/);

@@ -4,7 +4,7 @@
 Pilot: ABB, Schneider Electric, Siemens Energy, Infineon.
 XBRL International's public ESEF index is incomplete, especially DE and CH.
 Only facts with one unambiguous, non-segmented consolidated context and
-matching fiscal period/currency are eligible. No valuation/trade signals.
+matching fiscal period/currency are eligible. No valuation/trade signals.\nData availability is checked independently for each company.
 """
 import datetime as dt
 import json

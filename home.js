@@ -265,6 +265,42 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 
+/* Pull down at the top of the depot to recheck available reference data. */
+let unityPullStartY=0,unityPullActive=false,unityPullRefreshing=false;
+function unityPullStatus(message,visible=true){
+  let el=document.getElementById('unity-pull-status');
+  if(!el){el=document.createElement('div');el.id='unity-pull-status';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.append(el);}
+  el.textContent=message;el.classList.toggle('visible',visible);
+}
+async function unityPullRefresh(){
+  if(unityPullRefreshing)return;
+  unityPullRefreshing=true;unityPullStatus('Kursdaten werden geprüft …');
+  try{
+    await Promise.allSettled([
+      typeof unityLoadMarket==='function'?unityLoadMarket():Promise.resolve(),
+      typeof unityLoadIntraday==='function'?unityLoadIntraday():Promise.resolve(),
+      typeof unityLoadFx==='function'?unityLoadFx():Promise.resolve()
+    ]);
+    unityHomeLastCheck=Date.now();unityPullStatus('Kursdaten geprüft');
+  }finally{
+    unityPullRefreshing=false;setTimeout(()=>unityPullStatus('',false),1800);
+  }
+}
+document.addEventListener('touchstart',e=>{
+  if(activeTab!=='overview'||window.scrollY>0||e.touches.length!==1)return;
+  unityPullStartY=e.touches[0].clientY;unityPullActive=true;
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(!unityPullActive||unityPullRefreshing)return;
+  const distance=e.touches[0].clientY-unityPullStartY;
+  if(distance>12)unityPullStatus(distance>=80?'Loslassen: Kursdaten prüfen':'Zum Aktualisieren herunterziehen');
+  if(distance>0)e.preventDefault();
+},{passive:false});
+document.addEventListener('touchend',e=>{
+  if(!unityPullActive)return;
+  const distance=e.changedTouches[0].clientY-unityPullStartY;unityPullActive=false;
+  if(distance>=80)unityPullRefresh();else unityPullStatus('',false);
+},{passive:true});
 /* Touch + mouse reorder: move only from the explicit grip so tapping a row still opens details. */
 document.addEventListener('pointerdown',e=>{
   const grip=e.target.closest('[data-home-drag]');if(!grip||e.button!==0||unityHomeSort!=='manual')return;

@@ -19,6 +19,7 @@ jobs:
           node --check datafeeds.js
           node --check publicfeed.js
           node --check dashboard.js
+          node --check intraday.js
           node --check charts.js
           node --check dataquality.js
           node --check depot.js
@@ -32,7 +33,7 @@ jobs:
           s=Path('index.html').read_text()
           assert s.count('<script>')==1
           Path('/tmp/unity-inline.js').write_text(s.split('<script>')[1].split('</script>')[0])
-          assert 'analysis.js' in s and 'datafeeds.js' in s and 'publicfeed.js' in s and 'dashboard.js' in s and 'charts.js' in s and 'dataquality.js' in s and 'depot.js' in s and 'depotcsv.js' in s and 'home.js' in s
+          assert 'analysis.js' in s and 'datafeeds.js' in s and 'publicfeed.js' in s and 'dashboard.js' in s and 'charts.js' in s and 'dataquality.js' in s and 'depot.js' in s and 'depotcsv.js' in s and 'home.js' in s and 'intraday.js' in s
           assert "indexedDB.open('unity-lab',2)" in s
           PY
           node --check /tmp/unity-inline.js
@@ -51,3 +52,6 @@ jobs:
 
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs
+
+      - name: Test pilot quote timestamp, validation and EOD fallback
+        run: node tests/intraday.cjs

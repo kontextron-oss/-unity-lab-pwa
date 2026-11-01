@@ -28,6 +28,17 @@ class FundamentalsTests(unittest.TestCase):
     def test_conflicting_facts_rejected(self):
         report={"facts":{k:{"dimensions":{"concept":"ifrs-full:Assets","unit":"iso4217:EUR","period":"2025-12-31"},"value":v} for k,v in (("a",100),("b",200))}}
         self.assertNotIn("assets",mod.extract_metrics(report,"2025-12-31","EUR","https://filings.xbrl.org/a.json"))
+    def test_ratios_and_growth_only_from_matching_fiscal_years(self):
+        current={"revenue":{"value":120},"netIncome":{"value":12},"assets":{"value":300},
+                 "equity":{"value":90},"operatingCashFlow":{"value":18}}
+        previous={"revenue":{"value":100},"netIncome":{"value":10}}
+        result=mod.derived_ratios(current,previous,"2025-12-31","2024-12-31")
+        self.assertEqual(result["revenueGrowth"]["value"],20.0)
+        self.assertEqual(result["netMargin"]["value"],10.0)
+        self.assertEqual(result["equityRatio"]["value"],30.0)
+        self.assertEqual(result["operatingCashFlowMargin"]["value"],15.0)
+        self.assertNotIn("revenueGrowth",mod.derived_ratios(current,previous,"2025-12-31","2022-12-31"))
+        self.assertNotIn("netIncomeGrowth",mod.derived_ratios(current,{"netIncome":{"value":-5}},"2025-12-31","2024-12-31"))
     def test_annual_period_not_quarterly(self):
         report={"facts":{"f1":{"dimensions":{"concept":"ifrs-full:Revenue","unit":"iso4217:EUR","period":"2025-10-01/2026-01-01"},"value":123}}}
         self.assertNotIn("revenue",mod.extract_metrics(report,"2025-12-31","EUR","https://filings.xbrl.org/a.json"))

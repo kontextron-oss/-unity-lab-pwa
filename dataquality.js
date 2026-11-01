@@ -22,7 +22,7 @@ function unityDataQuality(item,isin,market=unityMarket){
   if(!expected||item.isin!==isin||item.currency!==expected.currency)
     return {level:'invalid',label:'Datenkonflikt',detail:'ISIN oder Währung stimmt nicht mit dem Aktienkatalog überein.',canCompare:false};
   const p=item.points;
-  if(!Array.isArray(p)||p.length<200||p.length>520||!(Number(item.price)>0))
+  if(!Array.isArray(p)||p.length<200||p.length>1900||!(Number(item.price)>0))
     return {level:'invalid',label:'Unvollständige Kursreihe',detail:'Für die technischen Kennzahlen fehlen gültige historische Daten.',canCompare:false};
   for(let i=0;i<p.length;i++){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(String(p[i].date))||!(Number(p[i].close)>0)||

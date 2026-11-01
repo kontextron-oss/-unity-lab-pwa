@@ -30,6 +30,7 @@ assert.equal(x.buys,2);
 assert.equal(x.sells,1);
 const capital=vm.runInContext('depotCapital()',sandbox);
 assert.equal(capital.funded,2000);
+assert.equal(capital.deposits,0);
 assert.equal(capital.invested,825);
 assert.equal(capital.free,1250);
 const asOf=vm.runInContext("depotLedger('s1','2025-01-15')",sandbox);

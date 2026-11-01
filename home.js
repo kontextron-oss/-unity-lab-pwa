@@ -73,21 +73,20 @@ function unityHomeDisplayedStocks(){
 }
 
 function unityHome(){
-  const selected=unityHomeDisplayedStocks(),pos=typeof depotPositions==='function'?depotPositions():[];
+  const selected=unityHomeDisplayedStocks(),pos=typeof depotPositions==='function'?depotPositions():[],capital=typeof depotCapital==='function'?depotCapital():null;
   const allValid=pos.length>0&&pos.every(p=>Number.isFinite(p.value));
   const value=allValid?pos.reduce((n,p)=>n+p.value,0):NaN;
   const nUp=selected.filter(s=>unityHomeQuote(s).valid&&unityHomeQuote(s).m.trend==='Aufwärtstrend').length;
   const nDown=selected.filter(s=>unityHomeQuote(s).valid&&unityHomeQuote(s).m.trend==='Abwärtstrend').length;
   let h='<section class="home-hero" id="unity-home"><div class="home-hero-title"><span class="home-hero-mark" aria-hidden="true">↗</span><div><h2>Mein Depot</h2><small>UNITY Lab · persönliche Aktienübersicht</small></div><button type="button" class="home-hero-menu" data-home-add title="Aktien auswählen">＋</button></div>'+
     '<div class="home-periods" aria-label="Kurszeitraum">'+unityHomePeriods.map(([r,label])=>'<button type="button" data-home-range="'+r+'" class="'+(r===unityHomeRange?'active':'')+'">'+label+'</button>').join('')+'</div>';
-  if(pos.length&&allValid)h+='<div class="home-big-number">'+euro(value)+'</div><p class="home-value-label">Simulierter Positionswert · verzögerte Schlusskurse</p>';
-  else if(pos.length)h+='<div class="home-big-number">–</div><p class="home-value-label">Simulationsdepot: '+pos.length+' Positionen · Bewertung unvollständig</p>';
-  else h+='<div class="home-big-number home-count">'+selected.length+'</div><p class="home-value-label">Ausgewählte Aktien · noch keine simulierten Depotpositionen</p>';
+  if(capital?.configured){h+='<div class="home-big-number">'+(Number.isFinite(capital.total)?euro(capital.total):depotMoney(capital.free))+'</div><p class="home-value-label">Fiktives Gesamtvermögen · lokal geführte Simulation</p><div class="home-hero-summary"><span>Einzahlungen '+depotMoney(capital.funded)+'</span><span>Frei '+depotMoney(capital.free)+'</span><span>Angelegt '+depotMoney(capital.invested)+'</span></div>';}
+  else if(pos.length&&allValid)h+='<div class="home-big-number">'+euro(value)+'</div><p class="home-value-label">Simulierter Positionswert · Startkapital noch nicht festgelegt</p>';
+  else h+='<div class="home-big-number">0,00 €</div><p class="home-value-label">Fiktives Depot · bitte Startkapital oder Einzahlung anlegen</p>';
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p></section>';
-  const capital=typeof depotCapital==='function'?depotCapital():null;
-  if(capital)h+='<div class="home-capital-summary"><span><small>Frei verfügbar</small><b>'+depotMoney(capital.free)+'</b></span><span><small>Angelegt</small><b>'+depotMoney(capital.invested)+'</b></span><button type="button" class="secondary" data-tab-target="trades">Kapital</button></div>';
+  if(capital)h+='<div class="home-capital-summary"><button type="button" class="secondary" data-tab-target="trades">Einzahlungen und Kapital verwalten</button></div>';
   const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
     '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufkandidaten</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+

@@ -61,7 +61,7 @@ function unityChartPanel(item){
   const change=data.length>1?(data.at(-1).close/data[0].close-1)*100:NaN;
   let h='<div class="unity-chart-box unity-chart-green"><div class="unity-chart-heading"><div><strong>Kursentwicklung · '+esc(unityChartRange)+'</strong><div class="tiny muted">Tages-Schlusskurse · '+esc(item.currency)+' · '+esc(item.exchange||'Börsenplatz unbekannt')+'</div></div><strong class="'+(change>=0?'positive':'negative')+'">'+unityPct(change)+'</strong></div>';
   h+='<div class="unity-range" aria-label="Zeitraum des Kursdiagramms">';
-  for(const r of ['1M','3M','6M','1Y','3Y','6Y'])h+='<button type="button" class="'+(r===unityChartRange?'active':'')+'" data-chart-range="'+r+'">'+r+'</button>';
+  for(const r of ['1W','1M','3M','6M','1Y','3Y','6Y'])h+='<button type="button" class="'+(r===unityChartRange?'active':'')+'" data-chart-range="'+r+'">'+r+'</button>';
   h+='</div>'+unityChartSvg(item,unityChartRange,false,unityChartMA);
   if((unityChartRange==='6Y'&&availableYears<5.7)||(unityChartRange==='3Y'&&availableYears<2.8))h+='<p class="tiny">Verfügbar ab '+esc(data[0]?.date||'–')+' · frühere Börsenkurse liegen nicht vor.</p>';
   h+='<div class="unity-chart-footer"><label class="unity-ma-toggle"><input type="checkbox" id="unity-chart-ma" '+(unityChartMA?'checked':'')+'> SMA 50 / SMA 200 anzeigen</label><span>Letzter Kurs: <b>'+number(Number(item.price),2)+' '+esc(item.currency)+'</b> · '+esc(item.date)+'</span></div>';

@@ -27,7 +27,7 @@ assert.equal(verdict.buy,'Noch nicht freigegeben');
 assert.match(verdict.reason,/langfristige Kurstrend/);
 const detail=vm.runInContext("unityHomeDetail('s1')",sandbox);
 assert.match(detail,/diagram/);assert.match(detail,/Vollständige UNITY-Analyse/);
-assert.match(detail,/Noch nicht freigegeben/);assert.match(detail,/Testkauf/);assert.match(detail,/Wertpapierdetails/);
+assert.match(detail,/Noch nicht freigegeben/);assert.match(detail,/Kaufen · Simulation/);assert.match(detail,/Wertpapierdetails/);
 assert.match(vm.runInContext('unityHomeManagePanel()',sandbox),/Ausblenden/);assert.match(vm.runInContext('unityHomeManagePanel()',sandbox),/nach oben/);
 selected=[];const empty=vm.runInContext('unityHome()',sandbox);
 assert.match(empty,/noch keine Aktien ausgewählt/);assert.doesNotMatch(empty,/70.423/);

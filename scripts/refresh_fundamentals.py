@@ -200,6 +200,8 @@ def parse_official_highlights(html_document,source):
  if not re.search(r"\b"+re.escape(source["issuer"])+r"\b",text,re.I) or not re.search(r"\b2025\b",text):
   raise ValueError("Issuer or fiscal year not identifiable")
  facts={}
+ if source["issuer"]=="Infineon":
+  for m in list(re.finditer(r"FY\s*2025",text,re.I))[:3]:print("Infineon text around FY2025",text[m.start():m.start()+210],flush=True)
  for key,rule in source["facts"].items():
   matches=re.findall(rule["pattern"],text,re.I)
   print("Issuer fact",source["issuer"],key,"matches",matches[:6],flush=True)

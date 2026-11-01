@@ -69,9 +69,21 @@ function unityPreAnalysis(s){
   return {kind:'neutral',label:'Beobachten',score,detail:'Technische Lage ist noch nicht eindeutig.'};
 }
 function unityPreAnalysisSummary(selected){
-  const items=selected.map(s=>({s,p:unityPreAnalysis(s)})),count=k=>items.filter(x=>x.p.kind===k).length;
-  const top=items.filter(x=>Number.isFinite(x.p.score)).sort((a,b)=>b.p.score-a.p.score).slice(0,5);
-  return '<div class="home-pre-summary" aria-label="Technische Voranalyse"><strong>Technische Voranalyse</strong><span class="pre-positive">● '+count('positive')+' positiv entwickelt</span><span class="pre-improving">● '+count('improving')+' verbessert sich</span><span class="pre-neutral">● '+count('neutral')+' beobachten</span><span class="pre-weak">● '+count('weak')+' technisch schwach</span><small>'+(top.length?'Höchste Voranalyse: '+top.map(x=>esc(x.s.ticker)+' '+x.p.score+'/100').join(' · '):'Für die Rangfolge zuerst Kursreihen prüfen.')+'</small></div>';
+  const items=selected.map(s=>({s,p:unityPreAnalysis(s)})),positive=items.filter(x=>x.p.kind==='positive').sort((a,b)=>b.p.score-a.p.score),improving=items.filter(x=>x.p.kind==='improving').sort((a,b)=>b.p.score-a.p.score),missing=items.filter(x=>['waiting','loading','blocked'].includes(x.p.kind));
+  let h='<section class="home-next-actions" aria-label="Ergebnis der Voranalyse"><h2>Ergebnis der Voranalyse</h2>';
+  if(positive.length){
+    h+='<div class="next-action-group next-positive"><h3>Jetzt genauer prüfen</h3><p>Diese Werte entwickeln sich technisch positiv. Erst die Tiefenanalyse entscheidet, ob ein simulierter Kaufkandidat entsteht.</p>';
+    for(const {s,p} of positive.slice(0,5))h+='<div class="next-action-row"><div><b>'+esc(s.name)+'</b><small>Positiv entwickelt · '+p.score+'/100</small></div><button type="button" class="primary" data-home-analyze="'+esc(s.id)+'">Tiefenanalyse</button></div>';
+    h+='</div>';
+  }else h+='<div class="next-action-group next-neutral"><h3>Heute kein Wert für eine Tiefenanalyse</h3><p>Das ist kein Kaufsignal gegen alle Aktien. Es bedeutet nur: Aus den verfügbaren technischen Daten entsteht derzeit kein klar positiv entwickelter Kandidat.</p></div>';
+  if(improving.length){
+    h+='<div class="next-action-group next-improving"><h3>Beobachten</h3><p>Diese Werte verbessern sich technisch, brauchen aber noch Bestätigung.</p>';
+    for(const {s,p} of improving.slice(0,4))h+='<div class="next-action-row"><div><b>'+esc(s.name)+'</b><small>Entwicklung verbessert sich · '+p.score+'/100</small></div><button type="button" class="secondary" data-home-open="'+esc(s.id)+'">Ansehen</button></div>';
+    h+='</div>';
+  }
+  if(missing.length)h+='<div class="next-action-group next-missing"><h3>Daten noch nicht auswertbar</h3><p>'+missing.length+' Wert'+(missing.length===1?'':'e')+' braucht/brauchen noch eine Kursreihe oder eine erreichbare Quelle. Das ist keine negative Bewertung.</p></div>';
+  h+='<p class="tiny muted">Die Voranalyse ist eine technische Vorsortierung. Kauf, Verkauf und Einsatz werden erst nach der vollständigen UNITY-Tiefenanalyse beurteilt.</p></section>';
+  return h;
 }
 function unityPilotDecision(s){
   const state=unityHomeDataState(s),{m,technical}=unityHomeQuote(s);

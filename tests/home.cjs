@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/function overview\(\)\{return typeof unityHome/);
 assert.match(html,/home\.js/);
-assert.match(html,/unityHomeManagePanel\(\)/);
+assert.match(html,/function watchlistCards\(\)/);
 const s={id:'s1',name:'Schneider Electric',ticker:'SU',isin:'FR0000121972',currency:'EUR',exchange:'Paris'};
 const x={name:s.name,isin:s.isin,price:237,date:'2026-10-30',exchange:'Paris',currency:'EUR',points:[{date:'2026-10-29',close:240},{date:'2026-10-30',close:237}]};
 const m={last:237,trend:'Abwärtstrend',technicalIndex:32,rsi:42,stale:false};

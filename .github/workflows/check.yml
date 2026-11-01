@@ -48,3 +48,6 @@ jobs:
 
       - name: Test home dashboard and investment verdict
         run: node tests/home.cjs
+
+      - name: Test saved stock order and local simulated trades
+        run: node tests/home-actions.cjs

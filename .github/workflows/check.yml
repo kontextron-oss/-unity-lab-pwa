@@ -22,6 +22,7 @@ jobs:
           node --check charts.js
           node --check dataquality.js
           node --check depot.js
+          node --check depotcsv.js
           node --check sw.js
       - name: Check inline application script
         run: |
@@ -30,7 +31,7 @@ jobs:
           s=Path('index.html').read_text()
           assert s.count('<script>')==1
           Path('/tmp/unity-inline.js').write_text(s.split('<script>')[1].split('</script>')[0])
-          assert 'analysis.js' in s and 'datafeeds.js' in s and 'publicfeed.js' in s and 'dashboard.js' in s and 'charts.js' in s and 'dataquality.js' in s and 'depot.js' in s
+          assert 'analysis.js' in s and 'datafeeds.js' in s and 'publicfeed.js' in s and 'dashboard.js' in s and 'charts.js' in s and 'dataquality.js' in s and 'depot.js' in s and 'depotcsv.js' in s
           assert "indexedDB.open('unity-lab',2)" in s
           PY
           node --check /tmp/unity-inline.js
@@ -40,3 +41,6 @@ jobs:
 
       - name: Test portfolio ledger and buy-sell details
         run: node tests/depot.cjs
+
+      - name: Test CSV import and validation
+        run: node tests/depotcsv.cjs

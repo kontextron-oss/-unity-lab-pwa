@@ -19,7 +19,7 @@ const sandbox={Date,Math,Number,Array,JSON,stocks:()=>selected,depotPositions:()
 vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sandbox);
 const home=vm.runInContext('unityHome()',sandbox);
 assert.match(home,/Mein Depot/);assert.match(home,/Schneider Electric/);assert.match(home,/237.00 EUR/);
-assert.match(home,/Aktuell/);assert.match(home,/data-home-open/);assert.match(home,/data-home-drag/);assert.match(home,/nicht in Echtzeit/);
+assert.match(home,/Aktuell/);assert.match(home,/data-home-open/);assert.match(home,/data-home-drag/);assert.match(home,/keine garantierten Echtzeitkurse/);
 assert.match(home,/Aktie hinzufügen/);
 const verdict=vm.runInContext("unityHomeDecision("+JSON.stringify(s)+")",sandbox);
 assert.equal(verdict.action,'Technisch schwach');

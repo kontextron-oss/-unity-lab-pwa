@@ -1,8 +1,8 @@
-# UNITY LAB – Projektstand 1.2
+# UNITY LAB – Projektstand 1.3
 
 **Stand:** 1. November 2026  
 **Repository:** kontextron-oss/-unity-lab-pwa  
-**Technische Basis:** Version 0.10.3 veröffentlicht und geprüft
+**Technische Basis:** UNITY 0.11-Kandidatenmodus veröffentlicht und geprüft
 
 ## Verbindliche Neuausrichtung
 
@@ -24,7 +24,16 @@ Jede Aktie erhält künftig eine verständliche Aussage: Kaufen, Teilkauf, Kauf 
 - ESEF-/Inline-XBRL-Berichte für geeignete europäische Emittenten.
 - Öffentlich sichtbare Analystenkonsens- oder Ratingangaben ausschließlich als datierte, sekundäre Einordnung; sie dürfen keine Entscheidung allein bestimmen.
 
-## Nächster Entwicklungsabschnitt: UNITY 0.11
+## Umgesetzt: UNITY 0.11-Kandidatenmodus
+
+- Automatischer technischer Kaufkandidat bei positivem SMA50/SMA200-Trend, RSI zwischen 40 und 68 und definierter Rücksetzerzone.
+- Konkrete Kaufzone ±2 % um den SMA50; oberhalb der Zone erscheint „Kauf bei Rücksetzer“ statt eines pauschalen Nein.
+- Kandidatenindex aus Trendstruktur und verfügbaren automatischen Berichtskennzahlen; fehlende Fundamentaldaten werden als Datenlage erklärt, nicht als versteckter Negativwert.
+- Startseite und Analyseansicht zeigen Kandidaten getrennt von der vollständigen operativen Freigabe.
+- Analyse-Snapshots speichern zusätzlich den Kandidatenstatus, die Kaufbedingung und den Index.
+- Automatischer Test für Trend, Rücksetzerzone und Datenlückentrennung ist Teil der CI.
+
+## Nächster Entwicklungsabschnitt: UNITY 0.12
 
 1. Veto-Logik in Datenlücke, Warnung und harten Ausschlussgrund aufteilen.
 2. Automatische Kandidatenbewertung aus vorhandenen Kurs- und Berichtsquellen einführen.

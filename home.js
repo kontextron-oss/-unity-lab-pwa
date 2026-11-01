@@ -1,7 +1,7 @@
 'use strict';
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
-let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null;
+let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='manual';
 const unityHomeStocks=()=>stocks().filter(s=>!s.watchHidden).sort((a,b)=>{
   const aa=Number.isFinite(Number(a.watchOrder))&&a.watchOrder!==undefined?Number(a.watchOrder):Infinity;
   const bb=Number.isFinite(Number(b.watchOrder))&&b.watchOrder!==undefined?Number(b.watchOrder):Infinity;
@@ -50,8 +50,29 @@ function unityHomeDecision(s){
     confidence:'Technischer Befund · keine vollständige UNITY-Freigabe',index:m.technicalIndex,
     gaps:gaps.slice(0,5),rsi:m.rsi};
 }
+/* Decision colours are NOT price colours. Only a fully verified UNITY verdict may
+   turn a row green/red; delayed EOD technical trends never authorize a trade. */
+function unityHomeSignal(s){
+  const {x,m,valid,quality}=unityHomeQuote(s);
+  if(!x||!m)return {kind:'warning',label:'Daten fehlen',icon:'!',detail:'Keine belastbare Kursreihe vorhanden.',rank:3};
+  if(!valid)return {kind:'warning',label:'Daten prüfen',icon:'!',detail:quality?.detail||'Kursdaten nicht aktuell oder unplausibel.',rank:3};
+  const a=unityCalc(s),veto=a.veto||[];
+  if(veto.length)return {kind:'warning',label:'Analyse offen',icon:'!',detail:'Technik: '+m.trend+'. '+veto.length+' Prüfbedingungen für eine Handelsentscheidung noch offen.',rank:3};
+  // Future fully sourced evaluation can explicitly emit these actions after all vetoes clear.
+  const action=String(a.action||'').trim();
+  if(action==='Kaufen – freigegeben')return {kind:'buy',label:'Kaufen prüfen',icon:'+',detail:'Alle verbindlichen UNITY-Datenprüfungen bestanden.',rank:0};
+  if(action==='Verkaufen – freigegeben')return {kind:'sell',label:'Verkauf prüfen',icon:'−',detail:'Verkaufssignal nach vollständiger UNITY-Prüfung.',rank:1};
+  if(action==='Halten – freigegeben')return {kind:'hold',label:'Halten',icon:'=',detail:'Bestand nach vollständiger UNITY-Prüfung halten.',rank:2};
+  return {kind:'wait',label:'Abwarten',icon:'·',detail:'Keine bestätigte Kauf- oder Verkaufsfreigabe.',rank:4};
+}
+function unityHomeDisplayedStocks(){
+  const list=unityHomeStocks();
+  if(unityHomeSort==='priority')list.sort((a,b)=>unityHomeSignal(a).rank-unityHomeSignal(b).rank);
+  return list;
+}
+
 function unityHome(){
-  const selected=unityHomeStocks(),pos=typeof depotPositions==='function'?depotPositions():[];
+  const selected=unityHomeDisplayedStocks(),pos=typeof depotPositions==='function'?depotPositions():[];
   const allValid=pos.length>0&&pos.every(p=>Number.isFinite(p.value));
   const value=allValid?pos.reduce((n,p)=>n+p.value,0):NaN;
   const nUp=selected.filter(s=>unityHomeQuote(s).valid&&unityHomeQuote(s).m.trend==='Aufwärtstrend').length;
@@ -63,16 +84,20 @@ function unityHome(){
   else h+='<div class="home-big-number home-count">'+selected.length+'</div><p class="home-value-label">Ausgewählte Aktien · noch keine simulierten Depotpositionen</p>';
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">Automatisch geladene Börsenschlusskurse · <b>nicht in Echtzeit</b> · Stand '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p></section>';
-  h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div><p class="home-sort-hint">☰ Gedrückt halten und nach oben oder unten ziehen, um die Reihenfolge zu ändern.</p>';
+  const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
+  h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
+    '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufsignale</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
+    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Handlungsbedarf</button></div>'+
+    '<p class="home-sort-hint">☰ Aktie ziehen und dauerhaft sortieren. Orange bedeutet: noch keine belastbare Kauf-/Verkaufsentscheidung.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x,m,valid}=unityHomeQuote(s);
     const change=valid?unityHomeMovement(x,unityHomeRange):NaN;
     const rising=Number.isFinite(change)&&change>0,falling=Number.isFinite(change)&&change<0;
     const cls=rising?'home-up':falling?'home-down':'home-flat';
-    const p=depotPosition(s);
+    const p=depotPosition(s),signal=unityHomeSignal(s);
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Gedrückt halten und Aktie verschieben" aria-label="'+esc(s.name)+' verschieben">☰</button><button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+(p.qty>0?'<small class="home-position-label">'+number(p.qty,4)+' Stück im Testdepot'+(Number.isFinite(p.pnl)?' · '+(p.pnl>=0?'+':'')+depotMoney(p.pnl):'')+'</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+(p.qty>0?'<small class="home-position-label">'+number(p.qty,4)+' Stück im Testdepot'+(Number.isFinite(p.pnl)?' · '+(p.pnl>=0?'+':'')+depotMoney(p.pnl):'')+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+(valid?unityPct(change):'–')+'</strong><small>'+(x?number(Number(x.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(x?esc(x.date):'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button></div>';
   }
   h+='</section>';
@@ -84,7 +109,7 @@ function unityHome(){
 function unityHomeDetail(sid){
   const s=unityHomeStocks().find(x=>x.id===sid);
   if(!s)return '';
-  const {x,m,valid}=unityHomeQuote(s),d=unityHomeDecision(s);
+  const {x,m,valid}=unityHomeQuote(s),d=unityHomeDecision(s),signal=unityHomeSignal(s);
   let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>Aktienansicht</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
   if(x){
     h+=unityChartPanel(x);
@@ -92,7 +117,7 @@ function unityHomeDetail(sid){
   }else h+='<p class="home-missing">Kein überprüfbarer Kursverlauf vorhanden. Es wird keine Kurve erfunden.</p>';
   h+=unityHomeSecurityDetails(s,x);
   h+=unityHomeTradeActions(s);
-  h+='<div class="home-decision"><div class="home-decision-head"><span>Automatischer UNITY-Kurzbefund</span><strong>'+esc(d.action)+'</strong></div>'+
+  h+='<div class="home-decision home-decision-'+signal.kind+'"><div class="home-decision-head"><span>UNITY-Entscheidung: <b class="home-signal home-signal-'+signal.kind+'">'+signal.icon+' '+esc(signal.label)+'</b></span><strong>'+esc(d.action)+'</strong></div><p class="home-signal-reason">'+esc(signal.detail)+'</p>'+
     '<div class="home-decision-grid"><div><small>Kauf</small><b>'+esc(d.buy)+'</b></div><div><small>Verkauf</small><b>'+esc(d.sell)+'</b></div><div><small>Technischer Trend</small><b>'+esc(d.technical)+'</b></div><div><small>Technikindex</small><b>'+(valid&&Number.isFinite(d.index)?d.index+'/100':'–')+'</b></div></div>'+
     '<p><b>Begründung:</b> '+esc(d.reason)+'</p><p class="tiny muted">'+esc(d.confidence)+'</p></div>'+
     '<button type="button" class="home-analyze-btn" data-home-analyze="'+esc(s.id)+'">Vollständige UNITY-Analyse & Datenlage ansehen <span aria-hidden="true">›</span></button>'+
@@ -180,9 +205,10 @@ function unityHomeManagePanel(){
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.homeToggle){const stock=stocks().find(s=>s.id===b.dataset.homeToggle);if(stock){put('instruments',{...stock,watchHidden:!stock.watchHidden}).then(()=>audit('WATCHLIST_TOGGLE',stock.id,!stock.watchHidden?'hidden':'shown')).then(refresh).catch(err=>alert(err.message||String(err)))}return}
-  if(b.dataset.homeShift){unityHomeShift(b.dataset.homeShift,Number(b.dataset.direction)).catch(err=>alert(err.message||String(err)));return}
+  if(b.dataset.homeShift){unityHomeSort='manual';unityHomeShift(b.dataset.homeShift,Number(b.dataset.direction)).catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.homeTrade){unityHomeTradeMode=b.dataset.homeTrade;render();document.getElementById('home-trade-form')?.scrollIntoView({block:'nearest'});return}
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
+  if(b.dataset.homeSort){unityHomeSort=b.dataset.homeSort==='priority'?'priority':'manual';render();return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
   if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.hasAttribute('data-home-close')){unityHomeSelected='';unityHomeTradeMode='';render();return}
@@ -223,7 +249,7 @@ document.addEventListener('pointerup',e=>{
   if(!unityHomeDrag)return;
   const drag=unityHomeDrag;unityHomeDrag=null;
   document.querySelectorAll('[data-home-row]').forEach(el=>el.classList.remove('home-dragging','home-drop-target'));
-  if(drag.moved&&drag.target!==drag.id)unityHomeReorder(drag.id,drag.target).catch(err=>alert(err.message||String(err)));
+  if(drag.moved&&drag.target!==drag.id){unityHomeSort='manual';unityHomeReorder(drag.id,drag.target).catch(err=>alert(err.message||String(err)))}
 });
 document.addEventListener('pointercancel',()=>{
   unityHomeDrag=null;document.querySelectorAll('[data-home-row]').forEach(el=>el.classList.remove('home-dragging','home-drop-target'));

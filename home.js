@@ -246,74 +246,42 @@ function unityHomeSecurityDetails(s,x){
   return h;
 }
 function unityHomeTradeActions(s){
-  const p=depotPosition(s),market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),mode=unityHomeTradeMode;
-  let h='<div class="home-trade-actions"><button type="button" class="home-buy-button" data-home-trade="BUY">＋ Kaufen · Simulation</button>'+
-    '<button type="button" class="home-sell-button" data-home-trade="SELL" '+(p.qty>0?'':'disabled')+'>− Verkaufen · Simulation</button></div>';
+  const p=depotPosition(s),eod=typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin),display=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null,market=display&&Number(display.price)>0?display:eod,mode=unityHomeTradeMode,rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+  let h='<div class="home-trade-actions"><button type="button" class="home-buy-button" data-home-trade="BUY">＋ Kaufen · Simulation</button><button type="button" class="home-sell-button" data-home-trade="SELL" '+(p.qty>0?'':'disabled')+'>− Verkaufen · Simulation</button></div>';
   if(!p.qty)h+='<p class="tiny muted">Für einen Testverkauf zunächst eine simulierte Position kaufen.</p>';
   if(mode!=='BUY'&&mode!=='SELL')return h;
-  const sell=mode==='SELL',fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
-  const eod=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),verified=eod&&unityDataQuality(eod,s.isin)?.canCompare;
-  const available=verified&&market&&Number(market.price)>0&&fx&&fx.rate>0;
-  h+='<form class="home-trade-form" id="home-trade-form"><h3>'+(sell?'Testverkauf':'Testkauf')+' · '+esc(s.name)+'</h3>'+
-    '<p class="tiny muted">Nur Simulation, kein echter Börsenauftrag. Kurs und EUR-Umrechnung werden automatisch übernommen. Der Börsenkurs ist ein unverbindlicher Referenzwert, kein ausführbarer Kauf-/Verkaufspreis.</p>'+
-    '<input type="hidden" name="instrumentId" value="'+esc(s.id)+'"><input type="hidden" name="type" value="'+mode+'">'+
+  const sell=mode==='SELL',initialPrice=Number(market?.price),initialFx=Number(rate?.rate)||(s.currency==='EUR'?1:NaN);
+  h+='<form class="home-trade-form" id="home-trade-form"><h3>'+(sell?'Testverkauf':'Testkauf')+' · '+esc(s.name)+'</h3><p class="tiny muted">Nur Simulation, kein echter Börsenauftrag. Du kannst den vorgeschlagenen Kurs und Wechselkurs jederzeit überschreiben. Eine offene Tiefenanalyse blockiert diese Testbuchung nicht.</p><input type="hidden" name="instrumentId" value="'+esc(s.id)+'"><input type="hidden" name="type" value="'+mode+'">'+
     '<label>Stückzahl<input type="number" name="quantity" step="any" min="0.000001" '+(sell?'max="'+String(Number(p.qty.toFixed(6)))+'"':'')+' required placeholder="'+(sell?'Maximal '+number(p.qty,4):'z. B. 5')+'"></label>'+
-    '<label>Gebühr in EUR<input type="number" name="fee" step="0.01" min="0" value="1.00" required><small>Standard: 1,00 € je Simulation. Passe den Betrag an deinen Broker an.</small></label>'+
-    '<div class="home-trade-auto full"><b>Aktienkurs:</b> '+(market?number(market.price,2)+' '+esc(s.currency):'Kein verifizierbarer Referenzkurs')+
-    '<small>'+(market?esc(market.precision==='15m-bar'?'15-Minuten-Kursbalken · '+new Date(market.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}):'Börsenschlusskurs · '+market.date):'Kursdaten fehlen')+'</small></div>'+
-    '<div class="home-trade-auto full"><b>Automatische EUR-Umrechnung:</b> '+(fx?number(fx.rate,6)+' € je '+esc(s.currency):'Noch kein gültiger Wechselkurs verfügbar')+
-    '<small>'+(fx?esc(fx.source)+' · '+esc(fx.date):'Für diese Währung muss zunächst eine aktuelle EZB-Referenz verfügbar sein.')+'</small></div>'+
-    '<div class="home-trade-total full" id="home-trade-estimate" aria-live="polite">Voraussichtlicher Testbetrag: –</div>'+
-    '<label class="full">Notiz (optional)<textarea name="note" maxlength="1000" placeholder="Eigene Beobachtung"></textarea></label>'+
-    '<div class="full home-trade-confirm"><button class="primary" type="submit" '+(available?'':'disabled')+'>'+(sell?'Testverkauf speichern':'Testkauf speichern')+'</button><button type="button" class="secondary" data-home-trade-cancel>Abbrechen</button></div></form>';
+    '<label>Gebühr in EUR<input type="number" name="fee" step="0.01" min="0" value="1.00" required><small>Standard: 1,00 € je Simulation.</small></label>'+
+    '<label>Simulierter Kurs in '+esc(s.currency)+'<input type="number" name="price" step="any" min="0.000001" required value="'+(Number.isFinite(initialPrice)?String(initialPrice):'')+'" placeholder="Kurs eingeben"><small>'+(market?'Vorschlag: '+esc(market.source||'Tageskurs')+' · '+esc(market.date||''): 'Kein Kurs vorhanden – bitte selbst einen Testkurs eingeben.')+'</small></label>'+
+    '<label>EUR je 1 '+esc(s.currency)+'<input type="number" name="fx" step="any" min="0.000001" required value="'+(Number.isFinite(initialFx)?String(initialFx):'')+'" placeholder="'+(s.currency==='EUR'?'1':'Wechselkurs eingeben')+'"><small>'+(rate?'Vorschlag: '+esc(rate.source||'Referenzkurs')+' · '+esc(rate.date||''):'Kein automatischer Wechselkurs vorhanden – bitte Testwert eingeben.')+'</small></label>'+
+    '<div class="home-trade-total full" id="home-trade-estimate" aria-live="polite">Voraussichtlicher Testbetrag: –</div><label class="full">Notiz (optional)<textarea name="note" maxlength="1000" placeholder="Eigene Beobachtung oder Grund der Simulation"></textarea></label><div class="full home-trade-confirm"><button class="primary" type="submit">'+(sell?'Testverkauf speichern':'Testkauf speichern')+'</button><button type="button" class="secondary" data-home-trade-cancel>Abbrechen</button></div></form>';
   return h;
 }
 function unityHomeUpdateTradeEstimate(form){
-  const el=form.querySelector('#home-trade-estimate'),s=stocks().find(x=>x.id===form.elements.instrumentId?.value);
-  if(!el||!s)return;
-  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
-  const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
-  const n=Number(form.elements.quantity?.value),fee=Number(form.elements.fee?.value)||0,amount=n*Number(market?.price)*Number(fx?.rate);
+  const el=form.querySelector('#home-trade-estimate');if(!el)return;
+  const n=Number(form.elements.quantity?.value),fee=Number(form.elements.fee?.value)||0,price=Number(form.elements.price?.value),fx=Number(form.elements.fx?.value),amount=n*price*fx;
   if(!(fee>=0&&Number.isFinite(fee)))return el.textContent='Gebühr prüfen';
   const net=amount+(form.elements.type?.value==='SELL'?-fee:fee);
-  el.textContent=n>0&&market&&fx?'Voraussichtlicher '+(form.elements.type?.value==='SELL'?'Nettoerlös':'Gesamtaufwand')+': '+euro(net)+' · Gebühr '+euro(fee)+' · Spread nicht enthalten':'Voraussichtlicher Testbetrag: –';
+  el.textContent=n>0&&price>0&&fx>0?'Voraussichtlicher '+(form.elements.type?.value==='SELL'?'Nettoerlös':'Gesamtaufwand')+': '+euro(net)+' · Gebühr '+euro(fee)+' · Spread nicht enthalten':'Bitte Stückzahl, Kurs und EUR-Wechselkurs eingeben.';
 }
-
 async function unityHomeSaveTrade(data){
   const s=stocks().find(x=>x.id===data.instrumentId);if(!s)throw Error('Aktie nicht gefunden.');
   const type=data.type;if(type!=='BUY'&&type!=='SELL')throw Error('Ungültige Buchungsart.');
-  const quantity=Number(data.quantity),fee=Number(data.fee??1),at=new Date();
-  const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
-  const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+  const quantity=Number(data.quantity),fee=Number(data.fee??1),price=Number(data.price),fx=Number(data.fx),at=new Date();
   if(!(quantity>0&&Number.isFinite(quantity)))throw Error('Bitte eine gültige Stückzahl eingeben.');
+  if(!(price>0&&Number.isFinite(price)))throw Error('Bitte einen gültigen simulierten Kurs eingeben.');
+  if(!(fx>0&&Number.isFinite(fx)))throw Error('Bitte einen gültigen EUR-Wechselkurs eingeben.');
   if(!(fee>=0&&Number.isFinite(fee)&&fee<=100000))throw Error('Bitte eine gültige Gebühr in EUR eingeben.');
-  const daily=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
-  if(!daily||!unityDataQuality(daily,s.isin)?.canCompare||!market||!(Number(market.price)>0))throw Error('Kein ausreichend aktueller und geprüfter Referenzkurs verfügbar. Testhandel nicht möglich.');
-  if(!rate||!(rate.rate>0))throw Error('Automatischer EUR-Wechselkurs fehlt oder ist veraltet. Testhandel nicht möglich.');
-  const price=Number(market.price),fx=rate.rate;
   if(type==='BUY'&&typeof depotCapital==='function'){const capital=depotCapital(),needed=quantity*price*fx+fee;if(capital.configured&&needed>capital.free+1e-8)throw Error('Nicht genug fiktives Kapital. Verfügbar: '+euro(capital.free)+' · benötigt inklusive Gebühr: '+euro(needed));}
-  if(type==='SELL'){
-    const available=depotLedger(s.id,at.toISOString().slice(0,10)).qty;
-    if(quantity>available+1e-8)throw Error('Nicht genügend simulierte Aktien am gewählten Datum. Verfügbar: '+number(available,4));
-  }
-  const decision=unityHomeDecision(s),quote=market;
-  const t={id:id(),instrumentId:s.id,type,quantity,price,fx,amount:quantity*price,fee,
-    decidedAt:at.toISOString(),executedAt:at.toISOString(),note:String(data.note||'').trim(),
-    fxSource:rate.source,fxReferenceDate:rate.date,priceSource:market.source||null,
-    decisionSnapshot:{action:decision.action,buy:decision.buy,sell:decision.sell,
-      technicalIndex:Number.isFinite(decision.index)?decision.index:null,
-      quoteDate:quote?.date||null,quoteObservedAt:quote?.quotedAt||null,quotePrecision:quote?.precision||'day',quotePrice:quote&&Number.isFinite(Number(quote.price))?Number(quote.price):null,
-      reason:decision.reason,source:'UNITY EOD-Analyse · keine Handelsfreigabe'},
-    source:'UNITY Lab · Testhandel',createdAt:new Date().toISOString()};
-  // Check the entire simulated timeline; a backdated sale may invalidate a later sale.
-  let running=0;
-  for(const item of [...depotActiveTrades(s.id),t].sort((a,b)=>a.executedAt.localeCompare(b.executedAt)||a.createdAt.localeCompare(b.createdAt))){
-    running+=item.type==='BUY'?Number(item.quantity):-Number(item.quantity);
-    if(running < -1e-8)throw Error('Der Testhandel würde zu einem negativen Bestand in der Buchungshistorie führen.');
-  }
-  if(!confirm((type==='BUY'?'Testkauf':'Testverkauf')+' von '+number(quantity,4)+' Stück '+s.name+' zu '+number(price,2)+' '+s.currency+' (ca. '+euro(quantity*price*fx)+') speichern? EZB-Referenzkurs '+rate.date+'. Dies ist KEIN echter Börsenauftrag.'))return false;
-  await put('transactions',t);await audit(type==='BUY'?'BUY_ADD':'SELL_ADD',t.id,'Simuliert · '+s.ticker);
-  await refresh();return true;
+  if(type==='SELL'){const available=depotLedger(s.id,at.toISOString().slice(0,10)).qty;if(quantity>available+1e-8)throw Error('Nicht genügend simulierte Aktien am gewählten Datum. Verfügbar: '+number(available,4));}
+  const decision=unityHomeDecision(s),autoRate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,market=(typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null)||(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
+  const manualPrice=!market||Math.abs(Number(market.price)-price)>1e-8,manualFx=!autoRate||Math.abs(Number(autoRate.rate)-fx)>1e-8;
+  const trade={id:id(),instrumentId:s.id,type,quantity,price,fx,amount:quantity*price,fee,decidedAt:at.toISOString(),executedAt:at.toISOString(),note:String(data.note||'').trim(),fxSource:manualFx?'Manuell eingegebener Simulationswechselkurs':autoRate.source,fxReferenceDate:manualFx?at.toISOString().slice(0,10):autoRate.date,priceSource:manualPrice?'Manuell eingegebener Simulationskurs':market?.source||'Lokaler Referenzkurs',decisionSnapshot:{action:decision.action,buy:decision.buy,sell:decision.sell,technicalIndex:Number.isFinite(decision.index)?decision.index:null,quoteDate:market?.date||null,quoteObservedAt:market?.quotedAt||null,quotePrecision:market?.precision||'manual',quotePrice:market&&Number.isFinite(Number(market.price))?Number(market.price):null,reason:decision.reason,source:'UNITY Analyse · keine Handelsfreigabe'},source:'UNITY Lab · Testhandel',createdAt:new Date().toISOString()};
+  let running=0;for(const item of [...depotActiveTrades(s.id),trade].sort((a,b)=>a.executedAt.localeCompare(b.executedAt)||a.createdAt.localeCompare(b.createdAt))){running+=item.type==='BUY'?Number(item.quantity):-Number(item.quantity);if(running < -1e-8)throw Error('Der Testhandel würde zu einem negativen Bestand in der Buchungshistorie führen.');}
+  if(!confirm((type==='BUY'?'Testkauf':'Testverkauf')+' von '+number(quantity,4)+' Stück '+s.name+' zu '+number(price,2)+' '+s.currency+' (ca. '+euro(quantity*price*fx)+') speichern? Dies ist KEIN echter Börsenauftrag.'))return false;
+  await put('transactions',trade);await audit(type==='BUY'?'BUY_ADD':'SELL_ADD',trade.id,'Simuliert · '+s.ticker);await refresh();return true;
 }
 
 function unityHomeManagePanel(){

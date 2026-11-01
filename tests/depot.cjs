@@ -1,7 +1,8 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const html=fs.readFileSync('index.html','utf8');
-assert.match(html,/depotOverview\(\)/);
+assert.match(html,/depot\.js/);
+assert.match(html,/function overview\(\)\{return typeof unityHome/);
 assert.match(html,/depotSellForm\(\)/);
 assert.match(html,/depot\.js/);
 assert.match(html,/\['unity-fund','unity-csv','sell-form'\]/);

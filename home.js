@@ -37,7 +37,7 @@ function unityHomeMovement(x,range){
   return a.length>=2?(Number(a.at(-1).close)/Number(a[0].close)-1)*100:NaN;
 }
 function unityHomeDecision(s){
-  const {x,m,quality,valid}=unityHomeQuote(s);
+  const {x,m,quality,technical,valid}=unityHomeQuote(s);
   if(!x||!m)return {action:'Nicht bewertbar',buy:'Nicht entscheidbar',sell:'Nicht entscheidbar',reason:'Für diese Aktie fehlen ausreichend belastbare Kursdaten.',technical:'Keine Daten',confidence:'Keine ausreichende Datenbasis'};
   const a=unityCalc(s),gaps=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;
   if(!valid){

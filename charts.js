@@ -2,7 +2,7 @@
 /* Lightweight, self-contained SVG charts from dated daily close history.
    No synthetic interpolation of missing trading days, no intraday claims. */
 let unityChartRange='1Y',unityChartMA=true;
-const unityRangeDays={'1W':5,'1M':22,'3M':66,'6M':132,'1Y':260,'3Y':780,'6Y':1600};
+const unityRangeDays={'1D':2,'1W':5,'1M':22,'3M':66,'6M':132,'1Y':260,'3Y':780,'6Y':1600};
 function unityChartData(item,range){
   if(!item||!Array.isArray(item.points))return [];
   const source=item.points.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date)&&Number.isFinite(Number(p.close))&&Number(p.close)>0);
@@ -72,8 +72,8 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('button[data-chart-range]');if(!b)return;
   const r=b.dataset.chartRange;if(!Object.hasOwn(unityRangeDays,r))return;
   unityChartRange=r;render();
-  (document.getElementById('depot-detail')||document.getElementById('unity-company-detail'))?.scrollIntoView({block:'start'});
+  (document.getElementById('home-stock-detail')||document.getElementById('depot-detail')||document.getElementById('unity-company-detail'))?.scrollIntoView({block:'start'});
 });
 document.addEventListener('change',e=>{
-  if(e.target.id==='unity-chart-ma'){unityChartMA=!!e.target.checked;render();document.getElementById('unity-company-detail')?.scrollIntoView({block:'start'})}
+  if(e.target.id==='unity-chart-ma'){unityChartMA=!!e.target.checked;render();(document.getElementById('home-stock-detail')||document.getElementById('unity-company-detail'))?.scrollIntoView({block:'start'})}
 });

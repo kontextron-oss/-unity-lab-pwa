@@ -81,3 +81,41 @@ async function unityLoadDynamicStock(s){
   unityDynamicPending.set(symbol,task);
   return task;
 }
+
+/* Headline-only news discovery. Headlines are NOT investment signals and are
+ * never fed into the automated buy/sell gate without source verification. */
+const unityNewsItems=new Map(),unityNewsLoading=new Set(),unityNewsErrors=new Map();
+async function unityLoadNews(s){
+ if(!s?.id||unityNewsLoading.has(s.id))return;
+ const old=unityNewsItems.get(s.id);
+ if(old&&Date.now()-old.fetchedAt<30*60000)return;
+ unityNewsLoading.add(s.id);
+ try{
+  const q='"'+String(s.name||'').slice(0,70)+'" Aktie';
+  const url='https://news.google.com/rss/search?q='+encodeURIComponent(q)+'&hl=de&gl=DE&ceid=DE%3Ade';
+  const response=await fetch(unityDiscoveryProxy+url,{credentials:'omit',cache:'no-store'});
+  if(!response.ok)throw Error('Nachrichtenquelle HTTP '+response.status);
+  const xml=new DOMParser().parseFromString(await response.text(),'application/xml');
+  if(xml.querySelector('parsererror'))throw Error('Nachrichtenformat nicht lesbar');
+  const news=[...xml.querySelectorAll('item')].slice(0,12).map(node=>{
+    const title=String(node.querySelector('title')?.textContent||'').trim().slice(0,180);
+    const link=String(node.querySelector('link')?.textContent||'').trim();
+    const date=String(node.querySelector('pubDate')?.textContent||'').trim();
+    const published=Date.parse(date);
+    return {title,link,date:Number.isFinite(published)?new Date(published).toISOString():'',published};
+  }).filter(n=>n.title&&/^https:\/\/(news\.google\.com|www\.google\.com)\//.test(n.link)&&
+    Number.isFinite(n.published)&&n.published<=Date.now()+60000&&Date.now()-n.published<=31*86400000).slice(0,6);
+  unityNewsItems.set(s.id,{fetchedAt:Date.now(),news});
+  unityNewsErrors.delete(s.id);
+ }catch(e){unityNewsErrors.set(s.id,String(e.message||e))}
+ finally{unityNewsLoading.delete(s.id);if(typeof render==='function'&&typeof db!=='undefined'&&db&&typeof activeTab!=='undefined'&&activeTab!=='stocks')render()}
+}
+function unityNewsPanel(s){
+ const data=unityNewsItems.get(s.id);
+ let h='<section class="home-news"><h3>Aktuelle Meldungen · externe Quellen</h3>';
+ if(!data)h+='<p class="tiny muted">'+(unityNewsErrors.has(s.id)?'Automatischer Nachrichtenabruf derzeit nicht erreichbar.':'Nachrichten werden geladen …')+'</p>';
+ else if(!data.news.length)h+='<p class="tiny muted">Keine passenden Meldungen der letzten 31 Tage aus dieser Quelle abrufbar.</p>';
+ else for(const n of data.news)h+='<p><a href="'+n.link+'" target="_blank" rel="noopener noreferrer">'+(typeof esc==='function'?esc(n.title):n.title)+'</a><small class="tiny muted"> · '+n.date.slice(0,10)+'</small></p>';
+ h+='<p class="tiny muted">Quelle: Google News RSS über cors.dev. Automatisch gefundene Schlagzeilen, nicht auf Vollständigkeit, Zuordnung oder Anlagewirkung geprüft.</p></section>';
+ return h;
+}

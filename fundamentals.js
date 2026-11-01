@@ -52,6 +52,16 @@ function unityFundPilotPanel(s){
    }
    h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+esc(value)+'</b><small>'+esc(help)+'</small></div>';
   }
+  const ratios=[['revenueGrowth','Umsatzwachstum gegenüber Vorjahr'],['netIncomeGrowth','Gewinnveränderung gegenüber Vorjahr'],
+    ['netMargin','Nettomarge'],['equityRatio','Eigenkapitalquote'],['operatingCashFlowMargin','Operative Cashflow-Marge']];
+  for(const [key,label] of ratios){
+    const r=item.derived?.[key];
+    const valid=r&&r.unit==='percent'&&Number.isFinite(Number(r.value))&&r.periodEnd===item.latestFiling?.periodEnd&&
+      (!r.priorPeriodEnd||r.priorPeriodEnd===item.priorFiling?.periodEnd);
+    h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+
+      (valid?new Intl.NumberFormat('de-DE',{minimumFractionDigits:1,maximumFractionDigits:2,signDisplay:key.endsWith('Growth')?'exceptZero':'auto'}).format(Number(r.value))+' %':'Nicht berechenbar')+
+      '</b><small>'+(valid?'Aus geprüften Berichtskennzahlen berechnet':'Keine ausreichend vergleichbaren Geschäftsjahre')+'</small></div>';
+  }
   h+='<p class="tiny muted">Letzte Quellenprüfung: '+esc(item.checkedAt||'unbekannt')+' · '+esc(item.source||'ESEF')+'</p>';
   if(item.investorRelations&&/^https:\/\//.test(item.investorRelations))
    h+='<p><a href="'+esc(item.investorRelations)+'" target="_blank" rel="noopener noreferrer">Offizielle Investor-Relations-Seite öffnen</a></p>';

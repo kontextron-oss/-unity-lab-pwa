@@ -163,11 +163,11 @@ def derived_ratios(current, previous, end_current, end_previous):
 # statements, these are a deliberately small, non-comparable highlights set.
 OFFICIAL_SOURCES={
  "CH0012221716":{
-  "url":"https://www.abb.com/global/en/company/annual-reporting-suite/key-figures",
+  "url":"https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
   "issuer":"ABB", "year":"2025", "currency":"USD",
   "facts":{
-   "revenue":{"pattern":r"REVENUES\s+in\s+mn\s*\$\s*([\d,]+)","scale":1_000_000,"label":"Umsatz"},
-   "freeCashFlow":{"pattern":r"FREE\s+CASHFLOW\s+in\s+mn\s*\$\s*([\d,]+)","scale":1_000_000,"label":"Free Cashflow"}
+   "revenue":{"pattern":r"FY\s*2025.{0,500}?Revenues\s*\$\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "operatingCashFlow":{"pattern":r"FY\s*2025.{0,900}?Cash\s+flow\s+from\s+operating\s+activities\s*\$\s*([\d,]+)\s*million","scale":1_000_000,"label":"Operativer Cashflow"}
   }},
  "DE000ENER6Y0":{
   "url":"https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
@@ -181,7 +181,7 @@ OFFICIAL_SOURCES={
   "url":"https://www.infineon.com/press-release/2025/infxx202511-021",
   "issuer":"Infineon","year":"2025","currency":"EUR",
   "facts":{
-   "revenue":{"pattern":r"FY\s*2025\s*:\s*Revenue\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "revenue":{"pattern":r"(?<!Q4 )FY\s*2025\s*:\s*Revenue\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
    "adjustedFreeCashFlow":{"pattern":r"positive\s+Adjusted\s+Free\s+Cash\s+Flow\s+of\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Bereinigter Free Cashflow"}
   }}
 }

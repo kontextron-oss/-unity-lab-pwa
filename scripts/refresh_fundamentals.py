@@ -60,6 +60,10 @@ def find_filings(lei):
     # Entity-specific route prevents similar-name subsidiaries from being mixed.
     url=BASE+"/api/entities/"+urllib.parse.quote(lei)+"/filings?page%5Bsize%5D=12"
     data=get_json(url, 1_000_000)
+    print("ESEF entity",lei,"returned",len(data.get("data",[])),"entries",flush=True)
+    if data.get("data"):
+        first=data["data"][0]
+        print("ESEF first id",str(first.get("id"))[:100],"attribute keys",list((first.get("attributes") or {}).keys())[:30],flush=True)
     result=[]
     for item in data.get("data", []):
         attrs=item.get("attributes") or {}

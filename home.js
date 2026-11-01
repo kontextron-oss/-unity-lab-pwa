@@ -69,15 +69,13 @@ function unityPreAnalysis(s){
   return {kind:'neutral',label:'Beobachten',score,detail:'Technische Lage ist noch nicht eindeutig.'};
 }
 function unityPreAnalysisSummary(selected){
-  const items=selected.map(s=>({s,p:unityPreAnalysis(s)})),positive=items.filter(x=>x.p.kind==='positive').sort((a,b)=>b.p.score-a.p.score),improving=items.filter(x=>x.p.kind==='improving').sort((a,b)=>b.p.score-a.p.score),weak=items.filter(x=>x.p.kind==='weak').sort((a,b)=>a.p.score-b.p.score),neutral=items.filter(x=>x.p.kind==='neutral'),missing=items.filter(x=>['waiting','loading','blocked'].includes(x.p.kind));
-  let h='<section class="home-next-actions" aria-label="Ergebnis der Voranalyse"><h2>Ergebnis der Voranalyse · alle '+items.length+' Aktien</h2>';
-  const group=(title,desc,list,cls,action)=>{if(!list.length)return '';let out='<div class="next-action-group '+cls+'"><h3>'+title+' ('+list.length+')</h3><p>'+desc+'</p>';for(const {s,p} of list)out+='<div class="next-action-row"><div><b>'+esc(s.name)+'</b><small>'+esc(p.label)+' · '+(Number.isFinite(p.score)?p.score+'/100':'kein Score')+(p.detail?' · '+esc(p.detail):'')+'</small></div><button type="button" class="'+(action==='deep'?'primary':'secondary')+'" data-'+(action==='deep'?'home-analyze':'home-open')+'="'+esc(s.id)+'">'+(action==='deep'?'Tiefenanalyse':'Ansehen')+'</button></div>';return out+'</div>'};
-  h+=group('Jetzt genauer prüfen','Technisch positive Entwicklung; Tiefenanalyse liefert Fundamentaldaten und Risiken.',positive,'next-positive','deep');
-  h+=group('Beobachten','Verbesserung erkennbar, noch nicht ausreichend bestätigt.',improving,'next-improving','open');
-  h+=group('Technisch schwach','Abwärtsgerichtete oder schwache technische Lage.',weak,'next-neutral','open');
-  h+=group('Neutral beobachten','Noch kein eindeutiges technisches Bild.',neutral,'next-neutral','open');
-  h+=group('Datenstatus','Diese Werte brauchen Kursdaten oder eine erreichbare Quelle; keine negative Bewertung.',missing,'next-missing','open');
-  h+='<p class="tiny muted">Jede ausgewählte Aktie wird hier einzeln aufgeführt. Technische Vorsortierung, kein automatisches Kaufsignal.</p></section>';return h;
+  const items=selected.map(s=>({s,p:unityPreAnalysis(s),signal:unityHomeSignal(s)}));
+  const groups=[['Kaufkandidaten',items.filter(x=>x.signal.kind==='buy')],['Verkaufssignale',items.filter(x=>x.signal.kind==='sell')],['Analyse offen',items.filter(x=>x.signal.label==='Analyse offen')],['Technische Voranalyse',items.filter(x=>x.signal.kind==='technical')],['Datenprüfung',items.filter(x=>x.signal.kind==='warning')],['Weitere Bewertungen',items.filter(x=>!['buy','sell','technical','warning'].includes(x.signal.kind))]];
+  let h='<section class="home-next-actions" aria-label="UNITY Bewertungen"><h2>UNITY Bewertungen · alle '+items.length+' Aktien</h2>';
+  for(const [title,list] of groups){if(!list.length)continue;h+='<div class="next-action-group"><h3>'+title+' ('+list.length+')</h3>';
+    for(const {s,p,signal} of list)h+='<div class="next-action-row"><div><b>'+esc(s.name)+'</b><small>'+esc(signal.label)+' · '+esc(signal.detail||'')+(Number.isFinite(p.score)?' · Voranalyse '+p.score+'/100':' · Voranalyse: '+esc(p.label))+'</small></div><button type="button" class="secondary" data-home-open="'+esc(s.id)+'">Ansehen</button></div>';
+    h+='</div>'}
+  h+='<p class="tiny muted">Bewertung und technische Voranalyse sind getrennt ausgewiesen.</p></section>';return h;
 }
 function unityPilotDecision(s){
   const state=unityHomeDataState(s),{m,technical}=unityHomeQuote(s);

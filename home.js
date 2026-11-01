@@ -127,7 +127,7 @@ function unityHomeTradeActions(s){
   h+='<form class="home-trade-form" id="home-trade-form"><h3>'+(sell?'Testverkauf':'Testkauf')+' · '+esc(s.name)+'</h3>'+
     '<p class="tiny muted">Nur eine Simulation. Es wird keine Order an eine Bank oder Börse gesendet. Der Kurs ist ein Vorschlag auf Basis des letzten verfügbaren Schlusskurses, kein ausführbarer Echtzeitkurs.</p>'+
     '<input type="hidden" name="instrumentId" value="'+esc(s.id)+'"><input type="hidden" name="type" value="'+mode+'">'+
-    '<label>Stückzahl<input type="number" name="quantity" step="any" min="0.000001" '+(sell?'max="'+number(p.qty,6)+'"':'')+' required placeholder="'+(sell?'Maximal '+number(p.qty,4):'z. B. 5')+'"></label>'+
+    '<label>Stückzahl<input type="number" name="quantity" step="any" min="0.000001" '+(sell?'max="'+String(Number(p.qty.toFixed(6)))+'"':'')+' required placeholder="'+(sell?'Maximal '+number(p.qty,4):'z. B. 5')+'"></label>'+
     '<label>Simulierter Kurs ('+esc(s.currency)+')<input type="number" name="price" step="any" min="0.000001" value="'+esc(price)+'" required></label>'+
     '<label>EUR je 1 '+esc(s.currency)+'<input type="number" name="fx" step="any" min="0.000001" value="'+fx+'" '+(eur?'readonly':'required')+' placeholder="'+(eur?'1':'Aktuellen Wechselkurs eintragen')+'"></label>'+
     '<label>Zeitpunkt<input type="datetime-local" name="executedAt" value="'+localNow()+'" required></label>'+

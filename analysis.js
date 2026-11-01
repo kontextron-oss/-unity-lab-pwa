@@ -2,6 +2,7 @@
 let selectedUnityStock='';
 const un=(x)=>x===''||x===undefined||x===null?NaN:Number(x);
 const uc=x=>Math.max(0,Math.min(100,x));
+const number=(x,d=2)=>Number.isFinite(Number(x))?new Intl.NumberFormat('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(Number(x)):'–';
 const us=x=>Number.isFinite(x)?number(x,0)+'/100':'Daten fehlen';
 function uf(id){return cache.fundamentals.find(x=>x.id===id)||{}}
 function uh(id){return [...cache.histories].filter(x=>x.instrumentId===id).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0]||null}

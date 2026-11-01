@@ -133,6 +133,27 @@ def extract_metrics(document, fiscal_end, currency, source):
                 break
     return result
 
+def derived_ratios(current, previous, end_current, end_previous):
+    out={}
+    for key,numerator,denominator in (
+        ("netMargin","netIncome","revenue"),
+        ("equityRatio","equity","assets"),
+        ("operatingCashFlowMargin","operatingCashFlow","revenue")):
+        n=current.get(numerator,{}).get("value")
+        d=current.get(denominator,{}).get("value")
+        if isinstance(n,(float,int)) and isinstance(d,(float,int)) and d>0:
+            out[key]={"value":round(100*n/d,2),"unit":"percent","periodEnd":end_current,
+                      "basis":[numerator,denominator]}
+    a=period_end(end_current);b=period_end(end_previous)
+    if a and b and 330<=(a-b).days<=400:
+        for key,metric in (("revenueGrowth","revenue"),("netIncomeGrowth","netIncome")):
+            n=current.get(metric,{}).get("value")
+            p=previous.get(metric,{}).get("value")
+            if isinstance(n,(float,int)) and isinstance(p,(float,int)) and p>0:
+                out[key]={"value":round(100*(n/p-1),2),"unit":"percent",
+                          "periodEnd":end_current,"priorPeriodEnd":end_previous,"basis":[metric]}
+    return out
+
 def build():
     old={}
     if OUTPUT.exists():
@@ -143,8 +164,8 @@ def build():
     for isin,stock in PILOT.items():
         row={"name":stock["name"],"isin":isin,"lei":stock["lei"],
              "reportCurrency":stock["currency"],"investorRelations":stock["investor"],
-             "note":stock["note"],"status":"not-covered","metrics":{},
-             "latestFiling":None,"checkedAt":now,"source":"filings.xbrl.org ESEF (XBRL International)",
+             "note":stock["note"],"status":"not-covered","metrics":{},"priorMetrics":{},"derived":{},
+             "latestFiling":None,"priorFiling":None,"checkedAt":now,"source":"filings.xbrl.org ESEF (XBRL International)",
              "errors":[]}
         if not stock["lei"]:
             row["status"]="no-esef-route"
@@ -163,6 +184,16 @@ def build():
                             report=get_json(docurl)
                             row["metrics"]=extract_metrics(report,filings[0]["periodEnd"],stock["currency"],docurl)
                             row["status"]="metrics-partial" if row["metrics"] else "filing-no-validated-metrics"
+                            previous=next((f for f in filings[1:] if f["periodEnd"]!=filings[0]["periodEnd"]),None)
+                            if previous and previous.get("jsonUrl"):
+                                row["priorFiling"]=previous
+                                try:
+                                    old_report=get_json(previous["jsonUrl"])
+                                    row["priorMetrics"]=extract_metrics(old_report,previous["periodEnd"],stock["currency"],previous["jsonUrl"])
+                                except (ValueError,urllib.error.URLError,TimeoutError,KeyError) as prior_error:
+                                    row["errors"].append("Vorjahresbericht: "+str(prior_error)[:120])
+                            row["derived"]=derived_ratios(row["metrics"],row["priorMetrics"],
+                                filings[0]["periodEnd"],row["priorFiling"]["periodEnd"] if row["priorFiling"] else None)
                         except (ValueError,urllib.error.URLError,TimeoutError,KeyError) as ex:
                             row["errors"].append("xBRL-JSON: "+str(ex)[:140])
             except urllib.error.HTTPError as ex:
@@ -177,6 +208,9 @@ def build():
         if row["status"]=="source-unavailable" and prior.get("latestFiling"):
             row["latestFiling"]=prior["latestFiling"]
             row["metrics"]=prior.get("metrics",{})
+            row["priorMetrics"]=prior.get("priorMetrics",{})
+            row["priorFiling"]=prior.get("priorFiling")
+            row["derived"]=prior.get("derived",{})
             row["status"]="stale-previous"
             row["previousCheckedAt"]=prior.get("checkedAt")
         items[isin]=row

@@ -58,7 +58,11 @@ function unityHomeDecision(s){
    turn a row green/red; delayed EOD technical trends never authorize a trade. */
 function unityHomeSignal(s){
   const {x,m,valid,technical,quality}=unityHomeQuote(s);
-  if(!x||!m)return {kind:'warning',label:'Daten fehlen',icon:'!',detail:'Keine belastbare Kursreihe vorhanden.',rank:3};
+  const loading=!!(s?.providerSymbol&&typeof unityDynamicPending!=='undefined'&&unityDynamicPending.has(String(s.providerSymbol).toUpperCase()));
+  if(!x||!m){
+    if(loading)return {kind:'technical',label:'Kursreihe wird geladen',icon:'…',detail:'Sechs Jahre Tageskurse werden abgerufen und danach technisch ausgewertet.',rank:2};
+    return {kind:'warning',label:'Daten fehlen',icon:'!',detail:'Keine belastbare Kursreihe vorhanden.',rank:3};
+  }
   const a=unityCalc(s),veto=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;
   if(!valid){
     if(technical)return {kind:'technical',label:candidate?.status==='candidate'?'Technik: '+candidate.buy:'Technische Voranalyse',icon:'≈',detail:(candidate?.reason||'Trend, SMA50/SMA200, RSI und MACD wurden berechnet.')+' Quelle und Fundamentaldaten sind noch nicht vollständig geprüft.',rank:2};
@@ -261,7 +265,11 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-all')){unityScope='all';activeTab='stocks';render();return}
   if(b.hasAttribute('data-home-capital')){activeTab='trades';render();document.getElementById('depot-capital')?.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.hasAttribute('data-home-trades')){activeTab='trades';render();return}
-  if(b.hasAttribute('data-home-reload')){unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();return}
+  if(b.hasAttribute('data-home-reload')){
+    unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();
+    if(typeof unityRefreshDynamicHistories==='function')unityRefreshDynamicHistories(stocks(),p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
+    return
+  }
 });
 // Recheck the published EOD snapshot when the user returns to the app.
 // A refreshed snapshot is not a live quote stream.
@@ -286,7 +294,8 @@ async function unityPullRefresh(){
     await Promise.allSettled([
       typeof unityLoadMarket==='function'?unityLoadMarket():Promise.resolve(),
       typeof unityLoadIntraday==='function'?unityLoadIntraday():Promise.resolve(),
-      typeof unityLoadFx==='function'?unityLoadFx():Promise.resolve()
+      typeof unityLoadFx==='function'?unityLoadFx():Promise.resolve(),
+      typeof unityRefreshDynamicHistories==='function'?unityRefreshDynamicHistories(stocks()):Promise.resolve()
     ]);
     unityHomeLastCheck=Date.now();unityPullStatus('Kursdaten geprüft');
   }finally{

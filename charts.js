@@ -6,6 +6,13 @@ const unityRangeDays={'1D':2,'1W':5,'1M':22,'3M':66,'6M':132,'1Y':260,'3Y':780,'
 function unityChartData(item,range){
   if(!item||!Array.isArray(item.points))return [];
   const source=item.points.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date)&&Number.isFinite(Number(p.close))&&Number(p.close)>0);
+  // Multi-year views use calendar years, not a fixed count of trading sessions.
+  // The 6Y button therefore means the actual preceding six years.
+  if((range==='6Y'||range==='3Y')&&source.length){
+    const years=range==='6Y'?6:3,last=source.at(-1).date;
+    const cutoff=new Date(last+'T12:00:00Z');cutoff.setUTCFullYear(cutoff.getUTCFullYear()-years);
+    return source.filter(p=>Date.parse(p.date+'T12:00:00Z')>=cutoff.getTime());
+  }
   const max=unityRangeDays[range]||260;
   return source.slice(-max);
 }
@@ -63,6 +70,8 @@ function unityChartPanel(item){
   h+='<div class="unity-range" aria-label="Zeitraum des Kursdiagramms">';
   for(const r of ['1W','1M','3M','6M','1Y','3Y','6Y'])h+='<button type="button" class="'+(r===unityChartRange?'active':'')+'" data-chart-range="'+r+'">'+r+'</button>';
   h+='</div>'+unityChartSvg(item,unityChartRange,false,unityChartMA);
+  h+='<div class="unity-chart-legend" aria-label="Bedeutung der Kurslinien"><span><i class="unity-legend-line unity-legend-price" aria-hidden="true"></i>Kurs</span>'+
+    (unityChartMA?'<span><i class="unity-legend-line unity-legend-sma50" aria-hidden="true"></i>SMA 50 · 50 Börsentage</span><span><i class="unity-legend-line unity-legend-sma200" aria-hidden="true"></i>SMA 200 · 200 Börsentage</span>':'')+'</div>';
   if((unityChartRange==='6Y'&&availableYears<5.7)||(unityChartRange==='3Y'&&availableYears<2.8))h+='<p class="tiny">Verfügbar ab '+esc(data[0]?.date||'–')+' · frühere Börsenkurse liegen nicht vor.</p>';
   h+='<div class="unity-chart-footer"><label class="unity-ma-toggle"><input type="checkbox" id="unity-chart-ma" '+(unityChartMA?'checked':'')+'> SMA 50 / SMA 200 anzeigen</label><span>Letzter Kurs: <b>'+number(Number(item.price),2)+' '+esc(item.currency)+'</b> · '+esc(item.date)+'</span></div>';
   h+='<p class="tiny muted">Datenquelle: '+esc(item.source||'inoffizieller Kursfeed')+'. Historische Schlusskurse, nicht Echtzeit. Fehlende Börsentage werden nicht ergänzt.</p></div>';

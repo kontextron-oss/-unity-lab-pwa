@@ -1,0 +1,47 @@
+name: Refresh European fundamental filings pilot
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/refresh_fundamentals.py
+      - .github/workflows/fundamentals-pilot.yml
+  schedule:
+    - cron: '35 7 * * 1,4'
+  workflow_dispatch:
+concurrency:
+  group: unity-fundamentals-pilot
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate fundamentals parser
+        run: python -m unittest discover -s tests -p 'test_fundamentals.py'
+      - name: Fetch source-backed ESEF filing data
+        run: python scripts/refresh_fundamentals.py
+      - name: Commit snapshot without changing local app data
+        run: |
+          git config user.name "unity-lab-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/fundamentals.json
+          if git diff --cached --quiet; then
+            echo "No fundamentals changes"
+          else
+            git commit -m "data: refresh sourced European financial filings [skip ci]"
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi

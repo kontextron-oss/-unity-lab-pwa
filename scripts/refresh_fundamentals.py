@@ -165,6 +165,9 @@ def build():
                             row["status"]="metrics-partial" if row["metrics"] else "filing-no-validated-metrics"
                         except (ValueError,urllib.error.URLError,TimeoutError,KeyError) as ex:
                             row["errors"].append("xBRL-JSON: "+str(ex)[:140])
+            except urllib.error.HTTPError as ex:
+                row["status"]="no-filing-found" if ex.code==404 else "source-unavailable"
+                if ex.code!=404:row["errors"].append("ESEF API: HTTP "+str(ex.code))
             except (ValueError,urllib.error.URLError,TimeoutError,KeyError) as ex:
                 row["status"]="source-unavailable"
                 row["errors"].append("ESEF API: "+str(ex)[:140])

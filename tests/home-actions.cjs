@@ -44,18 +44,20 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
  assert.equal(transactions[0].type,'BUY');
  assert.equal(transactions[0].source,'UNITY Lab · Testhandel');
  assert.equal(transactions[0].fxSource,'test ECB');
- assert.equal(transactions[0].decisionSnapshot.source,'UNITY EOD-Analyse · keine Handelsfreigabe');
+ assert.equal(transactions[0].decisionSnapshot.source,'UNITY Analyse · keine Handelsfreigabe');
  const sell={...buy,type:'SELL',quantity:'1'};
  assert.equal(await vm.runInContext("unityHomeSaveTrade("+JSON.stringify(sell)+")",sandbox),true);
  assert.equal(transactions[1].type,'SELL');
  await assert.rejects(vm.runInContext("unityHomeSaveTrade("+JSON.stringify({...sell,quantity:'3'})+")",sandbox),/Nicht genügend/);
- assert.equal(transactions[0].fx,1); // manually submitted FX cannot override the automatic EUR rate
+ assert.equal(transactions[0].fx,1); // submitted simulation FX is recorded when it matches the automatic EUR rate
  assert.equal(transactions.length,2);
  const chfBuy={...buy,instrumentId:'a',quantity:'1',price:'9999',fx:'9999'};
  assert.equal(await vm.runInContext("unityHomeSaveTrade("+JSON.stringify(chfBuy)+")",sandbox),true);
- assert.equal(transactions[2].price,240);
- assert.equal(transactions[2].fx,1.08);
- assert.ok(Math.abs(transactions[2].amount*transactions[2].fx-259.2)<0.000001);
+ assert.equal(transactions[2].price,9999);
+ assert.equal(transactions[2].fx,9999);
+ assert.equal(transactions[2].priceSource,'Manuell eingegebener Simulationskurs');
+ assert.equal(transactions[2].fxSource,'Manuell eingegebener Simulationswechselkurs');
+ assert.ok(Math.abs(transactions[2].amount*transactions[2].fx-99980001)<0.000001);
  assert.match(vm.runInContext("unityHomeTradeActions("+JSON.stringify(s1)+")",sandbox),/Gebühr in EUR/);
  assert.match(vm.runInContext("unityHomeSecurityDetails("+JSON.stringify(s2)+",null)",sandbox),/BID\/ASK/);
  console.log('Mobile reorder persisted; test buy/sell validated and recorded without real orders.');

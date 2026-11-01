@@ -72,7 +72,7 @@ function unityDynamicMarketItem(s){
   return {...item,isin:s.isin||''};
 }
 function unityMarketForStock(s){
-  return (s?.isin&&typeof unityMarketItem==='function'?unityMarketItem(s.isin):null)||unityDynamicMarketItem(s);
+  return (s?.isin&&typeof unityMarketItem==='function'?unityMarketItem(s.isin):null)||(typeof unityMarketSymbolItem==='function'?unityMarketSymbolItem(s):null)||unityDynamicMarketItem(s);
 }
 function unityDynamicHistoryId(s){return 'dynamic-history:'+String(s?.id||'')}
 function unityHydrateDynamicHistories(list){

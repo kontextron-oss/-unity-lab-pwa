@@ -105,10 +105,9 @@ function unityPilotDecisionSummary(){
 function unityHomeAnalysisStatus(selected){
   const states=selected.map(unityHomeDataState),count=k=>states.filter(x=>x.kind===k).length;
   const p=typeof unityDynamicProgress!=='undefined'?unityDynamicProgress:{total:0,done:0,ok:0,failed:0,active:''};
-  const pilot=unityPilotStocks(),pilotText=pilot.length+'/20 der ersten Analysegruppe ausgewählt';
-  const live=p.total?'Auslesen '+p.done+'/'+p.total+(p.active?' · '+p.active:''):'Bereit – erste 20 Werte prüfen';
+  const live=p.total?'Auslesen '+p.done+'/'+p.total+(p.active?' · '+p.active:''):'Bereit – alle beobachteten Werte prüfen';
   const busy=!!p.active;
-  return '<section class="home-analysis-status" aria-live="polite"><strong>Analyse-Datenstatus · erste 20 Werte</strong><span class="home-analysis-live">'+esc(live)+'</span><small>'+pilotText+' · '+count('ready')+' technisch ausgewertet · '+count('loading')+' wird geladen · '+count('waiting')+' noch nicht geprüft · '+count('failed')+' Quelle nicht erreichbar · '+count('missing')+' ohne Kursquelle</small><button type="button" class="home-analysis-start" data-home-reload '+(busy?'disabled':'')+'>'+ (busy?'Analyse läuft …':'Erste 20 Kursreihen prüfen')+'</button></section>';
+  return '<section class="home-analysis-status" aria-live="polite"><strong>Analyse-Datenstatus · alle beobachteten Werte</strong><span class="home-analysis-live">'+esc(live)+'</span><small>'+selected.length+' Aktien · '+count('ready')+' technisch ausgewertet · '+count('loading')+' wird geladen · '+count('waiting')+' noch nicht geprüft · '+count('failed')+' Quelle nicht erreichbar · '+count('missing')+' ohne Kursquelle</small><button type="button" class="home-analysis-start" data-home-reload '+(busy?'disabled':'')+'>'+ (busy?'Analyse läuft …':'Alle Kursreihen prüfen')+'</button></section>';
 }
 function unityHomeMovement(x,range){
   const a=unityChartData(x,range);
@@ -193,9 +192,9 @@ function unityHome(){
     const change=pilot&&base>0?(Number(dq.price)/base-1)*100:valid?unityHomeMovement(x,unityHomeRange):NaN;
     const rising=Number.isFinite(change)&&change>0,falling=Number.isFinite(change)&&change<0;
     const cls=rising?'home-up':falling?'home-down':'home-flat';
-    const p=depotPosition(s),signal=unityHomeSignal(s),preAnalysis=unityPreAnalysis(s),pilotDecision=UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())?unityPilotDecision(s):null;
+    const p=depotPosition(s),signal=unityHomeSignal(s),preAnalysis=unityPreAnalysis(s);
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button></div><button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+'<small class="home-pre-decision pre-'+preAnalysis.kind+'">Voranalyse: '+esc(preAnalysis.label)+(Number.isFinite(preAnalysis.score)?' · '+preAnalysis.score+'/100':'')+'</small>'+(pilotDecision?'<small class="home-pilot-decision pilot-'+pilotDecision.kind+'">Entscheidung: '+esc(pilotDecision.label)+'</small>':'')+(p.qty>0?'<small class="home-position-label"><b>Testdepot:</b> '+number(p.qty,4)+' Stück · Ø Kaufpreis '+depotMoney(p.avg)+'</small><small class="home-position-label">Gebühr '+depotMoney(p.fees)+' · Einsatz '+depotMoney(p.cost)+(Number.isFinite(p.pnl)?' · <b class="'+(p.pnl>=0?'positive':'negative')+'">G/V '+(p.pnl>=0?'+':'')+depotMoney(p.pnl)+' ('+(p.cost>0?(p.pnl/p.cost*100).toLocaleString('de-DE',{maximumFractionDigits:2}):'0')+' %)</b>':' · <b>G/V: Kursdaten fehlen</b>')+'</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+'<small class="home-pre-decision pre-'+preAnalysis.kind+'">Voranalyse: '+esc(preAnalysis.label)+(Number.isFinite(preAnalysis.score)?' · '+preAnalysis.score+'/100':'')+'</small>'+(p.qty>0?'<small class="home-position-label"><b>Testdepot:</b> '+number(p.qty,4)+' Stück · Ø Kaufpreis '+depotMoney(p.avg)+'</small><small class="home-position-label">Gebühr '+depotMoney(p.fees)+' · Einsatz '+depotMoney(p.cost)+(Number.isFinite(p.pnl)?' · <b class="'+(p.pnl>=0?'positive':'negative')+'">G/V '+(p.pnl>=0?'+':'')+depotMoney(p.pnl)+' ('+(p.cost>0?(p.pnl/p.cost*100).toLocaleString('de-DE',{maximumFractionDigits:2}):'0')+' %)</b>':' · <b>G/V: Kursdaten fehlen</b>')+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+(valid?unityPct(change):'–')+'</strong><small>'+(dq?number(Number(dq.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(dq?.precision==='15m-bar'?'15m-Pilot · '+esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):dq?esc(dq.date)+' · Schluss':'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button></div>';
   }
   h+='</section>';
@@ -347,9 +346,10 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-trades')){activeTab='trades';render();return}
   if(b.hasAttribute('data-home-reload')){
     (async()=>{
-      const group=await unityEnsurePilotTwenty();
+      await unityEnsurePilotTwenty();
+      const group=stocks();
       unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();
-      if(typeof unityRefreshDynamicHistories==='function')unityRefreshDynamicHistories(group,p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
+      if(typeof unityCompleteDynamicHistories==='function')unityCompleteDynamicHistories(group,p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
     })().catch(err=>alert(err.message||String(err)));
     return
   }

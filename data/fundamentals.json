@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-01T11:36:25+00:00",
+  "source": "XBRL International filings.xbrl.org",
+  "scope": "Four European pilot issuers; partial annual filings, no live valuations",
+  "items": {
+    "CH0012221716": {
+      "name": "ABB",
+      "isin": "CH0012221716",
+      "lei": null,
+      "reportCurrency": "USD",
+      "investorRelations": "https://global.abb/group/en/investors",
+      "note": "Schweizer Emittent: ESEF-Berichterstattung nicht voraussetzbar; Konzern berichtet in USD.",
+      "status": "no-esef-route",
+      "metrics": {},
+      "latestFiling": null,
+      "checkedAt": "2026-11-01T11:36:25+00:00",
+      "source": "filings.xbrl.org ESEF (XBRL International)",
+      "errors": []
+    },
+    "FR0000121972": {
+      "name": "Schneider Electric",
+      "isin": "FR0000121972",
+      "lei": "969500A1YF1XUYYXS284",
+      "reportCurrency": "EUR",
+      "investorRelations": "https://www.se.com/ww/en/about-us/investor-relations/",
+      "note": "ESEF-Recherche über eindeutige französische Konzern-LEI.",
+      "status": "no-filing-found",
+      "metrics": {},
+      "latestFiling": null,
+      "checkedAt": "2026-11-01T11:36:25+00:00",
+      "source": "filings.xbrl.org ESEF (XBRL International)",
+      "errors": []
+    },
+    "DE000ENER6Y0": {
+      "name": "Siemens Energy",
+      "isin": "DE000ENER6Y0",
+      "lei": "5299005CHJZ14D4FDJ62",
+      "reportCurrency": "EUR",
+      "investorRelations": "https://www.siemens-energy.com/global/en/home/investor-relations.html",
+      "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
+      "status": "source-unavailable",
+      "metrics": {},
+      "latestFiling": null,
+      "checkedAt": "2026-11-01T11:36:25+00:00",
+      "source": "filings.xbrl.org ESEF (XBRL International)",
+      "errors": [
+        "ESEF API: HTTP Error 404: NOT FOUND"
+      ]
+    },
+    "DE0006231004": {
+      "name": "Infineon",
+      "isin": "DE0006231004",
+      "lei": "TSI2PJM6EPETEQ4X1U25",
+      "reportCurrency": "EUR",
+      "investorRelations": "https://www.infineon.com/cms/en/about-infineon/investor/",
+      "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
+      "status": "source-unavailable",
+      "metrics": {},
+      "latestFiling": null,
+      "checkedAt": "2026-11-01T11:36:25+00:00",
+      "source": "filings.xbrl.org ESEF (XBRL International)",
+      "errors": [
+        "ESEF API: HTTP Error 404: NOT FOUND"
+      ]
+    }
+  }
+}

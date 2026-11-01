@@ -1,10 +1,1 @@
-{
-  "schemaVersion": 1,
-  "generatedAt": "2026-11-01T00:00:00Z",
-  "scope": "Pilot not yet completed",
-  "source": "No intraday quote verified yet",
-  "successfulSymbols": 0,
-  "failedSymbols": 0,
-  "items": {},
-  "errors": {}
-}
+{"schemaVersion":1,"generatedAt":"2026-11-01T10:15:10+00:00","scope":"Four European pilot stocks; 15m chart bars, NOT guaranteed 15-minute-delayed quotes","source":"Unofficial Yahoo Finance chart; no accuracy, availability or licensing guarantee","successfulSymbols":4,"failedSymbols":0,"items":{"CH0012221716":{"isin":"CH0012221716","name":"ABB","providerSymbol":"ABBN.SW","currency":"CHF","exchange":"Swiss","price":70.68,"quotedAt":"2026-10-30T16:30:00+00:00","quotePrecision":"15m-bar","source":"Yahoo Finance chart · unofficial 15-minute bars","delayedMinutes":null,"lastSuccessfulFetchAt":"2026-11-01T10:15:10+00:00"},"FR0000121972":{"isin":"FR0000121972","name":"Schneider Electric","providerSymbol":"SU.PA","currency":"EUR","exchange":"Paris","price":237.5,"quotedAt":"2026-10-30T16:30:00+00:00","quotePrecision":"15m-bar","source":"Yahoo Finance chart · unofficial 15-minute bars","delayedMinutes":null,"lastSuccessfulFetchAt":"2026-11-01T10:15:10+00:00"},"DE000ENER6Y0":{"isin":"DE000ENER6Y0","name":"Siemens Energy","providerSymbol":"ENR.DE","currency":"EUR","exchange":"XETRA","price":126.92,"quotedAt":"2026-10-30T16:30:00+00:00","quotePrecision":"15m-bar","source":"Yahoo Finance chart · unofficial 15-minute bars","delayedMinutes":null,"lastSuccessfulFetchAt":"2026-11-01T10:15:10+00:00"},"DE0006231004":{"isin":"DE0006231004","name":"Infineon","providerSymbol":"IFX.DE","currency":"EUR","exchange":"XETRA","price":50.56,"quotedAt":"2026-10-30T16:30:00+00:00","quotePrecision":"15m-bar","source":"Yahoo Finance chart · unofficial 15-minute bars","delayedMinutes":null,"lastSuccessfulFetchAt":"2026-11-01T10:15:10+00:00"}},"errors":{}}

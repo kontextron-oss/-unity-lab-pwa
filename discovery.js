@@ -128,6 +128,7 @@ async function unityLoadDynamicQueue(list,onProgress=null,force=false){
   return {total:unique.length,ok,failed};
 }
 function unityRefreshDynamicHistories(list,onProgress=null){return unityLoadDynamicQueue(list,onProgress,true)}
+function unityCompleteDynamicHistories(list,onProgress=null){return unityLoadDynamicQueue(list,onProgress,false)}
 
 /* Headline-only news discovery. Headlines are NOT investment signals and are
  * never fed into the automated buy/sell gate without source verification. */

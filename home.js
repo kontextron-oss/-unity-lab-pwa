@@ -48,7 +48,8 @@ function unityHomeAnalysisStatus(selected){
   const states=selected.map(unityHomeDataState),count=k=>states.filter(x=>x.kind===k).length;
   const p=typeof unityDynamicProgress!=='undefined'?unityDynamicProgress:{total:0,done:0,ok:0,failed:0,active:''};
   const live=p.total?'Auslesen '+p.done+'/'+p.total+(p.active?' · '+p.active:''):'Bereit – „Kursdaten erneut prüfen“ starten';
-  return '<section class="home-analysis-status" aria-live="polite"><strong>Analyse-Datenstatus</strong><span class="home-analysis-live">'+esc(live)+'</span><small>'+count('ready')+' technisch ausgewertet · '+count('loading')+' wird geladen · '+count('waiting')+' noch nicht geprüft · '+count('failed')+' Quelle nicht erreichbar · '+count('missing')+' ohne Kursquelle</small></section>';
+  const busy=!!p.active;
+  return '<section class="home-analysis-status" aria-live="polite"><strong>Analyse-Datenstatus</strong><span class="home-analysis-live">'+esc(live)+'</span><small>'+count('ready')+' technisch ausgewertet · '+count('loading')+' wird geladen · '+count('waiting')+' noch nicht geprüft · '+count('failed')+' Quelle nicht erreichbar · '+count('missing')+' ohne Kursquelle</small><button type="button" class="home-analysis-start" data-home-reload '+(busy?'disabled':'')+'>'+ (busy?'Analyse läuft …':'Kursreihen jetzt prüfen')+'</button></section>';
 }
 function unityHomeMovement(x,range){
   const a=unityChartData(x,range);

@@ -163,11 +163,11 @@ def derived_ratios(current, previous, end_current, end_previous):
 # statements, these are a deliberately small, non-comparable highlights set.
 OFFICIAL_SOURCES={
  "CH0012221716":{
-  "url":"https://new.abb.com/news/detail/132985/q4-2025-results",
+  "url":"https://www.abb.com/global/en/company/annual-reporting-suite/key-figures",
   "issuer":"ABB", "year":"2025", "currency":"USD",
   "facts":{
-   "revenue":{"pattern":r"FY\s*2025.{0,1400}?Revenues\s*\$\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
-   "operatingCashFlow":{"pattern":r"FY\s*2025.{0,1600}?Cash\s+flow\s+from\s+operating\s+activities\s*\$\s*([\d,]+)\s*million","scale":1_000_000,"label":"Operativer Cashflow"}
+   "revenue":{"pattern":r"REVENUES\s+in\s+mn\s*\$\s*([\d,]+)","scale":1_000_000,"label":"Umsatz"},
+   "freeCashFlow":{"pattern":r"FREE\s+CASHFLOW\s+in\s+mn\s*\$\s*([\d,]+)","scale":1_000_000,"label":"Free Cashflow"}
   }},
  "DE000ENER6Y0":{
   "url":"https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
@@ -181,7 +181,7 @@ OFFICIAL_SOURCES={
   "url":"https://www.infineon.com/press-release/2025/infxx202511-021",
   "issuer":"Infineon","year":"2025","currency":"EUR",
   "facts":{
-   "revenue":{"pattern":r"FY\s*2025:\s*Revenue\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "revenue":{"pattern":r"FY\s*2025\s*:\s*Revenue\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
    "adjustedFreeCashFlow":{"pattern":r"positive\s+Adjusted\s+Free\s+Cash\s+Flow\s+of\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Bereinigter Free Cashflow"}
   }}
 }
@@ -202,6 +202,7 @@ def parse_official_highlights(html_document,source):
  facts={}
  for key,rule in source["facts"].items():
   matches=re.findall(rule["pattern"],text,re.I)
+  print("Issuer fact",source["issuer"],key,"matches",matches[:6],flush=True)
   values=set()
   for match in matches:
    try:values.add(float(match.replace(",",""))*rule["scale"])
@@ -216,7 +217,7 @@ def official_highlights(isin):
  source=OFFICIAL_SOURCES.get(isin)
  if not source:return None
  req=urllib.request.Request(source["url"],headers={"User-Agent":HEADERS["User-Agent"],"Accept":"text/html"})
- with urllib.request.urlopen(req,timeout=20) as response:
+ with urllib.request.urlopen(req,timeout=30) as response:
   if int(response.headers.get("Content-Length",0))>2_500_000:raise ValueError("source too large")
   raw=response.read(2_500_001)
   if len(raw)>2_500_000:raise ValueError("source too large")

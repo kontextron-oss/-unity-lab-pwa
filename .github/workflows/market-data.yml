@@ -9,6 +9,9 @@ on:
     - cron: '15 6,12,18,23 * * 1-5'
     - cron: '15 7 * * 6'
   workflow_dispatch:
+concurrency:
+  group: unity-market-snapshot
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
@@ -33,5 +36,15 @@ jobs:
             echo "No market snapshot changes"
           else
             git commit -m "data: refresh delayed reference market snapshot [skip ci]"
-            git push
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo "Snapshot published"
+                exit 0
+              fi
+              sleep $((attempt * 3))
+            done
+            echo "Snapshot publication failed after 3 attempts" >&2
+            exit 1
           fi

@@ -11,7 +11,7 @@ const sandbox={Date,Math,Number,Array,JSON,Set,Map,
  unityChartData:()=>[],unityCalc:()=>({veto:[]}),unityChartPanel:()=>'<svg/>',
  depotPositions:()=>[],depotPosition:()=>({qty:2,cost:100,pnl:NaN,buys:1,sells:0}),
  depotMoney:n=>Number(n).toFixed(2)+' €',depotTradeHistory:()=>'<div>history</div>',
- depotLedger:()=>({qty:2}),localNow:()=> '2026-10-30T10:00',
+ depotLedger:()=>({qty:2}),depotActiveTrades:id=>transactions.filter(t=>t.instrumentId===id),localNow:()=> '2026-10-30T10:00',
  number:(v,d=2)=>Number(v).toFixed(d),euro:v=>Number(v).toFixed(2)+' €',esc:v=>String(v??''),unityPct:v=>Number.isFinite(v)?v.toFixed(1)+' %':'–',
  document:{addEventListener(){}},render(){},alert(){},confirm:()=>true,
  id:()=>String(++sequence),put:async(store,entry)=>{if(store==='transactions')transactions.push(entry);events.push(store);},
@@ -40,6 +40,7 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
  assert.equal(transactions[0].amount,720);
  assert.equal(transactions[0].type,'BUY');
  assert.equal(transactions[0].source,'UNITY Lab · Testhandel');
+ assert.equal(transactions[0].decisionSnapshot.source,'UNITY EOD-Analyse · keine Handelsfreigabe');
  const sell={...buy,type:'SELL',quantity:'1'};
  assert.equal(await vm.runInContext("unityHomeSaveTrade("+JSON.stringify(sell)+")",sandbox),true);
  assert.equal(transactions[1].type,'SELL');

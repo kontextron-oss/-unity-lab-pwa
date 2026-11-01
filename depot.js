@@ -7,14 +7,14 @@ function depotLedger(id,asOf=null){
   let qty=0,cost=0,realized=0,buys=0,sells=0;
   for(const t of depotActiveTrades(id)){
     if(asOf&&t.executedAt.slice(0,10)>asOf)break;
-    const n=Number(t.quantity),amount=Number(t.amount),fx=Number(t.fx);
-    if(!(n>0&&amount>0&&fx>0))continue;
-    if(t.type==='BUY'){qty+=n;cost+=amount*fx;buys++}
+    const n=Number(t.quantity),amount=Number(t.amount),fx=Number(t.fx),fee=Number(t.fee)||0;
+    if(!(n>0&&amount>0&&fx>0&&fee>=0))continue;
+    if(t.type==='BUY'){qty+=n;cost+=amount*fx+fee;buys++}
     else{
       if(n>qty+1e-8)throw Error('Ungültige Verkaufshistorie: mehr Stücke verkauft als vorhanden.');
       const portion=qty>0?Math.min(1,n/qty):0;
       const basis=cost*portion;
-      realized+=amount*fx-basis;
+      realized+=amount*fx-fee-basis;
       cost-=basis;qty-=n;sells++;
       if(qty<1e-8){qty=0;cost=0}
     }
@@ -64,7 +64,7 @@ function depotOverview(){
     }
     h+='</div>';
   }
-  h+='<p class="tiny muted">Kurse: zeitgestempelte Pilotbalken oder verzögerte Tagesschlusskurse; keine garantierte Echtzeit. EUR-Umrechnung: EZB-Referenzkurs, kein handelbarer Bankenkurs. Der Depotwert berücksichtigt nur erfasste Simulationstransaktionen. Ohne historische EUR-Wechselkurse wird keine erfundene Gesamtdepotkurve gezeichnet.</p>'+
+  h+='<p class="tiny muted">Der Einstand enthält erfasste Kaufgebühren; realisierte Ergebnisse und Nettoerlöse berücksichtigen Verkaufsgebühren. Spread, Steuern und Fremdwährungskosten sind nur berücksichtigt, wenn sie als Gebühr erfasst wurden.</p><p class="tiny muted">Kurse: zeitgestempelte Pilotbalken oder verzögerte Tagesschlusskurse; keine garantierte Echtzeit. EUR-Umrechnung: EZB-Referenzkurs, kein handelbarer Bankenkurs. Der Depotwert berücksichtigt nur erfasste Simulationstransaktionen. Ohne historische EUR-Wechselkurse wird keine erfundene Gesamtdepotkurve gezeichnet.</p>'+
     '<div class="actions"><button type="button" class="secondary" data-tab-target="trades">Käufe und Verkäufe ansehen</button></div></section>';
   if(depotSelectedId)h+=depotDetail(depotSelectedId);
   return h;
@@ -87,10 +87,10 @@ function depotTradeHistory(id=null){
   for(const t of ts){
     const date=t.executedAt?.slice(0,10)||'unbekannt',s=cache.instruments.find(x=>x.id===t.instrumentId);
     if(date!==lastDate){h+='<div class="depot-history-date">'+esc(date)+'</div>';lastDate=date}
-    const sell=t.type==='SELL',amount=Number(t.amount)*Number(t.fx);
+    const sell=t.type==='SELL',amount=Number(t.amount)*Number(t.fx),fee=Number(t.fee)||0,net=amount+(sell?-fee:fee);
     h+='<div class="depot-history-row"><span class="depot-history-icon '+(sell?'sell':'buy')+'">'+(sell?'−':'+')+'</span>'+
-      '<span class="depot-history-desc"><b>'+esc(s?.name||'Unbekannt')+'</b><small>'+esc(sell?'Verkauf':'Kauf')+' · '+number(t.quantity,4)+' Stück · '+number(t.price,2)+' '+esc(s?.currency||'')+'</small>'+(t.note?'<small>'+esc(t.note)+'</small>':'')+(t.decisionSnapshot?'<small class="depot-decision-at-trade">UNITY-Befund bei Testhandel: '+esc(t.decisionSnapshot.action)+' · Technikindex '+(Number.isFinite(t.decisionSnapshot.technicalIndex)?t.decisionSnapshot.technicalIndex+'/100':'nicht verfügbar')+' · Kursdaten '+esc(t.decisionSnapshot.quoteDate||'nicht verfügbar')+'</small>':'')+'</span>'+
-      '<span class="depot-history-amount">'+(sell?'+':'−')+depotMoney(amount)+(t.voidedAt?'<small>Storniert</small>':'')+'</span></div>';
+      '<span class="depot-history-desc"><b>'+esc(s?.name||'Unbekannt')+'</b><small>'+esc(sell?'Verkauf':'Kauf')+' · '+number(t.quantity,4)+' Stück · '+number(t.price,2)+' '+esc(s?.currency||'')+' · Gebühr '+depotMoney(fee)+'</small>'+(t.note?'<small>'+esc(t.note)+'</small>':'')+(t.decisionSnapshot?'<small class="depot-decision-at-trade">UNITY-Befund bei Testhandel: '+esc(t.decisionSnapshot.action)+' · Technikindex '+(Number.isFinite(t.decisionSnapshot.technicalIndex)?t.decisionSnapshot.technicalIndex+'/100':'nicht verfügbar')+' · Kursdaten '+esc(t.decisionSnapshot.quoteDate||'nicht verfügbar')+'</small>':'')+'</span>'+
+      '<span class="depot-history-amount">'+(sell?'+':'−')+depotMoney(net)+(t.voidedAt?'<small>Storniert</small>':'')+'</span></div>';
   }
   return h+'</div>';
 }

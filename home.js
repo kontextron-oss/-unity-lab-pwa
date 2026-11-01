@@ -166,6 +166,7 @@ function unityHomeTradeActions(s){
     '<p class="tiny muted">Nur Simulation, kein echter Börsenauftrag. Kurs und EUR-Umrechnung werden automatisch übernommen. Der Börsenkurs ist ein unverbindlicher Referenzwert, kein ausführbarer Kauf-/Verkaufspreis.</p>'+
     '<input type="hidden" name="instrumentId" value="'+esc(s.id)+'"><input type="hidden" name="type" value="'+mode+'">'+
     '<label>Stückzahl<input type="number" name="quantity" step="any" min="0.000001" '+(sell?'max="'+String(Number(p.qty.toFixed(6)))+'"':'')+' required placeholder="'+(sell?'Maximal '+number(p.qty,4):'z. B. 5')+'"></label>'+
+    '<label>Gebühr in EUR<input type="number" name="fee" step="0.01" min="0" value="1.00" required><small>Standard: 1,00 € je Simulation. Passe den Betrag an deinen Broker an.</small></label>'+
     '<div class="home-trade-auto full"><b>Aktienkurs:</b> '+(market?number(market.price,2)+' '+esc(s.currency):'Kein verifizierbarer Referenzkurs')+
     '<small>'+(market?esc(market.precision==='15m-bar'?'15-Minuten-Kursbalken · '+new Date(market.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}):'Börsenschlusskurs · '+market.date):'Kursdaten fehlen')+'</small></div>'+
     '<div class="home-trade-auto full"><b>Automatische EUR-Umrechnung:</b> '+(fx?number(fx.rate,6)+' € je '+esc(s.currency):'Noch kein gültiger Wechselkurs verfügbar')+
@@ -180,17 +181,20 @@ function unityHomeUpdateTradeEstimate(form){
   if(!el||!s)return;
   const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
   const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
-  const n=Number(form.elements.quantity?.value);
-  el.textContent=n>0&&market&&fx?'Voraussichtlicher Testbetrag: '+euro(n*market.price*fx.rate)+' (ohne Gebühren / Spread)':'Voraussichtlicher Testbetrag: –';
+  const n=Number(form.elements.quantity?.value),fee=Number(form.elements.fee?.value)||0,amount=n*Number(market?.price)*Number(fx?.rate);
+  if(!(fee>=0&&Number.isFinite(fee)))return el.textContent='Gebühr prüfen';
+  const net=amount+(form.elements.type?.value==='SELL'?-fee:fee);
+  el.textContent=n>0&&market&&fx?'Voraussichtlicher '+(form.elements.type?.value==='SELL'?'Nettoerlös':'Gesamtaufwand')+': '+euro(net)+' · Gebühr '+euro(fee)+' · Spread nicht enthalten':'Voraussichtlicher Testbetrag: –';
 }
 
 async function unityHomeSaveTrade(data){
   const s=stocks().find(x=>x.id===data.instrumentId);if(!s)throw Error('Aktie nicht gefunden.');
   const type=data.type;if(type!=='BUY'&&type!=='SELL')throw Error('Ungültige Buchungsart.');
-  const quantity=Number(data.quantity),at=new Date();
+  const quantity=Number(data.quantity),fee=Number(data.fee??1),at=new Date();
   const market=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
   const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
   if(!(quantity>0&&Number.isFinite(quantity)))throw Error('Bitte eine gültige Stückzahl eingeben.');
+  if(!(fee>=0&&Number.isFinite(fee)&&fee<=100000))throw Error('Bitte eine gültige Gebühr in EUR eingeben.');
   const daily=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin));
   if(!daily||!unityDataQuality(daily,s.isin)?.canCompare||!market||!(Number(market.price)>0))throw Error('Kein ausreichend aktueller und geprüfter Referenzkurs verfügbar. Testhandel nicht möglich.');
   if(!rate||!(rate.rate>0))throw Error('Automatischer EUR-Wechselkurs fehlt oder ist veraltet. Testhandel nicht möglich.');
@@ -200,7 +204,7 @@ async function unityHomeSaveTrade(data){
     if(quantity>available+1e-8)throw Error('Nicht genügend simulierte Aktien am gewählten Datum. Verfügbar: '+number(available,4));
   }
   const decision=unityHomeDecision(s),quote=market;
-  const t={id:id(),instrumentId:s.id,type,quantity,price,fx,amount:quantity*price,
+  const t={id:id(),instrumentId:s.id,type,quantity,price,fx,amount:quantity*price,fee,
     decidedAt:at.toISOString(),executedAt:at.toISOString(),note:String(data.note||'').trim(),
     fxSource:rate.source,fxReferenceDate:rate.date,priceSource:market.source||null,
     decisionSnapshot:{action:decision.action,buy:decision.buy,sell:decision.sell,
@@ -293,4 +297,4 @@ document.addEventListener('submit',async e=>{
   }catch(err){alert(err.message||String(err))}
 });
 
-document.addEventListener('input',e=>{if(e.target.closest?.('#home-trade-form')&&e.target.name==='quantity')unityHomeUpdateTradeEstimate(e.target.form)});
+document.addEventListener('input',e=>{if(e.target.closest?.('#home-trade-form')&&['quantity','fee'].includes(e.target.name))unityHomeUpdateTradeEstimate(e.target.form)});

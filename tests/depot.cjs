@@ -8,9 +8,9 @@ assert.match(html,/depot\.js/);
 assert.match(html,/\['unity-fund','unity-csv','sell-form'\]/);
 const stock={id:'s1',isin:'FR0000121972',name:'Schneider Electric',currency:'EUR',ticker:'SU'};
 const transactions=[
- {id:'a',instrumentId:'s1',type:'BUY',executedAt:'2025-01-01T10:00:00Z',createdAt:'2025-01-01T10:00:00Z',quantity:10,amount:1000,price:100,fx:1},
- {id:'b',instrumentId:'s1',type:'SELL',executedAt:'2025-02-01T10:00:00Z',createdAt:'2025-02-01T10:00:00Z',quantity:4,amount:480,price:120,fx:1},
- {id:'c',instrumentId:'s1',type:'BUY',executedAt:'2025-03-01T10:00:00Z',createdAt:'2025-03-01T10:00:00Z',quantity:2,amount:220,price:110,fx:1},
+ {id:'a',instrumentId:'s1',type:'BUY',executedAt:'2025-01-01T10:00:00Z',createdAt:'2025-01-01T10:00:00Z',quantity:10,amount:1000,price:100,fx:1,fee:5},
+ {id:'b',instrumentId:'s1',type:'SELL',executedAt:'2025-02-01T10:00:00Z',createdAt:'2025-02-01T10:00:00Z',quantity:4,amount:480,price:120,fx:1,fee:3},
+ {id:'c',instrumentId:'s1',type:'BUY',executedAt:'2025-03-01T10:00:00Z',createdAt:'2025-03-01T10:00:00Z',quantity:2,amount:220,price:110,fx:1,fee:2},
 ];
 const sandbox={
  cache:{transactions,instruments:[stock]},stocks:()=>[stock],quote:()=>({price:115,fx:1,quotedAt:new Date().toISOString()}),
@@ -24,13 +24,13 @@ vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync('depot.js','utf8'),sandbox);
 const x=vm.runInContext("depotLedger('s1')",sandbox);
 assert.equal(x.qty,8);
-assert.equal(x.cost,820);
-assert.equal(x.realized,80);
+assert.equal(x.cost,825);
+assert.equal(x.realized,75);
 assert.equal(x.buys,2);
 assert.equal(x.sells,1);
 const asOf=vm.runInContext("depotLedger('s1','2025-01-15')",sandbox);
 assert.equal(asOf.qty,10);
-assert.equal(asOf.cost,1000);
+assert.equal(asOf.cost,1005);
 const overview=vm.runInContext("depotOverview()",sandbox);
 assert.match(overview,/Mein Depot/);
 assert.match(overview,/Simulation/);
@@ -38,6 +38,7 @@ assert.match(overview,/Schneider Electric/);
 const detail=vm.runInContext("depotDetail('s1')",sandbox);
 assert.match(detail,/Käufe und Verkäufe/);
 assert.match(detail,/Verkauf/);
+assert.match(detail,/Gebühr/);
 assert.match(detail,/<svg/);
 assert.match(fs.readFileSync('charts.js','utf8'),/'6Y':1600/);
 console.log('Depot ledger: weighted cost, realized gains, transactions and chart detail passed.');

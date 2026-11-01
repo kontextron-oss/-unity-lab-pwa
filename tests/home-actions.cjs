@@ -35,11 +35,12 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
  await vm.runInContext("unityHomeShift('c',1)",sandbox);
  assert.equal(vm.runInContext("unityHomeStocks().map(s=>s.id).join(',')",sandbox),'a,c,b');
  assert.ok(refreshes>=2);
- const buy={instrumentId:'b',type:'BUY',quantity:'3',price:'240',fx:'1',executedAt:'2026-10-30T10:00',note:'UNITY Test'};
+ const buy={instrumentId:'b',type:'BUY',quantity:'3',fee:'1.50',price:'240',fx:'1',executedAt:'2026-10-30T10:00',note:'UNITY Test'};
  assert.match(vm.runInContext("(()=>{unityHomeTradeMode='BUY';return unityHomeTradeActions("+JSON.stringify(s2)+")})()",sandbox),/Testkauf speichern/);
  assert.equal(await vm.runInContext("unityHomeSaveTrade("+JSON.stringify(buy)+")",sandbox),true);
  assert.equal(transactions.length,1);
  assert.equal(transactions[0].amount,720);
+ assert.equal(transactions[0].fee,1.5);
  assert.equal(transactions[0].type,'BUY');
  assert.equal(transactions[0].source,'UNITY Lab · Testhandel');
  assert.equal(transactions[0].fxSource,'test ECB');
@@ -55,7 +56,7 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
  assert.equal(transactions[2].price,240);
  assert.equal(transactions[2].fx,1.08);
  assert.ok(Math.abs(transactions[2].amount*transactions[2].fx-259.2)<0.000001);
- assert.match(vm.runInContext("unityHomeTradeActions("+JSON.stringify(s1)+")",sandbox),/Automatische EUR-Umrechnung|Kaufen · Simulation/);
+ assert.match(vm.runInContext("unityHomeTradeActions("+JSON.stringify(s1)+")",sandbox),/Gebühr in EUR/);
  assert.match(vm.runInContext("unityHomeSecurityDetails("+JSON.stringify(s2)+",null)",sandbox),/BID\/ASK/);
  console.log('Mobile reorder persisted; test buy/sell validated and recorded without real orders.');
 })().catch(err=>{console.error(err);process.exitCode=1});

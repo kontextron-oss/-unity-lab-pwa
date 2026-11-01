@@ -1,0 +1,123 @@
+'use strict';
+/* Local-only hypothetical portfolio; transaction history is append-only with voids.
+   Real broker holdings are NOT connected or inferred from screenshots. */
+let depotSelectedId='';
+const depotActiveTrades=id=>[...cache.transactions].filter(t=>t.instrumentId===id&&!t.voidedAt&&(t.type==='BUY'||t.type==='SELL')).sort((a,b)=>a.executedAt.localeCompare(b.executedAt)||a.createdAt.localeCompare(b.createdAt));
+function depotLedger(id,asOf=null){
+  let qty=0,cost=0,realized=0,buys=0,sells=0;
+  for(const t of depotActiveTrades(id)){
+    if(asOf&&t.executedAt.slice(0,10)>asOf)break;
+    const n=Number(t.quantity),amount=Number(t.amount),fx=Number(t.fx);
+    if(!(n>0&&amount>0&&fx>0))continue;
+    if(t.type==='BUY'){qty+=n;cost+=amount*fx;buys++}
+    else{
+      if(n>qty+1e-8)throw Error('Ungültige Verkaufshistorie: mehr Stücke verkauft als vorhanden.');
+      const portion=qty>0?Math.min(1,n/qty):0;
+      const basis=cost*portion;
+      realized+=amount*fx-basis;
+      cost-=basis;qty-=n;sells++;
+      if(qty<1e-8){qty=0;cost=0}
+    }
+  }
+  return {qty,cost,realized,buys,sells,avg:qty>0?cost/qty:NaN};
+}
+function depotMarket(s){
+  const item=typeof unityMarketItem==='function'?unityMarketItem(s.isin):null;
+  const quality=item?unityDataQuality(item,s.isin):null;
+  const q=quote(s.id);
+  const recentFx=q&&Number(q.fx)>0&&Number.isFinite(Date.parse(q.quotedAt))&&(Date.now()-Date.parse(q.quotedAt))<8*86400000;
+  if(item&&quality?.canCompare){
+    if(s.currency==='EUR')return {price:item.price,fx:1,date:item.date,source:'Verzögerter Börsenschlusskurs',item};
+    if(recentFx)return {price:item.price,fx:Number(q.fx),date:item.date,source:'Verzögerter Schlusskurs · manuell erfasster FX',item};
+  }
+  // Do not use stale or unverified manual quotes as "current".
+  if(!item&&q&&recentFx&&Number(q.price)>0)return {price:q.price,fx:q.fx,date:q.quotedAt.slice(0,10),source:'Manueller Referenzkurs · ungeprüft',item:null};
+  return null;
+}
+function depotPosition(s){
+  const l=depotLedger(s.id),market=depotMarket(s);
+  const value=l.qty>0&&market?l.qty*market.price*market.fx:NaN;
+  return {s,...l,market,value,pnl:Number.isFinite(value)?value-l.cost:NaN};
+}
+function depotPositions(){return stocks().map(depotPosition).filter(p=>p.qty>1e-8)}
+function depotMoney(v){return Number.isFinite(v)?euro(v):'–'}
+function depotOverview(){
+  const pos=depotPositions(),allTrades=cache.transactions.filter(t=>!t.voidedAt&&(t.type==='BUY'||t.type==='SELL'));
+  const cost=pos.reduce((n,p)=>n+p.cost,0),complete=pos.every(p=>Number.isFinite(p.value));
+  const value=complete?pos.reduce((n,p)=>n+p.value,0):NaN;
+  const realized=stocks().reduce((n,s)=>n+depotLedger(s.id).realized,0);
+  let h='<section class="panel depot-panel" id="depot-overview"><div class="depot-title"><h2>Mein Depot · Überblick</h2><span class="depot-sim">Simulation · lokal gespeichert</span></div>'+
+    '<div class="depot-totals"><div><small>Aktueller Positionswert</small><strong>'+depotMoney(value)+'</strong></div><div><small>Einstand offener Positionen</small><strong>'+depotMoney(cost)+'</strong></div><div><small>Offener Gewinn / Verlust</small><strong>'+depotMoney(value-cost)+'</strong></div><div><small>Realisierter Gewinn / Verlust</small><strong>'+depotMoney(realized)+'</strong></div></div>';
+  if(!pos.length)h+='<p class="muted">Noch keine simulierten Depotpositionen. Deine tatsächlichen Depotbestände sind nicht verbunden. Du kannst Aktien im Simulationsdepot erfassen; vorhandene Daten bleiben unverändert.</p>';
+  else{
+    if(!complete)h+='<p class="depot-warning">Der Gesamtwert ist unvollständig: Für mindestens eine Position fehlt ein verwendbarer Kurs oder aktueller EUR-Wechselkurs. Es wird kein Gesamtwert geschätzt.</p>';
+    h+='<div class="depot-rows">';
+    for(const p of pos){
+      const m=p.market?.item?unityMetrics(p.market.item):null;
+      h+='<button type="button" class="depot-row" data-depot-open="'+esc(p.s.id)+'"><span class="depot-row-top"><strong>'+esc(p.s.name)+'</strong><span class="'+(p.pnl>=0?'positive':'negative')+'">'+(Number.isFinite(p.pnl)&&p.cost>0?unityPct(p.pnl/p.cost*100):'Bewertung offen')+'</span></span>'+
+        '<span class="depot-row-chart">'+(p.market?.item?unityChartSvg(p.market.item,'3M',true,false):'<span class="chart-empty">Kursreihe nicht verfügbar</span>')+'</span>'+
+        '<span class="depot-row-bottom"><span>'+number(p.qty,4)+' Stück · Einstand '+depotMoney(p.cost)+'</span><span>'+ (p.market?number(p.market.price,2)+' '+esc(p.s.currency):'Kurs fehlt')+' ›</span></span></button>';
+    }
+    h+='</div>';
+  }
+  h+='<p class="tiny muted">Kurse: verzögerte Tagesschlusskurse; keine Echtzeit. Der Depotwert berücksichtigt nur erfasste Simulationstransaktionen. Ohne historische EUR-Wechselkurse wird keine erfundene Gesamtdepotkurve gezeichnet.</p>'+
+    '<div class="actions"><button type="button" class="secondary" data-tab-target="trades">Käufe und Verkäufe ansehen</button></div></section>';
+  if(depotSelectedId)h+=depotDetail(depotSelectedId);
+  return h;
+}
+function depotDetail(id){
+  const s=stocks().find(x=>x.id===id);if(!s)return '';
+  const p=depotPosition(s),item=p.market?.item||(typeof unityMarketItem==='function'?unityMarketItem(s.isin):null);
+  let h='<section class="panel depot-detail" id="depot-detail"><div class="depot-title"><h2>'+esc(s.name)+' · Depotdetails</h2><button type="button" class="secondary" id="depot-close">Schließen</button></div>'+
+    '<div class="depot-totals"><div><small>Stückzahl</small><strong>'+number(p.qty,4)+'</strong></div><div><small>Offener Einstand</small><strong>'+depotMoney(p.cost)+'</strong></div><div><small>Marktwert</small><strong>'+depotMoney(p.value)+'</strong></div><div><small>Realisierte Gewinne</small><strong>'+depotMoney(p.realized)+'</strong></div></div>';
+  if(item)h+=unityChartPanel(item);else h+='<p class="muted">Kein historischer Börsenkurs verfügbar. Der Kursverlauf wird nicht geschätzt.</p>';
+  h+='<h3>Käufe und Verkäufe</h3>'+depotTradeHistory(id);
+  h+='<p class="tiny muted">Die Kurve zeigt den Börsenkurs der Aktie, nicht die Entwicklung deines persönlichen Depotwerts. Käufe und Verkäufe werden unten separat aufgeführt.</p></section>';
+  return h;
+}
+function depotTradeHistory(id=null){
+  const ts=[...cache.transactions].filter(t=>(!id||t.instrumentId===id)&&(t.type==='BUY'||t.type==='SELL')).sort((a,b)=>b.executedAt.localeCompare(a.executedAt));
+  if(!ts.length)return '<p class="muted">Noch keine Käufe oder Verkäufe erfasst.</p>';
+  let h='<div class="depot-history">';
+  let lastDate='';
+  for(const t of ts){
+    const date=t.executedAt?.slice(0,10)||'unbekannt',s=cache.instruments.find(x=>x.id===t.instrumentId);
+    if(date!==lastDate){h+='<div class="depot-history-date">'+esc(date)+'</div>';lastDate=date}
+    const sell=t.type==='SELL',amount=Number(t.amount)*Number(t.fx);
+    h+='<div class="depot-history-row"><span class="depot-history-icon '+(sell?'sell':'buy')+'">'+(sell?'−':'+')+'</span>'+
+      '<span class="depot-history-desc"><b>'+esc(s?.name||'Unbekannt')+'</b><small>'+esc(sell?'Verkauf':'Kauf')+' · '+number(t.quantity,4)+' Stück · '+number(t.price,2)+' '+esc(s?.currency||'')+'</small>'+(t.note?'<small>'+esc(t.note)+'</small>':'')+'</span>'+
+      '<span class="depot-history-amount">'+(sell?'+':'−')+depotMoney(amount)+(t.voidedAt?'<small>Storniert</small>':'')+'</span></div>';
+  }
+  return h+'</div>';
+}
+function depotSellForm(){
+  const pos=depotPositions();
+  if(!pos.length)return '<div class="panel"><h2>Simulierter Verkauf</h2><p>Für einen Verkauf muss zunächst eine simulierte Position vorhanden sein.</p></div>';
+  return '<div class="panel"><h2>Simulierten Verkauf erfassen</h2><p class="tiny muted">Verkäufe werden mit Datum und Stückzahl dokumentiert. Der realisierte Gewinn wird nach durchschnittlichen EUR-Anschaffungskosten berechnet. Frühere Buchungen bleiben erhalten.</p>'+
+    '<form id="sell-form"><label>Aktie<select name="instrumentId" required>'+pos.map(p=>'<option value="'+esc(p.s.id)+'">'+esc(p.s.name)+' · '+number(p.qty,4)+' Stück verfügbar</option>').join('')+'</select></label>'+
+    '<label>Verkaufszeitpunkt<input type="datetime-local" name="executedAt" value="'+localNow()+'" required></label>'+
+    '<label>Stückzahl<input type="number" name="quantity" step="any" min="0.000001" required></label>'+
+    '<label>Verkaufskurs in Handelswährung<input type="number" name="price" step="any" min="0.000001" required></label>'+
+    '<label>EUR je 1 Handelswährung<input type="number" name="fx" step="any" min="0.000001" required></label>'+
+    '<label class="full">Notiz<textarea name="note" maxlength="1000"></textarea></label>'+
+    '<button class="primary" type="submit">Verkauf simulieren</button></form></div>';
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.depotOpen){depotSelectedId=b.dataset.depotOpen;render();document.getElementById('depot-detail')?.scrollIntoView({behavior:'smooth',block:'start'})}
+  if(b.id==='depot-close'){depotSelectedId='';render()}
+  if(b.dataset.tabTarget){activeTab=b.dataset.tabTarget;render();document.getElementById('app')?.scrollIntoView({block:'start'})}
+});
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='sell-form')return;
+  e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
+  try{
+    const s=stocks().find(x=>x.id===d.instrumentId);if(!s)throw Error('Aktie nicht gefunden');
+    const n=Number(d.quantity),price=Number(d.price),fx=Number(d.fx),at=new Date(d.executedAt);
+    if(!(n>0&&price>0&&fx>0)||!Number.isFinite(at.getTime())||at.getTime()>Date.now()+60000)throw Error('Ungültige Verkaufsdaten');
+    const l=depotLedger(s.id,at.toISOString().slice(0,10));
+    if(n>l.qty+1e-8)throw Error('Mehr Stücke als zum Verkaufsdatum vorhanden. Verfügbar: '+number(l.qty,4));
+    const t={id:id(),instrumentId:s.id,type:'SELL',decidedAt:at.toISOString(),executedAt:at.toISOString(),quantity:n,amount:n*price,price,fx,note:String(d.note||'').trim(),createdAt:new Date().toISOString()};
+    await put('transactions',t);await audit('SELL_ADD',t.id,s.ticker);await refresh();depotSelectedId=s.id;render();
+  }catch(err){alert(err.message||String(err))}
+});

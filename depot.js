@@ -97,15 +97,13 @@ function depotTradeHistory(id=null){
 function depotSellForm(){
   const pos=depotPositions();
   if(!pos.length)return '<div class="panel"><h2>Simulierter Verkauf</h2><p>Für einen Verkauf muss zunächst eine simulierte Position vorhanden sein.</p></div>';
-  return '<div class="panel"><h2>Simulierten Verkauf erfassen</h2><p class="tiny muted">Verkäufe werden mit Datum und Stückzahl dokumentiert. Der realisierte Gewinn wird nach durchschnittlichen EUR-Anschaffungskosten berechnet. Frühere Buchungen bleiben erhalten.</p>'+
+  return '<div class="panel"><h2>Simulierten Verkauf erfassen</h2><p class="tiny muted">Nur Stückzahl und Aktie auswählen. Referenzkurs und EUR-Umrechnung werden automatisch geladen und vor dem Speichern bestätigt. Keine echte Order.</p>'+
     '<form id="sell-form"><label>Aktie<select name="instrumentId" required>'+pos.map(p=>'<option value="'+esc(p.s.id)+'">'+esc(p.s.name)+' · '+number(p.qty,4)+' Stück verfügbar</option>').join('')+'</select></label>'+
-    '<label>Verkaufszeitpunkt<input type="datetime-local" name="executedAt" value="'+localNow()+'" required></label>'+
     '<label>Stückzahl<input type="number" name="quantity" step="any" min="0.000001" required></label>'+
-    '<label>Verkaufskurs in Handelswährung<input type="number" name="price" step="any" min="0.000001" required></label>'+
-    '<label>EUR je 1 Handelswährung<input type="number" name="fx" step="any" min="0.000001" required></label>'+
-    '<label class="full">Notiz<textarea name="note" maxlength="1000"></textarea></label>'+
-    '<button class="primary" type="submit">Verkauf simulieren</button></form></div>';
+    '<label class="full">Notiz (optional)<textarea name="note" maxlength="1000"></textarea></label>'+
+    '<button class="primary" type="submit">Testverkauf prüfen</button></form></div>';
 }
+
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.depotRange){depotRange=b.dataset.depotRange;render();return}
@@ -115,14 +113,10 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('submit',async e=>{
   if(e.target.id!=='sell-form')return;
-  e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
+  e.preventDefault();
   try{
-    const s=stocks().find(x=>x.id===d.instrumentId);if(!s)throw Error('Aktie nicht gefunden');
-    const n=Number(d.quantity),price=Number(d.price),fx=Number(d.fx),at=new Date(d.executedAt);
-    if(!(n>0&&price>0&&fx>0)||!Number.isFinite(at.getTime())||at.getTime()>Date.now()+60000)throw Error('Ungültige Verkaufsdaten');
-    const l=depotLedger(s.id,at.toISOString().slice(0,10));
-    if(n>l.qty+1e-8)throw Error('Mehr Stücke als zum Verkaufsdatum vorhanden. Verfügbar: '+number(l.qty,4));
-    const t={id:id(),instrumentId:s.id,type:'SELL',decidedAt:at.toISOString(),executedAt:at.toISOString(),quantity:n,amount:n*price,price,fx,note:String(d.note||'').trim(),createdAt:new Date().toISOString()};
-    await put('transactions',t);await audit('SELL_ADD',t.id,s.ticker);await refresh();depotSelectedId=s.id;render();
+    const d=Object.fromEntries(new FormData(e.target));
+    const saved=await unityHomeSaveTrade({...d,type:'SELL'});
+    if(saved){depotSelectedId=d.instrumentId;render()}
   }catch(err){alert(err.message||String(err))}
 });

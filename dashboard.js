@@ -10,6 +10,7 @@ function unityMarketItem(isin){
   const x=unityMarket.items?.[isin.toUpperCase()];
   if(!x||x.isin!==isin.toUpperCase()||!Array.isArray(x.points)||x.points.length<200||!(Number(x.price)>0))return null;
   if(x.currency!==CATALOG.find(s=>s.isin===isin)?.currency)return null;
+  if(unityDataQuality(x,isin).level==='invalid')return null;
   return x;
 }
 const unityPct=x=>Number.isFinite(x)?(x>0?'+':'')+number(x,1)+' %':'–';

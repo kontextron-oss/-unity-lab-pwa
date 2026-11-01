@@ -4,22 +4,22 @@
 let depotSelectedId='',depotRange='1Y';
 const depotActiveTrades=id=>[...cache.transactions].filter(t=>t.instrumentId===id&&!t.voidedAt&&(t.type==='BUY'||t.type==='SELL')).sort((a,b)=>a.executedAt.localeCompare(b.executedAt)||a.createdAt.localeCompare(b.createdAt));
 function depotLedger(id,asOf=null){
-  let qty=0,cost=0,realized=0,buys=0,sells=0;
+  let qty=0,cost=0,fees=0,realized=0,buys=0,sells=0;
   for(const t of depotActiveTrades(id)){
     if(asOf&&t.executedAt.slice(0,10)>asOf)break;
     const n=Number(t.quantity),amount=Number(t.amount),fx=Number(t.fx),fee=Number(t.fee)||0;
     if(!(n>0&&amount>0&&fx>0&&fee>=0))continue;
-    if(t.type==='BUY'){qty+=n;cost+=amount*fx+fee;buys++}
+    if(t.type==='BUY'){qty+=n;cost+=amount*fx+fee;fees+=fee;buys++}
     else{
       if(n>qty+1e-8)throw Error('Ungültige Verkaufshistorie: mehr Stücke verkauft als vorhanden.');
       const portion=qty>0?Math.min(1,n/qty):0;
-      const basis=cost*portion;
+      const basis=cost*portion,feePortion=fees*portion;
       realized+=amount*fx-fee-basis;
-      cost-=basis;qty-=n;sells++;
-      if(qty<1e-8){qty=0;cost=0}
+      cost-=basis;fees-=feePortion;qty-=n;sells++;
+      if(qty<1e-8){qty=0;cost=0;fees=0}
     }
   }
-  return {qty,cost,realized,buys,sells,avg:qty>0?cost/qty:NaN};
+  return {qty,cost,fees,realized,buys,sells,avg:qty>0?cost/qty:NaN};
 }
 function depotMarket(s){
   const item=typeof unityMarketItem==='function'?unityMarketItem(s.isin):null;

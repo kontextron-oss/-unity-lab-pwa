@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Free ECB reference FX rates, not executable spot quotes. Fail closed."""
+"""Free ECB reference FX rates, not executable spot quotes. Fail closed.
+EUR per currency unit; safe for indicative simulated accounting only.
+"""
 import datetime as dt
 import json
 import pathlib

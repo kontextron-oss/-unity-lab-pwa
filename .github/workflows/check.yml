@@ -65,3 +65,6 @@ jobs:
 
       - name: Test single unified stock list and actions
         run: node tests/unified-watchlist.cjs
+
+      - name: Test Jenoptik stock discovery by name, ticker and ISIN
+        run: node tests/jenoptik-search.cjs

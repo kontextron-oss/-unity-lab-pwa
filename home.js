@@ -29,7 +29,8 @@ const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 
 function unityHomeQuote(s){
   const x=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
-  return {x,m,quality,valid:!!m&&!m.stale&&!!quality?.canCompare};
+  const technical=!!m&&!m.stale&&Array.isArray(x?.points)&&x.points.length>=200;
+  return {x,m,quality,technical,valid:technical&&!!quality?.canCompare};
 }
 function unityHomeMovement(x,range){
   const a=unityChartData(x,range);
@@ -38,8 +39,11 @@ function unityHomeMovement(x,range){
 function unityHomeDecision(s){
   const {x,m,quality,valid}=unityHomeQuote(s);
   if(!x||!m)return {action:'Nicht bewertbar',buy:'Nicht entscheidbar',sell:'Nicht entscheidbar',reason:'Für diese Aktie fehlen ausreichend belastbare Kursdaten.',technical:'Keine Daten',confidence:'Keine ausreichende Datenbasis'};
-  if(!valid)return {action:'Daten prüfen',buy:'Nicht freigegeben',sell:'Nicht entscheidbar',reason:'Der Kursstand ist nicht aktuell genug oder die Datenprüfung ist fehlgeschlagen.',technical:m.trend,confidence:'Datenqualität unzureich'};
-  const a=unityCalc(s),gaps=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;if(candidate?.status==='candidate')return {action:candidate.action,buy:candidate.buy,sell:'Individuell prüfen',reason:candidate.reason,technical:m.trend,confidence:'Kandidatenmodus · vollständige operative Freigabe steht noch aus',index:candidate.score,gaps:gaps.slice(0,5),rsi:m.rsi,condition:candidate.condition};
+  const a=unityCalc(s),gaps=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;
+  if(!valid){
+    if(technical)return {action:'Technische Voranalyse',buy:candidate?.buy||'Technik prüfen',sell:'Keine operative Entscheidung',reason:(candidate?.reason||'Trend, gleitende Durchschnitte, RSI und MACD wurden aus der lokalen Kursreihe berechnet.')+' Die Kursquelle ist noch nicht unabhängig verifiziert; Fundamentaldaten und Ereignisdaten bleiben offen.',technical:m.trend,confidence:'Technische Voranalyse · keine vollständige UNITY-Freigabe',index:candidate?.score??m.technicalIndex,rsi:m.rsi,condition:candidate?.condition||'Weitere Datenprüfung erforderlich'};
+    return {action:'Daten prüfen',buy:'Nicht freigegeben',sell:'Nicht entscheidbar',reason:'Der Kursstand ist nicht aktuell genug oder die Datenprüfung ist fehlgeschlagen.',technical:m.trend,confidence:'Datenqualität unzureich'};
+  }if(candidate?.status==='candidate')return {action:candidate.action,buy:candidate.buy,sell:'Individuell prüfen',reason:candidate.reason,technical:m.trend,confidence:'Kandidatenmodus · vollständige operative Freigabe steht noch aus',index:candidate.score,gaps:gaps.slice(0,5),rsi:m.rsi,condition:candidate.condition};
   const positive=m.trend==='Aufwärtstrend';
   const negative=m.trend==='Abwärtstrend';
   const risk=m.rsi>=70?'Der RSI ist hoch; Rückschlagrisiko beachten.':m.rsi<35?'Der RSI ist niedrig; eine Bodenbildung ist nicht bestätigt.':'';
@@ -53,10 +57,13 @@ function unityHomeDecision(s){
 /* Decision colours are NOT price colours. Only a fully verified UNITY verdict may
    turn a row green/red; delayed EOD technical trends never authorize a trade. */
 function unityHomeSignal(s){
-  const {x,m,valid,quality}=unityHomeQuote(s);
+  const {x,m,valid,technical,quality}=unityHomeQuote(s);
   if(!x||!m)return {kind:'warning',label:'Daten fehlen',icon:'!',detail:'Keine belastbare Kursreihe vorhanden.',rank:3};
-  if(!valid)return {kind:'warning',label:'Daten prüfen',icon:'!',detail:quality?.detail||'Kursdaten nicht aktuell oder unplausibel.',rank:3};
   const a=unityCalc(s),veto=a.veto||[],candidate=typeof unityCandidate==='function'?unityCandidate(s):null;
+  if(!valid){
+    if(technical)return {kind:'technical',label:candidate?.status==='candidate'?'Technik: '+candidate.buy:'Technische Voranalyse',icon:'≈',detail:(candidate?.reason||'Trend, SMA50/SMA200, RSI und MACD wurden berechnet.')+' Quelle und Fundamentaldaten sind noch nicht vollständig geprüft.',rank:2};
+    return {kind:'warning',label:'Daten prüfen',icon:'!',detail:quality?.detail||'Kursdaten nicht aktuell oder unplausibel.',rank:3};
+  }
   if(candidate?.status==='candidate')return {kind:'buy',label:candidate.buy,icon:'+',detail:candidate.reason+' '+candidate.condition,rank:0};
   if(veto.length)return {kind:'warning',label:'Analyse offen',icon:'!',detail:'Technik: '+m.trend+'. '+veto.length+' Prüfbedingungen für eine Handelsentscheidung noch offen.',rank:3};
   // Future fully sourced evaluation can explicitly emit these actions after all vetoes clear.

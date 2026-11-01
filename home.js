@@ -50,7 +50,7 @@ function unityHome(){
     const cls=rising?'home-up':falling?'home-down':'home-flat';
     h+='<button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
       '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small></span>'+
-      '<span class="home-stock-right"><strong class="'+cls+'">'+(valid?unityPct(change):'–')+'</strong><small>'+(x?number(Number(x.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small></span><span class="home-chevron">›</span></button>';
+      '<span class="home-stock-right"><strong class="'+cls+'">'+(valid?unityPct(change):'–')+'</strong><small>'+(x?number(Number(x.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(x?esc(x.date):'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button>';
   }
   h+='</section>';
   if(unityHomeSelected)h+=unityHomeDetail(unityHomeSelected);

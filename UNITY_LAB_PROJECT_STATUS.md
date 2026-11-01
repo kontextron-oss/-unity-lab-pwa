@@ -1,8 +1,8 @@
-# UNITY LAB – Projektstand 1.3
+# UNITY LAB – Projektstand 1.4
 
 **Stand:** 1. November 2026  
 **Repository:** kontextron-oss/-unity-lab-pwa  
-**Technische Basis:** UNITY 0.11-Kandidatenmodus veröffentlicht und geprüft
+**Technische Basis:** UNITY 0.12-Lernprotokoll veröffentlicht und geprüft
 
 ## Verbindliche Neuausrichtung
 
@@ -23,6 +23,13 @@ Jede Aktie erhält künftig eine verständliche Aussage: Kaufen, Teilkauf, Kauf 
 - Strukturierte SEC-Unternehmensdaten für US-Werte.
 - ESEF-/Inline-XBRL-Berichte für geeignete europäische Emittenten.
 - Öffentlich sichtbare Analystenkonsens- oder Ratingangaben ausschließlich als datierte, sekundäre Einordnung; sie dürfen keine Entscheidung allein bestimmen.
+
+## Umgesetzt: UNITY 0.12-Lernprotokoll
+
+- Jede archivierte Analyse speichert Kursquelle, Zeitstempel, Kandidatenstatus, Kaufbedingung und Index.
+- Das Lernprotokoll vergleicht spätere Referenzkurse transparent mit dem Snapshot; die Bewertung wird nicht rückwirkend verändert.
+- Datenstand und Quellenlage werden direkt neben dem Kandidatenstatus angezeigt.
+- Sicherungen verwenden Schema 3 und enthalten auch die fiktive Kapitalführung; ältere Sicherungen bleiben importierbar.
 
 ## Umgesetzt: UNITY 0.11-Kandidatenmodus
 

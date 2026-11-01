@@ -13,6 +13,13 @@ function unityMarketItem(isin){
   if(unityDataQuality(x,isin).level==='invalid')return null;
   return x;
 }
+function unityMarketSymbolItem(stock){
+  if(!unityMarket||!stock?.providerSymbol)return null;
+  const key='@'+String(stock.providerSymbol).toUpperCase(),x=unityMarket.items?.[key];
+  if(!x||String(x.providerSymbol||'').toUpperCase()!==String(stock.providerSymbol).toUpperCase()||x.currency!==stock.currency||!Array.isArray(x.points)||x.points.length<200||!(Number(x.price)>0))return null;
+  if(unityDataQuality(x,stock.isin||key).level==='invalid')return null;
+  return x;
+}
 const unityPct=x=>Number.isFinite(x)?(x>0?'+':'')+number(x,1)+' %':'–';
 function unityMetrics(x){
   if(!x)return null;

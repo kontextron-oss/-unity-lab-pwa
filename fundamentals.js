@@ -29,6 +29,7 @@ function unityFundPilotPanel(s){
  }else{
   const status={
    'no-esef-route':'Für dieses Unternehmen ist keine geeignete ESEF-Abfrage hinterlegt.',
+   'issuer-release-only':'Offizielle Unternehmensmeldung verfügbar; vollständige ESEF-Konzernzahlen fehlen.',
    'no-filing-found':'Im öffentlichen ESEF-Archiv wurde kein passender Bericht gefunden.',
    'filing-found':'Ein Bericht wurde gefunden; Zahlen konnten noch nicht geprüft werden.',
    'filing-no-validated-metrics':'Ein Bericht wurde gefunden, aber keine Kennzahlen erfüllen die strengen Prüfregeln.',
@@ -43,7 +44,23 @@ function unityFundPilotPanel(s){
      (report.published?' · Veröffentlichung: '+esc(String(report.published).slice(0,10)):'')+'</p>';
    if(report.reportUrl)h+='<p><a href="'+esc(report.reportUrl)+'" target="_blank" rel="noopener noreferrer">Originalbericht im XBRL-Archiv ansehen</a></p>';
   }
-  for(const [key,label] of Object.entries(unityFundPilotNames)){
+  const official=item.officialHighlights;
+  if(official&&official.sourceType==='issuer-press-release'){
+    h+='<h4>Offizielle Unternehmensmeldung · Geschäftsjahr '+esc(official.fiscalYear)+'</h4>';
+    if(official.stale)h+='<p class="tiny muted">Achtung: Die letzte automatische Quellenprüfung ist fehlgeschlagen. Dies ist ein älterer geprüfter Datenstand.</p>';
+    const officialFacts=Object.values(official.facts||{});
+    for(const fact of officialFacts){
+      if(fact.kind!=='issuer-release'||fact.currency!==official.currency||fact.periodEnd!==official.fiscalYear||
+         !Number.isFinite(Number(fact.value))||Number(fact.value)<=0)continue;
+      h+='<div class="home-data-row"><span>'+esc(fact.label)+'</span><b>'+
+        new Intl.NumberFormat('de-DE',{style:'currency',currency:fact.currency,maximumFractionDigits:0}).format(Number(fact.value))+
+        '</b><small>Unternehmensmeldung '+esc(official.fiscalYear)+' · '+esc(fact.currency)+'</small></div>';
+    }
+    if(official.sourceUrl&&/^https:\/\//.test(official.sourceUrl))
+      h+='<p><a href="'+esc(official.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Originalmeldung des Unternehmens lesen</a></p>';
+    h+='<p class="tiny muted">Kennzahlen aus Unternehmensmeldungen sind nicht zwingend direkt mit geprüften Konzernabschlüssen vergleichbar. Insbesondere bereinigter Free Cashflow, operativer Cashflow und Free Cashflow vor Steuern sind unterschiedliche Größen.</p>';
+  }
+  if(item.latestFiling)for(const [key,label] of Object.entries(unityFundPilotNames)){
    const fact=item.metrics?.[key];
    let value='Nicht zuverlässig verfügbar',help='Keine geprüfte Angabe';
    if(fact&&Number.isFinite(Number(fact.value))&&fact.currency===item.reportCurrency&&fact.periodEnd===item.latestFiling?.periodEnd){
@@ -61,7 +78,7 @@ function unityFundPilotPanel(s){
   }
   const ratios=[['revenueGrowth','Umsatzwachstum gegenüber Vorjahr'],['netIncomeGrowth','Gewinnveränderung gegenüber Vorjahr'],
     ['netMargin','Nettomarge'],['equityRatio','Eigenkapitalquote'],['operatingCashFlowMargin','Operative Cashflow-Marge']];
-  for(const [key,label] of ratios){
+  if(item.latestFiling)for(const [key,label] of ratios){
     const r=item.derived?.[key];
     const valid=r&&r.unit==='percent'&&Number.isFinite(Number(r.value))&&r.periodEnd===item.latestFiling?.periodEnd&&
       (!r.priorPeriodEnd||r.priorPeriodEnd===item.priorFiling?.periodEnd);
@@ -74,7 +91,7 @@ function unityFundPilotPanel(s){
    h+='<p><a href="'+esc(item.investorRelations)+'" target="_blank" rel="noopener noreferrer">Offizielle Investor-Relations-Seite öffnen</a></p>';
   if(item.note)h+='<p class="tiny muted">'+esc(item.note)+'</p>';
  }
- h+='<p class="tiny muted">Dies sind historische Geschäftsberichtsdaten, keine aktuellen Quartalsprognosen. Fehlende Zahlen werden nicht geschätzt. Es entsteht daraus keine Kauf- oder Verkaufsfreigabe.</p></section>';
+ h+='<p class="tiny muted">Dies sind historische Berichts- und Meldungsdaten, keine aktuellen Quartalsprognosen. Fehlende Zahlen werden nicht geschätzt. Es entsteht daraus keine Kauf- oder Verkaufsfreigabe.</p></section>';
  return h;
 }
 unityLoadFundPilot();

@@ -42,13 +42,16 @@ function depotPosition(s){
 }
 function depotPositions(){return stocks().map(depotPosition).filter(p=>p.qty>1e-8)}
 function depotMoney(v){return Number.isFinite(v)?euro(v):'–'}
+function depotCapital(){const cfg=(cache.settings||[]).find(x=>x.id==='portfolio-capital'),funded=Number(cfg?.amount);let buys=0,sells=0;for(const t of (cache.transactions||[]).filter(t=>!t.voidedAt&&(t.type==='BUY'||t.type==='SELL'))){const gross=Number(t.amount)*Number(t.fx),fee=Number(t.fee)||0;if(!Number.isFinite(gross)||!Number.isFinite(fee))continue;if(t.type==='BUY')buys+=gross+fee;else sells+=gross-fee}const invested=depotPositions().reduce((n,p)=>n+p.cost,0);return {configured:!!cfg,funded:Number.isFinite(funded)&&funded>=0?funded:0,buys,sells,invested,free:(Number.isFinite(funded)&&funded>=0?funded:0)+sells-buys};}
+async function depotSaveCapital(value){const amount=Number(value);if(!(amount>=0&&Number.isFinite(amount)&&amount<=1000000000))throw Error('Bitte ein gültiges fiktives Grundkapital in EUR eingeben.');await put('settings',{id:'portfolio-capital',amount,updatedAt:new Date().toISOString()});await audit('CAPITAL_SET','portfolio-capital','Fiktives Grundkapital '+euro(amount));await refresh();}
 function depotOverview(){
-  const pos=depotPositions(),allTrades=cache.transactions.filter(t=>!t.voidedAt&&(t.type==='BUY'||t.type==='SELL'));
+  const pos=depotPositions(),capital=depotCapital();
   const cost=pos.reduce((n,p)=>n+p.cost,0),complete=pos.every(p=>Number.isFinite(p.value));
   const value=complete?pos.reduce((n,p)=>n+p.value,0):NaN;
   const realized=stocks().reduce((n,s)=>n+depotLedger(s.id).realized,0);
   let h='<section class="panel depot-panel" id="depot-overview"><div class="depot-title"><h2>Mein Depot · Überblick</h2><span class="depot-sim">Simulation · lokal gespeichert</span></div>'+
     '<div class="depot-totals"><div><small>Aktueller Positionswert</small><strong>'+depotMoney(value)+'</strong></div><div><small>Einstand offener Positionen</small><strong>'+depotMoney(cost)+'</strong></div><div><small>Offener Gewinn / Verlust</small><strong>'+depotMoney(value-cost)+'</strong></div><div><small>Realisierter Gewinn / Verlust</small><strong>'+depotMoney(realized)+'</strong></div></div>';
+  h+='<section class="panel"><h3>Fiktives Kapital</h3><div class="depot-totals"><div><small>Grundkapital / Einzahlungen</small><strong>'+depotMoney(capital.funded)+'</strong></div><div><small>Frei verfügbar</small><strong>'+depotMoney(capital.free)+'</strong></div><div><small>Angelegt · offene Positionen</small><strong>'+depotMoney(capital.invested)+'</strong></div><div><small>Verwendet · alle Testkäufe</small><strong>'+depotMoney(capital.buys)+'</strong></div></div><form id="capital-form"><label>Fiktives Grundkapital in EUR<input name="capital" type="number" min="0" step="0.01" value="'+(capital.configured?String(capital.funded):'')+'" placeholder="z. B. 10000"></label><button class="secondary" type="submit">Kapital speichern</button></form><p class="tiny muted">Testkäufe einschließlich Gebühren mindern das freie Kapital. Testverkäufe erhöhen es um den Nettoerlös. Ohne Eingabe bleibt das Simulationsdepot unbegrenzt.</p></section>';
   h+='<div class="depot-range" aria-label="Zeitraum der Depot-Kursverläufe">'+[['1W','Woche'],['1M','Monat'],['1Y','Jahr'],['3Y','3 Jahre'],['6Y','6 Jahre']].map(([r,label])=>'<button type="button" data-depot-range="'+r+'" class="'+(depotRange===r?'active':'')+'">'+label+'</button>').join('')+'</div>';
   if(!pos.length)h+='<p class="muted">Noch keine simulierten Depotpositionen. Deine tatsächlichen Depotbestände sind nicht verbunden. Du kannst Aktien im Simulationsdepot erfassen; vorhandene Daten bleiben unverändert.</p>';
   else{
@@ -112,10 +115,11 @@ document.addEventListener('click',e=>{
   if(b.dataset.tabTarget){activeTab=b.dataset.tabTarget;render();document.getElementById('app')?.scrollIntoView({block:'start'})}
 });
 document.addEventListener('submit',async e=>{
-  if(e.target.id!=='sell-form')return;
+  if(!['sell-form','capital-form'].includes(e.target.id))return;
   e.preventDefault();
   try{
     const d=Object.fromEntries(new FormData(e.target));
+    if(e.target.id==='capital-form'){await depotSaveCapital(d.capital);return}
     const saved=await unityHomeSaveTrade({...d,type:'SELL'});
     if(saved){depotSelectedId=d.instrumentId;render()}
   }catch(err){alert(err.message||String(err))}

@@ -86,11 +86,13 @@ function unityHome(){
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p></section>';
+  const capital=typeof depotCapital==='function'?depotCapital():null;
+  if(capital)h+='<div class="home-capital-summary"><span><small>Frei verfügbar</small><b>'+depotMoney(capital.free)+'</b></span><span><small>Angelegt</small><b>'+depotMoney(capital.invested)+'</b></span><button type="button" class="secondary" data-tab-target="trades">Kapital</button></div>';
   const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
     '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufkandidaten</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
     '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Handlungsbedarf</button></div>'+
-    '<p class="home-sort-hint">☰ Aktie ziehen oder mit ↑ ↓ nach oben/unten verschieben. Reihenfolge bleibt gespeichert. Orange bedeutet: noch keine belastbare Kauf-/Verkaufsentscheidung. Bei Pilotkursen: „Aktuell“ = Veränderung zum letzten Schlusskurs.</p>';
+    '<p class="home-sort-hint">Sortierung wählen · Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x,m,valid}=unityHomeQuote(s);
@@ -200,6 +202,7 @@ async function unityHomeSaveTrade(data){
   if(!daily||!unityDataQuality(daily,s.isin)?.canCompare||!market||!(Number(market.price)>0))throw Error('Kein ausreichend aktueller und geprüfter Referenzkurs verfügbar. Testhandel nicht möglich.');
   if(!rate||!(rate.rate>0))throw Error('Automatischer EUR-Wechselkurs fehlt oder ist veraltet. Testhandel nicht möglich.');
   const price=Number(market.price),fx=rate.rate;
+  if(type==='BUY'&&typeof depotCapital==='function'){const capital=depotCapital(),needed=quantity*price*fx+fee;if(capital.configured&&needed>capital.free+1e-8)throw Error('Nicht genug fiktives Kapital. Verfügbar: '+euro(capital.free)+' · benötigt inklusive Gebühr: '+euro(needed));}
   if(type==='SELL'){
     const available=depotLedger(s.id,at.toISOString().slice(0,10)).qty;
     if(quantity>available+1e-8)throw Error('Nicht genügend simulierte Aktien am gewählten Datum. Verfügbar: '+number(available,4));

@@ -409,4 +409,4 @@ document.addEventListener('submit',async e=>{
   }catch(err){alert(err.message||String(err))}
 });
 
-document.addEventListener('input',e=>{if(e.target.closest?.('#home-trade-form')&&['quantity','fee'].includes(e.target.name))unityHomeUpdateTradeEstimate(e.target.form)});
+document.addEventListener('input',e=>{if(e.target.closest?.('#home-trade-form')&&['quantity','fee','price','fx'].includes(e.target.name))unityHomeUpdateTradeEstimate(e.target.form)});

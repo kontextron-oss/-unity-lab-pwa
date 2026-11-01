@@ -2,6 +2,8 @@
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='manual';
+const UNITY_FIRST_TWENTY=['ABBN','SU','ETN','ENR','VRT','NDX1','PRY','LR','SIE','BEAN','GEV','NVT','HUBB','PWR','NEX','IFX','JEN','AMD','DWS','TKA'];
+const unityPilotStocks=()=>unityHomeStocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase()));
 const unityHomeStocks=()=>stocks().filter(s=>!s.watchHidden).sort((a,b)=>{
   const aa=Number.isFinite(Number(a.watchOrder))&&a.watchOrder!==undefined?Number(a.watchOrder):Infinity;
   const bb=Number.isFinite(Number(b.watchOrder))&&b.watchOrder!==undefined?Number(b.watchOrder):Infinity;
@@ -47,9 +49,10 @@ function unityHomeDataState(s){
 function unityHomeAnalysisStatus(selected){
   const states=selected.map(unityHomeDataState),count=k=>states.filter(x=>x.kind===k).length;
   const p=typeof unityDynamicProgress!=='undefined'?unityDynamicProgress:{total:0,done:0,ok:0,failed:0,active:''};
-  const live=p.total?'Auslesen '+p.done+'/'+p.total+(p.active?' · '+p.active:''):'Bereit – „Kursdaten erneut prüfen“ starten';
+  const pilot=unityPilotStocks(),pilotText=pilot.length+'/20 der ersten Analysegruppe ausgewählt';
+  const live=p.total?'Auslesen '+p.done+'/'+p.total+(p.active?' · '+p.active:''):'Bereit – erste 20 Werte prüfen';
   const busy=!!p.active;
-  return '<section class="home-analysis-status" aria-live="polite"><strong>Analyse-Datenstatus</strong><span class="home-analysis-live">'+esc(live)+'</span><small>'+count('ready')+' technisch ausgewertet · '+count('loading')+' wird geladen · '+count('waiting')+' noch nicht geprüft · '+count('failed')+' Quelle nicht erreichbar · '+count('missing')+' ohne Kursquelle</small><button type="button" class="home-analysis-start" data-home-reload '+(busy?'disabled':'')+'>'+ (busy?'Analyse läuft …':'Kursreihen jetzt prüfen')+'</button></section>';
+  return '<section class="home-analysis-status" aria-live="polite"><strong>Analyse-Datenstatus · erste 20 Werte</strong><span class="home-analysis-live">'+esc(live)+'</span><small>'+pilotText+' · '+count('ready')+' technisch ausgewertet · '+count('loading')+' wird geladen · '+count('waiting')+' noch nicht geprüft · '+count('failed')+' Quelle nicht erreichbar · '+count('missing')+' ohne Kursquelle</small><button type="button" class="home-analysis-start" data-home-reload '+(busy?'disabled':'')+'>'+ (busy?'Analyse läuft …':'Erste 20 Kursreihen prüfen')+'</button></section>';
 }
 function unityHomeMovement(x,range){
   const a=unityChartData(x,range);
@@ -288,7 +291,7 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-trades')){activeTab='trades';render();return}
   if(b.hasAttribute('data-home-reload')){
     unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();
-    if(typeof unityRefreshDynamicHistories==='function')unityRefreshDynamicHistories(stocks(),p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
+    if(typeof unityRefreshDynamicHistories==='function')unityRefreshDynamicHistories(unityPilotStocks(),p=>{const el=document.getElementById('db-status');if(el)el.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')}).then(p=>{const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
     return
   }
 });

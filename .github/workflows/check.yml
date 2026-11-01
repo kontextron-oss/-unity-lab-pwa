@@ -15,6 +15,7 @@ jobs:
           node-version: '22'
       - name: Check analysis module
         run: |
+          node --check discovery.js
           node --check analysis.js
           node --check datafeeds.js
           node --check publicfeed.js
@@ -68,3 +69,6 @@ jobs:
 
       - name: Test Jenoptik stock discovery by name, ticker and ISIN
         run: node tests/jenoptik-search.cjs
+
+      - name: Test worldwide discovery, dynamic history and strict trading veto
+        run: node tests/worldwide-discovery.cjs

@@ -10,7 +10,7 @@ const m={last:237,trend:'Abwärtstrend',technicalIndex:32,rsi:42,stale:false};
 let selected=[s];
 const sandbox={Date,Math,Number,Array,JSON,stocks:()=>selected,depotPositions:()=>[],unityMarket:{generatedAt:'2026-10-31T08:00:00Z'},
  unityMarketLoading:false,unityMarketItem:isin=>isin===s.isin?x:null,unityMetrics:()=>m,
- unityDataQuality:()=>({canCompare:true}),unityChartData:()=>x.points,
+ unityDataQuality:()=>({canCompare:true}),unityDisplayQuote:()=>({price:x.price,date:x.date,exchange:x.exchange,precision:'day',label:'Letzter Börsenschlusskurs'}),unityChartData:()=>x.points,
  unityCalc:()=>({veto:['Bilanz nicht belegt','Earnings nicht bestätigt']}),unityChartPanel:()=>'<svg>diagram</svg>',
  number:(v,d=2)=>Number(v).toFixed(d),euro:v=>Number(v).toFixed(2)+' €',esc:v=>String(v??''),unityPct:v=>Number.isFinite(v)?v.toFixed(1)+' %':'–',
  document:{addEventListener(){}},render(){},put:async()=>{},audit:async()=>{},refresh:async()=>{},alert(){},localNow:()=> '2026-11-01T10:00',

@@ -27,6 +27,8 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
 (async()=>{
  assert.equal(vm.runInContext("unityHomeStocks().map(s=>s.id).join(',')",sandbox),'a,b,c');
  assert.match(vm.runInContext('unityHome()',sandbox),/data-home-drag="a"/);
+ assert.match(vm.runInContext('unityHome()',sandbox),/data-home-shift="a"/);
+ assert.match(vm.runInContext('unityHome()',sandbox),/nach unten verschieben/);
  await vm.runInContext("unityHomeReorder('c','a')",sandbox);
  assert.equal(vm.runInContext("unityHomeStocks().map(s=>s.id).join(',')",sandbox),'c,a,b');
  assert.deepEqual(instruments.map(s=>s.watchOrder),[1,2,0]);

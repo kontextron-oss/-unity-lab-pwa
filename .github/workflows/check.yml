@@ -16,6 +16,7 @@ jobs:
       - name: Check analysis module
         run: |
           node --check discovery.js
+          node --check fundamentals.js
           node --check analysis.js
           node --check datafeeds.js
           node --check publicfeed.js
@@ -35,7 +36,7 @@ jobs:
           s=Path('index.html').read_text()
           assert s.count('<script>')==1
           Path('/tmp/unity-inline.js').write_text(s.split('<script>')[1].split('</script>')[0])
-          assert 'analysis.js' in s and 'datafeeds.js' in s and 'publicfeed.js' in s and 'dashboard.js' in s and 'charts.js' in s and 'dataquality.js' in s and 'depot.js' in s and 'depotcsv.js' in s and 'home.js' in s and 'intraday.js' in s and 'fx.js' in s
+          assert 'fundamentals.js' in s and 'analysis.js' in s and 'datafeeds.js' in s and 'publicfeed.js' in s and 'dashboard.js' in s and 'charts.js' in s and 'dataquality.js' in s and 'depot.js' in s and 'depotcsv.js' in s and 'home.js' in s and 'intraday.js' in s and 'fx.js' in s
           assert "indexedDB.open('unity-lab',2)" in s
           PY
           node --check /tmp/unity-inline.js
@@ -72,3 +73,9 @@ jobs:
 
       - name: Test worldwide discovery, dynamic history and strict trading veto
         run: node tests/worldwide-discovery.cjs
+
+      - name: Test European financial facts strict validation
+        run: python3 -m unittest discover -s tests -p 'test_fundamentals.py'
+
+      - name: Test financial source coverage and UI veto
+        run: node tests/fundamentals.cjs

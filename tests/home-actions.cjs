@@ -7,7 +7,7 @@ let instruments=[s1,s2,s3],transactions=[],events=[],refreshes=0,sequence=0;
 const sandbox={Date,Math,Number,Array,JSON,Set,Map,
  stocks:()=>instruments,cache:{instruments,transactions},
  unityMarket:{generatedAt:'2026-10-30T20:00:00Z'},unityMarketLoading:false,
- unityMarketItem:()=>null,unityDisplayQuote:()=>null,unityMetrics:()=>null,unityDataQuality:()=>({canCompare:false}),
+ unityMarketItem:()=>null,unityDisplayQuote:()=>({price:240,currency:'EUR',date:'2026-10-30',precision:'day',source:'test EOD'}),unityEuroRate:currency=>({rate:currency==='EUR'?1:1.08,date:'2026-10-30',source:'test ECB'}),unityMetrics:()=>null,unityDataQuality:()=>({canCompare:false}),
  unityChartData:()=>[],unityCalc:()=>({veto:[]}),unityChartPanel:()=>'<svg/>',
  depotPositions:()=>[],depotPosition:()=>({qty:2,cost:100,pnl:NaN,buys:1,sells:0}),
  depotMoney:n=>Number(n).toFixed(2)+' €',depotTradeHistory:()=>'<div>history</div>',
@@ -40,12 +40,13 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
  assert.equal(transactions[0].amount,720);
  assert.equal(transactions[0].type,'BUY');
  assert.equal(transactions[0].source,'UNITY Lab · Testhandel');
+ assert.equal(transactions[0].fxSource,'test ECB');
  assert.equal(transactions[0].decisionSnapshot.source,'UNITY EOD-Analyse · keine Handelsfreigabe');
  const sell={...buy,type:'SELL',quantity:'1'};
  assert.equal(await vm.runInContext("unityHomeSaveTrade("+JSON.stringify(sell)+")",sandbox),true);
  assert.equal(transactions[1].type,'SELL');
  await assert.rejects(vm.runInContext("unityHomeSaveTrade("+JSON.stringify({...sell,quantity:'3'})+")",sandbox),/Nicht genügend/);
- await assert.rejects(vm.runInContext("unityHomeSaveTrade("+JSON.stringify({...buy,fx:'1.05'})+")",sandbox),/Für EUR/);
+ assert.equal(transactions[0].fx,1); // manually submitted FX cannot override the automatic EUR rate
  assert.equal(transactions.length,2);
  assert.match(vm.runInContext("unityHomeSecurityDetails("+JSON.stringify(s2)+",null)",sandbox),/BID\/ASK/);
  console.log('Mobile reorder persisted; test buy/sell validated and recorded without real orders.');

@@ -64,7 +64,23 @@ function unityDynamicMarketItem(s){
 function unityMarketForStock(s){
   return (s?.isin&&typeof unityMarketItem==='function'?unityMarketItem(s.isin):null)||unityDynamicMarketItem(s);
 }
-async function unityLoadDynamicStock(s){
+function unityDynamicHistoryId(s){return 'dynamic-history:'+String(s?.id||'')}
+function unityHydrateDynamicHistories(list){
+  const saved=typeof cache!=='undefined'&&Array.isArray(cache.histories)?cache.histories:[];
+  for(const s of list||[]){
+    if(!s?.id||!s.providerSymbol)continue;
+    const record=saved.find(x=>x.id===unityDynamicHistoryId(s));
+    const item=record?.item;
+    if(item&&item.providerSymbol&&String(item.providerSymbol).toUpperCase()===String(s.providerSymbol).toUpperCase()&&item.currency===s.currency&&Array.isArray(item.points)&&item.points.length>=200)unityDynamicItems.set(String(s.providerSymbol).toUpperCase(),item);
+  }
+}
+async function unityPersistDynamicHistory(s,item){
+  if(!s?.id||typeof put!=='function'||typeof db==='undefined'||!db)return;
+  const record={id:unityDynamicHistoryId(s),instrumentId:s.id,providerSymbol:s.providerSymbol,currency:s.currency,item,savedAt:new Date().toISOString(),source:'Dynamische Referenzkursreihe · lokal zwischengespeichert'};
+  await put('histories',record);
+  if(typeof cache!=='undefined'&&Array.isArray(cache.histories)){const i=cache.histories.findIndex(x=>x.id===record.id);if(i>=0)cache.histories[i]=record;else cache.histories.push(record)}
+}
+async function unityLoadDynamicStock(s,{quiet=false}={}){
   if(!s?.providerSymbol||!unityYahooSymbolValid(s.providerSymbol))return;
   const symbol=s.providerSymbol.toUpperCase();
   const cached=unityDynamicItems.get(symbol);
@@ -74,12 +90,18 @@ async function unityLoadDynamicStock(s){
     try{
       const item=await unityFetchWorldwideHistory(symbol);
       if(item.currency!==s.currency)throw Error('Währungsabweichung: '+item.currency+' statt '+s.currency);
-      unityDynamicItems.set(symbol,item);unityDynamicErrors.delete(symbol);
+      unityDynamicItems.set(symbol,item);await unityPersistDynamicHistory(s,item);unityDynamicErrors.delete(symbol);
     }catch(e){unityDynamicErrors.set(symbol,String(e.message||e))}
-    finally{unityDynamicPending.delete(symbol);if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
+    finally{unityDynamicPending.delete(symbol);if(!quiet&&typeof render==='function'&&typeof db!=='undefined'&&db)render()}
   })();
   unityDynamicPending.set(symbol,task);
   return task;
+}
+async function unityLoadDynamicQueue(list){
+  const unique=[],seen=new Set();
+  for(const s of list||[]){const symbol=String(s?.providerSymbol||'').toUpperCase();if(s?.id&&unityYahooSymbolValid(symbol)&&!seen.has(symbol)){seen.add(symbol);unique.push(s)}}
+  for(const s of unique)await unityLoadDynamicStock(s,{quiet:true});
+  if(typeof render==='function'&&typeof db!=='undefined'&&db)render();
 }
 
 /* Headline-only news discovery. Headlines are NOT investment signals and are

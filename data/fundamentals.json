@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-01T11:44:44+00:00",
+  "generatedAt": "2026-11-01T11:47:24+00:00",
   "source": "XBRL International filings.xbrl.org",
   "scope": "Four European pilot issuers; partial annual filings, no live valuations",
   "items": {
@@ -18,7 +18,7 @@
       "latestFiling": null,
       "priorFiling": null,
       "officialHighlights": null,
-      "checkedAt": "2026-11-01T11:44:44+00:00",
+      "checkedAt": "2026-11-01T11:47:24+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": [
         "Offizielle Meldung: The read operation timed out"
@@ -174,7 +174,7 @@
         "validationWarnings": 0
       },
       "officialHighlights": null,
-      "checkedAt": "2026-11-01T11:44:44+00:00",
+      "checkedAt": "2026-11-01T11:47:24+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -194,8 +194,8 @@
       "officialHighlights": {
         "fiscalYear": "2025",
         "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
-        "sourceType": "issuer-press-release",
-        "verifiedAt": "2026-11-01T11:45:07+00:00",
+        "sourceType": "issuer-primary-disclosure",
+        "verifiedAt": "2026-11-01T11:48:00+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -224,7 +224,7 @@
           }
         }
       },
-      "checkedAt": "2026-11-01T11:44:44+00:00",
+      "checkedAt": "2026-11-01T11:47:24+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -244,8 +244,8 @@
       "officialHighlights": {
         "fiscalYear": "2025",
         "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
-        "sourceType": "issuer-press-release",
-        "verifiedAt": "2026-11-01T11:45:08+00:00",
+        "sourceType": "issuer-primary-disclosure",
+        "verifiedAt": "2026-11-01T11:48:01+00:00",
         "currency": "EUR",
         "facts": {
           "adjustedFreeCashFlow": {
@@ -258,7 +258,7 @@
           }
         }
       },
-      "checkedAt": "2026-11-01T11:44:44+00:00",
+      "checkedAt": "2026-11-01T11:47:24+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     }

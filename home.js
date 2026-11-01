@@ -46,6 +46,23 @@ function unityHomeDataState(s){
   if(!symbol)return {kind:'missing',label:'keine Kursquelle zugeordnet'};
   return {kind:'waiting',label:'noch nicht geprüft'};
 }
+function unityPilotDecision(s){
+  const state=unityHomeDataState(s),{m,technical}=unityHomeQuote(s);
+  if(state.kind==='loading')return {kind:'loading',label:'Daten werden erfasst',detail:'Kursreihe wird geladen.'};
+  if(state.kind==='failed')return {kind:'blocked',label:'Datenquelle prüfen',detail:state.detail||'Keine Kursreihe abrufbar.'};
+  if(state.kind==='missing')return {kind:'blocked',label:'Kursquelle ergänzen',detail:'Für diesen Wert fehlt eine Kursquelle.'};
+  if(!technical||!m)return {kind:'waiting',label:'Daten prüfen',detail:'Für eine technische Auswertung fehlen noch Kursdaten.'};
+  const rsi=Number(m.rsi),index=Number(m.technicalIndex);
+  const favorable=m.trend==='Aufwärtstrend'&&rsi>=38&&rsi<=67&&index>=55;
+  if(favorable)return {kind:'interesting',label:'Technisch interessant',detail:'Trend und technische Kennzahlen sind positiv. Unternehmensprüfung und Risiko-/Bewertungscheck stehen noch aus.'};
+  if(m.trend==='Abwärtstrend')return {kind:'watch',label:'Beobachten',detail:'Der technische Trend ist abwärts gerichtet; kein simulierter Einstieg.'};
+  if(rsi>67)return {kind:'watch',label:'Beobachten',detail:'Technik ist bereits weit gelaufen; Rücksetzer oder Unternehmensprüfung abwarten.'};
+  return {kind:'watch',label:'Beobachten',detail:'Technische Lage noch nicht ausreichend eindeutig.'};
+}
+function unityPilotDecisionSummary(){
+  const decisions=unityPilotStocks().map(unityPilotDecision),count=k=>decisions.filter(d=>d.kind===k).length;
+  return '<div class="home-decision-summary" aria-label="Entscheidungsstufe erste Analysegruppe"><strong>Entscheidungsstufe · erste 20</strong><span class="decision-interesting">● '+count('interesting')+' technisch interessant</span><span class="decision-watch">● '+count('watch')+' beobachten</span><span class="decision-open">● '+(count('waiting')+count('loading')+count('blocked'))+' Daten-/Quellenprüfung</span><small>Ein simulierter Kaufkandidat wird erst nach zusätzlicher Unternehmens-, Bewertungs- und Risiko-Prüfung freigegeben.</small></div>';
+}
 function unityHomeAnalysisStatus(selected){
   const states=selected.map(unityHomeDataState),count=k=>states.filter(x=>x.kind===k).length;
   const p=typeof unityDynamicProgress!=='undefined'?unityDynamicProgress:{total:0,done:0,ok:0,failed:0,active:''};
@@ -124,7 +141,7 @@ function unityHome(){
     (capital?'<form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening||capital.funded||0).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form>':'')+'</section>';
   const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
-    '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufkandidaten</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
+    '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufkandidaten</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+unityPilotDecisionSummary()+
     '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Handlungsbedarf</button></div>'+
     '<p class="home-sort-hint">Sortierung wählen · Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
@@ -137,9 +154,9 @@ function unityHome(){
     const change=pilot&&base>0?(Number(dq.price)/base-1)*100:valid?unityHomeMovement(x,unityHomeRange):NaN;
     const rising=Number.isFinite(change)&&change>0,falling=Number.isFinite(change)&&change<0;
     const cls=rising?'home-up':falling?'home-down':'home-flat';
-    const p=depotPosition(s),signal=unityHomeSignal(s);
+    const p=depotPosition(s),signal=unityHomeSignal(s),pilotDecision=UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())?unityPilotDecision(s):null;
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button></div><button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+(p.qty>0?'<small class="home-position-label"><b>Testdepot:</b> '+number(p.qty,4)+' Stück · Ø Kaufpreis '+depotMoney(p.avg)+'</small><small class="home-position-label">Gebühr '+depotMoney(p.fees)+' · Einsatz '+depotMoney(p.cost)+(Number.isFinite(p.pnl)?' · <b class="'+(p.pnl>=0?'positive':'negative')+'">G/V '+(p.pnl>=0?'+':'')+depotMoney(p.pnl)+' ('+(p.cost>0?(p.pnl/p.cost*100).toLocaleString('de-DE',{maximumFractionDigits:2}):'0')+' %)</b>':' · <b>G/V: Kursdaten fehlen</b>')+'</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+(pilotDecision?'<small class="home-pilot-decision pilot-'+pilotDecision.kind+'">Entscheidung: '+esc(pilotDecision.label)+'</small>':'')+(p.qty>0?'<small class="home-position-label"><b>Testdepot:</b> '+number(p.qty,4)+' Stück · Ø Kaufpreis '+depotMoney(p.avg)+'</small><small class="home-position-label">Gebühr '+depotMoney(p.fees)+' · Einsatz '+depotMoney(p.cost)+(Number.isFinite(p.pnl)?' · <b class="'+(p.pnl>=0?'positive':'negative')+'">G/V '+(p.pnl>=0?'+':'')+depotMoney(p.pnl)+' ('+(p.cost>0?(p.pnl/p.cost*100).toLocaleString('de-DE',{maximumFractionDigits:2}):'0')+' %)</b>':' · <b>G/V: Kursdaten fehlen</b>')+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+(valid?unityPct(change):'–')+'</strong><small>'+(dq?number(Number(dq.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(dq?.precision==='15m-bar'?'15m-Pilot · '+esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):dq?esc(dq.date)+' · Schluss':'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button></div>';
   }
   h+='</section>';

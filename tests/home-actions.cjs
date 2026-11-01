@@ -48,6 +48,12 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
  await assert.rejects(vm.runInContext("unityHomeSaveTrade("+JSON.stringify({...sell,quantity:'3'})+")",sandbox),/Nicht genügend/);
  assert.equal(transactions[0].fx,1); // manually submitted FX cannot override the automatic EUR rate
  assert.equal(transactions.length,2);
+ const chfBuy={...buy,instrumentId:'a',quantity:'1',price:'9999',fx:'9999'};
+ assert.equal(await vm.runInContext("unityHomeSaveTrade("+JSON.stringify(chfBuy)+")",sandbox),true);
+ assert.equal(transactions[2].price,240);
+ assert.equal(transactions[2].fx,1.08);
+ assert.equal(transactions[2].amount*transactions[2].fx,259.20000000000005);
+ assert.match(vm.runInContext("unityHomeTradeActions("+JSON.stringify(s1)+")",sandbox),/Automatische EUR-Umrechnung|Kaufen · Simulation/);
  assert.match(vm.runInContext("unityHomeSecurityDetails("+JSON.stringify(s2)+",null)",sandbox),/BID\/ASK/);
  console.log('Mobile reorder persisted; test buy/sell validated and recorded without real orders.');
 })().catch(err=>{console.error(err);process.exitCode=1});

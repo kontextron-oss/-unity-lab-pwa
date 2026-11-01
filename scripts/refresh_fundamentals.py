@@ -227,7 +227,7 @@ def official_highlights(isin):
  doc=raw.decode(encoding,errors="replace")
  facts=parse_official_highlights(doc,source)
  if not facts:raise ValueError("No unambiguous FY2025 issuer values")
- return {"fiscalYear":"2025","sourceUrl":source["url"],"sourceType":"issuer-press-release",
+ return {"fiscalYear":"2025","sourceUrl":source["url"],"sourceType":"issuer-primary-disclosure",
          "verifiedAt":dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
          "currency":source["currency"],"facts":facts}
 

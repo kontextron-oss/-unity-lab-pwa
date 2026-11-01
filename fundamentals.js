@@ -52,6 +52,13 @@ function unityFundPilotPanel(s){
    }
    h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+esc(value)+'</b><small>'+esc(help)+'</small></div>';
   }
+  const growth=item.derived?.revenueGrowth?.value,earnings=item.derived?.netIncomeGrowth?.value;
+  if(Number.isFinite(growth)&&Number.isFinite(earnings)&&item.derived?.revenueGrowth?.periodEnd===item.latestFiling?.periodEnd){
+    const revenueText=growth>0?'Umsatz gestiegen':growth<0?'Umsatz gesunken':'Umsatz unverändert';
+    const earningsText=earnings>0?'Jahresüberschuss gestiegen':earnings<0?'Jahresüberschuss gesunken':'Jahresüberschuss unverändert';
+    h+='<p class="unity-fund-brief"><b>Automatischer Berichtsvergleich:</b> '+revenueText+', '+earningsText+
+      '. Gründe, Sondereffekte und Prognosen sind damit noch nicht geprüft. Keine Kaufentscheidung.</p>';
+  }
   const ratios=[['revenueGrowth','Umsatzwachstum gegenüber Vorjahr'],['netIncomeGrowth','Gewinnveränderung gegenüber Vorjahr'],
     ['netMargin','Nettomarge'],['equityRatio','Eigenkapitalquote'],['operatingCashFlowMargin','Operative Cashflow-Marge']];
   for(const [key,label] of ratios){

@@ -1,9 +1,9 @@
 'use strict';
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
-let unityHomeRange='1M',unityHomeSelected='';
+let unityHomeRange='1D',unityHomeSelected='';
 const unityHomeStocks=()=>stocks().filter(s=>!s.watchHidden);
-const unityHomePeriods=[['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr'],['3Y','3J'],['6Y','6J']];
+const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr'],['3Y','3J'],['6Y','6J']];
 function unityHomeQuote(s){
   const x=unityMarketItem(s.isin),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;

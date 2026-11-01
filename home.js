@@ -89,14 +89,18 @@ function unityHome(){
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
     '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufsignale</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
     '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Handlungsbedarf</button></div>'+
-    '<p class="home-sort-hint">☰ Aktie ziehen und dauerhaft sortieren. Orange bedeutet: noch keine belastbare Kauf-/Verkaufsentscheidung.</p>';
+    '<p class="home-sort-hint">☰ Aktie ziehen und dauerhaft sortieren. Orange bedeutet: noch keine belastbare Kauf-/Verkaufsentscheidung. Bei Pilotkursen: „Aktuell“ = Veränderung zum letzten Schlusskurs.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x,m,valid}=unityHomeQuote(s);
-    const change=valid?unityHomeMovement(x,unityHomeRange):NaN;
+    const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
+    const pilot=dq?.precision==='15m-bar'&&x&&valid;
+    const series=pilot&&unityHomeRange!=='1D'?unityChartData(x,unityHomeRange):[];
+    const base=pilot?(unityHomeRange==='1D'?Number(x.price):Number(series[0]?.close)):NaN;
+    const change=pilot&&base>0?(Number(dq.price)/base-1)*100:valid?unityHomeMovement(x,unityHomeRange):NaN;
     const rising=Number.isFinite(change)&&change>0,falling=Number.isFinite(change)&&change<0;
     const cls=rising?'home-up':falling?'home-down':'home-flat';
-    const p=depotPosition(s),signal=unityHomeSignal(s),dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
+    const p=depotPosition(s),signal=unityHomeSignal(s);
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Gedrückt halten und Aktie verschieben" aria-label="'+esc(s.name)+' verschieben">☰</button><button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
       '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(valid?m.trend:'Daten nicht ausreichend')+'</small>'+(p.qty>0?'<small class="home-position-label">'+number(p.qty,4)+' Stück im Testdepot'+(Number.isFinite(p.pnl)?' · '+(p.pnl>=0?'+':'')+depotMoney(p.pnl):'')+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+(valid?unityPct(change):'–')+'</strong><small>'+(dq?number(Number(dq.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(dq?.precision==='15m-bar'?'15m-Pilot · '+esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):dq?esc(dq.date)+' · Schluss':'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button></div>';

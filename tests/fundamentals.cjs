@@ -7,7 +7,7 @@ assert.match(fs.readFileSync('index.html','utf8'),/fundamentals\.js/);
 const ctx={Date,Number,Math,JSON,Object,Intl,esc:x=>String(x),db:null,
  fetch:async()=>({ok:true,json:async()=>({schemaVersion:1,items:{
   FR0000121972:{isin:'FR0000121972',name:'Schneider Electric',status:'metrics-partial',reportCurrency:'EUR',source:'XBRL',checkedAt:'2026-11-01',
-   latestFiling:{periodEnd:'2025-12-31',reportUrl:'https://filings.xbrl.org/test'},
+   latestFiling:{periodEnd:'2025-12-31',reportUrl:'https://filings.xbrl.org/test'},priorFiling:{periodEnd:'2024-12-31'},derived:{revenueGrowth:{value:5.2,unit:'percent',periodEnd:'2025-12-31',priorPeriodEnd:'2024-12-31'}},
    metrics:{revenue:{value:123000000,currency:'EUR',periodEnd:'2025-12-31',concept:'ifrs-full:Revenue'},
             equity:{value:1,currency:'USD',periodEnd:'2025-12-31',concept:'ifrs-full:Equity'}}}
  }})})};
@@ -18,6 +18,8 @@ vm.createContext(ctx);vm.runInContext(src,ctx);
  const panel=vm.runInContext('unityFundPilotPanel(s)',ctx);
  assert.match(panel,/123\.000\.000/);
  assert.match(panel,/Originalbericht/);
+ assert.match(panel,/Umsatzwachstum gegenüber Vorjahr/);
+ assert.match(panel,/5,2 %/);
  assert.match(panel,/Nicht zuverlässig verfügbar/);
  assert.match(panel,/keine Kauf- oder Verkaufsfreigabe/);
  ctx.unknown={isin:'US92537N1081'};

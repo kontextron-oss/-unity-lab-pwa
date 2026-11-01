@@ -31,7 +31,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "market.json"
 
 def get_chart(symbol):
-    query = urllib.parse.urlencode({"range": "2y", "interval": "1d", "events": "false"})
+    query = urllib.parse.urlencode({"range": "10y", "interval": "1d", "events": "false"})
     path = urllib.parse.quote(symbol, safe=".")
     for host in ("query1.finance.yahoo.com", "query2.finance.yahoo.com"):
         url = f"https://{host}/v8/finance/chart/{path}?{query}"
@@ -83,7 +83,10 @@ def build():
                     continue
                 day = dt.datetime.fromtimestamp(ts, tz=dt.timezone.utc).date().isoformat()
                 points.append({"date": day, "close": round(float(close), 5)})
-            points = sorted({x["date"]: x for x in points}.values(), key=lambda x: x["date"])[-260:]
+            points = sorted({x["date"]: x for x in points}.values(), key=lambda x: x["date"])
+            # Preserve up to six calendar years; never fabricate pre-IPO data.
+            cutoff = (dt.datetime.now(dt.timezone.utc).date() - dt.timedelta(days=366*6)).isoformat()
+            points = [p for p in points if p["date"] >= cutoff]
             if len(points) < 200:
                 raise ValueError("fewer than 200 valid daily closes")
             if any(points[i]["date"] >= points[i+1]["date"] for i in range(len(points)-1)):

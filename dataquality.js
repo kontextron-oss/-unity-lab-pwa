@@ -18,6 +18,7 @@ function unityBusinessDaysSince(date, now=new Date()){
 }
 function unityDataQuality(item,isin,market=unityMarket){
   if(!item)return {level:'missing',label:'Keine Kursdaten',detail:'Für diese Aktie ist keine Referenz verfügbar.',canCompare:false};
+  if(item.dynamicExperimental)return {level:'warning',label:'Externe Referenz ungeprüft',detail:'Weltweite Kursreihe über einen externen CORS-Dienst; nicht börslich verifiziert, ISIN nicht unabhängig bestätigt. Diagramm nur zur Orientierung; keine operative Freigabe.',canCompare:false};
   const expected=CATALOG.find(s=>s.isin===isin);
   if(!expected||item.isin!==isin||item.currency!==expected.currency)
     return {level:'invalid',label:'Datenkonflikt',detail:'ISIN oder Währung stimmt nicht mit dem Aktienkatalog überein.',canCompare:false};

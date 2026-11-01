@@ -164,7 +164,28 @@ function wikiListings(entity,searchItem,exchanges){const claims=entity?.claims||
  if(!listings.length){for(const claim of (claims.P249||[]).filter(activeClaim)){
    const ticker=cleanTicker(claimString(claim));if(ticker)listings.push({name,ticker,isin,exchange:'',currency:'',qid:entity.id,source:'Wikidata',note:searchItem.description||'',ambiguousIsin:activeIsins.length>1});
  }}
+ if(!listings.length&&isin)listings.push({name,ticker:'',isin,exchange:'',currency:'',qid:entity.id,source:'Wikidata',note:searchItem.description||'',ambiguousIsin:activeIsins.length>1});
  return listings;
+}
+async function wikiSearchCandidates(term,signal){
+ const out=[],seen=new Set();
+ for(const language of ['de','en']){
+  const data=await wikiFetch({action:'wbsearchentities',search:term,language,uselang:language,type:'item',limit:'12'},signal);
+  for(const item of data.search||[])if(/^Q\d+$/.test(item.id)&&!seen.has(item.id)){seen.add(item.id);out.push(item)}
+  if(out.length>=12)break;
+ }
+ const q=term.trim().toUpperCase();
+ if(/^[A-Z]{2}[A-Z0-9]{10}$/.test(q)||/^[A-Z0-9.\-]{2,8}$/.test(q)){
+  const property=q.length===12?'P946':'P249';
+  try{
+   const data=await wikiFetch({action:'query',list:'search',srsearch:'haswbstatement:"'+property+'='+q+'"',srnamespace:'0',srlimit:'12'},signal);
+   for(const page of data.query?.search||[]){
+    const id=String(page.title||'');
+    if(/^Q\d+$/.test(id)&&!seen.has(id)){seen.add(id);out.push({id,label:q,description:'Wertpapierkennung aus Wikidata'})}
+   }
+  }catch(e){if(e.name==='AbortError')throw e}
+ }
+ return out.slice(0,24);
 }
 function onlineStatus(message){const el=document.getElementById('online-results');if(el)el.innerHTML='<p class="muted">'+esc(message)+'</p>'}
 function renderOnlineResults(){const el=document.getElementById('online-results');if(!el)return;
@@ -206,9 +227,7 @@ async function searchOnline(){const input=document.getElementById('online-search
    }catch(error){if(error.name==='AbortError')return}
   }
   onlineStatus('Weltweite Börsenquelle ohne Treffer; prüfe offene Unternehmensdaten …');
-  const search=await wikiFetch({action:'wbsearchentities',search:term,language:'de',uselang:'de',type:'item',limit:'12'},signal);
-  let matches=search.search||[];
-  if(!matches.length){const fallback=await wikiFetch({action:'wbsearchentities',search:term,language:'en',uselang:'en',type:'item',limit:'12'},signal);matches=fallback.search||[]}
+  const matches=await wikiSearchCandidates(term,signal);
   const ids=uniq(matches.map(x=>x.id).filter(x=>/^Q\d+$/.test(x)));
   if(!ids.length){if(request===onlineRequest)renderOnlineResults();return}
   const detail=await wikiFetch({action:'wbgetentities',ids:ids.join('|'),props:'claims|labels',languages:'de|en'},signal);
@@ -216,7 +235,7 @@ async function searchOnline(){const input=document.getElementById('online-search
   const exData=exIds.length?await wikiFetch({action:'wbgetentities',ids:exIds.join('|'),props:'labels',languages:'de|en'},signal):{entities:{}};
   const exchanges=Object.fromEntries(Object.entries(exData.entities||{}).map(([qid,e])=>[qid,e.labels?.en?.value||e.labels?.de?.value||'']));
   if(request!==onlineRequest||activeTab!=='stocks')return;
-  onlineResults=matches.flatMap(m=>wikiListings(detail.entities?.[m.id],m,exchanges)).filter(s=>s.name&&s.ticker).slice(0,24);
+  onlineResults=matches.flatMap(m=>wikiListings(detail.entities?.[m.id],m,exchanges)).filter(s=>s.name&&(s.ticker||s.isin)).slice(0,24);
   renderOnlineResults();
  }catch(e){if(request!==onlineRequest||e.name==='AbortError')return;onlineStatus('Online-Suche derzeit nicht erreichbar: '+(e.message||'Netzwerkfehler')+'. Der Offline-Katalog und die manuelle Eingabe funktionieren weiter.')}
 }

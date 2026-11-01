@@ -48,7 +48,8 @@ const CATALOG=[
 {name:'nVent Electric',ticker:'NVT',isin:'IE00BDVJJQ56',exchange:'NYSE',currency:'USD',group:'Elektrogehäuse · Verbindungstechnik'},
 {name:'Hubbell',ticker:'HUBB',isin:'US4435106079',exchange:'NYSE',currency:'USD',group:'Stromnetze · Netzausrüstung'},
 {name:'Quanta Services',ticker:'PWR',isin:'US74762E1029',exchange:'NYSE',currency:'USD',group:'Netzausbau · Infrastruktur'},
-{name:'Nexans',ticker:'NEX',isin:'FR0000044448',exchange:'Euronext Paris',currency:'EUR',group:'Stromkabel · Elektrifizierung'}
+{name:'Nexans',ticker:'NEX',isin:'FR0000044448',exchange:'Euronext Paris',currency:'EUR',group:'Stromkabel · Elektrifizierung'},
+{name:'Infineon',ticker:'IFX',isin:'DE0006231004',exchange:'Xetra',currency:'EUR',group:'Halbleiter · Leistungselektronik'}
 ];
 const normalizeSearch=s=>String(s||'').toLocaleLowerCase('de-DE').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 function catalogPresent(s){return cache.instruments.some(x=>(s.isin&&x.isin&&x.isin.toUpperCase()===s.isin)||(x.ticker.toUpperCase()===s.ticker&&x.exchange.toLowerCase()===s.exchange.toLowerCase()))}

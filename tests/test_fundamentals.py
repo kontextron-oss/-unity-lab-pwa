@@ -40,11 +40,11 @@ class FundamentalsTests(unittest.TestCase):
         self.assertNotIn("revenueGrowth",mod.derived_ratios(current,previous,"2025-12-31","2022-12-31"))
         self.assertNotIn("netIncomeGrowth",mod.derived_ratios(current,{"netIncome":{"value":-5}},"2025-12-31","2024-12-31"))
     def test_official_issuer_highlights_parse_without_cross_mixing(self):
-        abb='<html><body>ABB 2025 KEY FIGURES REVENUES in mn $33,220 FREE CASHFLOW in mn $4,566</body></html>'
+        abb='<html><body>ABB FY 2025 Revenues $33.2 billion and Cash flow from operating activities $5,469 million</body></html>'
         x=mod.parse_official_highlights(abb,mod.OFFICIAL_SOURCES["CH0012221716"])
-        self.assertEqual(x["revenue"]["value"],33_220_000_000)
-        self.assertEqual(x["freeCashFlow"]["value"],4_566_000_000)
-        self.assertEqual(x["freeCashFlow"]["currency"],"USD")
+        self.assertEqual(x["revenue"]["value"],33_200_000_000)
+        self.assertEqual(x["operatingCashFlow"]["value"],5_469_000_000)
+        self.assertEqual(x["operatingCashFlow"]["currency"],"USD")
         inf='<html><body>Infineon FY 2025: Revenue €14.662 billion; positive Adjusted Free Cash Flow of €1.803 billion</body></html>'
         x=mod.parse_official_highlights(inf,mod.OFFICIAL_SOURCES["DE0006231004"])
         self.assertEqual(x["revenue"]["value"],14_662_000_000)
@@ -53,8 +53,8 @@ class FundamentalsTests(unittest.TestCase):
     def test_official_issuer_rejects_wrong_identity_or_conflicting_figures(self):
         source=mod.OFFICIAL_SOURCES["CH0012221716"]
         with self.assertRaises(ValueError):
-            mod.parse_official_highlights("<p>Another firm 2025 REVENUES in mn $33,220</p>",source)
-        x=mod.parse_official_highlights("<p>ABB 2025 REVENUES in mn $33,220; REVENUES in mn $42,100</p>",source)
+            mod.parse_official_highlights("<p>Another firm FY 2025 Revenues $33.2 billion</p>",source)
+        x=mod.parse_official_highlights("<p>ABB FY 2025 Revenues $33.2 billion; FY 2025 Revenues $42.1 billion</p>",source)
         self.assertNotIn("revenue",x)
     def test_annual_period_not_quarterly(self):
         report={"facts":{"f1":{"dimensions":{"concept":"ifrs-full:Revenue","unit":"iso4217:EUR","period":"2025-10-01/2026-01-01"},"value":123}}}

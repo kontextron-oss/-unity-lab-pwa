@@ -34,7 +34,8 @@ function unityMetrics(x){
     (drawdown<=-10?10:drawdown<=-3?7:3)
   )));
   const freshnessDays=Math.floor((Date.now()-Date.parse(x.date+'T00:00:00Z'))/86400000);
-  const stale=!Number.isFinite(freshnessDays)||freshnessDays<0||freshnessDays>8;
+  const quality=unityDataQuality(x,x.isin);
+  const stale=!quality.canCompare;
   let signal='Technisch neutral';
   if(trend==='Aufwärtstrend'&&rsi>=70)signal='Starker Trend · erhöhtes Rückschlagrisiko';
   else if(trend==='Aufwärtstrend'&&drawdown<=-5)signal='Aufwärtstrend · Rücksetzer';
@@ -68,7 +69,7 @@ function unityDataNotice(){
   const count=Object.keys(unityMarket.items||{}).length;
   const hours=(Date.now()-Date.parse(at))/3600000;
   const status=Number.isFinite(hours)&&hours>=0&&hours<=24?'Letzte Datei-Aktualisierung vor '+number(hours,1)+' Stunden':'Achtung: Datei-Aktualisierung älter als 24 Stunden oder Zeitstempel ungültig';
-  return '<p class="tiny muted"><b>'+esc(status)+'</b> · '+esc(at)+' · '+count+' von 15 Aktien mit Kursverlauf · '+esc(unityMarket.source||'inoffizielle Quelle')+'. Dies ist kein Echtzeit-Feed.</p><button type="button" class="secondary" id="unity-reload-market">Verfügbare Daten erneut abrufen</button>';
+  return '<p class="tiny muted"><b>'+esc(status)+'</b> · '+esc(at)+' · '+count+' von 15 Aktien mit Kursverlauf · '+esc(unityMarket.source||'inoffizielle Quelle')+'. Dies ist kein Echtzeit-Feed.</p><button type="button" class="secondary" id="unity-reload-market">Verfügbare Daten erneut abrufen</button>'+unityDataStatusPanel(unityMarket);
 }
 function unityComparisonView(){
   let h='<section class="panel" id="unity-dashboard"><h2>UNITY Marktüberblick · automatischer Vergleich</h2>'+
@@ -88,7 +89,7 @@ function unityComparisonView(){
   h+='<div class="unity-mobile-list">';
   for(const {s,x,m} of rows){
     h+='<button type="button" class="unity-mobile-row" '+(s.isin?'data-unity-isin="'+esc(s.isin)+'"':'data-analyze="'+esc(s.id)+'"')+'><span class="unity-mobile-head"><strong>'+esc(s.name)+'</strong><span>'+ (m?number(m.last,2)+' '+esc(s.currency):'Kurs fehlt')+' <span aria-hidden="true">›</span></span></span>'+
-    (x?unityChartSvg(x,'3M',true,false):'<span class="chart-empty">Keine Kursreihe</span>')+'<span class="tiny muted">'+esc(m?.signal||'Keine Referenzdaten')+' · '+esc(x?.date||'')+'</span>'+
+    (x?unityChartSvg(x,'3M',true,false):'<span class="chart-empty">Keine Kursreihe</span>')+'<span class="tiny muted">'+esc(m?.stale?'Kursstand eingeschränkt · '+unityDataQuality(x,s.isin).label:m?.signal||'Keine Referenzdaten')+' · '+esc(x?.date||'')+'</span>'+
     '<span class="unity-mobile-metrics"><span>3 Monate <b>'+unityPct(m?.r63)+'</b></span><span>12 Monate <b>'+unityPct(m?.r252)+'</b></span><span>Technik <b>'+(m?m.technicalIndex+'/100':'–')+'</b></span></span>'+
     '<span class="tiny">Kauf: <b>nicht freigegeben</b> · Bewertung fehlt</span></button>';
   }
@@ -111,6 +112,8 @@ function unityCompanyView(isin,comparison=false){
   if(!c)return '<div class="panel">Für diese Aktie liegt noch kein automatischer Kursvergleich vor.</div>';
   let h='<section class="panel" id="unity-company-detail"><h2>'+esc(c.name)+' · verständliche Auswertung</h2>';
   if(!m)return h+'<p>Für diese Aktie liegen derzeit keine ausreichend vollständigen historischen Referenzkurse vor. Eine Einschätzung wird nicht erfunden.</p></section>';
+  const q=unityDataQuality(x,isin);
+  h+='<p class="unity-quality-note"><b>Datenstatus:</b> '+esc(q.label)+' · '+esc(q.detail)+'</p>';
   h+='<div class="grid"><div class="metric"><small>Letzter Tageskurs</small><strong>'+number(m.last,2)+' '+esc(c.currency)+'</strong><small>'+esc(x.date)+'</small></div>'+
     '<div class="metric"><small>3 Monate</small><strong>'+unityPct(m.r63)+'</strong></div>'+
     '<div class="metric"><small>12 Monate</small><strong>'+unityPct(m.r252)+'</strong></div>'+

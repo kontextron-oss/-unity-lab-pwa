@@ -1,31 +1,43 @@
-# UNITY LAB – Projektstand 1.1
+# UNITY LAB – Projektstand 1.2
 
 **Stand:** 1. November 2026  
 **Repository:** kontextron-oss/-unity-lab-pwa  
-**Veröffentlichungsstand:** 0.10.3
+**Technische Basis:** Version 0.10.3 veröffentlicht und geprüft
 
-## Aktuell umgesetzt
-- Startseite mit Aktienübersicht, technischer Einordnung und direktem Übergang zur UNITY-Analyse.
-- Simulationsdepot mit datierten Käufen, Verkäufen, Teilverkäufen, Storno und unveränderlicher Historie.
-- Gebühren pro Kauf oder Verkauf in EUR. Kaufgebühren erhöhen den Einstand; Verkaufsgebühren mindern den Nettoerlös und den realisierten Erfolg.
-- Standardwert von 1,00 EUR pro Simulation, frei anpassbar für den genutzten Broker.
-- Forschungsbereich aus der sichtbaren Navigation entfernt. Die Analyse zeigt automatisch verfügbare Kurs- und Berichtsquellen sowie offene Datenprüfungen.
-- Fehlerkorrektur für die Score-Formatierung in analysis.js.
-- Service Worker Cache 0.10.3 enthält App-Module und die automatischen Markt-, Fundamentaldaten-, FX- und Intraday-Dateien für den Offline-Start.
-- Cache-Bereinigung ist auf UNITY-Lab-Caches begrenzt.
+## Verbindliche Neuausrichtung
 
-## Noch offen
-- Vollständig geprüfte aktuelle Fundamentaldaten, Earnings und verifizierte Handelskurse für belastbare operative Kauf- oder Verkaufssignale.
-- Automatische qualitative Unternehmensanalyse mit Quellenprüfung.
-- Spread, Steuern und tatsächliche Fremdwährungskosten als getrennte Bestandteile der Simulation.
-- Auswertung der archivierten Entscheidungen gegen spätere Kursverläufe.
-- pCloud-Synchronisation.
+UNITY Lab wird als automatische Analyse- und Entscheidungshilfe weiterentwickelt. Der Nutzer soll keine Fundamentaldaten, Thesen, Kapitalflüsse oder Strategiegewichte manuell erfassen müssen.
 
-## Verbindlicher Bedienablauf
-1. Aktie auswählen.
-2. UNITY-Analyse und Datenlage ansehen.
-3. Bei eigener Entscheidung einen simulierten Kauf oder Verkauf erfassen.
-4. Stückzahl und Gebühr prüfen; die App berechnet Einstand oder Nettoerlös.
-5. Ergebnis und Entscheidung später im Protokoll nachverfolgen.
+Die bisherige Vollsperre wird ersetzt: Ein fehlender Datenpunkt darf nicht jede Aktie pauschal auf „kein Signal“ setzen. Stattdessen gelten drei getrennte Entscheidungsebenen:
 
-Alle Transaktionen bleiben Simulationen. Die App sendet keine Orders an Broker und ist kein verbundenes Echtgelddepot.
+1. **Technischer Befund** – Trend, Rücksetzer, RSI, gleitende Durchschnitte, Kursdatenqualität.
+2. **Kaufkandidat** – Rangfolge nach Bewertungsabschlag, Qualität, Risiko, Timing und Alternativen; mit messbarer Kaufzone oder Bedingung.
+3. **Operative Freigabe** – erst bei hinreichend aktuellen Kursen, bestätigten Ereignissen und belegter Fundamentaldatenlage.
+
+Jede Aktie erhält künftig eine verständliche Aussage: Kaufen, Teilkauf, Kauf bei Bedingung, Halten, Reduzieren, Ausschließen oder Datenprüfung. Gibt es keinen Kaufkandidaten, nennt die App die beste Alternative, die konkrete Ursache und den Preis- oder Daten-Trigger für eine Änderung.
+
+## Verfügbare Datenquellen ohne laufende Lizenzkosten
+
+- Bestehender verzögerter Tageskurs-Snapshot für Technik, Rücksetzer und Vergleich.
+- Öffentliche Unternehmens- und Investor-Relations-Meldungen für Earnings, Guidance und Ereignisse.
+- Strukturierte SEC-Unternehmensdaten für US-Werte.
+- ESEF-/Inline-XBRL-Berichte für geeignete europäische Emittenten.
+- Öffentlich sichtbare Analystenkonsens- oder Ratingangaben ausschließlich als datierte, sekundäre Einordnung; sie dürfen keine Entscheidung allein bestimmen.
+
+## Nächster Entwicklungsabschnitt: UNITY 0.11
+
+1. Veto-Logik in Datenlücke, Warnung und harten Ausschlussgrund aufteilen.
+2. Automatische Kandidatenbewertung aus vorhandenen Kurs- und Berichtsquellen einführen.
+3. Kaufzonen, Teilkaufzonen, Stop- und Ausstiegstrigger ausgeben.
+4. Kandidaten in einer Rangfolge „beste Kapitalverwendung heute“ vergleichen.
+5. Quellen, Datum und Datenqualität direkt an jeder Entscheidung zeigen.
+6. Empfehlung und spätere Entwicklung als unveränderlichen Snapshot vergleichen.
+
+## Bestehender stabiler Funktionsumfang
+
+- Local-First PWA mit Offline-Cache, Export und lokalem Simulationsdepot.
+- Simulierte Käufe, Verkäufe, Teilverkäufe, Storno und Gebühren.
+- Kaufgebühren erhöhen den Einstand; Verkaufsgebühren senken Nettoerlös und realisierten Erfolg.
+- Forschungseingaben sind aus der sichtbaren Bedienung entfernt.
+
+Alle Transaktionen bleiben Simulationen. UNITY Lab sendet keine Orders an Broker und führt keine Echtgeldgeschäfte aus.

@@ -7,6 +7,9 @@ Only facts with one unambiguous, non-segmented consolidated context and
 matching fiscal period/currency are eligible. No valuation/trade signals.\nData availability is checked independently for each company.
 """
 import datetime as dt
+import html
+import re
+from html.parser import HTMLParser
 import json
 import pathlib
 import urllib.error
@@ -154,6 +157,77 @@ def derived_ratios(current, previous, end_current, end_previous):
                           "periodEnd":end_current,"priorPeriodEnd":end_previous,"basis":[metric]}
     return out
 
+
+# Second, independently sourced route for issuers not covered by ESEF.
+# This reads the issuer's own FY2025 press release. Unlike xBRL financial
+# statements, these are a deliberately small, non-comparable highlights set.
+OFFICIAL_SOURCES={
+ "CH0012221716":{
+  "url":"https://new.abb.com/news/detail/132985/q4-2025-results",
+  "issuer":"ABB", "year":"2025", "currency":"USD",
+  "facts":{
+   "revenue":{"pattern":r"FY\s*2025.{0,1400}?Revenues\s*\$\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "operatingCashFlow":{"pattern":r"FY\s*2025.{0,1600}?Cash\s+flow\s+from\s+operating\s+activities\s*\$\s*([\d,]+)\s*million","scale":1_000_000,"label":"Operativer Cashflow"}
+  }},
+ "DE000ENER6Y0":{
+  "url":"https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
+  "issuer":"Siemens Energy","year":"2025","currency":"EUR",
+  "facts":{
+   "revenue":{"pattern":r"revenue\s+came\s+in\s+at\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "netIncome":{"pattern":r"Net\s+income\s+at\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Jahresüberschuss"},
+   "freeCashFlowPreTax":{"pattern":r"Free\s+cash\s+flow\s+pre\s+tax\s+rose\s+sharply\s+to\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Free Cashflow vor Steuern"}
+  }},
+ "DE0006231004":{
+  "url":"https://www.infineon.com/press-release/2025/infxx202511-021",
+  "issuer":"Infineon","year":"2025","currency":"EUR",
+  "facts":{
+   "revenue":{"pattern":r"FY\s*2025:\s*Revenue\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "adjustedFreeCashFlow":{"pattern":r"positive\s+Adjusted\s+Free\s+Cash\s+Flow\s+of\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Bereinigter Free Cashflow"}
+  }}
+}
+class VisibleText(HTMLParser):
+ def __init__(self):
+  super().__init__();self.parts=[];self.hidden=0
+ def handle_starttag(self,tag,attrs):
+  if tag in {"script","style","noscript"}:self.hidden+=1
+ def handle_endtag(self,tag):
+  if tag in {"script","style","noscript"}:self.hidden=max(0,self.hidden-1)
+ def handle_data(self,data):
+  if not self.hidden:self.parts.append(data)
+def parse_official_highlights(html_document,source):
+ p=VisibleText();p.feed(html_document)
+ text=re.sub(r"\s+"," ",html.unescape(" ".join(p.parts))).strip()
+ if not re.search(r"\b"+re.escape(source["issuer"])+r"\b",text,re.I) or not re.search(r"\b2025\b",text):
+  raise ValueError("Issuer or fiscal year not identifiable")
+ facts={}
+ for key,rule in source["facts"].items():
+  matches=re.findall(rule["pattern"],text,re.I)
+  values=set()
+  for match in matches:
+   try:values.add(float(match.replace(",",""))*rule["scale"])
+   except ValueError:pass
+  if len(values)==1:
+   value=values.pop()
+   if 0<value<1e12:
+    facts[key]={"value":round(value),"currency":source["currency"],"periodEnd":source["year"],
+                "label":rule["label"],"sourceUrl":source["url"],"kind":"issuer-release"}
+ return facts
+def official_highlights(isin):
+ source=OFFICIAL_SOURCES.get(isin)
+ if not source:return None
+ req=urllib.request.Request(source["url"],headers={"User-Agent":HEADERS["User-Agent"],"Accept":"text/html"})
+ with urllib.request.urlopen(req,timeout=20) as response:
+  if int(response.headers.get("Content-Length",0))>2_500_000:raise ValueError("source too large")
+  raw=response.read(2_500_001)
+  if len(raw)>2_500_000:raise ValueError("source too large")
+  encoding=response.headers.get_content_charset() or "utf-8"
+ doc=raw.decode(encoding,errors="replace")
+ facts=parse_official_highlights(doc,source)
+ if not facts:raise ValueError("No unambiguous FY2025 issuer values")
+ return {"fiscalYear":"2025","sourceUrl":source["url"],"sourceType":"issuer-press-release",
+         "verifiedAt":dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+         "currency":source["currency"],"facts":facts}
+
 def build():
     old={}
     if OUTPUT.exists():
@@ -165,7 +239,7 @@ def build():
         row={"name":stock["name"],"isin":isin,"lei":stock["lei"],
              "reportCurrency":stock["currency"],"investorRelations":stock["investor"],
              "note":stock["note"],"status":"not-covered","metrics":{},"priorMetrics":{},"derived":{},
-             "latestFiling":None,"priorFiling":None,"checkedAt":now,"source":"filings.xbrl.org ESEF (XBRL International)",
+             "latestFiling":None,"priorFiling":None,"officialHighlights":None,"checkedAt":now,"source":"filings.xbrl.org ESEF (XBRL International)",
              "errors":[]}
         if not stock["lei"]:
             row["status"]="no-esef-route"
@@ -202,6 +276,16 @@ def build():
             except (ValueError,urllib.error.URLError,TimeoutError,KeyError) as ex:
                 row["status"]="source-unavailable"
                 row["errors"].append("ESEF API: "+str(ex)[:140])
+        if isin in OFFICIAL_SOURCES:
+            try:
+                row["officialHighlights"]=official_highlights(isin)
+                if row["status"] in {"no-esef-route","no-filing-found","source-unavailable"}:
+                    row["status"]="issuer-release-only"
+            except (ValueError,urllib.error.URLError,TimeoutError,LookupError) as ex:
+                row["errors"].append("Offizielle Meldung: "+str(ex)[:140])
+                previous_official=(old.get(isin) or {}).get("officialHighlights")
+                if previous_official:
+                    row["officialHighlights"]={**previous_official,"stale":True}
         # Preserve only a previous successful filing snapshot on temporary API
         # outage, explicitly marked stale; never silently present it as fresh.
         prior=old.get(isin) or {}
@@ -214,7 +298,7 @@ def build():
             row["status"]="stale-previous"
             row["previousCheckedAt"]=prior.get("checkedAt")
         items[isin]=row
-        print(stock["name"],row["status"],"metrics",list(row["metrics"]),flush=True)
+        print(stock["name"],row["status"],"metrics",list(row["metrics"]),"issuer",list((row["officialHighlights"] or {}).get("facts",{})),flush=True)
     output={"schemaVersion":1,"generatedAt":now,"source":"XBRL International filings.xbrl.org",
             "scope":"Four European pilot issuers; partial annual filings, no live valuations",
             "items":items}

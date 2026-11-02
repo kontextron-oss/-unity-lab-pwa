@@ -183,17 +183,56 @@ function unityHome(){
   const selected=unityHomeDisplayedStocks(),pos=typeof depotPositions==='function'?depotPositions():[],capital=typeof depotCapital==='function'?depotCapital():null;
   const allValid=pos.length>0&&pos.every(p=>Number.isFinite(p.value));
   const value=allValid?pos.reduce((n,p)=>n+p.value,0):NaN;
+  const gainClass=Number.isFinite(capital?.gain)?(capital.gain>0?'home-profit-up':capital.gain<0?'home-profit-down':'home-profit-flat'):'home-profit-flat';
   const nUp=selected.filter(s=>unityHomeQuote(s).valid&&unityHomeQuote(s).m.trend==='Aufwärtstrend').length;
   const nDown=selected.filter(s=>unityHomeQuote(s).valid&&unityHomeQuote(s).m.trend==='Abwärtstrend').length;
   let h='<section class="home-hero" id="unity-home"><div class="home-hero-title"><span class="home-hero-mark" aria-hidden="true">↗</span><div><h2>Mein Depot</h2><small>UNITY Lab · persönliche Aktienübersicht</small></div><button type="button" class="home-hero-menu" data-home-add title="Aktien auswählen">＋</button></div>'+
     '<div class="home-periods" aria-label="Kurszeitraum">'+unityHomePeriods.map(([r,label])=>'<button type="button" data-home-range="'+r+'" class="'+(r===unityHomeRange?'active':'')+'">'+label+'</button>').join('')+'</div>';
-  if(capital?.configured){h+='<div class="home-big-number">'+(Number.isFinite(capital.total)?euro(capital.total):depotMoney(capital.free))+'</div><p class="home-value-label">Fiktives Gesamtvermögen · lokal geführte Simulation</p><div class="home-hero-summary"><span>Einzahlungen '+depotMoney(capital.funded)+'</span><span>Frei '+depotMoney(capital.free)+'</span><span>Angelegt '+depotMoney(capital.invested)+'</span></div>';}
-  else if(pos.length&&allValid)h+='<div class="home-big-number">'+euro(value)+'</div><p class="home-value-label">Simulierter Positionswert · Startkapital noch nicht festgelegt</p>';
-  else h+='<p class="home-value-label home-value-prompt">Beobachtungsliste · Testdepot kann bei Bedarf angelegt werden</p>';
+  if(capital?.configured){
+    const complete=Number.isFinite(capital.total);
+    h+='<p class="home-wealth-kicker">Gesamtvermögen · Testdepot</p>'+
+      '<div class="home-big-number" aria-label="Fiktives Gesamtvermögen">'+(complete?euro(capital.total):'–')+'</div>'+
+      '<p class="home-value-label">'+(complete?(capital.indicative?'Indikativer Depotstand · nicht börslich verifizierte Kurse':'Freies Kapital + aktueller Depotwert · Simulation'):'Gesamtvermögen nicht berechenbar · Kursdaten fehlen')+'</p>';
+    if(complete){
+      h+='<div class="home-wealth-profit '+gainClass+'"><b>Gewinn / Verlust gesamt: '+depotSignedMoney(capital.gain)+'</b>'+
+        '<span>'+depotSignedPct(capital.gainPct)+' auf Nettoeinzahlungen</span></div>';
+    }else{
+      h+='<p class="home-wealth-warning">Für '+capital.missingCount+' gekaufte Position'+(capital.missingCount===1?'':'en')+
+        ' fehlen verwendbare aktuelle Kursdaten oder EUR-Wechselkurse. Freies Kapital wird nicht als Gesamtvermögen ausgegeben.</p>';
+    }
+    h+='<div class="home-wealth-grid">'+
+      '<div><small>Einzahlungen netto</small><b>'+depotMoney(capital.funded)+'</b></div>'+
+      '<div><small>Frei verfügbar</small><b>'+depotMoney(capital.free)+'</b></div>'+
+      '<div><small>Depotwert aktuell</small><b>'+depotMoney(capital.market)+'</b></div>'+
+      '<div><small>Einstand offener Aktien</small><b>'+depotMoney(capital.invested)+'</b></div>'+
+      '<div><small>Buchgewinn / -verlust</small><b class="'+(capital.unrealized>0?'home-profit-up':capital.unrealized<0?'home-profit-down':'')+'">'+depotSignedMoney(capital.unrealized)+'</b></div>'+
+      '<div><small>Realisierter Gewinn / Verlust</small><b class="'+(capital.realized>0?'home-profit-up':capital.realized<0?'home-profit-down':'')+'">'+depotSignedMoney(capital.realized)+'</b></div>'+
+      '</div>';
+  }else if(pos.length&&allValid){
+    h+='<div class="home-big-number">'+euro(value)+'</div><p class="home-value-label">Simulierter Positionswert · Startkapital noch nicht festgelegt</p>';
+  }else h+='<p class="home-value-label home-value-prompt">Beobachtungsliste · Testdepot kann bei Bedarf angelegt werden</p>';
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p><details class="home-status-fold"><summary>Kursdaten & Analysefortschritt anzeigen</summary>'+unityHomeAnalysisStatus(selected)+'</details>'+
-    (capital?'<form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening||capital.funded||0).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form>':'')+'</section>';
+    (capital?'<details class="home-capital-fold"><summary>'+(capital.configured?'Startkapital ändern':'Startkapital festlegen')+'</summary><form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form><small>Ändert nur das fiktive Startkapital, nicht deine bisherigen Käufe und Verkäufe.</small></details>':'')+'</section>';
+  if(pos.length){
+    h+='<section class="home-holdings" aria-label="Gekaufte Aktien im Testdepot"><div class="home-holdings-head"><h2>Gekaufte Aktien <span>'+pos.length+'</span></h2><small>Deine simulierten Positionen · Gewinn/Verlust seit Kauf</small></div>';
+    for(const p of pos){
+      const valid=Number.isFinite(p.value)&&Number.isFinite(p.pnl);
+      const cl=valid?(p.pnl>0?'home-profit-up':p.pnl<0?'home-profit-down':'home-profit-flat'):'home-profit-flat';
+      const pct=valid&&p.cost>0?p.pnl/p.cost*100:NaN;
+      const unit=p.market?.price>0?number(p.market.price,2)+' '+esc(p.s.currency):'Kurs fehlt';
+      h+='<button type="button" class="home-holding-card" data-home-open="'+esc(p.s.id)+'" aria-label="'+esc(p.s.name)+': Depotposition und Analyse ansehen">'+
+        '<span class="home-holding-top"><strong>'+esc(p.s.name)+'</strong><b class="'+cl+'">'+(valid?depotSignedMoney(p.pnl):'Bewertung offen')+'</b></span>'+
+        '<span class="home-holding-sub"><span>'+number(p.qty,4)+' Stk · Ø Einstand '+(Number.isFinite(p.avg)?depotMoney(p.avg):'–')+'</span>'+
+        '<b class="'+cl+'">'+(valid?depotSignedPct(pct):'–')+'</b></span>'+
+        '<span class="home-holding-sub"><span>Kurs: '+unit+'</span><span>Wert: <b>'+depotMoney(p.value)+'</b></span></span>'+
+        '<span class="home-holding-stamp">'+(p.market?'Kurs '+esc(p.market.date)+(p.market.indicative?' · indikativ':''):'Kurs-/FX-Prüfung offen')+' · Zur Analyse ›</span>'+
+        '</button>';
+    }
+    h+='<p class="home-holdings-note">Positionsgewinne berücksichtigen die erfassten Kaufgebühren und werden in EUR bewertet. Gesamtvermögen und Depotwerte sind Simulationen.</p></section>';
+  }
+
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
     '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Recherche-Radar</button></div>'+
     '<p class="home-sort-hint">„Recherche-Radar“ ordnet zuerst Werte mit vertiefungswürdiger Entwicklung. Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
@@ -214,7 +253,7 @@ function unityHome(){
       :quoteItem?.date?String(quoteItem.date)+' · Schluss':'Keine Kursdaten';
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button></div>'+
       '<button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'" aria-label="'+esc(s.name)+': Kurs und Analyse öffnen"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">Testdepot: '+number(position.qty,4)+' Stück</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">● Im Testdepot · '+number(position.qty,4)+' Stück</small><small class="home-position-profit '+(position.pnl>0?'home-profit-up':position.pnl<0?'home-profit-down':'')+'">Depotwert '+depotMoney(position.value)+' · '+depotSignedMoney(position.pnl)+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+unityPct(change)+'</strong><small class="home-quote-price">'+(price>0?number(price,2)+' '+esc(s.currency):'Kurs fehlt')+'</small>'+
       (s.currency!=='EUR'?'<small class="home-eur-price">'+(Number.isFinite(eur)?'≈ '+euro(eur):'EUR-Kurs fehlt')+'</small>':'')+
       '<small class="home-quote-date">'+esc(stamp)+'</small></span><span class="home-chevron" aria-hidden="true">›</span></button></div>';

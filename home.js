@@ -38,7 +38,7 @@ async function unityHomeShift(sid,delta){
 }
 const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr'],['3Y','3J'],['6Y','6J']];
 function unityHomeQuote(s){
-  const x=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),m=x?unityMetrics(x):null;
+  const full=typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin),x=full||(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
   const technical=!!m&&!m.stale&&Array.isArray(x?.points)&&x.points.length>=200;
   return {x,m,quality,technical,valid:!!m&&!m.stale&&!!quality?.canCompare};

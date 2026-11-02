@@ -365,6 +365,14 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.homeToggle){const stock=stocks().find(s=>s.id===b.dataset.homeToggle);if(stock){put('instruments',{...stock,watchHidden:!stock.watchHidden}).then(()=>audit('WATCHLIST_TOGGLE',stock.id,!stock.watchHidden?'hidden':'shown')).then(refresh).catch(err=>alert(err.message||String(err)))}return}
   if(b.dataset.homeShift){unityHomeSort='manual';unityHomeShift(b.dataset.homeShift,Number(b.dataset.direction)).catch(err=>alert(err.message||String(err)));return}
+  if(b.dataset.policyTestbuy){
+    const selected=stocks().find(x=>x.id===b.dataset.policyTestbuy);
+    if(!selected)return;
+    // Simulation only: show editable order form; no automatic booking.
+    activeTab='overview';unityHomeSelected=selected.id;unityHomeTradeMode='BUY';render();
+    document.getElementById('home-trade-form')?.scrollIntoView({block:'start',behavior:'smooth'});
+    return;
+  }
   if(b.dataset.homeTrade){unityHomeTradeMode=b.dataset.homeTrade;render();document.getElementById('home-trade-form')?.scrollIntoView({block:'nearest'});return}
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
   if(b.dataset.homeSort){unityHomeSort=b.dataset.homeSort==='priority'?'priority':'manual';render();return}

@@ -73,7 +73,10 @@ assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.43/);
 const analyse=fs.readFileSync('analysis.js','utf8');
 const ac={Date,Math,Number,Array,JSON,Intl,document:{addEventListener(){}},cache:{fundamentals:[],histories:[],strategies:[]},
  unityCalc:()=>({q:{price:100},p:100,t:{n:260,last:97,ma50:100,ma200:90,rsi:55}})};
-vm.createContext(ac);vm.runInContext(analyse,ac);
+ac.uc=n=>Math.max(0,Math.min(100,n));ac.unityNumber=(n,d=2)=>Number(n).toFixed(d);
+const candidateStart=analyse.indexOf('function unityCandidate(s){'),candidateEnd=analyse.indexOf('/* Compact decision brief',candidateStart);
+assert.ok(candidateStart>0&&candidateEnd>candidateStart);
+vm.createContext(ac);vm.runInContext(analyse.slice(candidateStart,candidateEnd),ac);
 let candidate=vm.runInContext('unityCandidate(st)',Object.assign(ac,{st:stock}));
 assert.equal(candidate.status,'wait');assert.match(candidate.action,/Kaufzone unterschritten/);
 ac.unityCalc=()=>({q:{price:101},p:101,t:{n:260,last:101,ma50:100,ma200:90,rsi:55}});

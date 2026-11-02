@@ -85,6 +85,23 @@ class ResearchTests(unittest.TestCase):
         self.assertEqual(new["sourceFailures"],len(research.US))
         self.assertNotIn("action",str(new))
 
+    def test_sec_index_denied_fallback_only_uses_verified_ids(self):
+        def fake(url,max_bytes=12_000_000):
+            if url==research.TICKERS:
+                raise urllib.error.HTTPError(url,403,"SEC site protection",{},None)
+            if "/submissions/CIK0000002488.json" in url:
+                return submissions(2488,"AMD")
+            if "/companyfacts/CIK0000002488.json" in url:
+                return companyfacts(2488)
+            raise urllib.error.URLError("Other issuer source unavailable")
+        with mock.patch.object(research,"euro_sources",return_value={}),\
+             mock.patch.object(research.time,"sleep",return_value=None):
+            new=research.build(fetch=fake)
+        self.assertEqual(new["items"]["AMD"]["status"],"metrics-partial")
+        self.assertEqual(new["items"]["IE00B8KQN827"]["status"],"source-unavailable")
+        self.assertEqual(new["sourceFailures"],len(research.US)-1)
+        self.assertEqual(new["items"]["AMD"]["cik"],"0000002488")
+
     def test_automatic_us_monitor_handles_mixed_provider_results(self):
         def fake(url,max_bytes=12_000_000):
             if url==research.TICKERS:

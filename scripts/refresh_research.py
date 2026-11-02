@@ -33,6 +33,17 @@ US = {
     "MSFT": ("MSFT", "Microsoft"),
     "NVDA": ("NVDA", "NVIDIA"),
 }
+# SEC-verified issuer CIKs: used only if the SEC's public ticker index is down.
+# Every match is checked again against the ticker and CIK in SEC submissions.
+# Additional names are deliberately omitted rather than guessed.
+VERIFIED_CIK_FALLBACK = {
+    "VRT": (1674101, "VERTIV HOLDINGS CO"),
+    "PWR": (1050915, "QUANTA SERVICES INC"),
+    "AMD": (2488, "ADVANCED MICRO DEVICES INC"),
+    "AAPL": (320193, "APPLE INC"),
+    "MSFT": (789019, "MICROSOFT CORP"),
+    "NVDA": (1045810, "NVIDIA CORP"),
+}
 ALLOWED_FORMS = {"10-K", "10-Q", "8-K", "20-F", "6-K", "10-K/A", "10-Q/A", "8-K/A", "20-F/A", "6-K/A"}
 FORM_LABELS = {
     "10-K": "Jahresbericht", "10-Q": "Quartalsbericht",
@@ -231,9 +242,10 @@ def build(previous=None, fetch=get_json, clock=iso_now):
         try:
             mapping=ticker_map(get_json(TICKERS,2_200_000))
         except (urllib.error.URLError, ValueError, KeyError) as exc:
-            mapping={}
-            failed=len(US)
-            print("SEC-Ticker-Verzeichnis nicht abrufbar",type(exc).__name__,flush=True)
+            mapping=dict(VERIFIED_CIK_FALLBACK)
+            # Direct issuer lookup still must validate both CIK and ticker.
+            print("SEC-Ticker-Verzeichnis nicht abrufbar; nur SEC-geprüfte CIK-IDs probieren",
+                  type(exc).__name__,flush=True)
         for key,(ticker,name) in US.items():
             try:
                 if ticker not in mapping:
@@ -242,7 +254,7 @@ def build(previous=None, fetch=get_json, clock=iso_now):
                 time.sleep(.2) # Conservative SEC traffic; below fair-access threshold.
                 items[key]=sec_report(ticker,name,cik,legal,now)
             except (urllib.error.URLError,ValueError,KeyError,TimeoutError,OSError) as e:
-                failed+=0 if not mapping else 1
+                failed+=1
                 prior=prev.get(key)
                 if prior and prior.get("status") not in ("source-unavailable","stale-previous"):
                     items[key]={**prior,"status":"stale-previous",

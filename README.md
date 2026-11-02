@@ -17,6 +17,14 @@ Expected public URL after Pages is enabled: https://kontextron-oss.github.io/-un
 - The local device's watchlist is **not uploaded to the public GitHub repository**. Scheduled centralized EOD collection still uses a separately curated server list and does not automatically learn personal holdings.
 - On iPhone, the Stocks screen shows a short, explicit post-addition status. All pre-existing positions, trades and historic decisions remain untouched.
 
+## UNITY LAB 0.13.44 – Watchlist remove and restore
+
+- On the green home watchlist, tap × next to any stock to **remove it from active watchlists**. The full stock list offers a clearly labeled **Entfernen** action alongside existing **Ausblenden** and sorting controls.
+- Removal is a *reversible archive*, not a database deletion. The original stock ID, historical quotes, analyses, transaction history and audit ledger remain untouched. Use **Archivierte Aktien wiederherstellen** in the Stocks view, or choose **Wiederherstellen** for an archived stock from the curated catalog.
+- An open (simulated) position **cannot be removed**, preserving valuation and continuity; use the existing hide control or first close the simulation position.
+- Archived stocks are ignored by active watchlists, trading selectors and analysis rankings and remain archived after restarting the app. The automatic first-20 stock onboarding respects archived entries. Realized gain/loss across already closed and archived stocks remains included in portfolio totals.
+- No schema migration, no new authorization and no deletion of stored financial records.
+
 ## Stock lookup\n\n- Online company-name search uses Wikidata's public MediaWiki API with CORS and no key. Results may be incomplete, ambiguous or outdated.\n- P414/P249 exchange/ticker claims and P946 ISIN are mapped conservatively; historical listings and ambiguous ISINs are not automatically imported.\n- Confirm all stock identifiers and currency against an authoritative exchange before financial use.\n- Online lookup does not provide live quotes, fundamentals, verified listing status, or full ISIN/ticker search.\n- The curated offline catalog and manual entry remain available when offline.\n\n## Current limitations
 
 - Stock quotes and FX rates are manually entered, **not verified live data**.

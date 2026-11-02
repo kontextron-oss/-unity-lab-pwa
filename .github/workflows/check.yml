@@ -19,6 +19,7 @@ jobs:
         run: |
           node --check discovery.js
           node --check fundamentals.js
+          node --check research.js
           node --check analysis.js
           node --check decision-policy.js
           node --check datafeeds.js
@@ -79,6 +80,12 @@ jobs:
 
       - name: Verify stock removal, archive and safe restoration
         run: node tests/stock-removal.cjs
+
+      - name: Validate official issuer event and source status UI
+        run: node tests/research-monitor.cjs
+
+      - name: Validate SEC official-source parser and stale fallback
+        run: python3 -m unittest discover -s tests -p 'test_research.py'
 
       - name: Verify private pCloud share handoff and backup completeness
         run: node tests/pcloud-share-backup.cjs

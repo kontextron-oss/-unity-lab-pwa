@@ -8,6 +8,15 @@ GitHub Pages: Settings → Pages → Deploy from a branch → main → /(root).
 
 Expected public URL after Pages is enabled: https://kontextron-oss.github.io/-unity-lab-pwa/
 
+## UNITY LAB 0.13.42: New-stock onboarding (local first)
+
+- Adding a curated, internationally searched or Wikidata-listed stock uses the **same locally stored stock record and analysis workflow**. Adding an individual stock does **not** require changing GitHub source code, changing the scheduled public market feed or granting GitHub access again.
+- Known provider symbols trigger an automatic first historical quote check; a network or provider failure leaves the watchlist entry intact and displays "Daten prüfen" instead of inventing data.
+- When the worldwide Yahoo lookup already retrieved a currency-matched history, the user confirms the chosen stock and that unverified history is locally cached in IndexedDB, rather than being held only in memory for that session.
+- Unverified histories may provide an *indicative* technical prefilter but are **not** verified fundamentals, official bid/ask prices or authority for a real order. Current four-issuer European fundamentals coverage is not automatically expanded to arbitrary new stock symbols.
+- The local device's watchlist is **not uploaded to the public GitHub repository**. Scheduled centralized EOD collection still uses a separately curated server list and does not automatically learn personal holdings.
+- On iPhone, the Stocks screen shows a short, explicit post-addition status. All pre-existing positions, trades and historic decisions remain untouched.
+
 ## Stock lookup\n\n- Online company-name search uses Wikidata's public MediaWiki API with CORS and no key. Results may be incomplete, ambiguous or outdated.\n- P414/P249 exchange/ticker claims and P946 ISIN are mapped conservatively; historical listings and ambiguous ISINs are not automatically imported.\n- Confirm all stock identifiers and currency against an authoritative exchange before financial use.\n- Online lookup does not provide live quotes, fundamentals, verified listing status, or full ISIN/ticker search.\n- The curated offline catalog and manual entry remain available when offline.\n\n## Current limitations
 
 - Stock quotes and FX rates are manually entered, **not verified live data**.

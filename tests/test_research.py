@@ -102,6 +102,19 @@ class ResearchTests(unittest.TestCase):
         self.assertEqual(new["sourceFailures"],len(research.US)-1)
         self.assertEqual(new["items"]["AMD"]["cik"],"0000002488")
 
+    def test_verified_date_not_misreported_as_publication_date(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as folder:
+            path=pathlib.Path(folder)/"fundamentals.json"
+            path.write_text(__import__("json").dumps({"items":{"CH0012221716":{
+                "name":"ABB","isin":"CH0012221716",
+                "officialHighlights":{"verifiedAt":research.iso_now(),
+                                      "sourceUrl":"https://view.news.eu.nasdaq.com/view?id=abc"},
+                "latestFiling":{}}}}),encoding="utf-8")
+            with mock.patch.object(research,"EU",path):
+                item=research.euro_sources()["CH0012221716"]
+            self.assertEqual(item["events"][0]["filedAt"],"")
+
     def test_automatic_us_monitor_handles_mixed_provider_results(self):
         def fake(url,max_bytes=12_000_000):
             if url==research.TICKERS:

@@ -58,6 +58,9 @@ jobs:
       - name: Verify dated quote fallback without a full technical history
         run: node tests/quote-first.cjs
 
+      - name: Test research priority classifications and visible labels
+        run: node tests/research-indicator.cjs
+
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs
 

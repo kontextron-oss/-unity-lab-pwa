@@ -20,6 +20,23 @@ function unityMarketSymbolItem(stock){
   if(unityDataQuality(x,stock.isin||key).level==='invalid')return null;
   return x;
 }
+// A dated close may be displayed with just two valid sessions. It is NOT
+// sufficient for the 200-day technical model or an actionable trade signal.
+function unityReferenceQuoteItem(s){
+  if(!unityMarket||!s)return null;
+  const keys=[String(s.isin||'').toUpperCase(),s.providerSymbol?'@'+String(s.providerSymbol).toUpperCase():''].filter(Boolean);
+  for(const key of keys){
+    const item=unityMarket.items?.[key],points=item?.points;
+    if(!item||item.currency!==s.currency||!(Number(item.price)>0)||!Array.isArray(points)||points.length<2||points.length>=200)continue;
+    if(s.isin&&item.isin&&String(item.isin).toUpperCase()!==String(s.isin).toUpperCase())continue;
+    if(s.providerSymbol&&item.providerSymbol&&String(item.providerSymbol).toUpperCase()!==String(s.providerSymbol).toUpperCase())continue;
+    if(points.some((p,i)=>!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(p.date))||!(Number(p.close)>0)||(i>0&&p.date<=points[i-1].date)))continue;
+    if(item.date!==points.at(-1).date||Math.abs(Number(item.price)-Number(points.at(-1).close))>0.00011)continue;
+    if(typeof unityBusinessDaysSince==='function'&&!Number.isFinite(unityBusinessDaysSince(item.date)))continue;
+    return item;
+  }
+  return null;
+}
 const unityPct=x=>Number.isFinite(x)?(x>0?'+':'')+number(x,1)+' %':'–';
 function unityMetrics(x){
   if(!x)return null;

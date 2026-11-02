@@ -59,7 +59,7 @@ for(const [name,value] of Object.entries({revenueGrowth:7,netIncomeGrowth:8,equi
 }
 const earningsDate=new Date(Date.now()+30*86400000).toISOString().slice(0,10);
 model={...model,score:78,parts:{valuation:76,quality:81},margin:17,rr:2.8,
- f:{guidanceChecked:true,earningsConfirmed:true,earningsDate,
+ f:{balanceChecked:true,guidanceChecked:true,earningsConfirmed:true,earningsDate,
    dataSource:'https://investor.example.com/annual-report',thesis:'Beständiges Geschäftsmodell',risks:'Bewertung / Nachfrage'}};
 d=run();
 assert.equal(d.kind,'positive');assert.equal(d.investmentReady,true);
@@ -89,5 +89,5 @@ market.items={};d=run();assert.ok(Number.isNaN(d.relativeStrength));assert.ok(d.
 assert.match(fs.readFileSync('index.html','utf8'),/decision-policy\.js\?v=0\.13\.41/);
 assert.match(fs.readFileSync('sw.js','utf8'),/decision-policy\.js\?v=0\.13\.41/);
 assert.match(fs.readFileSync('analysis.js','utf8'),/deepDecision:/);
-assert.match(fs.readFileSync('home.js','utf8'),/data\.policyTestbuy/);
+assert.match(fs.readFileSync('home.js','utf8'),/b\.dataset\.policyTestbuy/);
 console.log('UNITY deep policy: yes/no, source gates, peer relative strength, volatility, RR hard rule, earnings, sizing and archival passed.');

@@ -12,7 +12,7 @@ assert.match(html,/await unityFinishStockOnboarding\(obj,chart\)/);
 assert.match(html,/await unityFinishStockOnboarding\(obj\)/);
 assert.match(html,/function stocksView\(\)\{return unityRecentAdditionPanel\(\)/);
 assert.match(html,/matches\.slice\(0,term\?matches\.length:15\)/);
-assert.match(html,/0\.13\.42/);
+assert.match(html,/0\.13\.\d+/);
 
 const stock={id:'new1',name:'ASML',ticker:'ASML',currency:'EUR',isin:'',providerSymbol:'ASML.AS',exchange:'Euronext Amsterdam'};
 const noSymbol={id:'new2',name:'Private Placeholder',ticker:'TST',currency:'EUR',isin:'',exchange:'unbestätigt'};

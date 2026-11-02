@@ -17,7 +17,7 @@
         {
           "form": "ISSUER",
           "label": "Offizielle Unternehmensmitteilung",
-          "filedAt": "2026-11-02",
+          "filedAt": "",
           "url": "https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
           "source": "Emittent / Pflichtmitteilung"
         }
@@ -59,7 +59,7 @@
         {
           "form": "ISSUER",
           "label": "Offizielle Unternehmensmitteilung",
-          "filedAt": "2026-11-02",
+          "filedAt": "",
           "url": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
           "source": "Emittent / Pflichtmitteilung"
         }
@@ -80,7 +80,7 @@
         {
           "form": "ISSUER",
           "label": "Offizielle Unternehmensmitteilung",
-          "filedAt": "2026-11-02",
+          "filedAt": "",
           "url": "https://www.infineon.com/press-release/2025/infxx202511-021",
           "source": "Emittent / Pflichtmitteilung"
         }

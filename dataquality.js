@@ -19,9 +19,12 @@ function unityBusinessDaysSince(date, now=new Date()){
 function unityDataQuality(item,isin,market=unityMarket){
   if(!item)return {level:'missing',label:'Keine Kursdaten',detail:'Für diese Aktie ist keine Referenz verfügbar.',canCompare:false};
   if(item.dynamicExperimental)return {level:'warning',label:'Externe Referenz ungeprüft',detail:'Weltweite Kursreihe über einen externen CORS-Dienst; nicht börslich verifiziert, ISIN nicht unabhängig bestätigt. Diagramm nur zur Orientierung; keine operative Freigabe.',canCompare:false};
-  const expected=CATALOG.find(s=>s.isin===isin);
-  if(!expected||item.isin!==isin||item.currency!==expected.currency)
-    return {level:'invalid',label:'Datenkonflikt',detail:'ISIN oder Währung stimmt nicht mit dem Aktienkatalog überein.',canCompare:false};
+  const symbol=String(item.providerSymbol||'').toUpperCase();
+  const expected=CATALOG.find(s=>s.isin===isin)||CATALOG.find(s=>String(s.providerSymbol||'').toUpperCase()===symbol);
+  const expectedKey=expected?.isin||('@'+String(expected?.providerSymbol||'').toUpperCase());
+  const identityOk=!!expected&&(expected.isin?item.isin===expected.isin:symbol===String(expected.providerSymbol||'').toUpperCase());
+  if(!identityOk||item.currency!==expected.currency)
+    return {level:'invalid',label:'Datenkonflikt',detail:'Wertpapierkennung oder Währung stimmt nicht mit dem Aktienkatalog überein.',canCompare:false};
   const p=item.points;
   if(!Array.isArray(p)||p.length<200||p.length>1900||!(Number(item.price)>0))
     return {level:'invalid',label:'Unvollständige Kursreihe',detail:'Für die technischen Kennzahlen fehlen gültige historische Daten.',canCompare:false};
@@ -34,7 +37,7 @@ function unityDataQuality(item,isin,market=unityMarket){
     return {level:'invalid',label:'Kursabgleich fehlgeschlagen',detail:'Letzter Schlusskurs und Kursreihe stimmen nicht überein.',canCompare:false};
   const age=unityBusinessDaysSince(item.date);
   if(!Number.isFinite(age))return {level:'invalid',label:'Kursdatum ungültig',detail:'Das Kursdatum ist nicht plausibel.',canCompare:false};
-  const sourceFailure=!!market?.errors?.[isin];
+  const sourceFailure=!!market?.errors?.[expectedKey];
   if(age>2)return {level:'stale',label:'Kursdaten veraltet',detail:'Letzter Schlusskurs '+item.date+' · '+age+' Werktage zurück. Keine aktuelle Rangfolge.',canCompare:false};
   if(sourceFailure)return {level:'warning',label:'Quellenabruf fehlgeschlagen',detail:'Letzter gespeicherter Schlusskurs '+item.date+'. Die jüngste Quellenabfrage schlug fehl.',canCompare:false};
   return {level:'eod',label:'Letzter verfügbarer Schlusskurs',detail:'Handelstagsstand '+item.date+' · '+item.exchange+' · '+item.currency+'. Keine Echtzeitnotierung.',canCompare:true};
@@ -42,7 +45,7 @@ function unityDataQuality(item,isin,market=unityMarket){
 function unityDataStatusPanel(market=unityMarket){
   if(!market)return '';
   const names=CATALOG.map(s=>{
-    const item=market.items?.[s.isin],q=unityDataQuality(item,s.isin,market);
+    const key=s.isin||('@'+String(s.providerSymbol||'').toUpperCase()),item=market.items?.[key],q=unityDataQuality(item,key,market);
     return {s,item,q};
   });
   const good=names.filter(x=>x.q.canCompare).length;

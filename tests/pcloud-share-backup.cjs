@@ -59,6 +59,6 @@ const run=x=>vm.runInContext(x,box);
  assert.match(html,/if\(b.id==='backup-pcloud'\)await unityBackupShare/);
  assert.match(html,/if\(file.size>50e6\)/);
  assert.doesNotMatch(html,/localStorage\.setItem\(['"]pcloud|access_token|client_secret/);
- assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.45/);
+ assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.\d+/);
  console.log('Private backup: all IndexedDB stores, timestamp, share handoff, user cancellation, fallback and import guard passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

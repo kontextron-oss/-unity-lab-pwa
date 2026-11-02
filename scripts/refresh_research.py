@@ -215,12 +215,13 @@ def euro_sources():
         last=f.get("latestFiling") or {}
         if last.get("reportUrl") and last.get("periodEnd"):
             events.append({"form":"ESEF","label":"Veröffentlichter Jahresbericht",
-                "filedAt":str(last.get("published") or last["periodEnd"])[:10],
+                "filedAt":str(last.get("published") or "")[:10],
                 "url":last["reportUrl"],"source":"XBRL International"})
         highlights=f.get("officialHighlights") or {}
         if highlights.get("sourceUrl"):
             events.append({"form":"ISSUER","label":"Offizielle Unternehmensmitteilung",
-                "filedAt":str(highlights.get("verifiedAt") or "")[:10],
+                # verifiedAt is the date OUR collector checked the report, not when it was published.
+                "filedAt":str(highlights.get("publishedAt") or "")[:10],
                 "url":highlights["sourceUrl"],"source":"Emittent / Pflichtmitteilung"})
         sources[isin]={"name":f.get("name"),"isin":isin,"status":"european-pilot",
           "checkedAt":f.get("checkedAt") or now,"source":"XBRL / Emittentenpilot",

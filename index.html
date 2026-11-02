@@ -290,6 +290,12 @@ main,#app,.home-detail,.unity-chart-box,.unity-chart-green,.home-stock-item,.hom
  .unity-policy-metrics>div{padding:8px}
  .unity-policy-metrics b{font-size:12px}
 }
+
+.unity-policy-sizing{display:flex;flex-direction:column;gap:4px;background:#ebf5ed;color:#234b34;padding:10px;border-radius:8px;margin:8px 0}
+.unity-policy-sizing b{font-size:13px}
+.unity-policy-sizing small{font-size:11px;line-height:1.35}
+.unity-policy-testbuy{display:block;width:100%;margin:11px 0;padding:12px 14px;background:#18784d;color:white;border:0;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer}
+.unity-policy-testbuy:focus-visible{outline:3px solid #2e9864;outline-offset:2px}
 </style></head><body><header><div><h1>UNITY LAB <span style="font-size:12px;font-weight:400">0.13.41</span></h1><small>Aktien · Kursverläufe · UNITY-Analyse</small></div><span class="status" id="db-status">Lokale Datenbank wird geöffnet …</span></header><main><nav id="nav"><button data-tab="overview" class="active">Mein Depot</button><button data-tab="stocks">Aktien & Kurse</button><button data-tab="analysis">UNITY-Analyse</button><button data-tab="trades">Simulationsdepot</button><button data-tab="backup">Datensicherung</button></nav><div id="app" aria-live="polite"></div><p class="footer">Unity Lab 0.13.41 · Vergleichs-Beta · Alle Transaktionen sind hypothetisch. Verzögerte Referenzkurse sind verfügbar; kein Echtzeitkursfeed. Keine Anlageberatung oder Orderausführung.</p></main><script>
 'use strict';
 const STORES=['instruments','quotes','transactions','strategies','audit','fundamentals','histories','analyses','settings'];let db,activeTab='overview';let cache={};const keys=['valuation','quality','rr','flows','timing','alternatives'];const labels=['Bewertung / Sicherheitsmarge','Unternehmensqualität','Chance-Risiko / Rendite','Kapitalflüsse','Timing / Katalysatoren','Alternativenvergleich'];const defaults={valuation:30,quality:20,rr:20,flows:15,timing:10,alternatives:5};

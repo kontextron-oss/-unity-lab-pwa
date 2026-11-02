@@ -30,7 +30,7 @@ function unityDeepMarketStats(item){
   return {last,ret21:ret(21),ret63:ret(63),ret252:ret(252),
     vol20,maxDrawdown,scenarioStop:scenarioStop>0?scenarioStop:NaN,
     scenarioTarget:Number.isFinite(scenarioTarget)?scenarioTarget:NaN,
-    scenarioRR:Number.isFinite(scenarioStop)&&scenarioStop>0?2.5:NaN};
+    scenarioRR:Number.isFinite(scenarioStop)&&scenarioStop>0&&riskPerShare>0?2.5:NaN};
 }
 function unityDeepPeerMedian(s,item){
   // The median of distinct, comparable 63-session local-currency returns
@@ -156,10 +156,22 @@ function unityDeepDecision(s,base=null,candidate=null){
     candidateScore:c?.score??NaN,rr,confidence,coverage,totalChecks:totalSources.length,
     valuationReady,quoteVerified:usable,nearEarnings};
 }
+function unityDeepSimPosition(s,d){
+  if(!['technical','positive'].includes(d?.kind)||!(d?.scenarioStop>0)||
+     typeof depotCapital!=='function')return null;
+  const cap=depotCapital(),price=typeof unityDisplayQuote==='function'?unityDisplayQuote(s)?.price:NaN;
+  const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+  const px=Number(price),fx=Number(rate?.rate),diff=(px-d.scenarioStop)*fx;
+  if(!(cap?.configured&&cap.total>0&&cap.free>0&&px>0&&fx>0&&diff>0))return null;
+  const atRisk=cap.total*.01,positionCap=cap.total*.05;
+  const units=Math.floor(Math.min(atRisk/diff,positionCap/(px*fx),cap.free/(px*fx))*10000)/10000;
+  return units>0?{units,amount:units*px*fx,loss:units*diff,atRisk,positionCap}:null;
+}
 function unityDeepDecisionPanel(s,base=null,candidate=null){
   const d=unityDeepDecision(s,base,candidate);
   const escf=typeof esc==='function'?esc:v=>String(v??'');
   const money=v=>Number.isFinite(v)?unityPolicyFmt(v,2)+' '+escf(s.currency):'–';
+  const size=unityDeepSimPosition(s,d);
   const pill=d.kind==='positive'?'positive':d.kind==='technical'?'technical':d.kind==='no'?'negative':d.kind==='wait'?'wait':'data';
   let h='<section class="panel unity-policy-card unity-policy-'+pill+'" aria-label="Automatische UNITY-Entscheidungshilfe">'+
     '<div class="unity-policy-top"><div><small>UNITY Tiefenanalyse · Entscheidungsstufe</small><h2>Ja oder Nein?</h2></div><span class="unity-policy-stage">'+escf(d.confidence)+' · '+d.coverage+'/'+d.totalChecks+' Datenprüfungen</span></div>'+
@@ -177,6 +189,12 @@ function unityDeepDecisionPanel(s,base=null,candidate=null){
     '<p><b>Positive Befunde</b></p><ul>'+(d.positives.length?d.positives.map(x=>'<li>'+escf(x)+'</li>').join(''):'<li>Keine ausreichend bestätigten positiven Befunde.</li>')+'</ul>'+
     '<p><b>Risiken / Gegenargumente</b></p><ul>'+(d.problems.length?d.problems.map(x=>'<li>'+escf(x)+'</li>').join(''):'<li>Keine zusätzliche technische Warnung erkannt.</li>')+'</ul>'+
     '<p><b>Noch fehlende Informationen</b></p><ul>'+(d.missing.length?d.missing.map(x=>'<li>'+escf(x)+'</li>').join(''):'<li>Keine Pflichtangaben aus diesem Prüfmodell offen.</li>')+'</ul></details>';
+  if(size){
+    h+='<div class="unity-policy-sizing"><b>Konservatives Testdepot-Szenario: '+unityPolicyFmt(size.units,4)+' Stück</b>'+
+      '<small>Ca. '+unityPolicyFmt(size.amount,2)+' € Einsatz · modelliertes Risiko '+unityPolicyFmt(size.loss,2)+' €; Grenzen: 1 % Vermögensrisiko, 5 % Positionsanteil und freies Kapital.</small></div>';
+  }
+  if(d.kind==='positive'||d.kind==='technical')
+    h+='<button type="button" class="unity-policy-testbuy" data-policy-testbuy="'+escf(s.id)+'">Fiktiven Kauf vorbereiten</button>';
   if(Number.isFinite(d.scenarioStop)&&Number.isFinite(d.scenarioTarget))
     h+='<details class="unity-policy-scenario"><summary>Zusätzliche Volatilitäts-Simulation</summary>'+
       '<p>Rechnerisches Test-Szenario aus 20-Tage-Schlusskursvolatilität: Stop '+money(d.scenarioStop)+

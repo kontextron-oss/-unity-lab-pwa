@@ -77,6 +77,9 @@ jobs:
       - name: Test daily technical pullback alert and stale-data safeguards
         run: node tests/pullback-alert.cjs
 
+      - name: Verify stock removal, archive and safe restoration
+        run: node tests/stock-removal.cjs
+
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs
 

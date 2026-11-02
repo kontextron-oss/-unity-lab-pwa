@@ -35,6 +35,9 @@ vm.runInContext(source,ctx);
  vm.runInContext('unityResearch.generatedAt=new Date().toISOString()',ctx);
  vm.runInContext("unityResearch.items[stock.isin].status='stale-previous'",ctx);
  assert.equal(vm.runInContext('unityResearchRecent(stock)',ctx),null);
+ ctx.stock={name:'No Data Ltd',ticker:'NOD',isin:'DE0000000000'};
+ assert.match(vm.runInContext('unityResearchPanel(stock)',ctx),/noch keine bestätigten amtlichen Berichte/);
+ ctx.stock=stock;
  assert.equal(vm.runInContext("unityResearchSourceLink('javascript:alert(1)')",ctx),'');
  assert.equal(vm.runInContext("unityResearchSourceLink('https://evil.example/sec.gov')",ctx),'');
  assert.equal(vm.runInContext("unityResearchSourceLink('https://www.sec.gov/Archives/edgar/data/1234/x.htm')",ctx),

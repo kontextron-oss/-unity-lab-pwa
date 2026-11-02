@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-02T23:09:45+00:00",
+  "generatedAt": "2026-11-02T23:13:15+00:00",
   "source": "SEC EDGAR und XBRL-/Emittentenpilot",
   "scope": "Öffentliche Emittenten, keine privaten Portfoliodaten",
   "usIssuerCount": 10,
@@ -94,7 +94,7 @@
       "ticker": "ETN",
       "name": "Eaton",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -106,19 +106,19 @@
       "ticker": "VRT",
       "name": "Vertiv",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Keine verifizierten Daten bei diesem Abruf: ValueError"
+        "Keine verifizierten Daten bei diesem Abruf: HTTPError"
       ]
     },
     "US36828A1016": {
       "ticker": "GEV",
       "name": "GE Vernova",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -130,7 +130,7 @@
       "ticker": "NVT",
       "name": "nVent",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -142,7 +142,7 @@
       "ticker": "HUBB",
       "name": "Hubbell",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -154,60 +154,60 @@
       "ticker": "PWR",
       "name": "Quanta Services",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Keine verifizierten Daten bei diesem Abruf: ValueError"
+        "Keine verifizierten Daten bei diesem Abruf: HTTPError"
       ]
     },
     "AMD": {
       "ticker": "AMD",
       "name": "AMD",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Keine verifizierten Daten bei diesem Abruf: ValueError"
+        "Keine verifizierten Daten bei diesem Abruf: HTTPError"
       ]
     },
     "AAPL": {
       "ticker": "AAPL",
       "name": "Apple",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Keine verifizierten Daten bei diesem Abruf: ValueError"
+        "Keine verifizierten Daten bei diesem Abruf: HTTPError"
       ]
     },
     "MSFT": {
       "ticker": "MSFT",
       "name": "Microsoft",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Keine verifizierten Daten bei diesem Abruf: ValueError"
+        "Keine verifizierten Daten bei diesem Abruf: HTTPError"
       ]
     },
     "NVDA": {
       "ticker": "NVDA",
       "name": "NVIDIA",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T23:09:45+00:00",
+      "checkedAt": "2026-11-02T23:13:15+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Keine verifizierten Daten bei diesem Abruf: ValueError"
+        "Keine verifizierten Daten bei diesem Abruf: HTTPError"
       ]
     }
   }

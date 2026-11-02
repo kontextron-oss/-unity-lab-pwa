@@ -40,6 +40,12 @@ assert.match(simple,/-1.3 %/);
 assert.match(simple,/237.00 EUR/);
 assert.match(simple,/data-home-open/);
 assert.doesNotMatch(simple,/home-pre-decision/);
+sandbox.unityMarketItem=()=>null;
+sandbox.unityReferenceQuoteItem=()=>x;
+const shortHistory=vm.runInContext('unityHome()',sandbox);
+assert.match(shortHistory,/237.00 EUR/);
+assert.match(shortHistory,/-1.3 %/);
+
 // No artificial 15/17-stock cutoff: the 18th stock (AMD) and all later values render.
 selected=Array.from({length:22},(_,i)=>({...s,id:'stock-'+i,name:i===17?'AMD':'Aktie '+i,ticker:i===17?'AMD':'T'+i,createdAt:'2026-01-01T00:00:00Z'}));
 const extended=vm.runInContext('unityHome()',sandbox);

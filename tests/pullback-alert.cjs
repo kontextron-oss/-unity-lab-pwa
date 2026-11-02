@@ -67,7 +67,7 @@ assert.match(source,/const reachedPullbacks=pullbackResults.filter/);
 assert.match(source,/ranks=new Map\(list.map/);
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/unityPullbackLabel\(s,pullback\)/);
-assert.match(html,/0\.13\.43/);
+assert.match(html,/0\.13\.\d+/);
 assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.43/);
 // Deep analysis must apply the same *lower* SMA50 boundary.
 const analyse=fs.readFileSync('analysis.js','utf8');

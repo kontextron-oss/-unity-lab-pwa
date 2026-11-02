@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-02T08:41:47+00:00",
+  "source": "SEC EDGAR und XBRL-/Emittentenpilot",
+  "scope": "Öffentliche Emittenten, keine privaten Portfoliodaten",
+  "usIssuerCount": 10,
+  "sourceFailures": 10,
+  "items": {
+    "CH0012221716": {
+      "name": "ABB",
+      "isin": "CH0012221716",
+      "status": "european-pilot",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "XBRL / Emittentenpilot",
+      "sourceUrl": "https://global.abb/group/en/investors",
+      "events": [
+        {
+          "form": "ISSUER",
+          "label": "Offizielle Unternehmensmitteilung",
+          "filedAt": "2026-11-02",
+          "url": "https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
+          "source": "Emittent / Pflichtmitteilung"
+        }
+      ],
+      "metrics": {},
+      "issues": [
+        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+      ]
+    },
+    "FR0000121972": {
+      "name": "Schneider Electric",
+      "isin": "FR0000121972",
+      "status": "european-pilot",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "XBRL / Emittentenpilot",
+      "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr/reports/ixbrlviewer.html",
+      "events": [
+        {
+          "form": "ESEF",
+          "label": "Veröffentlichter Jahresbericht",
+          "filedAt": "2026-03-27",
+          "url": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr/reports/ixbrlviewer.html",
+          "source": "XBRL International"
+        }
+      ],
+      "metrics": {},
+      "issues": [
+        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+      ]
+    },
+    "DE000ENER6Y0": {
+      "name": "Siemens Energy",
+      "isin": "DE000ENER6Y0",
+      "status": "european-pilot",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "XBRL / Emittentenpilot",
+      "sourceUrl": "https://www.siemens-energy.com/global/en/home/investor-relations.html",
+      "events": [
+        {
+          "form": "ISSUER",
+          "label": "Offizielle Unternehmensmitteilung",
+          "filedAt": "2026-11-02",
+          "url": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
+          "source": "Emittent / Pflichtmitteilung"
+        }
+      ],
+      "metrics": {},
+      "issues": [
+        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+      ]
+    },
+    "DE0006231004": {
+      "name": "Infineon",
+      "isin": "DE0006231004",
+      "status": "european-pilot",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "XBRL / Emittentenpilot",
+      "sourceUrl": "https://www.infineon.com/cms/en/about-infineon/investor/",
+      "events": [
+        {
+          "form": "ISSUER",
+          "label": "Offizielle Unternehmensmitteilung",
+          "filedAt": "2026-11-02",
+          "url": "https://www.infineon.com/press-release/2025/infxx202511-021",
+          "source": "Emittent / Pflichtmitteilung"
+        }
+      ],
+      "metrics": {},
+      "issues": [
+        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+      ]
+    },
+    "IE00B8KQN827": {
+      "ticker": "ETN",
+      "name": "Eaton",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "US92537N1081": {
+      "ticker": "VRT",
+      "name": "Vertiv",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "US36828A1016": {
+      "ticker": "GEV",
+      "name": "GE Vernova",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "IE00BDVJJQ56": {
+      "ticker": "NVT",
+      "name": "nVent",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "US4435106079": {
+      "ticker": "HUBB",
+      "name": "Hubbell",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "US74762E1029": {
+      "ticker": "PWR",
+      "name": "Quanta Services",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "AMD": {
+      "ticker": "AMD",
+      "name": "AMD",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "AAPL": {
+      "ticker": "AAPL",
+      "name": "Apple",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "MSFT": {
+      "ticker": "MSFT",
+      "name": "Microsoft",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    },
+    "NVDA": {
+      "ticker": "NVDA",
+      "name": "NVIDIA",
+      "status": "source-unavailable",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "source": "SEC EDGAR",
+      "events": [],
+      "metrics": {},
+      "issues": [
+        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+      ]
+    }
+  }
+}

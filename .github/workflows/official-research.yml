@@ -1,0 +1,61 @@
+name: Refresh official issuer research monitor
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/refresh_research.py
+      - tests/test_research.py
+      - .github/workflows/official-research.yml
+  schedule:
+    # Weekday mornings after US and European regulatory filings have settled.
+    - cron: '25 6 * * 1-5'
+  workflow_dispatch:
+concurrency:
+  group: unity-official-research
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  issuer-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate official-source parser and identity protections
+        run: python -m unittest discover -s tests -p 'test_research.py'
+      - name: Retrieve SEC EDGAR filings and recent validated financial facts
+        run: python scripts/refresh_research.py
+      - name: Verify generated schema and prevent private holdings publication
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('data/research.json').read_text())
+          assert d['schemaVersion']==1 and d['sourceFailures']>=0
+          assert isinstance(d.get('items'),dict) and len(d['items'])>=4
+          assert 'transactions' not in d and 'portfolio' not in d
+          assert all(isinstance(k,str) and isinstance(v,dict) for k,v in d['items'].items())
+          print('Official-source dataset: ',len(d['items']),'issuers,',d['sourceFailures'],'SEC failures')
+          PY
+      - name: Publish public issuer reports only (no personal investment records)
+        run: |
+          git config user.name "unity-lab-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/research.json
+          if git diff --cached --quiet; then
+            echo "No new research snapshot"
+          else
+            git commit -m "data: update official issuer filings and event monitor [skip ci]"
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi

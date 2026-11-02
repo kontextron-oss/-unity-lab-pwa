@@ -62,7 +62,7 @@ fundamentals.push({id:stock.id,earningsConfirmed:true,
 d=status();assert.equal(d.kind,'blocked');assert.match(d.detail,/Earnings/);
 fundamentals.splice(0,1);
 // Portfolio and chart view both show the same status, all stocks remain rendered.
-assert.match(source,/const position=depotPosition\(s\),research=unityResearchIndicator\(s\),pullback=unityPullbackAlert\(s\);/);
+assert.match(source,/const position=depotPosition\(s\),research=unityResearchIndicator\(s\),pullback=unityPullbackAlert\(s\)/);
 assert.match(source,/const reachedPullbacks=pullbackResults.filter/);
 assert.match(source,/ranks=new Map\(list.map/);
 const html=fs.readFileSync('index.html','utf8');

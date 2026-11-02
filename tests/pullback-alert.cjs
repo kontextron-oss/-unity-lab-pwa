@@ -71,7 +71,7 @@ assert.match(html,/0\.13\.\d+/);
 assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.43/);
 // Deep analysis must apply the same *lower* SMA50 boundary.
 const analyse=fs.readFileSync('analysis.js','utf8');
-const ac={Date,Math,Number,Array,JSON,Intl,cache:{fundamentals:[],histories:[],strategies:[]},
+const ac={Date,Math,Number,Array,JSON,Intl,document:{addEventListener(){}},cache:{fundamentals:[],histories:[],strategies:[]},
  unityCalc:()=>({q:{price:100},p:100,t:{n:260,last:97,ma50:100,ma200:90,rsi:55}})};
 vm.createContext(ac);vm.runInContext(analyse,ac);
 let candidate=vm.runInContext('unityCandidate(st)',Object.assign(ac,{st:stock}));

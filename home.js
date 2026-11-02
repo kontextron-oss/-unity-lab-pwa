@@ -273,7 +273,7 @@ function unityHomeDetail(sid){
   const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
   h+='<section class="home-research-detail home-research-'+research.kind+'"><strong>Recherche-Indikator: '+esc(research.label)+'</strong><p>'+esc(research.detail)+'</p><small>Technische Vorauswahl, keine Kauf- oder Verkaufsfreigabe.</small></section>';
   if(typeof unityDeepDecisionPanel==='function')h+=unityDeepDecisionPanel(s);
-  if(typeof unityDecisionResultPanel==='function')h+=unityDecisionResultPanel(s);
+  if(typeof unityDecisionResultPanel==='function')h+='<details class="unity-secondary-check"><summary>Weitere technische Prüfbedingungen anzeigen</summary>'+unityDecisionResultPanel(s)+'</details>';
   if(x)h+=unityChartPanel(x);
   else h+='<p class="home-missing">'+(s.providerSymbol?(typeof unityDynamicErrors!=='undefined'&&unityDynamicErrors.get(s.providerSymbol.toUpperCase())?'Kursquelle derzeit nicht erreichbar: '+esc(unityDynamicErrors.get(s.providerSymbol.toUpperCase())):'Internationale Kursreihe wird geladen, sofern die externe Quelle erreichbar ist.'):'Kein überprüfbarer Tageskursverlauf vorhanden. Es wird keine Kurve erfunden.')+'</p>';
   if(dq)h+='<p class="home-price-time">'+esc(dq.label)+': <b>'+number(dq.price,2)+' '+esc(s.currency)+'</b> · '+(dq.quotedAt?esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}))+' MEZ/MESZ':esc(dq.date))+' · '+esc(dq.exchange)+'</p>';

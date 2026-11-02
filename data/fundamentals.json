@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-01T11:51:33+00:00",
+  "generatedAt": "2026-11-02T08:41:47+00:00",
   "source": "XBRL International filings.xbrl.org",
   "scope": "Four European pilot issuers; partial annual filings, no live valuations",
   "items": {
@@ -21,7 +21,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-01T11:51:34+00:00",
+        "verifiedAt": "2026-11-02T08:41:48+00:00",
         "currency": "USD",
         "facts": {
           "revenue": {
@@ -42,7 +42,7 @@
           }
         }
       },
-      "checkedAt": "2026-11-01T11:51:33+00:00",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     },
@@ -196,7 +196,7 @@
         "validationWarnings": 0
       },
       "officialHighlights": null,
-      "checkedAt": "2026-11-01T11:51:33+00:00",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -217,7 +217,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-01T11:51:39+00:00",
+        "verifiedAt": "2026-11-02T08:41:54+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -246,7 +246,7 @@
           }
         }
       },
-      "checkedAt": "2026-11-01T11:51:33+00:00",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     },
@@ -267,7 +267,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-01T11:51:40+00:00",
+        "verifiedAt": "2026-11-02T08:41:55+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -288,7 +288,7 @@
           }
         }
       },
-      "checkedAt": "2026-11-01T11:51:33+00:00",
+      "checkedAt": "2026-11-02T08:41:47+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     }

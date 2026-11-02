@@ -225,10 +225,16 @@ function unityHomeSignal(s){
 }
 function unityHomeDisplayedStocks(){
   const list=unityHomeStocks();
-  if(unityHomeSort==='priority')list.sort((a,b)=>{
-    const rank=s=>{const p=unityPullbackAlert(s);return p.kind==='reached'?0:p.kind==='blocked'?1:p.kind==='watch'?2:3+unityPreAnalysis(s).rank};
-    return rank(a)-rank(b)||a.name.localeCompare(b.name);
-  });
+  if(unityHomeSort==='priority'){
+    // Cache ranking once per render: do not recompute 200-day indicators for
+    // every sorting comparison on smaller iPhone devices.
+    const ranks=new Map(list.map(s=>{
+      const p=unityPullbackAlert(s);
+      const rank=p.kind==='reached'?0:p.kind==='blocked'?1:p.kind==='watch'?2:3+unityPreAnalysis(s).rank;
+      return [s.id,rank];
+    }));
+    list.sort((a,b)=>(ranks.get(a.id)??99)-(ranks.get(b.id)??99)||a.name.localeCompare(b.name));
+  }
   return list;
 }
 

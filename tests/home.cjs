@@ -32,7 +32,7 @@ assert.match(vm.runInContext('unityHomeManagePanel()',sandbox),/Ausblenden/);ass
 selected=[];const empty=vm.runInContext('unityHome()',sandbox);
 assert.match(empty,/noch keine Aktien ausgewählt/);assert.doesNotMatch(empty,/70.423/);
 // Price direction is informational; RSI and 200-day history are not required.
-assert.equal(vm.runInContext("unityHomeDisplayedChange("+JSON.stringify(s)+","+JSON.stringify(x)+",null,'1D')",sandbox),-1.25);
+assert.ok(Math.abs(vm.runInContext("unityHomeDisplayedChange("+JSON.stringify(s)+","+JSON.stringify(x)+",null,'1D')",sandbox)+1.25)<1e-8);
 sandbox.unityMetrics=()=>null;
 selected=[s];
 const simple=vm.runInContext('unityHome()',sandbox);

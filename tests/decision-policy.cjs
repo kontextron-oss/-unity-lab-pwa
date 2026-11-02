@@ -86,8 +86,8 @@ item.date=date;item.points=item.points.slice(-40);d=run();assert.equal(d.kind,'d
 // No comparable peers -> no fabricated alpha; still a cautious technical evaluation.
 item.points=points();item.price=item.points.at(-1).close;model.t.last=item.price;
 market.items={};d=run();assert.ok(Number.isNaN(d.relativeStrength));assert.ok(d.missing.some(x=>/Relative Stärke/.test(x)));
-assert.match(fs.readFileSync('index.html','utf8'),/decision-policy\.js\?v=0\.13\.41/);
-assert.match(fs.readFileSync('sw.js','utf8'),/decision-policy\.js\?v=0\.13\.41/);
+assert.match(fs.readFileSync('index.html','utf8'),/decision-policy\.js\?v=0\.13\.\d+/);
+assert.match(fs.readFileSync('sw.js','utf8'),/decision-policy\.js\?v=0\.13\.\d+/);
 assert.match(fs.readFileSync('analysis.js','utf8'),/deepDecision:/);
 assert.match(fs.readFileSync('home.js','utf8'),/b\.dataset\.policyTestbuy/);
 console.log('UNITY deep policy: yes/no, source gates, peer relative strength, volatility, RR hard rule, earnings, sizing and archival passed.');

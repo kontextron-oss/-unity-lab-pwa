@@ -70,6 +70,9 @@ jobs:
       - name: Validate deep yes/no investment decisions and evidence gates
         run: node tests/decision-policy.cjs
 
+      - name: Test new-stock onboarding and automatic local history import
+        run: node tests/stock-onboarding.cjs
+
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs
 

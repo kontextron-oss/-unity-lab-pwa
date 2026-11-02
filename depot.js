@@ -72,7 +72,7 @@ function depotCapital(){
   const market=complete?positions.reduce((n,p)=>n+p.value,0):NaN;
   const funded=(Number.isFinite(opening)&&opening>=0?opening:0)+deposits-withdrawals;
   const free=funded+sells-buys,total=complete?free+market:NaN;
-  const realized=stocks().reduce((n,s)=>n+depotLedger(s.id).realized,0);
+  const realized=(cache.instruments||[]).reduce((n,s)=>n+depotLedger(s.id).realized,0); // also include archived completed trades
   const unrealized=complete?market-invested:NaN;
   const gain=complete?total-funded:NaN;
   const gainPct=complete&&funded>0?gain/funded*100:NaN;
@@ -95,7 +95,7 @@ function depotOverview(){
   const pos=depotPositions(),capital=depotCapital();
   const cost=pos.reduce((n,p)=>n+p.cost,0),complete=pos.every(p=>Number.isFinite(p.value));
   const value=complete?pos.reduce((n,p)=>n+p.value,0):NaN;
-  const realized=stocks().reduce((n,s)=>n+depotLedger(s.id).realized,0);
+  const realized=(cache.instruments||[]).reduce((n,s)=>n+depotLedger(s.id).realized,0); // also include archived completed trades
   let h='<section class="panel depot-panel" id="depot-overview"><div class="depot-title"><h2>Mein Depot · Überblick</h2><span class="depot-sim">Simulation · lokal gespeichert</span></div>'+
     '<div class="depot-totals"><div><small>Gesamtvermögen inklusive freiem Kapital</small><strong>'+depotMoney(capital.total)+'</strong></div><div><small>Gesamtgewinn / -verlust</small><strong class="'+(capital.gain>0?'positive':capital.gain<0?'negative':'')+'">'+depotSignedMoney(capital.gain)+'</strong><small>'+depotSignedPct(capital.gainPct)+' auf Nettoeinzahlungen</small></div><div><small>Aktueller Depotwert</small><strong>'+depotMoney(value)+'</strong></div><div><small>Einstand offener Positionen</small><strong>'+depotMoney(cost)+'</strong></div><div><small>Buchgewinn / -verlust</small><strong>'+depotSignedMoney(value-cost)+'</strong></div><div><small>Realisierter Gewinn / Verlust</small><strong>'+depotSignedMoney(realized)+'</strong></div></div>';
   h+='<section class="panel" id="depot-capital"><h3>Fiktives Kapital</h3><div class="depot-totals"><div><small>Einzahlungen gesamt</small><strong>'+depotMoney(capital.funded)+'</strong></div><div><small>Frei verfügbar</small><strong>'+depotMoney(capital.free)+'</strong></div><div><small>Angelegt · offene Positionen</small><strong>'+depotMoney(capital.invested)+'</strong></div><div><small>Fiktives Gesamtvermögen</small><strong>'+depotMoney(capital.total)+'</strong></div></div><form id="capital-form"><label>Fiktives Startkapital in EUR<input name="capital" type="number" min="0" step="0.01" value="'+(capital.opening?String(capital.opening):'')+'" placeholder="z. B. 10000"></label><button class="secondary" type="submit">Startkapital speichern</button></form><form id="deposit-form"><label>Weitere fiktive Einzahlung in EUR<input name="amount" type="number" min="0.01" step="0.01" required placeholder="z. B. 500"></label><label>Notiz (optional)<input name="note" maxlength="120" placeholder="z. B. Monatsrate"></label><button class="primary" type="submit">Mehr Geld einzahlen</button></form><h3 style="margin-top:18px">Einzahlungsverlauf</h3>'+depotCashHistory()+'<p class="tiny muted">Testkäufe einschließlich Gebühren mindern das freie Kapital. Testverkäufe erhöhen es um den Nettoerlös. Ohne Startkapital oder Einzahlung bleibt das Simulationsdepot unbegrenzt.</p></section>';

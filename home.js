@@ -1,7 +1,7 @@
 'use strict';
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
-let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='priority';
+let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='manual';
 const UNITY_FIRST_TWENTY=['ABBN','SU','ETN','ENR','VRT','NDX1','PRY','LR','SIE','BEAN','GEV','NVT','HUBB','PWR','NEX','IFX','JEN','AMD','DWS','TKA'];
 const unityPilotStocks=()=>stocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())).sort((a,b)=>UNITY_FIRST_TWENTY.indexOf(String(a.ticker||'').toUpperCase())-UNITY_FIRST_TWENTY.indexOf(String(b.ticker||'').toUpperCase()));
 async function unityEnsurePilotTwenty(){
@@ -38,7 +38,7 @@ async function unityHomeShift(sid,delta){
 }
 const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr'],['3Y','3J'],['6Y','6J']];
 function unityHomeQuote(s){
-  const x=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),m=x?unityMetrics(x):null;
+  const full=typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin),x=full||(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
   const technical=!!m&&!m.stale&&Array.isArray(x?.points)&&x.points.length>=200;
   return {x,m,quality,technical,valid:!!m&&!m.stale&&!!quality?.canCompare};
@@ -109,6 +109,17 @@ function unityHomeMovement(x,range){
   const a=unityChartData(x,range);
   return a.length>=2?(Number(a.at(-1).close)/Number(a[0].close)-1)*100:NaN;
 }
+function unityHomeDisplayedChange(s,x,display,range){
+  // A simple percentage change needs only two dated prices, not 200 days
+  // of history, an RSI or a complete investment analysis.
+  if(!x||typeof unityChartData!=='function')return NaN;
+  const points=unityChartData(x,range);
+  if(!Array.isArray(points)||points.length<2)return NaN;
+  const latest=Number(display?.price??x.price);
+  const prior=range==='1D'&&display?.precision==='15m-bar'&&String(display.date||'')>String(x.date||'')
+    ? Number(x.price) : Number(points[0].close);
+  return latest>0&&prior>0?(latest/prior-1)*100:NaN;
+}
 function unityHomeDecision(s){
   const {x,m,quality,technical,valid}=unityHomeQuote(s);
   if(!x||!m)return {action:'Nicht bewertbar',buy:'Nicht entscheidbar',sell:'Nicht entscheidbar',reason:'Für diese Aktie fehlen ausreichend belastbare Kursdaten.',technical:'Keine Daten',confidence:'Keine ausreichende Datenbasis'};
@@ -168,31 +179,38 @@ function unityHome(){
     '<div class="home-periods" aria-label="Kurszeitraum">'+unityHomePeriods.map(([r,label])=>'<button type="button" data-home-range="'+r+'" class="'+(r===unityHomeRange?'active':'')+'">'+label+'</button>').join('')+'</div>';
   if(capital?.configured){h+='<div class="home-big-number">'+(Number.isFinite(capital.total)?euro(capital.total):depotMoney(capital.free))+'</div><p class="home-value-label">Fiktives Gesamtvermögen · lokal geführte Simulation</p><div class="home-hero-summary"><span>Einzahlungen '+depotMoney(capital.funded)+'</span><span>Frei '+depotMoney(capital.free)+'</span><span>Angelegt '+depotMoney(capital.invested)+'</span></div>';}
   else if(pos.length&&allValid)h+='<div class="home-big-number">'+euro(value)+'</div><p class="home-value-label">Simulierter Positionswert · Startkapital noch nicht festgelegt</p>';
-  else h+='<div class="home-big-number">0,00 €</div><p class="home-value-label">Fiktives Depot · bitte Startkapital oder Einzahlung anlegen</p>';
+  else h+='<p class="home-value-label home-value-prompt">Beobachtungsliste · Testdepot kann bei Bedarf angelegt werden</p>';
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
-    '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p>'+unityHomeAnalysisStatus(selected)+
+    '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p><details class="home-status-fold"><summary>Kursdaten & Analysefortschritt anzeigen</summary>'+unityHomeAnalysisStatus(selected)+'</details>'+
     (capital?'<form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening||capital.funded||0).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form>':'')+'</section>';
-  h+=unityPreAnalysisSummary(selected);
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
     '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Recherche-Radar</button></div>'+
     '<p class="home-sort-hint">„Recherche-Radar“ ordnet zuerst Werte mit vertiefungswürdiger Entwicklung. Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
-    const {x,m,valid,technical}=unityHomeQuote(s);
+    const {x}=unityHomeQuote(s);
     const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
-    const pilot=dq?.precision==='15m-bar'&&x&&valid;
-    const series=pilot&&unityHomeRange!=='1D'?unityChartData(x,unityHomeRange):[];
-    const base=pilot?(unityHomeRange==='1D'?Number(x.price):Number(series[0]?.close)):NaN;
-    const change=pilot&&base>0?(Number(dq.price)/base-1)*100:technical?unityHomeMovement(x,unityHomeRange):NaN;
+    const quoteItem=dq||(x&&Number(x.price)>0?{price:x.price,date:x.date,precision:'day'}:null);
+    const price=Number(quoteItem?.price);
+    const change=unityHomeDisplayedChange(s,x,dq,unityHomeRange);
     const rising=Number.isFinite(change)&&change>0,falling=Number.isFinite(change)&&change<0;
     const cls=rising?'home-up':falling?'home-down':'home-flat';
-    const p=depotPosition(s),verdict=unityHomeVerdict(s);
-    h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button></div><button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+verdict.kind+'"><span aria-hidden="true">'+verdict.icon+'</span> '+esc(verdict.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(technical?m.trend:'Kursdaten werden geprüft')+'</small>'+'<small class="home-pre-decision pre-'+verdict.kind+'">'+esc(verdict.detail)+'</small>'+(p.qty>0?'<small class="home-position-label"><b>Testdepot:</b> '+number(p.qty,4)+' Stück · Ø Kaufpreis '+depotMoney(p.avg)+'</small><small class="home-position-label">Gebühr '+depotMoney(p.fees)+' · Einsatz '+depotMoney(p.cost)+(Number.isFinite(p.pnl)?' · <b class="'+(p.pnl>=0?'positive':'negative')+'">G/V '+(p.pnl>=0?'+':'')+depotMoney(p.pnl)+' ('+(p.cost>0?(p.pnl/p.cost*100).toLocaleString('de-DE',{maximumFractionDigits:2}):'0')+' %)</b>':' · <b>G/V: Kursdaten fehlen</b>')+'</small>':'')+'</span>'+
-      '<span class="home-stock-right"><strong class="'+cls+'">'+(technical?unityPct(change):'–')+'</strong><small>'+(dq?number(Number(dq.price),2)+' '+esc(s.currency):x?number(Number(x.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(dq?.precision==='15m-bar'?'15m-Pilot · '+esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit'})):dq?esc(dq.date)+' · Schluss':x?esc(x.date)+' · Tagesschluss':'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button></div>';
+    const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+    const eur=s.currency!=='EUR'&&rate&&Number(rate.rate)>0&&price>0?price*Number(rate.rate):NaN;
+    const position=depotPosition(s);
+    const stamp=dq?.precision==='15m-bar'&&dq.quotedAt
+      ?'15m-Referenz · '+new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+      :quoteItem?.date?String(quoteItem.date)+' · Schluss':'Keine Kursdaten';
+    h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button></div>'+
+      '<button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'" aria-label="'+esc(s.name)+': Kurs und Analyse öffnen"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">Testdepot: '+number(position.qty,4)+' Stück</small>':'')+'</span>'+
+      '<span class="home-stock-right"><strong class="'+cls+'">'+unityPct(change)+'</strong><small class="home-quote-price">'+(price>0?number(price,2)+' '+esc(s.currency):'Kurs fehlt')+'</small>'+
+      (s.currency!=='EUR'?'<small class="home-eur-price">'+(Number.isFinite(eur)?'≈ '+euro(eur):'EUR-Kurs fehlt')+'</small>':'')+
+      '<small class="home-quote-date">'+esc(stamp)+'</small></span><span class="home-chevron" aria-hidden="true">›</span></button></div>';
   }
   h+='</section>';
+  h+=unityPreAnalysisSummary(selected);
   if(unityHomeSelected)h+=unityHomeDetail(unityHomeSelected);
   h+='<section class="home-bottom-actions"><button type="button" class="secondary" data-home-reload '+(unityMarketLoading?'disabled':'')+'>'+(unityMarketLoading?'Kursdaten werden geladen …':'Kursdaten erneut prüfen')+'</button><button type="button" class="secondary" data-home-all>Alle UNITY-Kandidaten vergleichen</button><button type="button" class="secondary" data-home-trades>Käufe / Verkäufe</button></section>';
   h+='<p class="home-disclaimer">Die Pfeile und Prozentwerte zeigen die Kursänderung im gewählten Zeitraum, nicht den persönlichen Depotgewinn. Die Trendbewertung nutzt gleitende Durchschnitte. Die App gibt ohne geprüfte Fundamentaldaten, Earnings und aktuelle Handelskurse keine Kauf- oder Verkaufsfreigabe.</p>';

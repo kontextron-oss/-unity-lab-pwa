@@ -15,7 +15,7 @@ function unityIntradayItem(isin){
   return item;
 }
 function unityDisplayQuote(s){
-  const daily=(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),pilot=unityIntradayItem(s.isin);
+  const fullDaily=typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin),daily=fullDaily||(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null),pilot=unityIntradayItem(s.isin);
   if(pilot&&(!daily||pilot.quotedAt.slice(0,10)>daily.date)){
     return {price:pilot.price,currency:pilot.currency,exchange:pilot.exchange||s.exchange,
       date:pilot.quotedAt.slice(0,10),quotedAt:pilot.quotedAt,precision:'15m-bar',
@@ -24,7 +24,7 @@ function unityDisplayQuote(s){
   }
   if(daily)return {price:daily.price,currency:daily.currency,exchange:daily.exchange||s.exchange,
     date:daily.date,quotedAt:null,precision:'day',source:daily.source,
-    label:'Letzter Börsenschlusskurs (inoffiziell)'};
+    label:fullDaily?'Letzter Börsenschlusskurs (inoffiziell)':'Letzter Schlusskurs (kurze Historie, technische Analyse offen)'};
   return null;
 }
 async function unityLoadIntraday(){

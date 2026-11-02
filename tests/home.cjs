@@ -31,4 +31,25 @@ assert.match(detail,/Noch nicht freigegeben/);assert.match(detail,/Kaufen · Sim
 assert.match(vm.runInContext('unityHomeManagePanel()',sandbox),/Ausblenden/);assert.match(vm.runInContext('unityHomeManagePanel()',sandbox),/nach oben/);
 selected=[];const empty=vm.runInContext('unityHome()',sandbox);
 assert.match(empty,/noch keine Aktien ausgewählt/);assert.doesNotMatch(empty,/70.423/);
+// Price direction is informational; RSI and 200-day history are not required.
+assert.ok(Math.abs(vm.runInContext("unityHomeDisplayedChange("+JSON.stringify(s)+","+JSON.stringify(x)+",null,'1D')",sandbox)+1.25)<1e-8);
+sandbox.unityMetrics=()=>null;
+selected=[s];
+const simple=vm.runInContext('unityHome()',sandbox);
+assert.match(simple,/-1\.[23] %/);
+assert.match(simple,/237.00 EUR/);
+assert.match(simple,/data-home-open/);
+assert.doesNotMatch(simple,/home-pre-decision/);
+sandbox.unityMarketItem=()=>null;
+sandbox.unityReferenceQuoteItem=()=>x;
+const shortHistory=vm.runInContext('unityHome()',sandbox);
+assert.match(shortHistory,/237.00 EUR/);
+assert.match(shortHistory,/-1\.[23] %/);
+
+// No artificial 15/17-stock cutoff: the 18th stock (AMD) and all later values render.
+selected=Array.from({length:22},(_,i)=>({...s,id:'stock-'+i,name:i===17?'AMD':'Aktie '+i,ticker:i===17?'AMD':'T'+i,createdAt:'2026-01-01T00:00:00Z'}));
+const extended=vm.runInContext('unityHome()',sandbox);
+assert.equal((extended.match(/data-home-open="/g)||[]).length,22);
+assert.match(extended,/AMD/);
+assert.match(extended,/Aktie 21/);
 console.log('Home dashboard: selected stocks, EOD period, trend, chart drilldown, analysis verdict, empty state passed.');

@@ -5,7 +5,7 @@ const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/unityComparisonView\(\)/);
 assert.match(html,/<script src="\.\/dashboard\.js"><\/script>/);
 assert.match(html,/<script src="\.\/charts\.js"><\/script>/);
-assert.match(html,/<script src="\.\/dataquality\.js"><\/script>/);
+assert.match(html,/<script src="\.\/dataquality\.js(?:\?v=[0-9.]+)?"><\/script>/);
 const CATALOG=[
   {name:'ABB',ticker:'ABBN',isin:'CH0012221716',currency:'CHF',exchange:'SIX'},
   {name:'Schneider Electric',ticker:'SU',isin:'FR0000121972',currency:'EUR',exchange:'Paris'},

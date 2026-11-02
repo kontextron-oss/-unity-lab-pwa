@@ -26,7 +26,7 @@ const box={Date,Math,Number,String,Array,JSON,console,
  refresh:async()=>{},audit:async(...args)=>auditCalls.push(args),
  put:async(table,obj)=>saved.push({table,obj}),
  id:()=>String(saved.length+10),
- CATALOG:[{...stock}],catalogPresent:()=>false
+ CATALOG:[{...stock}],catalogPresent:()=>false,catalogRecord:()=>null
 };
 vm.createContext(box);vm.runInContext(functions+'\n'+addFn,box);
 const status=()=>vm.runInContext('unityRecentAddition',box);

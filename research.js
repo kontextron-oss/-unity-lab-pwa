@@ -43,7 +43,7 @@ function unityResearchBadge(stock){
 }
 function unityResearchPanel(stock){
   const item=unityResearchItem(stock);
-  if(!item&&!unityResearchLoading&&!unityResearchError)return '';
+  // Always state when a symbol is not yet covered; silence would imply completeness.
   let html='<section class="panel unity-issuer-panel"><h3>Automatischer Quellenmonitor · Unternehmensberichte</h3>';
   if(!item){
     html+='<p class="tiny muted">'+(unityResearchLoading?'Öffentliche Quellen werden geladen.':

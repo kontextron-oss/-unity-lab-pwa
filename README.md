@@ -1,3 +1,47 @@
+## UNITY LAB 0.13.46 – amtliche Unternehmensberichte und Ereignismonitor
+
+Das neue Recherchemodul **research.js** zeigt für bekannte Emittenten offizielle
+Veröffentlichungen und neu gefundene Rechnungslegungsdaten in der Aktienansicht
+und der UNITY-Tiefenanalyse. Unter der Aktie steht das Datum, der neutrale
+Dokumenttyp und ein Link zu den Originaldokumenten. Eine Einreichung ist
+**nicht** automatisch eine positive Nachricht und **keine Handelsfreigabe**.
+
+- Die GitHub-Actions-Datei **official-research.yml** startet werktags und
+  bei Änderungen am offiziellen Collector. Sie liest keine privaten
+  iPhone-Daten. Der Collector **scripts/refresh_research.py** gleicht
+  die amtlichen SEC-Ticker-/CIK-Kennungen mit SEC-EDGAR-Unternehmensmeldungen
+  und XBRL-Companyfacts ab. Aktueller Pilot: Eaton, Vertiv, GE Vernova,
+  nVent, Hubbell, Quanta Services, AMD, Apple, Microsoft, NVIDIA.
+  Die übrige aktive Aktienliste wird *nicht als vollständig analysiert*
+  dargestellt.
+- Die vorhandenen vier europäischen Emittenten bleiben im separaten
+  XBRL-/Emittentenpilot: ABB, Schneider Electric, Siemens Energy und Infineon.
+  Der Quellenmonitor verlinkt diese Primärberichte, zählt Finanzkennzahlen
+  aber nicht doppelt.
+- Nur identisch zugeordnete SEC-CIK/Ticker, belegte Datenformate,
+  Zeiträume, Maßeinheiten und Originalquellen werden verwendet.
+  Bei SEC-Ausfällen markiert der Collector die Daten als
+  **source-unavailable** oder **stale-previous**. Das bisherige Depot,
+  Analysen und Kaufzonen werden nicht überschrieben.
+- SEC 8-K und 6-K sind neutrale Pflichtmeldungen. Weitere Presse- und
+  Zeitungsartikel (FT, GDELT etc.) werden **noch nicht automatisch
+  übernommen**, solange Zugriffs-/Nutzungsrechte und Zuordnung nicht
+  zweifelsfrei geklärt sind. Keine automatisierte Textextraktion aus
+  bezahlpflichtigen Inhalten, keine Nachrichten-Sentiment-Scoring-Prognosen.
+- Die SEC akzeptiert automatisierte Abfragen nur im Rahmen der
+  Fair-Access-Regeln, mit identifizierbarem User Agent. Für diesen kleinen
+  Pilot sind die Abfragen zeitlich gestaffelt. Kostenlos bedeutet weder
+  lückenlos noch garantierte Verfügbarkeit. Der SEC-Server kann Zugriffe
+  ablehnen. Die Anzahl echter fehlgeschlagener SEC-Quellen wird dokumentiert.
+- **data/research.json** enthält nur öffentliche Unternehmensmetadaten,
+  niemals private Watchlists, fiktive Käufe, Finanzbestände oder
+  Anmeldedaten. Keine neuen Berechtigungen oder Geheimschlüssel in der PWA.
+- Der existierende vollständige UNITY-Investmentscore bleibt von den
+  neuen Metadaten zunächst getrennt. Die Informationen ermöglichen eine
+  schnellere manuelle Verifikation; erst nach Tests zu Quellenabdeckung,
+  Zeitstempel und Bilanzkonsistenz dürfen sie automatische harte
+  Bewertungs-/Earnings-Regeln direkt beeinflussen.
+
 # Unity Lab 0.4.0
 
 Local-first PWA for hypothetical stock transactions and investment strategy research.

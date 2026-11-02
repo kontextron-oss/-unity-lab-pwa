@@ -64,6 +64,9 @@ jobs:
       - name: Test automatic UNITY decision result and safeguards
         run: node tests/decision-result.cjs
 
+      - name: Verify simulated portfolio wealth, gains and invested positions
+        run: node tests/portfolio-wealth.cjs
+
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs
 

@@ -81,6 +81,56 @@ function unityResearchIndicator(s){
   if(pre.kind==='data')return {kind:'data',label:'Daten prüfen',detail:pre.detail,score:NaN};
   return {kind:'observe',label:'Beobachten',detail:pre.detail,score:pre.score};
 }
+/* Daily pullback monitor for the SAME SMA50 ±2% setup used by unityCandidate.
+   It is recalculated from valid dated closes when the PWA opens/refreshes.
+   An EOD technical zone is NEVER a recommendation or a real-time alert. */
+function unityPullbackAlert(s){
+  const {x,m,quality,technical}=unityHomeQuote(s);
+  if(!technical||!x||!quality?.canCompare||x.dynamicExperimental||
+     x.currency!==s.currency||!Number.isFinite(Number(m?.ma50))||
+     !Number.isFinite(Number(m?.ma200))||!Number.isFinite(Number(m?.rsi))||
+     !(Number(x.price)>0))return {kind:'data',label:'',detail:'Für die Rücksetzer-Überwachung fehlen geprüfte, aktuelle und vollständige Tageskursdaten.'};
+  const close=Number(x.price),low=m.ma50*.98,high=m.ma50*1.02;
+  const validTrend=m.trend==='Aufwärtstrend'&&close>=m.ma200&&m.ma50>=m.ma200;
+  if(!validTrend)return {kind:'none',label:'',detail:'Langfristiger Aufwärtstrend nicht mehr bestätigt.'};
+  const inRsi=m.rsi>=40&&m.rsi<=68;
+  if(!inRsi)return {kind:'none',label:'',detail:'Technische RSI-Bedingung nicht erfüllt.'};
+  let kind='none',label='',detail='';
+  if(close>high){
+    kind='watch';label='Rücksetzer abwarten';
+    detail='Schlusskurs noch über der technischen Einstiegszone. Kursrückgang abwarten, dann Kriterien erneut prüfen.';
+  }else if(close>=low&&close<=high){
+    const p=x.points,prev50=p.slice(-51,-1);
+    const before=Number(p.at(-2)?.close);
+    const previousSma=prev50.length===50?prev50.reduce((n,v)=>n+Number(v.close),0)/50:NaN;
+    const entered=Number.isFinite(previousSma)&&before>previousSma*1.02;
+    kind='reached';label=entered?'Rücksetzer eingetreten':'Einstiegszone erreicht';
+    detail='Der zuletzt verfügbare Tages-Schlusskurs liegt in der SMA50-Zone. Trend und RSI passen technisch; Bilanz, Bewertung, Earnings und Risiko bleiben gesondert zu prüfen.';
+  }else{
+    // Too deep a drop must not be celebrated as a successful entry.
+    return {kind:'broken',label:'Zone unterschritten',detail:'Der Kurs liegt bereits unter der technischen Einstiegszone; nicht automatisch nachkaufen.',
+      close,low,high,date:x.date,currency:s.currency};
+  }
+  // Confirmed event and documented RR veto suppress a positive-looking flag.
+  const f=typeof cache!=='undefined'?(cache.fundamentals||[]).find(v=>v.id===s.id):null;
+  const event=Date.parse(f?.earningsDate||'');
+  const near=!!f?.earningsConfirmed&&Number.isFinite(event)&&
+    event>=Date.now()-86400000&&event<Date.now()+7*86400000;
+  const stop=Number(f?.stop),target=Number(f?.target);
+  const rr=stop>0&&stop<close&&target>close?(target-close)/(close-stop):NaN;
+  if(kind==='reached'&&(near||(Number.isFinite(rr)&&rr<2))){
+    kind='blocked';label='Zone erreicht · Risiko prüfen';
+    detail=near?'Bestätigter Earnings-Termin innerhalb sieben Tagen. Technische Zone erreicht, aber Ereignisrisiko geht vor.':
+      'Chance-Risiko-Verhältnis unter 2:1. Technische Zone erreicht, aber die UNITY-Hard-Rule verhindert eine positive Einstiegsaussage.';
+  }
+  return {kind,label,detail,close,low,high,date:x.date,currency:s.currency};
+}
+function unityPullbackLabel(s,signal=unityPullbackAlert(s)){
+  if(!['reached','blocked','watch'].includes(signal.kind))return '';
+  return '<span class="home-pullback-flag home-pullback-'+signal.kind+'">'+
+    (signal.kind==='reached'?'◆ ':signal.kind==='blocked'?'! ':'○ ')+esc(signal.label)+'</span>';
+}
+
 function unityHomeVerdict(s){return unityResearchIndicator(s);}
 function unityPreAnalysisSummary(selected){
   const items=selected.map(unityResearchIndicator),count=k=>items.filter(x=>x.kind===k).length;
@@ -175,7 +225,10 @@ function unityHomeSignal(s){
 }
 function unityHomeDisplayedStocks(){
   const list=unityHomeStocks();
-  if(unityHomeSort==='priority')list.sort((a,b)=>unityPreAnalysis(a).rank-unityPreAnalysis(b).rank||a.name.localeCompare(b.name));
+  if(unityHomeSort==='priority')list.sort((a,b)=>{
+    const rank=s=>{const p=unityPullbackAlert(s);return p.kind==='reached'?0:p.kind==='blocked'?1:p.kind==='watch'?2:3+unityPreAnalysis(s).rank};
+    return rank(a)-rank(b)||a.name.localeCompare(b.name);
+  });
   return list;
 }
 
@@ -211,6 +264,9 @@ function unityHome(){
   }else if(pos.length&&allValid){
     h+='<div class="home-big-number">'+euro(value)+'</div><p class="home-value-label">Simulierter Positionswert · Startkapital noch nicht festgelegt</p>';
   }else h+='<p class="home-value-label home-value-prompt">Beobachtungsliste · Testdepot kann bei Bedarf angelegt werden</p>';
+  const pullbackResults=selected.map(s=>({s,signal:unityPullbackAlert(s)}));
+  const reachedPullbacks=pullbackResults.filter(x=>x.signal.kind==='reached');
+  const blockedPullbacks=pullbackResults.filter(x=>x.signal.kind==='blocked');
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p><details class="home-status-fold"><summary>Kursdaten & Analysefortschritt anzeigen</summary>'+unityHomeAnalysisStatus(selected)+'</details>'+
@@ -233,7 +289,13 @@ function unityHome(){
     h+='<p class="home-holdings-note">Positionsgewinne berücksichtigen die erfassten Kaufgebühren und werden in EUR bewertet. Gesamtvermögen und Depotwerte sind Simulationen.</p></section>';
   }
 
-  h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
+    if(reachedPullbacks.length||blockedPullbacks.length){
+    h+='<section class="home-pullback-summary" aria-label="Rücksetzerbeobachtung">'+
+      '<strong>◆ Rücksetzer-Radar · '+reachedPullbacks.length+' technische Einstiegszone'+(reachedPullbacks.length===1?'':'n')+' erreicht</strong>'+
+      (blockedPullbacks.length?'<small>'+blockedPullbacks.length+' weitere Zone'+(blockedPullbacks.length===1?'':'n')+' mit aktivem Risikohinweis.</small>':'')+
+      '<small>Zuletzt verfügbare Tages-Schlusskurse, keine Echtzeit-Meldung und keine Kaufempfehlung. Betroffene Aktie antippen und Tiefenanalyse neu prüfen.</small></section>';
+  }
+h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
     '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Recherche-Radar</button></div>'+
     '<p class="home-sort-hint">„Recherche-Radar“ ordnet zuerst Werte mit vertiefungswürdiger Entwicklung. Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
@@ -247,13 +309,13 @@ function unityHome(){
     const cls=rising?'home-up':falling?'home-down':'home-flat';
     const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
     const eur=s.currency!=='EUR'&&rate&&Number(rate.rate)>0&&price>0?price*Number(rate.rate):NaN;
-    const position=depotPosition(s),research=unityResearchIndicator(s);
+    const position=depotPosition(s),research=unityResearchIndicator(s),pullback=unityPullbackAlert(s);
     const stamp=dq?.precision==='15m-bar'&&dq.quotedAt
       ?'15m-Referenz · '+new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
       :quoteItem?.date?String(quoteItem.date)+' · Schluss':'Keine Kursdaten';
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button></div>'+
       '<button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'" aria-label="'+esc(s.name)+': Kurs und Analyse öffnen"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">● Im Testdepot · '+number(position.qty,4)+' Stück</small><small class="home-position-profit '+(position.pnl>0?'home-profit-up':position.pnl<0?'home-profit-down':'')+'">Depotwert '+depotMoney(position.value)+' · '+depotSignedMoney(position.pnl)+'</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong>'+unityPullbackLabel(s,pullback)+'<span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">● Im Testdepot · '+number(position.qty,4)+' Stück</small><small class="home-position-profit '+(position.pnl>0?'home-profit-up':position.pnl<0?'home-profit-down':'')+'">Depotwert '+depotMoney(position.value)+' · '+depotSignedMoney(position.pnl)+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+unityPct(change)+'</strong><small class="home-quote-price">'+(price>0?number(price,2)+' '+esc(s.currency):'Kurs fehlt')+'</small>'+
       (s.currency!=='EUR'?'<small class="home-eur-price">'+(Number.isFinite(eur)?'≈ '+euro(eur):'EUR-Kurs fehlt')+'</small>':'')+
       '<small class="home-quote-date">'+esc(stamp)+'</small></span><span class="home-chevron" aria-hidden="true">›</span></button></div>';
@@ -268,9 +330,15 @@ function unityHome(){
 function unityHomeDetail(sid){
   const s=stocks().find(x=>x.id===sid);
   if(!s)return '';
-  const {x,m,valid}=unityHomeQuote(s),d=unityHomeDecision(s),signal=unityHomeSignal(s),research=unityResearchIndicator(s);
+  const {x,m,valid}=unityHomeQuote(s),d=unityHomeDecision(s),signal=unityHomeSignal(s),research=unityResearchIndicator(s),pullback=unityPullbackAlert(s);
   let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>Aktienansicht</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
   const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
+  if(['reached','blocked','watch'].includes(pullback.kind)){
+    h+='<section class="home-pullback-detail home-pullback-'+pullback.kind+'"><strong>'+esc(pullback.label)+'</strong>'+
+      '<p>'+esc(pullback.detail)+'</p>'+
+      '<small>Technische SMA50-Zone: '+number(pullback.low,2)+'–'+number(pullback.high,2)+' '+esc(s.currency)+
+      ' · Schlusskurs '+number(pullback.close,2)+' '+esc(s.currency)+' ('+esc(pullback.date)+')</small></section>';
+  }
   h+='<section class="home-research-detail home-research-'+research.kind+'"><strong>Recherche-Indikator: '+esc(research.label)+'</strong><p>'+esc(research.detail)+'</p><small>Technische Vorauswahl, keine Kauf- oder Verkaufsfreigabe.</small></section>';
   if(typeof unityDeepDecisionPanel==='function')h+=unityDeepDecisionPanel(s);
   if(typeof unityDecisionResultPanel==='function')h+='<details class="unity-secondary-check"><summary>Weitere technische Prüfbedingungen anzeigen</summary>'+unityDecisionResultPanel(s)+'</details>';

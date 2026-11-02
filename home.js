@@ -57,25 +57,22 @@ function unityHomeDataState(s){
 }
 function unityPreAnalysis(s){
   const state=unityHomeDataState(s),{x,m,technical}=unityHomeQuote(s);
-  if(state.kind==='loading')return {kind:'loading',label:'Daten werden erfasst',score:NaN,detail:'Kursreihe wird geladen.'};
-  if(state.kind==='failed')return {kind:'blocked',label:'Datenquelle prüfen',score:NaN,detail:state.detail||'Keine Kursreihe abrufbar.'};
-  if(state.kind==='missing')return {kind:'blocked',label:'Kursquelle ergänzen',score:NaN,detail:'Für diesen Wert fehlt eine Kursquelle.'};
-  if(!technical||!m||!x)return {kind:'waiting',label:'Daten prüfen',score:NaN,detail:'Für die Voranalyse fehlen noch Kursdaten.'};
+  if(state.kind==='loading')return {kind:'data',label:'Daten werden erfasst',score:NaN,rank:5,detail:'Kursreihe wird geladen.'};
+  if(state.kind==='failed')return {kind:'data',label:'Daten prüfen',score:NaN,rank:5,detail:state.detail||'Keine Kursreihe abrufbar.'};
+  if(state.kind==='missing')return {kind:'data',label:'Daten prüfen',score:NaN,rank:5,detail:'Für diesen Wert fehlt eine Kursquelle.'};
+  if(!technical||!m||!x)return {kind:'data',label:'Daten prüfen',score:NaN,rank:5,detail:'Für die Vorauswahl fehlen noch ausreichende Kursdaten.'};
   const rsi=Number(m.rsi),index=Number(m.technicalIndex),m1=unityHomeMovement(x,'1M'),m3=unityHomeMovement(x,'3M'),macdUp=Number(m.macd)>=Number(m.signal);
   const score=Math.max(0,Math.min(100,Math.round((Number.isFinite(index)?index:0)*.60+(Number.isFinite(m1)?Math.max(-20,Math.min(20,m1))*0.75:0)+(Number.isFinite(m3)?Math.max(-30,Math.min(30,m3))*0.35:0)+(macdUp?8:0))));
-  if(m.trend==='Aufwärtstrend'&&rsi>=38&&rsi<=67&&score>=65)return {kind:'positive',label:'Positiv entwickelt',score,detail:'Aufwärtstrend, tragfähiger RSI und positive technische Entwicklung. Für eine Kaufentscheidung folgt die Tiefenanalyse.'};
-  if((macdUp&&Number.isFinite(m1)&&m1>0)||score>=50)return {kind:'improving',label:'Entwicklung verbessert sich',score,detail:'Technische Daten verbessern sich, sind aber noch keine vollständige Kaufgrundlage.'};
-  if(m.trend==='Abwärtstrend'||score<35)return {kind:'weak',label:'Technisch schwach',score,detail:'Technische Entwicklung derzeit schwach; kein Kandidat für eine Tiefenanalyse.'};
-  return {kind:'neutral',label:'Beobachten',score,detail:'Technische Lage ist noch nicht eindeutig.'};
+  const improving=macdUp&&Number.isFinite(m1)&&m1>0;
+  if(m.trend==='Aufwärtstrend'&&rsi>=38&&rsi<=67&&score>=65&&(improving||m3>0))return {kind:'research',label:'Recherche lohnt sich',score,rank:0,detail:'Aufwärtstrend bestätigt, Dynamik positiv und Kurs nicht überhitzt. Details zu Unternehmen, Bewertung und Risiko prüfen.'};
+  if(rsi>=68)return {kind:'wait',label:'Abwarten',score,rank:3,detail:'Der Kurs ist kurzfristig weit gelaufen. Erst einen Rücksetzer oder eine neue stabile Zone abwarten.'};
+  if(m.trend==='Abwärtstrend'||score<35)return {kind:'weak',label:'Technisch schwach',score,rank:4,detail:'Negativer Trend oder noch keine bestätigte Bodenbildung. Derzeit keine weitere Recherche priorisieren.'};
+  if(improving||score>=55)return {kind:'improving',label:'Entwicklung verbessert sich',score,rank:1,detail:'Technik und Dynamik verbessern sich. In Beobachtung halten; bei weiterer Bestätigung Details öffnen.'};
+  return {kind:'observe',label:'Beobachten',score,rank:2,detail:'Die technische Lage ist noch nicht eindeutig. Erst bei klarerer Trendbewegung vertiefen.'};
 }
 function unityPreAnalysisSummary(selected){
-  const items=selected.map(s=>({s,p:unityPreAnalysis(s),signal:unityHomeSignal(s)}));
-  const groups=[['Kaufkandidaten',items.filter(x=>x.signal.kind==='buy')],['Verkaufssignale',items.filter(x=>x.signal.kind==='sell')],['Analyse offen',items.filter(x=>x.signal.label==='Analyse offen')],['Technische Voranalyse',items.filter(x=>x.signal.kind==='technical')],['Datenprüfung',items.filter(x=>x.signal.kind==='warning')],['Weitere Bewertungen',items.filter(x=>!['buy','sell','technical','warning'].includes(x.signal.kind))]];
-  let h='<section class="home-next-actions" aria-label="UNITY Bewertungen"><h2>UNITY Bewertungen · alle '+items.length+' Aktien</h2>';
-  for(const [title,list] of groups){if(!list.length)continue;h+='<div class="next-action-group"><h3>'+title+' ('+list.length+')</h3>';
-    for(const {s,p,signal} of list)h+='<div class="next-action-row"><div><b>'+esc(s.name)+'</b><small>'+esc(signal.label)+' · '+esc(signal.detail||'')+(Number.isFinite(p.score)?' · Voranalyse '+p.score+'/100':' · Voranalyse: '+esc(p.label))+'</small></div><button type="button" class="secondary" data-home-open="'+esc(s.id)+'">Ansehen</button></div>';
-    h+='</div>'}
-  h+='<p class="tiny muted">Bewertung und technische Voranalyse sind getrennt ausgewiesen.</p></section>';return h;
+  const items=selected.map(unityPreAnalysis),count=k=>items.filter(x=>x.kind===k).length;
+  return '<section class="home-pre-summary" aria-label="Recherche-Radar"><strong>Recherche-Radar · Vorauswahl aus Kursstruktur und Trend</strong><span class="pre-research">● '+count('research')+' Recherche lohnt sich</span><span class="pre-improving">● '+count('improving')+' Entwicklung verbessert</span><span class="pre-observe">● '+count('observe')+' Beobachten</span><span class="pre-wait">● '+count('wait')+' Abwarten</span><span class="pre-weak">● '+count('weak')+' technisch schwach</span><span class="pre-data">● '+count('data')+' Daten prüfen</span><small>Der Radar priorisiert nur die nächste Recherche. Er ist keine Kauf- oder Verkaufsfreigabe.</small></section>';
 }
 function unityPilotDecision(s){
   const state=unityHomeDataState(s),{m,technical}=unityHomeQuote(s);
@@ -150,7 +147,7 @@ function unityHomeSignal(s){
 }
 function unityHomeDisplayedStocks(){
   const list=unityHomeStocks();
-  if(unityHomeSort==='priority')list.sort((a,b)=>unityHomeSignal(a).rank-unityHomeSignal(b).rank);
+  if(unityHomeSort==='priority')list.sort((a,b)=>unityPreAnalysis(a).rank-unityPreAnalysis(b).rank||a.name.localeCompare(b.name));
   return list;
 }
 
@@ -169,11 +166,10 @@ function unityHome(){
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p>'+unityHomeAnalysisStatus(selected)+
     (capital?'<form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening||capital.funded||0).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form>':'')+'</section>';
-  const signals=selected.map(unityHomeSignal),buys=signals.filter(v=>v.kind==='buy').length,sells=signals.filter(v=>v.kind==='sell').length,open=signals.filter(v=>v.kind==='warning').length;
+  h+=unityPreAnalysisSummary(selected);
   h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
-    '<div class="home-signal-summary" aria-label="UNITY Entscheidungslage"><span class="home-signal-count buy">● '+buys+' Kaufkandidaten</span><span class="home-signal-count sell">● '+sells+' Verkaufssignale</span><span class="home-signal-count warning">● '+open+' Datenprüfungen</span></div>'+
-    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Handlungsbedarf</button></div>'+
-    '<p class="home-sort-hint">Sortierung wählen · Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
+    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Recherche-Radar</button></div>'+
+    '<p class="home-sort-hint">„Recherche-Radar“ ordnet zuerst Werte mit vertiefungswürdiger Entwicklung. Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x,m,valid,technical}=unityHomeQuote(s);
@@ -186,7 +182,7 @@ function unityHome(){
     const cls=rising?'home-up':falling?'home-down':'home-flat';
     const p=depotPosition(s),signal=unityHomeSignal(s),preAnalysis=unityPreAnalysis(s);
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button></div><button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(technical?m.trend:'Daten nicht ausreichend')+'</small>'+'<small class="home-pre-decision pre-'+preAnalysis.kind+'">Voranalyse: '+esc(preAnalysis.label)+(Number.isFinite(preAnalysis.score)?' · '+preAnalysis.score+'/100':'')+'</small>'+(p.qty>0?'<small class="home-position-label"><b>Testdepot:</b> '+number(p.qty,4)+' Stück · Ø Kaufpreis '+depotMoney(p.avg)+'</small><small class="home-position-label">Gebühr '+depotMoney(p.fees)+' · Einsatz '+depotMoney(p.cost)+(Number.isFinite(p.pnl)?' · <b class="'+(p.pnl>=0?'positive':'negative')+'">G/V '+(p.pnl>=0?'+':'')+depotMoney(p.pnl)+' ('+(p.cost>0?(p.pnl/p.cost*100).toLocaleString('de-DE',{maximumFractionDigits:2}):'0')+' %)</b>':' · <b>G/V: Kursdaten fehlen</b>')+'</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong><span class="home-signal home-signal-'+signal.kind+'"><span aria-hidden="true">'+signal.icon+'</span> '+esc(signal.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(technical?m.trend:'Daten nicht ausreichend')+'</small>'+'<small class="home-pre-decision pre-'+preAnalysis.kind+'">Recherche-Radar: '+esc(preAnalysis.label)+(Number.isFinite(preAnalysis.score)?' · '+preAnalysis.score+'/100':'')+'</small>'+(p.qty>0?'<small class="home-position-label"><b>Testdepot:</b> '+number(p.qty,4)+' Stück · Ø Kaufpreis '+depotMoney(p.avg)+'</small><small class="home-position-label">Gebühr '+depotMoney(p.fees)+' · Einsatz '+depotMoney(p.cost)+(Number.isFinite(p.pnl)?' · <b class="'+(p.pnl>=0?'positive':'negative')+'">G/V '+(p.pnl>=0?'+':'')+depotMoney(p.pnl)+' ('+(p.cost>0?(p.pnl/p.cost*100).toLocaleString('de-DE',{maximumFractionDigits:2}):'0')+' %)</b>':' · <b>G/V: Kursdaten fehlen</b>')+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+(technical?unityPct(change):'–')+'</strong><small>'+(dq?number(Number(dq.price),2)+' '+esc(s.currency):x?number(Number(x.price),2)+' '+esc(s.currency):'Kurs fehlt')+'</small><small>'+(dq?.precision==='15m-bar'?'15m-Pilot · '+esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit'})):dq?esc(dq.date)+' · Schluss':x?esc(x.date)+' · Tagesschluss':'Kein Datenstand')+'</small></span><span class="home-chevron">›</span></button></div>';
   }
   h+='</section>';

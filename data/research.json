@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-02T08:41:47+00:00",
+  "generatedAt": "2026-11-02T23:09:45+00:00",
   "source": "SEC EDGAR und XBRL-/Emittentenpilot",
   "scope": "Öffentliche Emittenten, keine privaten Portfoliodaten",
   "usIssuerCount": 10,
@@ -24,7 +24,7 @@
       ],
       "metrics": {},
       "issues": [
-        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+        "Europäische Bilanzkennzahlen im bestehenden Pilot ansehen; keine doppelten SEC-Fakten."
       ]
     },
     "FR0000121972": {
@@ -45,7 +45,7 @@
       ],
       "metrics": {},
       "issues": [
-        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+        "Europäische Bilanzkennzahlen im bestehenden Pilot ansehen; keine doppelten SEC-Fakten."
       ]
     },
     "DE000ENER6Y0": {
@@ -66,7 +66,7 @@
       ],
       "metrics": {},
       "issues": [
-        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+        "Europäische Bilanzkennzahlen im bestehenden Pilot ansehen; keine doppelten SEC-Fakten."
       ]
     },
     "DE0006231004": {
@@ -87,127 +87,127 @@
       ],
       "metrics": {},
       "issues": [
-        "Unternehmenszahlen im bestehenden Berichts-Pilot prüfen; keine doppelte SEC-Zählung."
+        "Europäische Bilanzkennzahlen im bestehenden Pilot ansehen; keine doppelten SEC-Fakten."
       ]
     },
     "IE00B8KQN827": {
       "ticker": "ETN",
       "name": "Eaton",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "US92537N1081": {
       "ticker": "VRT",
       "name": "Vertiv",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "US36828A1016": {
       "ticker": "GEV",
       "name": "GE Vernova",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "IE00BDVJJQ56": {
       "ticker": "NVT",
       "name": "nVent",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "US4435106079": {
       "ticker": "HUBB",
       "name": "Hubbell",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "US74762E1029": {
       "ticker": "PWR",
       "name": "Quanta Services",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "AMD": {
       "ticker": "AMD",
       "name": "AMD",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "AAPL": {
       "ticker": "AAPL",
       "name": "Apple",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "MSFT": {
       "ticker": "MSFT",
       "name": "Microsoft",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     },
     "NVDA": {
       "ticker": "NVDA",
       "name": "NVIDIA",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-02T23:09:45+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
       "issues": [
-        "Automatischer SEC-Abgleich geplant; bis zum bestätigten Abruf keine aktuellen Kennzahlen."
+        "Keine verifizierten Daten bei diesem Abruf: ValueError"
       ]
     }
   }

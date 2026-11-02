@@ -272,7 +272,8 @@ function unityHomeDetail(sid){
   let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>Aktienansicht</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
   const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
   h+='<section class="home-research-detail home-research-'+research.kind+'"><strong>Recherche-Indikator: '+esc(research.label)+'</strong><p>'+esc(research.detail)+'</p><small>Technische Vorauswahl, keine Kauf- oder Verkaufsfreigabe.</small></section>';
-  if(typeof unityDecisionResultPanel==='function')h+=unityDecisionResultPanel(s);
+  if(typeof unityDeepDecisionPanel==='function')h+=unityDeepDecisionPanel(s);
+  if(typeof unityDecisionResultPanel==='function')h+='<details class="unity-secondary-check"><summary>Weitere technische Prüfbedingungen anzeigen</summary>'+unityDecisionResultPanel(s)+'</details>';
   if(x)h+=unityChartPanel(x);
   else h+='<p class="home-missing">'+(s.providerSymbol?(typeof unityDynamicErrors!=='undefined'&&unityDynamicErrors.get(s.providerSymbol.toUpperCase())?'Kursquelle derzeit nicht erreichbar: '+esc(unityDynamicErrors.get(s.providerSymbol.toUpperCase())):'Internationale Kursreihe wird geladen, sofern die externe Quelle erreichbar ist.'):'Kein überprüfbarer Tageskursverlauf vorhanden. Es wird keine Kurve erfunden.')+'</p>';
   if(dq)h+='<p class="home-price-time">'+esc(dq.label)+': <b>'+number(dq.price,2)+' '+esc(s.currency)+'</b> · '+(dq.quotedAt?esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}))+' MEZ/MESZ':esc(dq.date))+' · '+esc(dq.exchange)+'</p>';
@@ -364,6 +365,14 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.homeToggle){const stock=stocks().find(s=>s.id===b.dataset.homeToggle);if(stock){put('instruments',{...stock,watchHidden:!stock.watchHidden}).then(()=>audit('WATCHLIST_TOGGLE',stock.id,!stock.watchHidden?'hidden':'shown')).then(refresh).catch(err=>alert(err.message||String(err)))}return}
   if(b.dataset.homeShift){unityHomeSort='manual';unityHomeShift(b.dataset.homeShift,Number(b.dataset.direction)).catch(err=>alert(err.message||String(err)));return}
+  if(b.dataset.policyTestbuy){
+    const selected=stocks().find(x=>x.id===b.dataset.policyTestbuy);
+    if(!selected)return;
+    // Simulation only: show editable order form; no automatic booking.
+    activeTab='overview';unityHomeSelected=selected.id;unityHomeTradeMode='BUY';render();
+    document.getElementById('home-trade-form')?.scrollIntoView({block:'start',behavior:'smooth'});
+    return;
+  }
   if(b.dataset.homeTrade){unityHomeTradeMode=b.dataset.homeTrade;render();document.getElementById('home-trade-form')?.scrollIntoView({block:'nearest'});return}
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
   if(b.dataset.homeSort){unityHomeSort=b.dataset.homeSort==='priority'?'priority':'manual';render();return}

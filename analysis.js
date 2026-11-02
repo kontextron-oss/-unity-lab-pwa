@@ -21,9 +21,80 @@ const parts={valuation,quality,rr:Number.isFinite(rr)?uc(rr/3*100):NaN,flows:has
 const strategy=cache.strategies.find(x=>x.status==='active');const score=keys.every(k=>Number.isFinite(parts[k]))?keys.reduce((a,k)=>a+parts[k]*(strategy?.weights?.[k]??defaults[k])/100,0):NaN;if(!Number.isFinite(score))veto.push('Unvollständiger Score');if(!f.thesis?.trim()||!f.risks?.trim())veto.push('These oder Widerlegung fehlt');
 return {f,q,h,t,p,pe,pb,margin,rr,parts,score,veto,checks:unityCheckGroups(veto),action:'Beobachten – keine operative Freigabe',strategy:strategy?.version||'UNITY 5.2 Basis'}}
 function unityCandidate(s){const a=unityCalc(s),t=a.t;if(!a.q||!t||t.n<200||![t.last,t.ma50,t.ma200,t.rsi].every(Number.isFinite))return {status:'data',action:'Daten prüfen',buy:'Nicht entscheidbar',score:NaN,condition:'Mindestens 200 gültige Tagesschlusskurse erforderlich.',reason:'Für eine technische Kandidatenbewertung fehlen ausreichend belastbare Kursdaten.'};const trend=t.last>=t.ma200&&t.ma50>=t.ma200,rsiOk=t.rsi>=40&&t.rsi<=68,lower=t.ma50*.98,upper=t.ma50*1.02,distance=(t.last/t.ma50-1)*100,pilot=typeof unityFundPilotItem==='function'?unityFundPilotItem(s):null,revenue=Number(pilot?.derived?.revenueGrowth?.value),equity=Number(pilot?.derived?.equityRatio?.value),fundamentals=Number.isFinite(revenue)&&Number.isFinite(equity)?uc(50+revenue*2+Math.min(25,equity*.5)):NaN,technical=uc((t.last>=t.ma200?35:0)+(t.ma50>=t.ma200?30:0)+(rsiOk?20:0)+(Math.abs(distance)<=8?15:0)),score=Number.isFinite(fundamentals)?technical*.75+fundamentals*.25:technical,dataNote=Number.isFinite(fundamentals)?' Automatische Berichtskennzahlen sind in die Kandidatenbewertung eingeflossen.':' Fundamentaldaten werden weiter nachgeladen; der Rang beruht derzeit überwiegend auf Technik und Kursstruktur.';if(!trend)return {status:'wait',action:'Kein Kaufkandidat',buy:'Abwarten',score,condition:'Erst bei Kurs über SMA200 und SMA50 über SMA200 erneut prüfen.',reason:'Der übergeordnete Trend ist noch nicht ausreichend positiv.'+dataNote};if(t.rsi>68)return {status:'wait',action:'Kein Einstieg nach Anstieg',buy:'Rücksetzer abwarten',score,condition:'Erst bei RSI unter 65 und Rückkehr in die SMA50-Zone erneut prüfen.',reason:'Der Kurs ist kurzfristig überkauft.'+dataNote};if(t.rsi<40)return {status:'wait',action:'Bodenbildung abwarten',buy:'Noch nicht kaufen',score,condition:'Erst bei RSI über 40 und Kurs über SMA50 erneut prüfen.',reason:'Der Rücksetzer ist noch nicht stabil bestätigt.'+dataNote};const zone=unityNumber(lower,2)+'–'+unityNumber(upper,2)+' '+s.currency;if(t.last<=upper)return {status:'candidate',action:'Technischer Kaufkandidat',buy:'Kaufzone aktiv',score,condition:'Kaufzone um SMA50: '+zone+'.',reason:'Langfristiger Trend und mittelfristige Struktur sind positiv; der Kurs liegt in der definierten Rücksetzerzone.'+dataNote};return {status:'candidate',action:'Kauf bei Rücksetzer',buy:'Kaufzone '+zone,score,condition:'Nicht dem Anstieg folgen. Rücksetzer in die SMA50-Zone '+zone+' abwarten.',reason:'Der Trend ist positiv, der Kurs liegt jedoch oberhalb der definierten Kaufzone.'+dataNote};}
+/* Compact decision brief: distinguishes technical interest, hard risk rules
+   and verified buy approval. Missing evidence must never create a buy signal. */
+function unityDecisionResult(s,a=unityCalc(s),candidate=unityCandidate(s)){
+  const t=a.t||null,price=Number(a.p),hasPrice=Number.isFinite(price)&&price>0;
+  const technical=!!t&&t.n>=200&&Number.isFinite(t.ma50)&&t.ma50>0&&Number.isFinite(t.ma200)&&t.ma200>0;
+  const quoted=Date.parse(a.q?.quotedAt||''),ageHours=Number.isFinite(quoted)?(Date.now()-quoted)/3600000:Infinity;
+  const recent=ageHours>=-2&&ageHours<=96;
+  const hard=a.checks?.hard||[],gaps=a.checks?.data||[],warnings=a.checks?.warning||[];
+  const lower=technical?t.ma50*.98:NaN,upper=technical?t.ma50*1.02:NaN;
+  const zone=technical?unityNumber(lower,2)+'–'+unityNumber(upper,2)+' '+s.currency:'Noch nicht bestimmbar';
+  const rr=Number.isFinite(a.rr)?unityNumber(a.rr,2)+':1':'Nicht berechenbar';
+  const fullScore=Number.isFinite(a.score)?us(a.score):'Daten fehlen';
+  const candidateScore=Number.isFinite(candidate.score)?us(candidate.score):'Daten fehlen';
+  const source=(!a.q?'Keine Referenzquelle':a.q.quality==='provider-eod'?'Inoffizieller Tagesschlusskurs':'Manuelle / nicht unabhängig verifizierte Referenz');
+  let kind='data',action='Daten prüfen',next='Kursreihe und Referenzkurs prüfen',reason='Für eine technische Einstiegsaussage fehlen ausreichende Kursdaten.';
+  if(hasPrice&&technical&&recent){
+    if(hard.length&&Number.isFinite(a.rr)&&a.rr<2){
+      kind='stop';action='Nicht kaufen – Chancen/Risiken ungünstig';
+      next='Szenario mit plausiblen Stop- und Zielwerten neu prüfen';
+      reason='Das errechnete Chance-Risiko-Verhältnis liegt unter der UNITY-Mindestanforderung von 2:1. Gespeicherte Stop-/Zielwerte sind Szenarioannahmen.';
+    }else if(candidate.status==='candidate'&&candidate.buy==='Kaufzone aktiv'){
+      kind='review';action='Technische Kaufzone erreicht';
+      next='Unternehmenswert, Earnings und Risikolimits prüfen';
+      reason=candidate.reason;
+    }else if(candidate.status==='candidate'){
+      kind='wait';action='Rücksetzer abwarten';
+      next=candidate.condition;reason=candidate.reason;
+    }else{
+      kind='wait';action='Abwarten';next=candidate.condition||'Technischen Trend erneut prüfen';
+      reason=candidate.reason||'Die technische Lage ist noch nicht hinreichend überzeugend.';
+    }
+  }else if(hasPrice&&technical&&!recent){
+    kind='data';action='Kursdatum prüfen';next='Aktuelleren Börsenkurs abrufen';
+    reason='Die verfügbare Referenz ist für eine neue operative Entscheidung zu alt.';
+  }
+  const blockers=a.veto||[];
+  return {kind,action,next,reason,zone,rr,fullScore,candidateScore,
+    reference:hasPrice?unityNumber(price,2)+' '+s.currency:'Nicht verfügbar',
+    quoteDate:a.q?.quotedAt?.slice(0,10)||'–',source,
+    stop:!Number.isFinite(un(a.f?.stop))||un(a.f?.stop)<=0?'–':unityNumber(un(a.f.stop),2)+' '+s.currency,
+    target:!Number.isFinite(un(a.f?.target))||un(a.f?.target)<=0?'–':unityNumber(un(a.f.target),2)+' '+s.currency,
+    blockers,hardCount:hard.length,missingCount:gaps.length,warningCount:warnings.length,
+    approval:'Keine geprüfte Kauf-Freigabe',
+    approved:false};
+}
+function unityDecisionResultPanel(s,a,candidate){
+  const d=unityDecisionResult(s,a,candidate);
+  let h='<section class="panel unity-result-card unity-result-'+d.kind+'" aria-label="Automatisches UNITY-Ergebnis">'+
+    '<div class="unity-result-top"><div><small>UNITY · automatisches Ergebnis</small><h2>'+esc(s.name)+'</h2></div><span class="unity-result-state">'+esc(d.approval)+'</span></div>'+
+    '<strong class="unity-result-action">'+esc(d.action)+'</strong>'+
+    '<p class="unity-result-reason">'+esc(d.reason)+'</p>'+
+    '<div class="unity-result-grid">'+
+      '<div><small>Referenzkurs</small><b>'+esc(d.reference)+'</b><small>'+esc(d.quoteDate)+'</small></div>'+
+      '<div><small>Technische Kaufzone</small><b>'+esc(d.zone)+'</b><small>SMA50 ±2 %, kein Fair Value</small></div>'+
+      '<div><small>UNITY-Gesamtscore</small><b>'+esc(d.fullScore)+'</b><small>Nur bei vollständiger Datenlage</small></div>'+
+      '<div><small>Technischer Kandidatenindex</small><b>'+esc(d.candidateScore)+'</b><small>Keine Kauf-Freigabe</small></div>'+
+      '<div><small>Chance / Risiko</small><b>'+esc(d.rr)+'</b><small>Aus hinterlegten Stop-/Zielannahmen</small></div>'+
+      '<div><small>Datenqualität</small><b>'+esc(d.source)+'</b><small>'+d.missingCount+' Datenlücken · '+d.warningCount+' Warnungen · '+d.hardCount+' harte Regeln</small></div>'+
+    '</div>'+
+    '<p class="unity-result-next"><b>Nächster Schritt:</b> '+esc(d.next)+'</p>';
+  if(d.stop!=='–'||d.target!=='–')
+    h+='<p class="tiny muted">Hinterlegte Szenarioannahmen: Stop '+esc(d.stop)+' · Ziel '+esc(d.target)+'. Diese Werte sind nicht automatisch verifizierte Kursziele.</p>';
+  if(d.blockers.length){
+    h+='<details class="unity-result-issues"><summary>Offene Prüfungen ('+d.blockers.length+')</summary><ul>';
+    for(const v of d.blockers)h+='<li>'+esc(v)+'</li>';
+    h+='</ul></details>';
+  }
+  return h+'<p class="tiny muted">Technische Einstiegszone und Kaufkandidat sind nur Vorprüfungen. Aktuelle, unabhängig bestätigte Kurse, Bilanz, Bewertung, Earnings und Risiko/Rendite müssen geprüft sein. UNITY erteilt derzeit keine operative Kauf-Freigabe und führt keine echten Orders aus.</p></section>';
+}
+
 function unityDecisionOutcome(x,s){const start=Number(x?.reference?.price),now=unityCalc(s).q,current=Number(now?.price),at=Date.parse(x?.createdAt||''),days=Number.isFinite(at)?Math.max(0,Math.floor((Date.now()-at)/86400000)):NaN;if(!(start>0)||!(current>0))return {label:'Auswertung offen',detail:'Für diesen Snapshot fehlt ein vergleichbarer aktueller Referenzkurs.'};const change=(current/start-1)*100;if(!Number.isFinite(days)||days<1)return {label:'Heute festgehalten',detail:'Referenz '+unityNumber(start,2)+' '+s.currency+' · eine spätere Kursbasis wird benötigt.'};return {label:(change>=0?'+':'')+unityNumber(change,1)+' % seit Snapshot',detail:days+' Tage · Referenz '+unityNumber(start,2)+' → '+unityNumber(current,2)+' '+s.currency+' · aktuelle Quelle: '+(now?.source||'nicht dokumentiert')};}
 function analysisView(){const list=stocks();if(!list.length)return '<div class="panel"><h2>UNITY-Analyse</h2>Bitte zuerst eine Aktie hinzufügen.</div>';const s=list.find(x=>x.id===selectedUnityStock)||list[0];selectedUnityStock=s.id;const a=unityCalc(s),c=unityCandidate(s),f=a.f,val=k=>esc(f[k]??''),inp=(l,k)=>'<label>'+l+'<input name="'+k+'" type="number" step="any" value="'+val(k)+'"></label>';
 let h='<div class="panel"><h2>UNITY-Analyse · automatische Auswertung</h2><p>Automatische Berechnung aus vorhandenen Daten. Keine operative Empfehlung ohne unabhängige Datenprüfung.</p><label>Aktie<select id="unity-select">'+list.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===s.id?'selected':'')+'>'+esc(x.name)+' ('+esc(x.ticker)+')</option>').join('')+'</select></label></div>';
+h+=unityDecisionResultPanel(s,a,c);
 const ageHours=a.q?.quotedAt?Math.max(0,(Date.now()-Date.parse(a.q.quotedAt))/3600000):NaN,dataLevel=Number.isFinite(ageHours)?(ageHours<=36?'aktuell genug für Vergleich':ageHours<=96?'verzögert – nur technische Einordnung':'veraltet – keine belastbare Entscheidung'):'keine verwertbare Kurszeit';h+='<section class="panel home-analysis-lead"><h2>Kandidatenmodus</h2><div class="home-decision-head"><span>Automatische Rangfolge aus Technik und verfügbaren Berichtskennzahlen</span><strong>'+esc(c.action)+'</strong></div><div class="home-decision-grid"><div><small>Kaufbedingung</small><b>'+esc(c.buy)+'</b></div><div><small>Kandidatenindex</small><b>'+us(c.score)+'</b></div></div><p><b>Konkreter Trigger:</b> '+esc(c.condition)+'</p><p>'+esc(c.reason)+'</p><p class="tiny muted">Ein Kaufkandidat ist eine priorisierte Prüf- und Simulationschance. Eine operative Freigabe setzt weiterhin aktuelle Kurs- und Quellenprüfung voraus.</p></section>';if(typeof unityHomeDecision==='function'){const d=unityHomeDecision(s);h+='<section class="panel home-analysis-lead"><h2>UNITY-Ergebnis · '+esc(s.name)+'</h2><div class="home-decision-head"><span>Automatisch berechneter Befund</span><strong>'+esc(d.action)+'</strong></div><div class="home-decision-grid"><div><small>Kaufentscheidung</small><b>'+esc(d.buy)+'</b></div><div><small>Verkaufsentscheidung</small><b>'+esc(d.sell)+'</b></div></div><p><b>Kurzbegründung:</b> '+esc(d.reason)+'</p><p class="tiny muted">Kursdaten und technische Indikatoren werden automatisch verarbeitet. Eine vollständige UNITY-Freigabe setzt geprüfte Fundamentaldaten, Bewertung, Earnings, Risiko/Rendite und verlässliche aktuelle Kurse voraus. Fehlende Daten werden nicht erfunden.</p></section>';}
 h+='<section class="panel"><h3>Datenstand und Quellenlage</h3><div class="home-decision-grid"><div><small>Kursquelle</small><b>'+esc(a.q?.source||'Keine Quelle')+'</b></div><div><small>Referenzzeit</small><b>'+esc(a.q?.quotedAt?stamp(a.q.quotedAt):'Nicht verfügbar')+'</b></div></div><p><b>Einordnung:</b> '+esc(dataLevel)+'. '+(Number.isFinite(ageHours)?'Alter '+unityNumber(ageHours,0)+' Stunden.':'')+'</p><p class="tiny muted">Grüne Kandidatenmarkierungen beruhen auf den hier sichtbaren Daten. Sie sind keine Hochrechnung und werden nicht als aktuelle Entscheidung verwendet, wenn die Quelle oder der Zeitstempel unzureichend ist.</p></section>';h+=(typeof unityCompanyView==='function'?unityCompanyView(s.isin):'');h+=(typeof unityFundPilotPanel==='function'?unityFundPilotPanel(s):'');h+='<div class="panel"><h2>'+esc(s.name)+'</h2><div class="grid"><div class="metric"><small>Referenzkurs</small><strong>'+(a.q?unityNumber(a.p,4)+' '+esc(s.currency):'–')+'</strong><small>'+(a.q?esc(a.q.source)+' · '+(a.q.quotePrecision==='day'?esc(a.q.quotedAt.slice(0,10)):stamp(a.q.quotedAt)):'Fehlt')+'</small></div><div class="metric"><small>UNITY-Score</small><strong>'+us(a.score)+'</strong></div><div class="metric"><small>KGV / KBV</small><strong>'+unityNumber(a.pe)+' / '+unityNumber(a.pb)+'</strong></div><div class="metric"><small>Chance / Risiko</small><strong>'+(Number.isFinite(a.rr)?unityNumber(a.rr,2)+':1':'–')+'</strong></div></div><h3 style="margin-top:16px">Teilbewertungen</h3>';
 for(const k of keys)h+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;gap:8px"><span>'+esc(labels[keys.indexOf(k)])+'</span><b>'+us(a.parts[k])+'</b></div>';

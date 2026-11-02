@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/home-research-flag/);
 assert.match(html,/research=typeof unityResearchIndicator/); // same indicator in all-stock view
-assert.match(html,/0\.13\.38/);
+assert.match(html,/0\.13\.\d+/);
 const stock={id:'amd',name:'AMD',ticker:'AMD',isin:'US0079031078',providerSymbol:'AMD',exchange:'NASDAQ',currency:'USD'};
 const points=Array.from({length:220},(_,i)=>({date:'2026-01-'+String(i+1),close:100+i*.2}));
 const quote={isin:stock.isin,price:points.at(-1).close,date:'2026-11-02',points};

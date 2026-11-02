@@ -129,6 +129,8 @@ function unityDeepDecision(s,base=null,candidate=null){
     Number.isFinite(a?.rr)&&a.rr>=2&&Number.isFinite(a?.score)&&a.score>=70&&
     Number.isFinite(a?.margin)&&a.margin>=10;
   const investmentReady=eligible&&filing.verified&&valuationReady&&
+    a?.f?.balanceChecked===true&&
+    !(a?.checks?.hard||[]).length&&!(a?.checks?.data||[]).length&&
     !!a?.f?.guidanceChecked&&!!a?.f?.earningsConfirmed&&
     Number.isFinite(earningsDays)&&earningsDays>Date.now()+7*86400000&&
     !!a?.f?.dataSource?.trim()&&!!a?.f?.thesis?.trim()&&!!a?.f?.risks?.trim();

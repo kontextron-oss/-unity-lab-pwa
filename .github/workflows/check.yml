@@ -20,6 +20,7 @@ jobs:
           node --check discovery.js
           node --check fundamentals.js
           node --check analysis.js
+          node --check decision-policy.js
           node --check datafeeds.js
           node --check publicfeed.js
           node --check dashboard.js
@@ -72,6 +73,9 @@ jobs:
 
       - name: Test new-stock onboarding and automatic local history import
         run: node tests/stock-onboarding.cjs
+
+      - name: Test daily technical pullback alert and stale-data safeguards
+        run: node tests/pullback-alert.cjs
 
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs

@@ -25,6 +25,14 @@ Expected public URL after Pages is enabled: https://kontextron-oss.github.io/-un
 - Archived stocks are ignored by active watchlists, trading selectors and analysis rankings and remain archived after restarting the app. The automatic first-20 stock onboarding respects archived entries. Realized gain/loss across already closed and archived stocks remains included in portfolio totals.
 - No schema migration, no new authorization and no deletion of stored financial records.
 
+## UNITY LAB 0.13.45 – pCloud backup on iPhone (user-confirmed handoff)
+
+- **Datensicherung → In pCloud sichern · Teilen** creates a full, timestamped JSON snapshot of all local IndexedDB stores: instruments, quotes, transactions, strategies, audit, fundamentals, histories, analyses and settings. On supported iPhone browsers, Apple's system Share Sheet opens with the newly generated JSON file. The user must **select their private pCloud folder**; a closed share sheet is not proof of successful storage.
+- If file sharing is unavailable or fails, the file is offered for download and can be moved to pCloud through the Files app. Old, date-stamped files are not overwritten. The previous JSON download remains.
+- Restoring uses **Datensicherung → Aus pCloud wiederherstellen**, selects an existing JSON file via iPhone Files/pCloud and uses the existing no-silent-overwrite ID/conflict validation; the maximum incoming JSON backup size is now 50 MB instead of 5 MB to accommodate stored stock histories.
+- **Not yet implemented:** unattended cloud backup, pCloud OAuth token handling, automatic background synchronization, cloud version conflict resolution. Those would require a dedicated, user-authorized pCloud connection and real iOS/PWA integration testing, not a shared public link or hard-coded credential.
+- Public GitHub still hosts nonpersonal application code and public reference-price files; it never automatically receives the user’s local holdings. Google Sheets remains an independent price cross-check and is not silently synced to pCloud.
+
 ## Stock lookup\n\n- Online company-name search uses Wikidata's public MediaWiki API with CORS and no key. Results may be incomplete, ambiguous or outdated.\n- P414/P249 exchange/ticker claims and P946 ISIN are mapped conservatively; historical listings and ambiguous ISINs are not automatically imported.\n- Confirm all stock identifiers and currency against an authoritative exchange before financial use.\n- Online lookup does not provide live quotes, fundamentals, verified listing status, or full ISIN/ticker search.\n- The curated offline catalog and manual entry remain available when offline.\n\n## Current limitations
 
 - Stock quotes and FX rates are manually entered, **not verified live data**.

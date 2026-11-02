@@ -1,7 +1,7 @@
 'use strict';
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
-let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='manual';
+let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='priority';
 const UNITY_FIRST_TWENTY=['ABBN','SU','ETN','ENR','VRT','NDX1','PRY','LR','SIE','BEAN','GEV','NVT','HUBB','PWR','NEX','IFX','JEN','AMD','DWS','TKA'];
 const unityPilotStocks=()=>stocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())).sort((a,b)=>UNITY_FIRST_TWENTY.indexOf(String(a.ticker||'').toUpperCase())-UNITY_FIRST_TWENTY.indexOf(String(b.ticker||'').toUpperCase()));
 async function unityEnsurePilotTwenty(){

@@ -67,6 +67,9 @@ jobs:
       - name: Verify simulated portfolio wealth, gains and invested positions
         run: node tests/portfolio-wealth.cjs
 
+      - name: Validate deep yes/no investment decisions and evidence gates
+        run: node tests/decision-policy.cjs
+
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs
 

@@ -33,7 +33,7 @@ const status=()=>vm.runInContext('unityRecentAddition',box);
 (async()=>{
  // Preloaded provider chart must be saved locally; no network re-request.
  const chart={price:135,currency:'EUR',date:'2026-11-02',points:[{date:'2026-11-02',close:135}]};
- await vm.runInContext('unityFinishStockOnboarding(st,chart)',Object.assign(box,{st:stock}));
+ await vm.runInContext('unityFinishStockOnboarding(st,chart)',Object.assign(box,{st:stock,chart}));
  assert.equal(saved.filter(x=>x.chart).length,1);
  assert.equal(calls,0);
  assert.match(status().label,/indikativ/);

@@ -119,7 +119,7 @@ async function unityIncShare(forceBase=false){
     return;
   }
   unityIncPending={...prepared,offered:false};
-  unityBackupStatus(prepared.file.name+' für UNITY-LAB/01-AENDERUNGEN/ vorbereitet · '+prepared.count+' neue/geänderte, '
+  unityBackupStatus(prepared.file.name+' für UNITY-LAB/01-AENDERUNGEN/ vorbereitet · '+prepared.count+' neue/geänderte, '+
     prepared.removedCount+' entfernte Datensätze. Jetzt „Datei nach pCloud teilen“ antippen.');
   const share=document.getElementById('inc-share');if(share)share.hidden=false;
 }

@@ -8,7 +8,7 @@ const data={
  schemaVersion:1,generatedAt:current,sourceFailures:0,topics:{
   transformers:{label:'Transformatoren',cpv:'31170000',status:'available',
     checkedAt:current,events:[{id:'712345-2026',publishedAt:when,
-      newSincePreviousScan:true,noticeType:'award-notice',title:'New transformer tender',
+      newSincePreviousScan:true,noticeType:'award-notice',winnerSelectedForAtLeastOneLot:true,title:'New transformer tender',
       buyer:'Grid Operator',winner:'Example Supplier',publishedValue:900000,
       currency:'EUR',url:'https://ted.europa.eu/en/notice/-/detail/712345-2026'}]},
   'power-cables':{label:'Stromkabel',cpv:'31320000',status:'available',
@@ -44,6 +44,7 @@ const call=code=>vm.runInContext(code,box);
  assert.match(view,/Neu erfasst/);
  assert.match(view,/keine bestätigte Vergabe an diese Unternehmen/);
  assert.match(view,/Vergabestelle/);
+ assert.match(view,/Mindestens ein Los mit ausgewähltem Gewinner/);
  assert.match(view,/3 Aktien erfasst/);
  assert.match(view,/3 mit mindestens einer Datenlücke/);
  assert.match(view,/bestätigten nächsten Earnings-Termin/);
@@ -59,9 +60,9 @@ const call=code=>vm.runInContext(code,box);
  assert.match(html,/radar:unityCapitalView/);
  assert.match(html,/unityCapitalLoad\(\)/);
  assert.match(html,/unity-cap-reload/);
- assert.match(html,/capital-radar\.js\?v=0\.13\.51/);
- assert.match(sw,/capital-radar\.js\?v=0\.13\.51/);
+ assert.match(html,/capital-radar\.js\?v=0\.13\.52/);
+ assert.match(sw,/capital-radar\.js\?v=0\.13\.52/);
  assert.match(sw,/capital_events\.json/);
- assert.match(sw,/unity-lab-v0\.13\.51/);
+ assert.match(sw,/unity-lab-v0\.13\.52/);
  console.log('Capital radar: official-only TED links, first-seen markers, separate data-readiness, stale evidence veto and mobile navigation passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

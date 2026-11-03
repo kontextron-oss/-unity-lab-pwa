@@ -1,0 +1,50 @@
+'use strict';
+/* Regression test: backup segregation must not change on-disk format or break
+   previously confirmed incremental chains. External pCloud is not directly
+   writable from an unauthenticated static GitHub Pages application. */
+const fs=require('node:fs'),assert=require('node:assert/strict'),vm=require('node:vm');
+const html=fs.readFileSync('index.html','utf8');
+const inc=fs.readFileSync('incremental.js','utf8');
+const readme=fs.readFileSync('README.md','utf8');
+assert.match(html,/function backupView\(\)/);
+assert.match(html,/01-AENDERUNGEN\//);
+assert.match(html,/02-VOLLSICHERUNG\//);
+assert.match(html,/Änderungssicherung wiederherstellen/);
+assert.match(html,/Vollsicherung · zusätzliche Sicherheit/);
+assert.match(html,/Bestehende Änderungssicherungen erkannt/);
+assert.match(html,/alle bisherigen BASIS-\/AENDERUNG-Dateien gemeinsam verschieben/);
+assert.match(html,/id="inc-pcloud"/);
+assert.match(html,/id="inc-share"/);
+assert.match(html,/id="inc-confirm"/);
+assert.match(html,/id="inc-import-file"/);
+assert.match(html,/id="backup-pcloud"/);
+assert.match(html,/id="import-file"/);
+assert.match(html,/UNITY-LAB-VOLLSICHERUNG_/);
+assert.match(html,/UNITY-LAB_BACKUP/);
+assert.match(inc,/UNITY-LAB-AENDERUNGEN-/);
+assert.match(inc,/'-BASIS'/);
+assert.match(inc,/'-AENDERUNG'/);
+assert.match(inc,/format:UNITY_INC_FORMAT/);
+assert.match(inc,/schema:UNITY_INC_SCHEMA/);
+assert.match(inc,/unityIncAssemble\(files\)/);
+assert.match(inc,/parentId:prev\?\.lastBackupId/);
+assert.match(inc,/SHA-256-Prüfsummenfehler/);
+assert.match(html,/01-AENDERUNGEN\/.*BASIS/i);
+assert.match(html,/bisherige Dateien vom Typ UNITY-LAB_BACKUP/);
+assert.match(readme,/Ein-Klick-Automatik/);
+assert.match(readme,/noch keine direkte automatische pCloud-Verbindung/);
+assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.49/);
+const start=html.indexOf('function backupView(){');
+const end=html.indexOf('function render(){',start);
+assert.ok(start>=0&&end>start);
+const code=html.slice(start,end);
+const sandbox={cache:{settings:[]},unityIncPending:null,
+ unityIncSummary:()=>'<small>kein Stand</small>',unityIncBackupState:()=>null};
+vm.createContext(sandbox);vm.runInContext(code,sandbox);
+const view=vm.runInContext('backupView()',sandbox);
+for(const p of ['01-AENDERUNGEN/','02-VOLLSICHERUNG/','inc-pcloud','inc-import-file','import-file'])assert.ok(view.includes(p),p);
+sandbox.unityIncBackupState=()=>({id:'old'});
+const warned=vm.runInContext('backupView()',sandbox);
+assert.match(warned,/Bestehende Änderungssicherungen erkannt/);
+assert.doesNotMatch(view,/Bestehende Änderungssicherungen erkannt/);
+console.log('Backup folder separation: distinct UI, old backup imports, unchanged incremental format, and no unsupported automatic upload claims passed.');

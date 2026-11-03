@@ -21,6 +21,7 @@ FIELDS = [
     "publication-number", "publication-date", "notice-type", "notice-title", "official-language",
     "buyer-name", "buyer-country", "winner-name", "winner-identifier",
     "classification-cpv", "total-value", "total-value-cur",
+    "BT-142-LotResult",
 ]
 # All exact official CPV categories. Query results are only samples (50 per theme).
 TOPICS = {
@@ -126,6 +127,13 @@ def process(notices, cpv, today):
         country = single(obj.get("buyer-country"), 3)
         winner = single(obj.get("winner-name"), 180, original_lang)
         winner_id = single(obj.get("winner-identifier"), 100)
+        lot_result = obj.get("BT-142-LotResult")
+        raw_status = lot_result if isinstance(lot_result, list) else re.split(
+            r"[,;\\s]+", str(lot_result or ""))
+        status_values = {str(x).strip() for x in raw_status if str(x).strip()}
+        # can-standard is only the *type* of outcome notice, and does NOT
+        # prove that every lot is awarded (closed / cancelled results exist).
+        winner_selected = "selec-w" in status_values
         # Multi-company text or missing legal identity: no issuer attribution.
         if ";" in winner or ";" in winner_id:
             winner = ""
@@ -144,11 +152,16 @@ def process(notices, cpv, today):
             "titleLanguage": original_lang if original_lang and title else "",
             "buyer": buyer, "buyerCountry": country, "winner": winner,
             "winnerIdentityVerified": False,
-            "noticeType": "award-notice", "cpv": cpv,
+            "noticeType": "award-notice" if winner_selected else "result-notice-unconfirmed",
+            "winnerSelectedForAtLeastOneLot": winner_selected,
+            "lotResultCode": "selec-w" if winner_selected else "not-confirmed",
+            "cpv": cpv,
             "publishedValue": val, "currency": cur if val is not None else "",
             "source": "EU TED · amtliche Bekanntmachung",
             "url": f"https://ted.europa.eu/en/notice/-/detail/{number}",
-            "interpretation": "Vergebener öffentlicher Auftrag; kein Beweis für eine Umsatzwirkung bei UNITY-Aktien.",
+            "interpretation": ("TED: Gewinner mindestens eines Loses ausgewählt; "
+                               "keine bestätigte Wirkung auf UNITY-Unternehmen." if winner_selected
+                               else "TED: Ergebnisbekanntmachung; Vergabe/Zuschlag nicht bestätigt."),
         })
     return sorted(result, key=lambda x: (x["publishedAt"], x["id"]), reverse=True)
 

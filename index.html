@@ -384,6 +384,7 @@ button[hidden]{display:none!important}
 .unity-backup-details summary{cursor:pointer;font-weight:700;font-size:13px}
 .unity-backup-full{border-left:4px solid #8c99b0}
 .unity-cloud-future{border:1px dashed #b5c2c8}
+.unity-backup-migrate{margin:10px 0;padding:10px;border:1px solid #d9b887;background:#fcf7eb;border-radius:8px;font-size:12px;line-height:1.45;color:#69502a}
 @media(max-width:480px){.unity-backup-folderlist{grid-template-columns:1fr;gap:7px}.unity-backup-folder{padding:9px}}
 </style></head><body><header><div><h1>UNITY LAB <span style="font-size:12px;font-weight:400">0.13.49</span></h1><small>Aktien · Kursverläufe · UNITY-Analyse</small></div><span class="status" id="db-status">Lokale Datenbank wird geöffnet …</span></header><main><nav id="nav"><button data-tab="overview" class="active">Mein Depot</button><button data-tab="stocks">Aktien & Kurse</button><button data-tab="analysis">UNITY-Analyse</button><button data-tab="trades">Simulationsdepot</button><button data-tab="backup">Datensicherung</button></nav><div id="app" aria-live="polite"></div><p class="footer">Unity Lab 0.13.49 · Vergleichs-Beta · Alle Transaktionen sind hypothetisch. Verzögerte Referenzkurse sind verfügbar; kein Echtzeitkursfeed. Keine Anlageberatung oder Orderausführung.</p></main><script>
 'use strict';
@@ -783,7 +784,8 @@ function backupView(){
  '<div class="unity-backup-folderlist">'+
  '<div class="unity-backup-folder"><strong>1 · Änderungssicherung</strong><code>'+folder+'01-AENDERUNGEN/</code><small>BASIS und alle AENDERUNG-Dateien gehören <b>zusammen</b> in diesen Ordner.</small></div>'+
  '<div class="unity-backup-folder"><strong>2 · Vollsicherung</strong><code>'+folder+'02-VOLLSICHERUNG/</code><small>Unabhängige vollständige JSON-Rückfallebene – nicht mit Änderungen mischen.</small></div>'+
- '</div><p class="tiny muted">Diese Unterordner bitte einmal in der privaten pCloud anlegen. Bestehende Dateien nicht einzeln verschieben: Für eine inkrementelle Wiederherstellung müssen BASIS und alle späteren AENDERUNG-Dateien gemeinsam auffindbar bleiben.</p></section>'+
+ '</div><p class="tiny muted">Diese Unterordner bitte einmal in der privaten pCloud anlegen. Bestehende Dateien nicht einzeln verschieben: Für eine inkrementelle Wiederherstellung müssen BASIS und alle späteren AENDERUNG-Dateien gemeinsam auffindbar bleiben.</p>'+
+ (typeof unityIncBackupState==='function'&&unityIncBackupState()?'<p class="unity-backup-migrate"><b>Bestehende Änderungssicherungen erkannt.</b> Beim Wechsel zum neuen Ordner entweder alle bisherigen BASIS-/AENDERUNG-Dateien gemeinsam verschieben oder unten „Neue vollständige BASIS“ auswählen und in 01-AENDERUNGEN/ sichern. Sonst könnte eine spätere Wiederherstellung scheitern.</p>':'')+'</section>'+
  '<section class="panel unity-backup-panel"><h3>01 · Nur Änderungen sichern</h3>'+
  '<p><b>Regelmäßige Sicherung:</b> SHA-256-Prüfung erkennt geänderte Datensätze. Unveränderte Kursreihen werden nicht erneut vollständig gespeichert.</p>'+
  '<p><b>Zielordner:</b> <code>UNITY-LAB/01-AENDERUNGEN/</code></p>'+

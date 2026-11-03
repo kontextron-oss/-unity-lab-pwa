@@ -58,6 +58,8 @@ function unityIncCheckCheckpoint(s){
 async function unityIncPrepare(){
   const state=unityIncBackupState();
   const prev=unityIncCheckCheckpoint(state)?state:null;
+  if(prev&&await unityIncHash(prev.manifest)!==prev.snapshotHash)
+    throw Error('Lokaler Sicherungsindex widersprüchlich. Bitte unabhängige Vollsicherung prüfen.');
   const current=await unityIncLocalSnapshot();
   const changes={},removed={};
   let count=0,removedCount=0;
@@ -95,8 +97,8 @@ async function unityIncPrepare(){
   return {file,snapshot,checkpoint,count,removedCount,base:!prev};
 }
 async function unityIncConfirmSaved(){
-  if(!unityIncPending)throw Error('Keine unbestätigte Änderungssicherung vorhanden.');
-  if(!confirm('Ist die Datei "'+unityIncPending.file.name+'" tatsächlich im privaten pCloud-Ordner gespeichert?\n\nNur mit „OK“ setzen wir den Prüfpunkte-Zähler fort. Eine fehlende Datei würde spätere Wiederherstellungen verhindern.'))return;
+  if(!unityIncPending||!unityIncPending.offered)throw Error('Noch keine in pCloud bereitgestellte Änderungssicherung vorhanden.');
+  if(!confirm('Ist die Datei "'+unityIncPending.file.name+'" tatsächlich im privaten pCloud-Ordner gespeichert?\n\nNur mit „OK“ setzen wir den Sicherungsstand fort. Eine fehlende Datei würde spätere Wiederherstellungen verhindern.'))return;
   // Do not count this confirmation as a new data mutation: state lives outside snapshots.
   await put('settings',unityIncPending.checkpoint);
   const saved=unityIncPending;
@@ -107,7 +109,7 @@ async function unityIncConfirmSaved(){
 }
 async function unityIncShare(){
   if(unityIncPending){
-    unityBackupStatus('Die Datei '+unityIncPending.file.name+' ist noch nicht bestätigt. Bitte in pCloud prüfen und anschließend „Speicherung bestätigen“ wählen.');
+    unityBackupStatus('Die Datei '+unityIncPending.file.name+' ist bereits vorbereitet. Bitte „Datei nach pCloud teilen“ wählen oder die Speicherung anschließend bestätigen.');
     return;
   }
   unityBackupStatus('Vergleiche lokale Daten anhand von SHA-256-Prüfsummen …');
@@ -116,30 +118,48 @@ async function unityIncShare(){
     unityBackupStatus('Keine Änderungen seit der letzten bestätigten Sicherung. Keine neue Datei erforderlich.');
     return;
   }
+  unityIncPending={...prepared,offered:false};
+  unityBackupStatus(prepared.file.name+' vorbereitet · '+prepared.count+' neue/geänderte, '+
+    prepared.removedCount+' entfernte Datensätze. Jetzt „Datei nach pCloud teilen“ antippen.');
+  const share=document.getElementById('inc-share');if(share)share.hidden=false;
+}
+function unityIncSharePrepared(){
+  // CRITICAL for iPhone Safari: navigator.share MUST be invoked synchronously
+  // from a direct click, not after an asynchronous IndexedDB/hash calculation.
+  const prepared=unityIncPending;
+  if(!prepared)throw Error('Zuerst die Änderungssicherung vorbereiten.');
+  if(prepared.offered)throw Error('Datei wurde bereits zum Speichern bereitgestellt.');
   const file=prepared.file;
-  const kind=prepared.base?'erste Basissicherung':'Änderungssicherung';
-  unityIncPending=prepared;
-  if(typeof navigator!=='undefined'&&typeof navigator.share==='function'&&
-    (typeof navigator.canShare!=='function'||navigator.canShare({files:[file]}))){
+  const success=()=>{
+    prepared.offered=true;
+    const b=document.getElementById('inc-confirm');if(b)b.hidden=false;
+    const x=document.getElementById('inc-share');if(x)x.hidden=true;
+    unityBackupStatus(file.name+' bereitgestellt. In pCloud den privaten Sicherungsordner wählen und die Datei dort prüfen; danach „Speicherung bestätigen“.');
+  };
+  let supported=false;
+  try{supported=typeof navigator!=='undefined'&&typeof navigator.share==='function'&&
+    (typeof navigator.canShare!=='function'||navigator.canShare({files:[file]}))}
+  catch(e){supported=false}
+  if(supported){
     try{
-      await navigator.share({files:[file],title:'UNITY LAB · '+kind,
+      const share=navigator.share({files:[file],title:'UNITY LAB · Änderungssicherung',
         text:'Diese Datei im selben privaten pCloud-Sicherungsordner wie die vorherigen UNITY-LAB-CLOUD-Dateien ablegen.'});
-      unityBackupStatus(file.name+' bereitgestellt · '+prepared.count+' neue/geänderte, '+
-        prepared.removedCount+' entfernte Datensätze. Nach Kontrolle in pCloud „Speicherung bestätigen“ wählen.');
-      const b=document.getElementById('inc-confirm');if(b)b.hidden=false;
-      return;
-    }catch(e){
-      if(e?.name==='AbortError'){
-        unityIncPending=null;
-        unityBackupStatus('Teilen abgebrochen. Der letzte bestätigte Sicherungsstand wurde nicht verändert.');
-        return;
-      }
-      console.warn('Inkrementelle Sicherung: Teilen nicht verfügbar',e);
-    }
+      return Promise.resolve(share).then(success).catch(e=>{
+        if(e?.name==='AbortError'){
+          unityBackupStatus('Teilen abgebrochen. Die vorbereitete Datei bleibt erhalten und kann erneut geteilt werden.');
+          return;
+        }
+        console.warn('Inkrementelle Sicherung: Teilen nicht verfügbar',e);
+        unityDownloadBackup(file);
+        success();
+        unityBackupStatus('Datei als Download bereitgestellt. Bitte zuerst nach pCloud übertragen, dann Speicherung bestätigen.');
+      });
+    }catch(e){console.warn('iOS-Teilen nicht möglich',e)}
   }
   unityDownloadBackup(file);
-  unityBackupStatus(file.name+' als Download bereitgestellt. Datei in denselben privaten pCloud-Ordner legen; erst danach „Speicherung bestätigen“ wählen.');
-  const b=document.getElementById('inc-confirm');if(b)b.hidden=false;
+  success();
+  unityBackupStatus('Datei als Download bereitgestellt. Bitte zuerst nach pCloud übertragen, dann Speicherung bestätigen.');
+  return Promise.resolve();
 }
 function unityIncSummary(){
   const state=unityIncBackupState();

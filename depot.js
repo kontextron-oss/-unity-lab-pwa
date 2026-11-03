@@ -98,7 +98,7 @@ function depotOverview(){
   const realized=(cache.instruments||[]).reduce((n,s)=>n+depotLedger(s.id).realized,0); // also include archived completed trades
   let h='<section class="panel depot-panel" id="depot-overview"><div class="depot-title"><h2>Mein Depot · Überblick</h2><span class="depot-sim">Simulation · lokal gespeichert</span></div>'+
     '<div class="depot-totals"><div><small>Gesamtvermögen inklusive freiem Kapital</small><strong>'+depotMoney(capital.total)+'</strong></div><div><small>Gesamtgewinn / -verlust</small><strong class="'+(capital.gain>0?'positive':capital.gain<0?'negative':'')+'">'+depotSignedMoney(capital.gain)+'</strong><small>'+depotSignedPct(capital.gainPct)+' auf Nettoeinzahlungen</small></div><div><small>Aktueller Depotwert</small><strong>'+depotMoney(value)+'</strong></div><div><small>Einstand offener Positionen</small><strong>'+depotMoney(cost)+'</strong></div><div><small>Buchgewinn / -verlust</small><strong>'+depotSignedMoney(value-cost)+'</strong></div><div><small>Realisierter Gewinn / Verlust</small><strong>'+depotSignedMoney(realized)+'</strong></div></div>';
-  h+='<section class="panel" id="depot-capital"><h3>Fiktives Kapital</h3><div class="depot-totals"><div><small>Einzahlungen gesamt</small><strong>'+depotMoney(capital.funded)+'</strong></div><div><small>Frei verfügbar</small><strong>'+depotMoney(capital.free)+'</strong></div><div><small>Angelegt · offene Positionen</small><strong>'+depotMoney(capital.invested)+'</strong></div><div><small>Fiktives Gesamtvermögen</small><strong>'+depotMoney(capital.total)+'</strong></div></div><form id="capital-form"><label>Fiktives Startkapital in EUR<input name="capital" type="number" min="0" step="0.01" value="'+(capital.opening?String(capital.opening):'')+'" placeholder="z. B. 10000"></label><button class="secondary" type="submit">Startkapital speichern</button></form><form id="deposit-form"><label>Weitere fiktive Einzahlung in EUR<input name="amount" type="number" min="0.01" step="0.01" required placeholder="z. B. 500"></label><label>Notiz (optional)<input name="note" maxlength="120" placeholder="z. B. Monatsrate"></label><button class="primary" type="submit">Mehr Geld einzahlen</button></form><h3 style="margin-top:18px">Einzahlungsverlauf</h3>'+depotCashHistory()+'<p class="tiny muted">Testkäufe einschließlich Gebühren mindern das freie Kapital. Testverkäufe erhöhen es um den Nettoerlös. Ohne Startkapital oder Einzahlung bleibt das Simulationsdepot unbegrenzt.</p></section>';
+  h+='<section class="panel" id="depot-capital"><h3>Fiktives Kapital</h3><div class="depot-totals"><div><small>Einzahlungen gesamt</small><strong>'+depotMoney(capital.funded)+'</strong></div><div><small>Frei verfügbar</small><strong>'+depotMoney(capital.free)+'</strong></div><div><small>Angelegt · offene Positionen</small><strong>'+depotMoney(capital.invested)+'</strong></div><div><small>Fiktives Gesamtvermögen</small><strong>'+depotMoney(capital.total)+'</strong></div></div><form id="capital-form"><label>Fiktives Startkapital in EUR<input name="capital" type="number" min="0" step="0.01" value="'+(capital.opening?String(capital.opening):'')+'" placeholder="z. B. 10000"></label><button class="secondary" type="submit">Startkapital speichern</button></form><form id="deposit-form"><label>Weitere fiktive Einzahlung in EUR<input name="amount" type="number" min="0.01" step="0.01" required placeholder="z. B. 500"></label><label>Notiz (optional)<input name="note" maxlength="120" placeholder="z. B. Monatsrate"></label><button class="primary" type="submit">Mehr Geld einzahlen</button></form><h3 style="margin-top:18px">Einzahlungsverlauf</h3>'+depotCashHistory()+'<p class="tiny muted">Testkäufe einschließlich Gebühren mindern das freie Kapital. Testverkäufe erhöhen es um den Nettoerlös. Ohne Startkapital oder Einzahlung bleibt das Simulationsdepot unbegrenzt.</p></section><section class="panel depot-reset-panel"><h3>Testlauf zurücksetzen</h3><p class="muted">Setzt ausschließlich das aktive Simulationsdepot zurück. Deine Aktienauswahl, Kurse, Analysen und die bisherigen Testbuchungen bleiben erhalten.</p><div class="actions"><button type="button" class="danger" id="depot-reset-all">Aktives Simulationsdepot auf null setzen</button></div><p class="tiny muted">Der aktuelle Testlauf wird nicht gelöscht, sondern als archivierter Verlauf markiert. Das fiktive Startkapital bleibt als neuer Ausgangsbetrag verfügbar; zusätzliche Einzahlungen und Testkäufe werden aus dem aktiven Lauf herausgenommen.</p></section>';
   h+='<div class="depot-range" aria-label="Zeitraum der Depot-Kursverläufe">'+[['1W','Woche'],['1M','Monat'],['1Y','Jahr'],['3Y','3 Jahre'],['6Y','6 Jahre']].map(([r,label])=>'<button type="button" data-depot-range="'+r+'" class="'+(depotRange===r?'active':'')+'">'+label+'</button>').join('')+'</div>';
   if(!pos.length)h+='<p class="muted">Noch keine simulierten Depotpositionen. Deine tatsächlichen Depotbestände sind nicht verbunden. Du kannst Aktien im Simulationsdepot erfassen; vorhandene Daten bleiben unverändert.</p>';
   else{
@@ -131,7 +131,7 @@ function depotDetail(id){
     '<div class="depot-totals"><div><small>Stückzahl</small><strong>'+number(p.qty,4)+'</strong></div><div><small>Offener Einstand</small><strong>'+depotMoney(p.cost)+'</strong></div><div><small>Marktwert</small><strong>'+depotMoney(p.value)+'</strong></div><div><small>Realisierte Gewinne</small><strong>'+depotMoney(p.realized)+'</strong></div></div>';
   if(item)h+=unityChartPanel(item);else h+='<p class="muted">Kein historischer Börsenkurs verfügbar. Der Kursverlauf wird nicht geschätzt.</p>';
   h+='<h3>Käufe und Verkäufe</h3>'+depotTradeHistory(id);
-  h+='<p class="tiny muted">Die Kurve zeigt den Börsenkurs der Aktie, nicht die Entwicklung deines persönlichen Depotwerts. Käufe und Verkäufe werden unten separat aufgeführt.</p></section>';
+  h+='<p class="tiny muted">Die Kurve zeigt den Börsenkurs der Aktie, nicht die Entwicklung deines persönlichen Depotwerts. Käufe und Verkäufe werden unten separat aufgeführt.</p><div class="actions"><button type="button" class="danger" data-depot-reset-position="'+esc(s.id)+'">Diese Position auf null setzen</button></div><p class="tiny muted">Die zugehörigen Testkäufe und -verkäufe werden nicht gelöscht, sondern als archivierter Testverlauf erhalten. '+esc(s.name)+' bleibt in deiner Aktienauswahl.</p></section>';
   return h;
 }
 function depotTradeHistory(id=null){
@@ -145,7 +145,7 @@ function depotTradeHistory(id=null){
     const sell=t.type==='SELL',amount=Number(t.amount)*Number(t.fx),fee=Number(t.fee)||0,net=amount+(sell?-fee:fee);
     h+='<div class="depot-history-row"><span class="depot-history-icon '+(sell?'sell':'buy')+'">'+(sell?'−':'+')+'</span>'+
       '<span class="depot-history-desc"><b>'+esc(s?.name||'Unbekannt')+'</b><small>'+esc(sell?'Verkauf':'Kauf')+' · '+number(t.quantity,4)+' Stück · '+number(t.price,2)+' '+esc(s?.currency||'')+' · Gebühr '+depotMoney(fee)+'</small>'+(t.note?'<small>'+esc(t.note)+'</small>':'')+(t.decisionSnapshot?'<small class="depot-decision-at-trade">UNITY-Befund bei Testhandel: '+esc(t.decisionSnapshot.action)+' · Technikindex '+(Number.isFinite(t.decisionSnapshot.technicalIndex)?t.decisionSnapshot.technicalIndex+'/100':'nicht verfügbar')+' · Kursdaten '+esc(t.decisionSnapshot.quoteDate||'nicht verfügbar')+'</small>':'')+'</span>'+
-      '<span class="depot-history-amount">'+(sell?'+':'−')+depotMoney(net)+(t.voidedAt?'<small>Storniert</small>':'')+'</span></div>';
+      '<span class="depot-history-amount">'+(sell?'+':'−')+depotMoney(net)+(t.voidedAt?'<small>'+(t.voidReason==='DEPOT_RESET_ARCHIVE'?'Archiviert im Test-Reset':'Storniert')+'</small>':'')+'</span></div>';
   }
   return h+'</div>';
 }
@@ -159,11 +159,37 @@ function depotSellForm(){
     '<button class="primary" type="submit">Testverkauf prüfen</button></form></div>';
 }
 
+async function depotArchiveTransactions(predicate,label){
+  const records=(cache.transactions||[]).filter(t=>!t.voidedAt&&predicate(t));
+  if(!records.length){alert('Für '+label+' gibt es keine aktiven Testbuchungen.');return false}
+  const noun=records.length===1?'Testbuchung':'Testbuchungen';
+  if(!confirm(label+': '+records.length+' '+noun+' werden aus dem aktiven Testdepot entfernt und als archivierter Testverlauf erhalten. Aktienliste, Kurse, Analysen und Entscheidungsschnappschüsse bleiben unverändert. Fortfahren?'))return false;
+  const archivedAt=new Date().toISOString(),batchId='depot-reset-'+id();
+  for(const record of records)await put('transactions',{...record,voidedAt:archivedAt,voidReason:'DEPOT_RESET_ARCHIVE',resetBatchId:batchId});
+  await audit('DEPOT_RESET_ARCHIVE',batchId,label+' · '+records.length+' '+noun+' archiviert');
+  await refresh();
+  alert(label+' wurde auf null gesetzt. Der frühere Testverlauf ist archiviert und bleibt in Sicherungen erhalten.');
+  return true;
+}
+async function depotResetPosition(instrumentId){
+  const s=stocks().find(x=>x.id===instrumentId);
+  if(!s)throw Error('Aktie nicht gefunden.');
+  const done=await depotArchiveTransactions(t=>t.instrumentId===instrumentId&&(t.type==='BUY'||t.type==='SELL'),'Position '+s.name);
+  if(done)depotSelectedId='';
+}
+async function depotResetAll(){
+  const types=new Set(['BUY','SELL','DEPOSIT','WITHDRAW']);
+  const done=await depotArchiveTransactions(t=>types.has(t.type),'Aktives Simulationsdepot');
+  if(done)depotSelectedId='';
+}
+
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.depotRange){depotRange=b.dataset.depotRange;render();return}
   if(b.dataset.depotOpen){depotSelectedId=b.dataset.depotOpen;render();document.getElementById('depot-detail')?.scrollIntoView({behavior:'smooth',block:'start'})}
   if(b.id==='depot-close'){depotSelectedId='';render()}
+  if(b.dataset.depotResetPosition){depotResetPosition(b.dataset.depotResetPosition).catch(err=>alert(err.message||String(err)));return}
+  if(b.id==='depot-reset-all'){depotResetAll().catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.tabTarget){activeTab=b.dataset.tabTarget;render();document.getElementById('app')?.scrollIntoView({block:'start'})}
 });
 document.addEventListener('submit',async e=>{

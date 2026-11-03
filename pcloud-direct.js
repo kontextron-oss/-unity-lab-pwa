@@ -6,7 +6,7 @@
  Pages is static and cannot hold server secrets. All writes fail closed.
  */
 const UNITY_PCLOUD_GATEWAY = ''; // Intentionally disabled until same-origin private gateway is deployed.
-let unityCloudConnected=false,unityCloudChecked=false,unityCloudBusy=false,unityCloudStatusMessage='';
+let unityCloudConnected=false,unityCloudChecked=false,unityCloudBusy=false,unityCloudStatusMessage='',unityCloudCsrf='';
 function unityCloudIsConfigured(){
   if(!UNITY_PCLOUD_GATEWAY)return false;
   // Avoid third-party cookie blocking and token leakage: only same origin.
@@ -41,10 +41,13 @@ async function unityCloudCheck(){
       credentials:'include',cache:'no-store',headers:{'Accept':'application/json'}});
     if(!r.ok)throw Error('HTTP '+r.status);
     const data=await r.json();
-    unityCloudConnected=data?.connected===true;
+    unityCloudConnected=data?.connected===true &&
+      typeof data.csrfToken==='string' && /^[A-Za-z0-9_-]{20,200}$/.test(data.csrfToken);
+    unityCloudCsrf=unityCloudConnected?data.csrfToken:'';
     unityCloudStatusMessage=unityCloudConnected?'Privater pCloud-Zugang autorisiert.':'Ersteinrichtung: einmalige Freigabe notwendig.';
   }catch(_){
     unityCloudConnected=false;
+    unityCloudCsrf='';
     unityCloudStatusMessage='Die private Verbindung ist derzeit nicht erreichbar. Kein Upload durchgeführt.';
   }
   unityCloudChecked=true;
@@ -74,7 +77,7 @@ function unityCloudReceiptValid(receipt,prepared,rawHash){
 }
 async function unityCloudUpload(){
   if(!unityCloudIsConfigured())throw Error('Direkte pCloud-Verbindung ist noch nicht eingerichtet.');
-  if(!unityCloudConnected)throw Error('Bitte pCloud zunächst einmal autorisieren.');
+  if(!unityCloudConnected||!unityCloudCsrf)throw Error('Bitte pCloud zunächst einmal autorisieren.');
   if(unityCloudBusy)throw Error('Eine Sicherung läuft bereits.');
   if(unityIncPending)throw Error('Eine manuelle Sicherung ist noch unbestätigt. Bitte diese zuerst prüfen.');
   unityCloudBusy=true;
@@ -99,7 +102,7 @@ async function unityCloudUpload(){
     // The browser never sees an OAuth token.
     const r=await fetch(unityCloudEndpoint('/backups/incremental'),{
       method:'POST',credentials:'include',cache:'no-store',body,
-      headers:{'Accept':'application/json'}});
+      headers:{'Accept':'application/json','X-UNITY-CSRF':unityCloudCsrf}});
     if(!r.ok)throw Error('Cloud-Übertragung abgebrochen (HTTP '+r.status+').');
     const receipt=await r.json();
     if(!unityCloudReceiptValid(receipt,prepared,bytes))

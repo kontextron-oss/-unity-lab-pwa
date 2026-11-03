@@ -1,3 +1,46 @@
+## UNITY LAB 0.13.51 – Neues Kapital- und Ereignisradar (EU TED)
+
+Die mobile App hat einen sechsten Hauptbereich **Kapitalradar**. Dort werden
+veröffentlichte europäische Vergabebekanntmachungen (Tenders Electronic Daily,
+TED Search API v3) als erste **amtliche Ereignisquelle** angezeigt, mit
+eindeutiger ID, Veröffentlichungsdatum, Original-Link, Quelle, gegebenenfalls
+publiziertem Verfahrenswert und eventuell genanntem Auftragnehmer.
+
+- Erster automatischer Pilot: **Transformatoren (CPV 31170000)**,
+  **Stromkabel (31320000)**, **Kühl-/Wärmetauschtechnik (42510000)**.
+  Die Recherche umfasst ausschließlich eine **begrenzte Stichprobe**
+  (je höchstens 50 jüngste Treffer innerhalb des Suchfensters,
+  davon maximal 25 angezeigt), keine komplette Branchenstatistik.
+- Die Datenpipeline `scripts/refresh_capital_events.py` läuft per
+  `.github/workflows/capital-events.yml` werktäglich und veröffentlicht
+  **nur amtliche Daten**, niemals private Aktienlisten, Käufe oder Token.
+- Erst nach einer zweiten erfolgreichen Aktualisierung können neu entdeckte
+  Meldungen als **„Neu erfasst“** erscheinen. Ein erstmaliger Komplettabruf
+  wird nicht fälschlich als sprunghafter neuer Auftragseingang dargestellt.
+- Bei Quellenfehlern bleiben frühere Daten intern als Archiv erhalten.
+  Die App kennzeichnet veraltete Daten und zeigt sie **nicht als
+  aktuelles Ereignissignal** an.
+- **Kein Nachweis von Aktienkäufen, institutionellen Kapitalzuflüssen,
+  einzelnen Unternehmensaufträgen oder neuen Umsätzen.**
+  Beobachtete mögliche Branchenprofiteure werden ausschließlich als
+  **Beobachtungsgruppe** genannt, ausdrücklich nicht als Auftragnehmer.
+  Sämtliche Vergabewerte können mehrere Lose umfassen. Keine Addition
+  zu angeblichen Investitionssummen.
+- Daneben erscheint eine **Datenbereitschaftsübersicht der gesamten
+  aktiven UNITY-Liste**: je Aktie prüfen, ob verlässliche Kursdaten,
+  ein aktueller EU-Finanzberichts-Pilot und ein bestätigter nächster
+  Earnings-Termin vorhanden sind. Fehlende Daten führen nicht zu
+  künstlich schlechten Unternehmensscores.
+- Der bisherige UNITY-Score und sämtliche simulierten Depottransaktionen
+  bleiben unverändert. Die neue Ereignisquelle **gibt niemals direkt
+  eine Kauf- oder Verkaufsentscheidung frei**. Weitere institutionelle
+  Daten (SEC 13F, Stimmrechtsmitteilungen, ETF-Fondsflüsse) stehen als
+  eigene spätere Ebene an; SEC-Direktzugriffe von GitHub sind aktuell
+  nicht zuverlässig erreichbar.
+- Verifizierte Quelle und CPV-Katalog:
+  https://docs.ted.europa.eu/api/latest/search.html
+  https://docs.ted.europa.eu/eforms/latest/reference/code-lists/cpv.html
+
 ## UNITY LAB 0.13.50 – Direkter pCloud-Upload: vorbereitete App-Schnittstelle
 
 Die App hat nun einen getesteten **Ein-Klick-Upload-Client** (`pcloud-direct.js`).

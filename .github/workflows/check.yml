@@ -20,6 +20,7 @@ jobs:
           node --check discovery.js
           node --check fundamentals.js
           node --check research.js
+          node --check capital-radar.js
           node --check analysis.js
           node --check decision-policy.js
           node --check datafeeds.js
@@ -88,6 +89,12 @@ jobs:
 
       - name: Validate SEC official-source parser and stale fallback
         run: python3 -m unittest discover -s tests -p 'test_research.py'
+
+      - name: Validate official capital procurement radar on iPhone
+        run: node tests/capital-radar.cjs
+
+      - name: Validate EU TED collector, exact procurement CPV identity and stale-source veto
+        run: python3 -m unittest discover -s tests -p 'test_capital_events.py'
 
       - name: Verify direct pCloud upload client fails closed without gateway and receipt
         run: node tests/pcloud-direct.cjs

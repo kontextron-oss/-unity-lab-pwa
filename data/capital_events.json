@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "",
+  "source": "Amtliche EU-Veröffentlichungen · TED Search API v3",
+  "sourceUrl": "https://docs.ted.europa.eu/api/latest/search.html",
+  "sourceFailures": 3,
+  "licenseNote": "Quelle: Europäische Union, Tenders Electronic Daily (TED).",
+  "coverage": "3 CPV-Themen, je höchstens 50 Treffer in 45 Tagen, keine Vollerhebung",
+  "kind": "public-procurement-events-not-equity-fund-flows",
+  "topics": {
+    "transformers": {
+      "label": "Transformatoren",
+      "cpv": "31170000",
+      "context": "Europäische Netztechnik und Transformatoren",
+      "status": "unavailable",
+      "checkedAt": "",
+      "querySince": "",
+      "noticeType": "award-notice",
+      "sampleSize": 0,
+      "newSincePreviousScan": 0,
+      "totalMatchingNotices": null,
+      "isComplete": false,
+      "events": [],
+      "warning": "Erster tatsächlicher TED-Suchlauf steht noch aus; keine Brancheninformation bestätigt."
+    },
+    "power-cables": {
+      "label": "Stromkabel und Netzverbindungen",
+      "cpv": "31320000",
+      "context": "Europäische Kabel- und Netzbeschaffung",
+      "status": "unavailable",
+      "checkedAt": "",
+      "querySince": "",
+      "noticeType": "award-notice",
+      "sampleSize": 0,
+      "newSincePreviousScan": 0,
+      "totalMatchingNotices": null,
+      "isComplete": false,
+      "events": [],
+      "warning": "Erster tatsächlicher TED-Suchlauf steht noch aus; keine Brancheninformation bestätigt."
+    },
+    "cooling": {
+      "label": "Kühl- und Wärmetauschtechnik",
+      "cpv": "42510000",
+      "context": "Gebäude- und technische Kühl-/Wärmetechnik; nicht automatisch Rechenzentren",
+      "status": "unavailable",
+      "checkedAt": "",
+      "querySince": "",
+      "noticeType": "award-notice",
+      "sampleSize": 0,
+      "newSincePreviousScan": 0,
+      "totalMatchingNotices": null,
+      "isComplete": false,
+      "events": [],
+      "warning": "Erster tatsächlicher TED-Suchlauf steht noch aus; keine Brancheninformation bestätigt."
+    }
+  }
+}

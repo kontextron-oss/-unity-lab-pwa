@@ -74,6 +74,11 @@ const cloneFile=async(file,transform)=>{
  assert.equal(shared.length,2);
  await call('unityIncConfirmSaved()');
  assert.equal(await call('unityIncPrepare()'),null);
+ const forcedBase=await call('unityIncPrepare(true)');
+ assert.equal(forcedBase.base,true);
+ assert.equal(forcedBase.snapshot.parentId,null);
+ assert.ok(forcedBase.count>delta.count);
+ assert.equal(await call('unityIncPrepare()'),null); // ordinary incremental cursor remains
  const savedDelta=shared[1];
  box.savedBase=savedBase;box.savedDelta=savedDelta;
  const rebuilt=await call('unityIncAssemble([savedDelta,savedBase])');
@@ -107,6 +112,7 @@ const cloneFile=async(file,transform)=>{
  const html=fs.readFileSync('index.html','utf8');
  assert.match(html,/id="inc-pcloud"/);
  assert.match(html,/id="inc-share"/);
+ assert.match(html,/id="inc-new-base"/);
  assert.match(html,/if\(b\.id==='inc-share'\)await unityIncSharePrepared/);
  assert.match(html,/id="inc-confirm"/);
  assert.match(html,/id="inc-import-file"/);

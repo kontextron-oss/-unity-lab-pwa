@@ -1,3 +1,45 @@
+## UNITY LAB 0.13.53 – Automatischer Entscheidungsmoderator
+
+Die App zeigt nun im **Kapitalradar** eine transparente Priorisierung
+aller aktiven Aktien. Höchstens vier Titel erscheinen als Favoriten für
+die nächste **vertiefte Prüfung**; die komplette Masterliste bleibt
+ausklappbar. Jede UNITY-Tiefenanalyse erhält die identische Prüfung.
+
+Die drei Analyseebenen werden bewusst getrennt:
+1. **Langfristig:** Primärquellen/Unternehmensqualität und verifizierte
+   Bewertung aus dem bestehenden UNITY-Entscheidungsmodell;
+   fehlende Ergebnisse nicht schätzen.
+2. **Mittelfristig:** überprüfte Schlusskurse, SMA50/200, RSI,
+   21/63/252-Handelstage, technische Einstiegskorridore.
+3. **Kurzfristig:** ausschließlich beobachtete Preisreaktion,
+   5-Tage-Momentum, Abstand zur SMA50, 20-Tage-Volatilität und
+   Volumenrelativstärke, sofern 21 reale Volumenwerte verfügbar sind.
+
+**Kein erfundenes Social-Media-Sentiment und keine erfundenen
+institutionellen Mittelzuflüsse.** Neue amtliche Unternehmensmeldungen
+gelten nur als neutraler Prüfhinweis. Stimmung und Aufmerksamkeit
+werden ausdrücklich nicht verwechselt: Eine starke Überdehnung,
+naher Earnings-Termin oder dokumentiertes RR unter 2:1 verhindert
+eine positive technische Favorisierung. Echte Handelsorders sind
+ausgeschlossen. Die bestehende UNITY-Tiefenanalyse bleibt die
+entscheidende Instanz für vollständige Quellen-, Bewertungs- und
+Risiko-Gates.
+
+Die angezeigte **technische Prüfpriorität (0–100)** ist nur eine
+Reihenfolge für weitergehende Untersuchungen, **keine**
+Erfolgswahrscheinlichkeit, Anlageempfehlung oder ein Ersatz des
+fundamentalen UNITY-Investmentscores. Fehlende Informationen senken
+die Konfidenz und können eine Kaufentscheidung verhindern, sie
+werden nicht als wirtschaftliche Schwäche ausgegeben.
+Quellen- und Entscheidungsgrenzen sind in jeder Detailkarte sichtbar.
+
+Hintergrund: ESMA 2024 fand für Social-Media-Sentiment hauptsächlich
+kurzlebige Zusammenhänge mit Kursen
+(https://www.esma.europa.eu/sites/default/files/2024-04/ESMA50-524821-3157_Risk_Article_Social_Media_sentiment_influence_on_EU_equity_prices.pdf).
+Cookson et al. 2024 unterscheiden Aufmerksamkeit und Stimmung als
+unterschiedliche Informationsdimensionen
+(https://www.sciencedirect.com/science/article/pii/S0304405X2400093X).
+
 ## UNITY LAB 0.13.52 – Vergabeergebnisse fachlich eindeutig
 
 EU-TED-Bekanntmachungen vom Typ `can-standard` sind nicht automatisch

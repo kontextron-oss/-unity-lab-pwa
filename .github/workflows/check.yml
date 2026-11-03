@@ -23,6 +23,7 @@ jobs:
           node --check capital-radar.js
           node --check analysis.js
           node --check decision-policy.js
+          node --check decision-cockpit.js
           node --check datafeeds.js
           node --check publicfeed.js
           node --check dashboard.js
@@ -47,6 +48,9 @@ jobs:
           assert "indexedDB.open('unity-lab',3)" in s
           PY
           node --check /tmp/unity-inline.js
+
+      - name: Test decision cockpit evidence and psychology veto
+        run: node tests/decision-cockpit.cjs
 
       - name: Test comparative dashboard and missing-data veto
         run: node tests/dashboard.cjs

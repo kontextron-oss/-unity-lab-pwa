@@ -44,6 +44,8 @@ const cloneFile=async(file,transform)=>{
  assert.equal(base.snapshot.changes.histories.length,1);
  assert.equal(base.snapshot.changes.settings[0].record.amount,9000);
  await call('unityIncShare()');
+ assert.equal(shared.length,0);
+ await call('unityIncSharePrepared()');
  assert.equal(shared.length,1);
  assert.equal(visible.hidden,false);
  assert.equal(data.settings.some(x=>x.id==='unity-lab-incremental-checkpoint-v1'),false);
@@ -67,6 +69,8 @@ const cloneFile=async(file,transform)=>{
  assert.equal(delta.snapshot.parentHash,JSON.parse(await savedBase.text()).snapshotHash);
  assert.ok(delta.file.size<savedBase.size*.8,'incremental file should be materially smaller');
  await call('unityIncShare()');
+ assert.equal(shared.length,1);
+ await call('unityIncSharePrepared()');
  assert.equal(shared.length,2);
  await call('unityIncConfirmSaved()');
  assert.equal(await call('unityIncPrepare()'),null);
@@ -102,6 +106,8 @@ const cloneFile=async(file,transform)=>{
  assert.ok(refreshes>=3);
  const html=fs.readFileSync('index.html','utf8');
  assert.match(html,/id="inc-pcloud"/);
+ assert.match(html,/id="inc-share"/);
+ assert.match(html,/if\(b\.id==='inc-share'\)await unityIncSharePrepared/);
  assert.match(html,/id="inc-confirm"/);
  assert.match(html,/id="inc-import-file"/);
  assert.match(html,/if\(b\.id==='inc-import'\)await unityIncRestore/);

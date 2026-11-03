@@ -181,10 +181,9 @@ function unityPositionMonitor(s){
   // A new-entry result is not an exit condition for an existing position.
   // Reducing/exiting requires explicit, source-bound deterioration evidence.
   let issuerRisk=null;
-  try{issuerRisk=typeof unityFundPilotItem==='function'?unityFundPilotItem(s)?.decisionEvidence?.positionRisk||null:null}catch(_){}
+  try{issuerRisk=typeof unityIssuerDecisionEvidence==='function'?unityIssuerDecisionEvidence(s)?.positionRisk||null:null}catch(_){}
   const fundamentalExit=issuerRisk?.verified===true&&
-    ['guidance-cut','thesis-broken','fundamental-deterioration'].includes(String(issuerRisk.kind||''))&&
-    /^https:\/\//.test(String(issuerRisk.sourceUrl||''));
+    ['guidance-cut','thesis-broken','fundamental-deterioration'].includes(String(issuerRisk.kind||''));
   let kind='data',label='Daten prüfen',reason='Für die bestehende Testposition fehlt eine ausreichend aktuelle, vollständige Beurteilung.';
   if(fundamentalExit){
     kind='exit';label='Ausstieg im Testdepot erwägen';

@@ -1,3 +1,31 @@
+## UNITY LAB 0.13.50 – Direkter pCloud-Upload: vorbereitete App-Schnittstelle
+
+Die App hat nun einen getesteten **Ein-Klick-Upload-Client** (`pcloud-direct.js`).
+Er sendet nach autorisiertem Login die aktuelle inkrementelle Sicherung
+an eine HTTPS-Schnittstelle, überprüft den vom Server bestätigten pCloud-
+Dateinamen, Dateigröße, Backup-ID und SHA-256-Hash und schreibt den lokalen
+Sicherungs-Cursor **nur nach einer bestätigten Cloud-Speicherung** fort.
+Ein fehlerhafter Upload, ein veralteter lokaler Stand oder ein nicht geprüftes
+Serverergebnis wird ausdrücklich nicht als erfolgreiche Sicherung angezeigt.
+
+**Wichtig:** Der Client ist aus Sicherheitsgründen noch **nicht aktiviert**:
+`UNITY_PCLOUD_GATEWAY = ''`. Das öffentliche GitHub Pages stellt
+keine sichere OAuth-Sitzung, geheime Tokens oder geschützte Upload-API bereit.
+Die PWA zeigt daher `Automatischer Upload: technische Verbindung noch
+nicht aktiv` und verwendet weiter den manuellen Teilen-/Bestätigungsweg.
+Es wird weder eine Authentifizierung noch ein Cloud-Upload vorgetäuscht.
+
+Zur Aktivierung ist eine separate **same-origin** HTTPS-Vermittlung
+erforderlich, die eine einmalige echte OAuth-Freigabe annimmt und
+`GET /api/pcloud/connection`, `GET /api/pcloud/auth/start`
+und `POST /api/pcloud/backups/incremental` bereitstellt. Nach
+erfolgreichem HTTPS-Upload und bestätigtem pCloud-Metadatenabruf muss
+die Schnittstelle `{storage:'pcloud',verified:true,backupId,snapshotHash,
+fileName,byteSize,sha256,fileId}` zurückgeben. Sie muss einen gültigen
+CSRF-Nachweis und eine authentifizierte Sitzung verlangen; der Browser
+erhält **keinen pCloud-Token**. Keine Zugangsdaten im GitHub-Repository.
+Die bereits vorhandene Ordnertrennung bleibt unverändert.
+
 ## UNITY LAB 0.13.49 – Private pCloud-Ordner deutlich getrennt
 
 Im iPhone-Bereich **Datensicherung** sind jetzt zwei getrennte Sicherungsarten

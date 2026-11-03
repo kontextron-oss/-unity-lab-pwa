@@ -55,9 +55,9 @@ function unityIncCheckCheckpoint(s){
   return STORES.every(n=>s.manifest[n]&&typeof s.manifest[n]==='object'&&
     Object.values(s.manifest[n]).every(unityIncIsSha));
 }
-async function unityIncPrepare(){
+async function unityIncPrepare(forceBase=false){
   const state=unityIncBackupState();
-  const prev=unityIncCheckCheckpoint(state)?state:null;
+  const prev=!forceBase&&unityIncCheckCheckpoint(state)?state:null;
   if(prev&&await unityIncHash(prev.manifest)!==prev.snapshotHash)
     throw Error('Lokaler Sicherungsindex widersprüchlich. Bitte unabhängige Vollsicherung prüfen.');
   const current=await unityIncLocalSnapshot();
@@ -107,13 +107,13 @@ async function unityIncConfirmSaved(){
   unityBackupStatus('Inkrementeller Stand bestätigt: '+saved.file.name+
     '. Beim nächsten Mal werden nur neue oder geänderte Inhalte exportiert.');
 }
-async function unityIncShare(){
+async function unityIncShare(forceBase=false){
   if(unityIncPending){
     unityBackupStatus('Die Datei '+unityIncPending.file.name+' ist bereits vorbereitet. Bitte „Datei nach pCloud teilen“ wählen oder die Speicherung anschließend bestätigen.');
     return;
   }
   unityBackupStatus('Vergleiche lokale Daten anhand von SHA-256-Prüfsummen …');
-  const prepared=await unityIncPrepare();
+  const prepared=await unityIncPrepare(forceBase);
   if(!prepared){
     unityBackupStatus('Keine Änderungen seit der letzten bestätigten Sicherung. Keine neue Datei erforderlich.');
     return;
@@ -122,6 +122,10 @@ async function unityIncShare(){
   unityBackupStatus(prepared.file.name+' vorbereitet · '+prepared.count+' neue/geänderte, '+
     prepared.removedCount+' entfernte Datensätze. Jetzt „Datei nach pCloud teilen“ antippen.');
   const share=document.getElementById('inc-share');if(share)share.hidden=false;
+}
+async function unityIncPrepareNewBase(){
+  if(!confirm('Eine neue vollständige BASIS-Sicherung erstellen?\n\nNach erfolgreicher pCloud-Speicherung und Prüfung kann damit eine neue kurze Änderungskette beginnen. Alte Sicherungen werden nicht automatisch gelöscht.'))return;
+  await unityIncShare(true);
 }
 function unityIncSharePrepared(){
   // CRITICAL for iPhone Safari: navigator.share MUST be invoked synchronously

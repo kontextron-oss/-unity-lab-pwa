@@ -32,6 +32,7 @@ jobs:
           node --check depot.js
           node --check depotcsv.js
           node --check home.js
+          node --check incremental.js
           node --check sw.js
       - name: Check inline application script
         run: |
@@ -86,6 +87,9 @@ jobs:
 
       - name: Validate SEC official-source parser and stale fallback
         run: python3 -m unittest discover -s tests -p 'test_research.py'
+
+      - name: Test incremental pCloud backups, integrity and non-destructive restore
+        run: node tests/incremental-backup.cjs
 
       - name: Verify private pCloud share handoff and backup completeness
         run: node tests/pcloud-share-backup.cjs

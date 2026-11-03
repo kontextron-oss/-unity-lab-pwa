@@ -1,0 +1,68 @@
+name: Refresh EU capital and procurement event radar
+on:
+  schedule:
+    - cron: '40 6 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - scripts/refresh_capital_events.py
+      - tests/test_capital_events.py
+      - .github/workflows/capital-events.yml
+  workflow_dispatch:
+concurrency:
+  group: unity-public-procurement-radar
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  ted-events:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test TED record hygiene and no fabricated market flow
+        run: python -m unittest discover -s tests -p 'test_capital_events.py'
+      - name: Fetch verified EU procurement award notices
+        run: python scripts/refresh_capital_events.py
+      - name: Validate public data and scope
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path('data/capital_events.json').read_text(encoding='utf-8'))
+          assert doc['schemaVersion']==1
+          assert doc['kind']=='public-procurement-events-not-equity-fund-flows'
+          assert len(doc['topics'])==3
+          assert 0<=doc['sourceFailures']<=3
+          assert not any(s in doc for s in ('portfolio','trades','privateHoldings'))
+          for theme in doc['topics'].values():
+              assert theme['status'] in ('available','stale','unavailable')
+              assert len(theme['events'])<=25
+              assert theme['isComplete'] is False
+              for event in theme['events']:
+                  assert event['url'].startswith('https://ted.europa.eu/en/notice/-/detail/')
+                  assert event['winnerIdentityVerified'] is False
+          print('TED source availability:',3-doc['sourceFailures'],'of 3; source failures:',doc['sourceFailures'])
+          PY
+      - name: Publish only public procurement metadata
+        run: |
+          git config user.name "unity-lab-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/capital_events.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "data: refresh official TED procurement radar [skip ci]"
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi

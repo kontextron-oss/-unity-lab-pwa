@@ -33,6 +33,7 @@ jobs:
           node --check depotcsv.js
           node --check home.js
           node --check incremental.js
+          node --check pcloud-direct.js
           node --check sw.js
       - name: Check inline application script
         run: |
@@ -87,6 +88,9 @@ jobs:
 
       - name: Validate SEC official-source parser and stale fallback
         run: python3 -m unittest discover -s tests -p 'test_research.py'
+
+      - name: Verify direct pCloud upload client fails closed without gateway and receipt
+        run: node tests/pcloud-direct.cjs
 
       - name: Validate separate private backup folders and filename formats
         run: node tests/backup-folder-separation.cjs

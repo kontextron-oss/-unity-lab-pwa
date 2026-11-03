@@ -165,6 +165,51 @@ function unityDeepDecision(s,base=null,candidate=null){
     candidateScore:c?.score??NaN,rr,confidence,coverage,totalChecks:totalSources.length,
     valuationReady,quoteVerified:usable,nearEarnings,earningsDate:earningsDate||''};
 }
+
+// Post-purchase monitor: compares the immutable test-buy snapshot with the
+// current sourced analysis. It never books a sale and a negative P/L alone is
+// deliberately not an exit signal.
+function unityPositionMonitor(s){
+  let position=null;
+  try{position=typeof depotPosition==='function'?depotPosition(s):null}catch(_){}
+  if(!position||!(Number(position.qty)>1e-8))return null;
+  const buys=(cache?.transactions||[]).filter(t=>!t.voidedAt&&t.instrumentId===s.id&&t.type==='BUY')
+    .sort((a,b)=>String(a.executedAt||'').localeCompare(String(b.executedAt||'')));
+  const opened=buys[0]||null,snapshot=opened?.decisionSnapshot||null;
+  const current=typeof unityDeepDecision==='function'?unityDeepDecision(s):null;
+  const pnlPct=Number.isFinite(position.pnl)&&position.cost>0?position.pnl/position.cost*100:NaN;
+  let kind='data',label='Daten prüfen',reason='Für die bestehende Testposition fehlt eine ausreichend aktuelle, vollständige Beurteilung.';
+  if(current?.kind==='no'){
+    kind='exit';label='Ausstieg im Testdepot erwägen';
+    reason='Aktueller Befund: '+current.decision+'. '+current.reason;
+  }else if(current?.nearEarnings){
+    kind='review';label='Prüfen – Ergebnisrisiko';
+    reason='Vor dem bestätigten Ergebnis '+String(current.earningsDate||'').slice(0,10)+' keine technische Lage als Verkaufs- oder Haltebeweis überinterpretieren.';
+  }else if(current?.kind==='wait'){
+    kind='review';label='Prüfen – These erneut abgleichen';
+    reason='Aktueller Befund: '+current.decision+'. '+current.reason;
+  }else if(current?.kind==='technical'||current?.kind==='positive'){
+    kind='hold';label='Halten – Lage weiter überwachen';
+    reason='Die aktuelle technische Lage liefert kein aktives Ausstiegs-Veto. Bewertung, neue Ergebnisse und Guidance bleiben getrennt zu prüfen.';
+  }
+  return {kind,label,reason,current,opened,snapshot,pnlPct,
+    openedAt:String(opened?.executedAt||'').slice(0,10),
+    currentDate:String(current?.sourceDate||'').slice(0,10)};
+}
+function unityPositionMonitorPanel(s){
+  const m=unityPositionMonitor(s);if(!m)return '';
+  const f=typeof esc==='function'?esc:v=>String(v??'');
+  const cls={hold:'hold',review:'review',exit:'exit',data:'data'}[m.kind]||'data';
+  const snapshot=m.snapshot?.action||'Kein analysierter Kauf-Snapshot vorhanden';
+  const current=m.current?.decision||'Aktuelle Tiefenanalyse nicht vollständig';
+  const pnl=Number.isFinite(m.pnlPct)?(m.pnlPct>0?'+':'')+m.pnlPct.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' %':'–';
+  return '<section class="unity-position-monitor unity-position-'+cls+'"><div><small>UNITY · Positionsmonitor nach Testkauf</small><h3>'+f(m.label)+'</h3></div>'+
+    '<p>'+f(m.reason)+'</p><div class="unity-position-monitor-grid"><div><small>Kauf-Snapshot</small><b>'+f(m.openedAt||'–')+'</b><small>'+f(snapshot)+'</small></div>'+
+    '<div><small>Aktueller Befund</small><b>'+f(m.currentDate||'–')+'</b><small>'+f(current)+'</small></div>'+
+    '<div><small>Offener Erfolg</small><b>'+f(pnl)+'</b><small>Allein kein Verkaufsgrund</small></div></div>'+
+    '<p class="tiny muted">Der Monitor vergleicht den historischen Testkauf mit der aktuellen Analyse, verändert den Kauf-Snapshot nicht und löst keinen Verkauf aus. „Ausstieg im Testdepot erwägen“ ist ein dokumentierter Prüfhinweis, keine Orderanweisung.</p></section>';
+}
+
 function unityDeepSimPosition(s,d){
   if(!['technical','positive'].includes(d?.kind)||!(d?.scenarioStop>0)||
      typeof depotCapital!=='function')return null;

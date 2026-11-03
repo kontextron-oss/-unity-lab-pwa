@@ -165,11 +165,19 @@ def build(previous=None, source=fetch, clock=utcnow):
             if not isinstance(data, dict) or not isinstance(data.get("notices"), list):
                 raise ValueError("TED-Datenstruktur nicht erkannt")
             entries = process(data["notices"], definition["cpv"], today)
+            earlier = {e.get("id"): e for e in (last.get("events") or [])
+                       if isinstance(e, dict)}
+            comparable = last.get("status") == "available"
+            for event in entries:
+                known = earlier.get(event["id"]) or {}
+                event["firstSeenAt"] = known.get("firstSeenAt") or stamp
+                event["newSincePreviousScan"] = bool(comparable and event["id"] not in earlier)
             count = data.get("totalNoticeCount")
             out[key] = {
                 **definition, "status": "available", "checkedAt": stamp,
                 "querySince": since, "noticeType": "award-notice",
                 "sampleSize": len(entries),
+                "newSincePreviousScan": sum(e["newSincePreviousScan"] for e in entries[:25]),
                 "totalMatchingNotices": count if isinstance(count, int) and count >= 0 else None,
                 "isComplete": False,
                 "events": entries[:25],
@@ -187,6 +195,7 @@ def build(previous=None, source=fetch, clock=utcnow):
                 else last.get("lastSuccessfulAt"),
                 "querySince": since, "noticeType": "award-notice",
                 "sampleSize": len(last.get("events") or []),
+                "newSincePreviousScan": 0,
                 "totalMatchingNotices": None, "isComplete": False,
                 "events": (last.get("events") or [])[:25],
                 "warning": "TED derzeit nicht abrufbar; ältere Meldungen sind ausschließlich Archiv.",

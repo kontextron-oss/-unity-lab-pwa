@@ -36,7 +36,7 @@ async function unityHomeShift(sid,delta){
   if(i<0||i+delta<0||i+delta>=ordered.length)return false;
   return unityHomeReorder(sid,ordered[i+delta].id);
 }
-const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr'],['3Y','3J'],['6Y','6J']];
+const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr']];
 function unityHomeQuote(s){
   const full=typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin),x=full||(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
@@ -346,6 +346,7 @@ function unityHomeDetail(sid){
       ' · Schlusskurs '+number(pullback.close,2)+' '+esc(s.currency)+' ('+esc(pullback.date)+')</small></section>';
   }
   h+='<section class="home-research-detail home-research-'+research.kind+'"><strong>Recherche-Indikator: '+esc(research.label)+'</strong><p>'+esc(research.detail)+'</p><small>Technische Vorauswahl, keine Kauf- oder Verkaufsfreigabe.</small></section>';
+  if(typeof unityDecisionReadinessPanel==='function')h+=unityDecisionReadinessPanel(s);
   if(typeof unityDeepDecisionPanel==='function')h+=unityDeepDecisionPanel(s);
   if(typeof unityDecisionResultPanel==='function')h+='<details class="unity-secondary-check"><summary>Weitere technische Prüfbedingungen anzeigen</summary>'+unityDecisionResultPanel(s)+'</details>';
   if(x)h+=unityChartPanel(x);

@@ -82,6 +82,19 @@ class CapitalEventsTests(unittest.TestCase):
         got=mod.process([e],"31170000",TODAY.date())
         self.assertIsNone(got[0]["publishedValue"])
 
+    def test_award_outcome_requires_explicit_lot_winner_selection(self):
+        selected=item("911111-2026",**{"BT-142-LotResult":["selec-w"]})
+        cancelled=item("911112-2026",**{"BT-142-LotResult":["clos-nw"]})
+        unknown=item("911113-2026")
+        got=mod.process([selected,cancelled,unknown],"31170000",TODAY.date())
+        indexed={x["id"]:x for x in got}
+        self.assertTrue(indexed["911111-2026"]["winnerSelectedForAtLeastOneLot"])
+        self.assertEqual(indexed["911111-2026"]["noticeType"],"award-notice")
+        for number in ("911112-2026","911113-2026"):
+            self.assertFalse(indexed[number]["winnerSelectedForAtLeastOneLot"])
+            self.assertEqual(indexed[number]["noticeType"],"result-notice-unconfirmed")
+            self.assertIn("nicht bestätigt",indexed[number]["interpretation"])
+
     def test_first_poll_does_not_fabricate_new_event(self):
         def fake(q):
             cpv=q["query"].split('classification-cpv=')[1][:8]

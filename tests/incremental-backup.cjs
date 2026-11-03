@@ -117,9 +117,9 @@ const cloneFile=async(file,transform)=>{
  assert.match(html,/id="inc-confirm"/);
  assert.match(html,/id="inc-import-file"/);
  assert.match(html,/if\(b\.id==='inc-import'\)await unityIncRestore/);
- assert.match(html,/incremental\.js\?v=0\.13\.49/);
+ assert.match(html,/incremental\.js\?v=0\.13\.50/);
  const sw=fs.readFileSync('sw.js','utf8');
- assert.match(sw,/incremental\.js\?v=0\.13\.49/);
- assert.match(sw,/unity-lab-v0\.13\.49/);
+ assert.match(sw,/incremental\.js\?v=0\.13\.50/);
+ assert.match(sw,/unity-lab-v0\.13\.50/);
  console.log('UNITY incremental backup: first base, only changed records, explicit cloud confirmation, chain-integrity restore and conflict veto passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

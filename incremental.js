@@ -1,5 +1,5 @@
 'use strict';
-/* UNITY LAB 0.13.48 — incremental, content-addressed, local-first backups.
+/* UNITY LAB 0.13.49 — incremental, content-addressed, local-first backups.
    Every user-confirmed export is one JSON "cloud part": a small full-hash index
    plus ONLY new/changed record payloads. The first part is a full base.
    A chain of parts is required to restore; pCloud upload remains user mediated.
@@ -89,7 +89,7 @@ async function unityIncPrepare(forceBase=false){
     parentId:prev?.lastBackupId||null,parentHash:prev?.snapshotHash||null,
     changes,removed,manifest:current.manifest,snapshotHash:current.snapshotHash
   };
-  const name='UNITY-LAB-CLOUD-'+seq+(prev?'-AENDERUNG':'-BASIS')+'.json';
+  const name='UNITY-LAB-AENDERUNGEN-'+seq+(prev?'-AENDERUNG':'-BASIS')+'.json';
   const file=new File([JSON.stringify(snapshot)],name,{type:'application/json'});
   const checkpoint={id:UNITY_INC_STATE_ID,format:UNITY_INC_FORMAT,schema:UNITY_INC_SCHEMA,
     lastBackupId:uid,snapshotHash:current.snapshotHash,manifest:current.manifest,
@@ -109,7 +109,7 @@ async function unityIncConfirmSaved(){
 }
 async function unityIncShare(forceBase=false){
   if(unityIncPending){
-    unityBackupStatus('Die Datei '+unityIncPending.file.name+' ist bereits vorbereitet. Bitte „Datei nach pCloud teilen“ wählen oder die Speicherung anschließend bestätigen.');
+    unityBackupStatus('Die Datei '+unityIncPending.file.name+' liegt zur Übertragung bereit. Bitte im privaten Ordner UNITY-LAB/01-AENDERUNGEN/ speichern und danach die Speicherung bestätigen.');
     return;
   }
   unityBackupStatus('Vergleiche lokale Daten anhand von SHA-256-Prüfsummen …');
@@ -119,7 +119,7 @@ async function unityIncShare(forceBase=false){
     return;
   }
   unityIncPending={...prepared,offered:false};
-  unityBackupStatus(prepared.file.name+' vorbereitet · '+prepared.count+' neue/geänderte, '+
+  unityBackupStatus(prepared.file.name+' für UNITY-LAB/01-AENDERUNGEN/ vorbereitet · '+prepared.count+' neue/geänderte, '
     prepared.removedCount+' entfernte Datensätze. Jetzt „Datei nach pCloud teilen“ antippen.');
   const share=document.getElementById('inc-share');if(share)share.hidden=false;
 }
@@ -138,7 +138,7 @@ function unityIncSharePrepared(){
     prepared.offered=true;
     const b=document.getElementById('inc-confirm');if(b)b.hidden=false;
     const x=document.getElementById('inc-share');if(x)x.hidden=true;
-    unityBackupStatus(file.name+' bereitgestellt. In pCloud den privaten Sicherungsordner wählen und die Datei dort prüfen; danach „Speicherung bestätigen“.');
+    unityBackupStatus(file.name+' bereitgestellt. In pCloud in UNITY-LAB/01-AENDERUNGEN/ ablegen und dort prüfen. Erst anschließend „Speicherung bestätigen“.');
   };
   let supported=false;
   try{supported=typeof navigator!=='undefined'&&typeof navigator.share==='function'&&
@@ -147,7 +147,7 @@ function unityIncSharePrepared(){
   if(supported){
     try{
       const share=navigator.share({files:[file],title:'UNITY LAB · Änderungssicherung',
-        text:'Diese Datei im selben privaten pCloud-Sicherungsordner wie die vorherigen UNITY-LAB-CLOUD-Dateien ablegen.'});
+        text:'Änderungssicherung: in UNITY-LAB/01-AENDERUNGEN/ zusammen mit BASIS und allen vorherigen AENDERUNG-Dateien ablegen.'});
       return Promise.resolve(share).then(success).catch(e=>{
         if(e?.name==='AbortError'){
           unityBackupStatus('Teilen abgebrochen. Die vorbereitete Datei bleibt erhalten und kann erneut geteilt werden.');

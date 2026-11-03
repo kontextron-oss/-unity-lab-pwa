@@ -91,11 +91,14 @@ function unityIssuerDecisionEvidence(stock){
     const t=Date.parse(x?.checkedAt||'');
     return Number.isFinite(t)&&t<=Date.now()+3600000&&Date.now()-t<35*86400000;
   };
-  const official=x=>/^https:\/\/www\.jenoptik\.com\//.test(String(x?.sourceUrl||''));
+  const official=x=>typeof unityFundEvidenceSourceAllowed==='function'
+    ?unityFundEvidenceSourceAllowed(item,x?.sourceUrl)
+    :false;
   return e?{
     fundamentals:{...e.fundamentals,verified:e.fundamentals?.verified===true&&fresh(e.fundamentals)&&official(e.fundamentals)},
     earnings:{...e.earnings,confirmed:e.earnings?.confirmed===true&&fresh(e.earnings)&&official(e.earnings)},
-    guidance:{...e.guidance,verified:e.guidance?.verified===true&&fresh(e.guidance)&&official(e.guidance)}
+    guidance:{...e.guidance,verified:e.guidance?.verified===true&&fresh(e.guidance)&&official(e.guidance)},
+    positionRisk:{...e.positionRisk,verified:e.positionRisk?.verified===true&&fresh(e.positionRisk)&&official(e.positionRisk)}
   }:null;
 }
 function unityCockpitInputs(stock){

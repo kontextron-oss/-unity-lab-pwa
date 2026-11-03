@@ -31,6 +31,23 @@ function unityCapitalMoney(value,cur){
   if(!Number.isFinite(value)||!(value>0)||!['EUR','USD','CHF','GBP'].includes(cur))return '';
   return new Intl.NumberFormat('de-DE',{style:'currency',currency:cur,maximumFractionDigits:0}).format(value);
 }
+function unityCapitalEventHtml(e){
+  const amount=unityCapitalMoney(e.publishedValue,e.currency);
+  const confirmed=e.winnerSelectedForAtLeastOneLot===true;
+  return '<div class="unity-cap-event">'+
+    '<div><strong>'+esc(e.title||'Öffentliche Ergebnisbekanntmachung')+'</strong>'+
+    (e.newSincePreviousScan?'<span class="unity-cap-new">Neu erfasst</span>':'')+
+    '<small class="unity-cap-outcome '+(confirmed?'unity-cap-award':'unity-cap-notaward')+'">'+
+      (confirmed?'Mindestens ein Los mit ausgewähltem Gewinner':'Ergebnisbekanntmachung · Zuschlag nicht bestätigt')+'</small>'+
+    '<small>Veröffentlichung '+esc(unityCapitalDate(e.publishedAt))+
+    (e.buyer?' · Vergabestelle: '+esc(e.buyer):'')+
+    (e.buyerCountry?' · '+esc(e.buyerCountry):'')+'</small>'+
+    (amount?'<small>Gemeldeter TED-Verfahrenswert: '+esc(amount)+
+      ' · kann mehrere Lose umfassen, kein bestätigter Unternehmensumsatz</small>':'')+
+    (confirmed&&e.winner?'<small>Genannter Auftragnehmer: '+esc(e.winner)+
+      ' · Identität mit börsennotiertem Emittenten nicht verifiziert</small>':'')+
+    '</div><a href="'+esc(e.url)+'" target="_blank" rel="noopener noreferrer">Original</a></div>';
+}
 function unityCapitalTopicPanel(id,topic,expired){
   const unavailable=!topic||topic.status!=='available'||expired;
   const title=String(topic?.label||({
@@ -52,29 +69,23 @@ function unityCapitalTopicPanel(id,topic,expired){
   const entries=(topic.events||[]).filter(e=>
     unityCapitalVerifiedUrl(e.url,e.id)&&/^\d{4}-\d{2}-\d{2}$/.test(e.publishedAt||'')).slice(0,10);
   const recent=entries.filter(e=>e.newSincePreviousScan===true);
-  html+='<p class="tiny muted">EU TED · Auftragsergebnisse/öffentliche Vergaben · '+
+  const selected=entries.filter(e=>e.winnerSelectedForAtLeastOneLot===true);
+  html+='<p class="tiny muted">EU TED · veröffentlichte Vergabeergebnisse · '+
     esc(unityCapitalDate(topic.checkedAt))+
-    ' geprüft · '+entries.length+' belegte Meldungen angezeigt · '+recent.length+
-    ' seit voriger Prüfung neu in der Anzeige. Kein Vollbestand, keine Kapitalflussmessung.</p>';
+    ' geprüft · '+entries.length+' Meldungen in dieser Auswahl · davon '+selected.length+
+    ' mit bestätigter Gewinnerauswahl für mindestens ein Los · '+recent.length+
+    ' seit voriger Prüfung neu erfasst. Keine Vollerhebung, keine Kapitalflussmessung.</p>';
   if(!entries.length){
     html+='<p class="tiny muted">Keine eindeutig passenden Datensätze im begrenzten Suchfenster. Keine Aussage über das Gesamtvolumen.</p>';
   }else{
     html+='<div class="unity-cap-events">';
-    for(const e of entries){
-      const amount=unityCapitalMoney(e.publishedValue,e.currency);
-      html+='<div class="unity-cap-event">'+
-        '<div><strong>'+esc(e.title||'Öffentliche Vergabebekanntmachung')+'</strong>'+
-        (e.newSincePreviousScan?'<span class="unity-cap-new">Neu erfasst</span>':'')+
-        '<small>Veröffentlichung '+esc(unityCapitalDate(e.publishedAt))+
-        (e.buyer?' · Vergabestelle: '+esc(e.buyer):'')+
-        (e.buyerCountry?' · '+esc(e.buyerCountry):'')+'</small>'+
-        (amount?'<small>Gemeldeter TED-Verfahrenswert: '+esc(amount)+
-          ' · kann mehrere Lose umfassen, kein bestätigter Unternehmensumsatz</small>':'')+
-        (e.winner?'<small>Genannter Auftragnehmer: '+esc(e.winner)+
-          ' · Identität mit börsennotiertem Emittenten nicht verifiziert</small>':'')+
-        '</div><a href="'+esc(e.url)+'" target="_blank" rel="noopener noreferrer">Original</a></div>';
-    }
+    for(const event of entries.slice(0,4))html+=unityCapitalEventHtml(event);
     html+='</div>';
+    if(entries.length>4){
+      html+='<details class="unity-cap-extra"><summary>Weitere '+(entries.length-4)+' Meldungen anzeigen</summary>';
+      for(const event of entries.slice(4))html+=unityCapitalEventHtml(event);
+      html+='</details>';
+    }
   }
   return html+'</section>';
 }

@@ -37,6 +37,16 @@ function unityCockpitMarket(item){
   const trend=last>=sma200&&sma50>=sma200;
   const overheated=rsi>=76||(extension>13&&pct(5)>7);
   const stressed=pct(5)<-10&&vol20>40;
+  const realizedVol=n=>{
+    const sample=[];
+    for(let i=Math.max(1,closes.length-n);i<closes.length;i++)sample.push(Math.log(closes[i]/closes[i-1]));
+    if(sample.length<3)return NaN;
+    const avg=sample.reduce((a,b)=>a+b,0)/sample.length;
+    return Math.sqrt(sample.reduce((a,b)=>a+(b-avg)*(b-avg),0)/sample.length)*Math.sqrt(252)*100;
+  };
+  const vol5=realizedVol(5),volRatio=Number.isFinite(vol5)&&vol20>0?vol5/vol20:NaN;
+  const upDays10=closes.slice(-10).reduce((n,v,i,a)=>i&&v>a[i-1]?n+1:n,0);
+  const high252=Math.max(...closes.slice(-252)),distanceHigh=unityCockpitPct(last,high252);
   let mood='Uneinheitliches Kursverhalten';
   if(overheated)mood='Mögliches Übertreibungsrisiko';
   else if(stressed)mood='Starker kurzfristiger Verkaufsdruck';
@@ -45,13 +55,33 @@ function unityCockpitMarket(item){
   return {last,date:item.date,r5:pct(5),r21:pct(21),r63:pct(63),r252:pct(252),
     sma50,sma200,rsi,extension,vol20,volumeRatio,volumeOk,
     trend,inZone:last>=sma50*.98&&last<=sma50*1.02,
-    overheated,stressed,mood};
+    overheated,stressed,vol5,volRatio,upDays10,distanceHigh,mood};
 }
 function unityCockpitNews(s){
   // An official dated filing is only a reason to CHECK the original document,
   // never a positive or negative sentiment signal.
   try{return typeof unityResearchRecent==='function'?unityResearchRecent(s):null}
   catch(_){return null}
+}
+function unityCockpitBehavior(m){
+  if(!m)return {kind:'unknown',label:'Nicht messbar',detail:'Keine ausreichende Kursbasis.'};
+  const euphoric=(m.rsi>=70&&(m.extension>7||m.r5>5))||
+    (m.r5>10&&Number.isFinite(m.volRatio)&&m.volRatio>1.2);
+  const panic=(m.rsi<=30&&m.r5<-5)||
+    (m.r5<-8&&Number.isFinite(m.volRatio)&&m.volRatio>1.15);
+  const constructive=m.trend&&m.rsi>=42&&m.rsi<=65&&Math.abs(m.extension)<=6&&
+    m.r21>=-2&&m.r5>-4&&(!Number.isFinite(m.volRatio)||m.volRatio<=1.25);
+  const fragile=!m.trend||m.r21<-8||(Number.isFinite(m.distanceHigh)&&m.distanceHigh<-25&&m.r5<0);
+  if(euphoric)return {kind:'euphoria',label:'Euphorie / Übertreibungsrisiko',
+    detail:'Beschleunigtes Preisverhalten und/oder hohe kurzfristige Spannung. Rücksetzer oder Bestätigung abwarten.'};
+  if(panic)return {kind:'panic',label:'Panik / möglicher Kapitulationsdruck',
+    detail:'Starker Rückgang mit erhöhter kurzfristiger Schwankung. Keine Gegenbewegung als Trendwende interpretieren.'};
+  if(constructive)return {kind:'constructive',label:'Konstruktiver Aufbau',
+    detail:'Trend, Tempo und kurzfristige Schwankung sind ausgewogen; keine ausgeprägte Überhitzung sichtbar.'};
+  if(fragile)return {kind:'fragile',label:'Fragiles Preisverhalten',
+    detail:'Der mittelfristige Aufbau ist nicht bestätigt oder das Abwärtsmomentum bleibt erhöht.'};
+  return {kind:'mixed',label:'Gemischtes Marktverhalten',
+    detail:'Keine eindeutige Übertreibung oder Panik, aber auch kein klarer konstruktiver Aufbau.'};
 }
 function unityCockpitInputs(stock){
   let item=null,marketOk=false,fundamentalOk=false,filing=null;
@@ -83,6 +113,7 @@ function unityCockpitClassify(input){
       gates:{market:false,fundamental:!!fundamentalOk,earnings:false,valuation:false,flows:false},
       socialSentimentMeasured:false,institutionalFlowsMeasured:false};
   }
+  const behavior=unityCockpitBehavior(market);
   const earningsTime=Date.parse(f?.earningsDate||'');
   const earningsKnown=f?.earningsConfirmed===true&&Number.isFinite(earningsTime)&&
     earningsTime>=Date.now()-86400000;
@@ -110,7 +141,11 @@ function unityCockpitClassify(input){
   if(!Number.isFinite(rr))missing.push('Plausible Stop-/Zielannahmen für das Chancen-Risiko-Verhältnis fehlen.');
   if(!fundamentalReady)missing.push('Belastbare Bewertung/Sicherheitsmarge nicht vollständig verifiziert.');
   missing.push('Institutionelle Aktienkapitalflüsse nicht direkt gemessen.');
-  missing.push('Soziale Medien / Nachrichtenstimmung nicht unabhängig gemessen.');
+  missing.push('Soziale Medien / Nachrichtenstimmung nicht unabhängig gemessen; das Verhaltensprofil nutzt ausschließlich Kurs- und gegebenenfalls Volumendaten.');
+  if(behavior.kind==='constructive')evidence.push('Verhaltensprofil: konstruktiver Aufbau ohne erkennbare kurzfristige Überhitzung.');
+  if(behavior.kind==='euphoria')warnings.push('Verhaltensprofil: mögliche Euphorie bzw. Übertreibung im beobachteten Preisverhalten.');
+  if(behavior.kind==='panic')warnings.push('Verhaltensprofil: möglicher Panik- bzw. Kapitulationsdruck im beobachteten Preisverhalten.');
+  if(behavior.kind==='fragile')warnings.push('Verhaltensprofil: mittelfristiger Aufbau wirkt derzeit fragil.');
   if(upcoming)warnings.push('Bestätigter Earnings-Termin innerhalb von sieben Tagen.');
   if(rrBad)warnings.push('Chance-Risiko-Hard-Rule unter 2:1.');
   if(market.overheated)warnings.push('Preis-/Momentumindikatoren zeigen ein kurzfristiges Übertreibungsrisiko.');
@@ -125,8 +160,9 @@ function unityCockpitClassify(input){
   let kind='wait',action='Beobachten – aktuell kein Einstiegssignal';
   if(rrBad){kind='blocked';action='Nicht favorisieren – Chance/Risiko zu ungünstig';}
   else if(upcoming){kind='blocked';action='Ereignisrisiko – Ergebnis abwarten';}
-  else if(market.overheated){kind='blocked';action='Übertreibung möglich – Rücksetzer abwarten';}
-  else if(market.stressed){kind='blocked';action='Verkaufsdruck – Stabilisierung abwarten';}
+  else if(behavior.kind==='euphoria'||market.overheated){kind='blocked';action='Übertreibung möglich – Rücksetzer abwarten';}
+  else if(behavior.kind==='panic'||market.stressed){kind='blocked';action='Verkaufsdruck – Stabilisierung abwarten';}
+  else if(behavior.kind==='fragile'){kind='wait';action='Abwarten – Preisverhalten noch fragil';}
   else if(!market.trend){kind='wait';action='Abwarten – Trend nicht bestätigt';}
   else if(!setup){kind='watch';action='Beobachten – Einstiegszone abwarten';}
   else if(investmentReady&&fundamentalReady&&earningsKnown&&!rrBad){
@@ -136,12 +172,12 @@ function unityCockpitClassify(input){
   const coverage=checks.filter(Boolean).length;
   const confidence=coverage===4?'Teilweise fundiert · Kapital- und Stimmungsdaten fehlen':
     coverage>=2?'Mittel bis gering · relevante Quellen fehlen':'Eingeschränkt · überwiegend Kurstechnik';
-  const short='Kurssignal: '+market.mood+
+  const short='Kurssignal: '+market.mood+' · Verhaltensprofil: '+behavior.label+
     (market.volumeOk?' · Volumen heute relativ zum vorherigen 20-Tage-Mittel: '+
       market.volumeRatio.toFixed(2)+'×':' · Handelsvolumen nicht auswertbar')+
     '. Kein gemessenes Medien- oder Anleger-Sentiment.';
   return {kind,action,priority,coverage,confidence,mood:market.mood,short,stamp,
-    evidence,warnings,missing,rr,setup,
+    evidence,warnings,missing,rr,setup,behavior,
     gates:{market:marketOk,fundamental:fundamentalOk,earnings:earningsKnown,
       valuation:fundamentalReady,flows:false},
     socialSentimentMeasured:false,institutionalFlowsMeasured:false};
@@ -176,7 +212,7 @@ function unityCockpitPanel(s){
     '<div><small>Prüfpriorität, nur Kurstechnik</small><b>'+
        (Number.isFinite(d.priority)?d.priority+'/100':'Nicht bewertbar')+'</b></div>'+
     '<div><small>Fundamentale Evidenz</small><b>'+(d.gates.fundamental?'Bericht geprüft':'Noch unvollständig')+'</b></div>'+
-    '<div><small>Marktpsychologie-Proxy</small><b>'+f(m?.mood||'Nicht messbar')+'</b></div>'+
+    '<div><small>Verhaltensprofil aus Kursdaten</small><b>'+f(d.behavior?.label||'Nicht messbar')+'</b></div>'+
     '<div><small>5 / 21 / 63 Handelstage</small><b>'+
        (m?[m.r5,m.r21,m.r63].map(x=>fmt(x)+' %').join(' · '):'–')+'</b></div>'+
     '</div>'+
@@ -188,7 +224,7 @@ function unityCockpitPanel(s){
     '<h4>Belegte Befunde</h4><ul>'+(d.evidence.map(x=>'<li>'+f(x)+'</li>').join('')||'<li>Keine hinreichenden Belege.</li>')+'</ul>'+
     '<h4>Risiken</h4><ul>'+(d.warnings.map(x=>'<li>'+f(x)+'</li>').join('')||'<li>Keine zusätzliche Warnung aus dem verfügbaren Kursmodell.</li>')+'</ul>'+
     '<h4>Fehlende Quellen</h4><ul>'+(d.missing.map(x=>'<li>'+f(x)+'</li>').join('')||'<li>Keine Datenlücken in dieser Vorprüfung.</li>')+'</ul></details>'+
-    '<p class="tiny muted">Übertreibung und Verkaufsdruck sind deterministische Kurs-/Volumen-Proxys, kein aus Twitter, X, Reddit oder Nachrichten abgerufenes Sentiment. '+
+    '<p class="tiny muted">Das Verhaltensprofil unterscheidet konstruktiven Aufbau, Euphorie, Panik und fragile Marktphasen anhand deterministischer Kurs-/Volumen-Proxys; es ist kein aus Twitter, X, Reddit oder Nachrichten abgerufenes Sentiment. '+
     'Reale Handelsfreigaben bleiben ausgeschlossen; die bestehende UNITY-Tiefenanalyse behält ihre eigenen harten Veto-Regeln.</p></section>';
 }
 function unityCockpitOverview(){

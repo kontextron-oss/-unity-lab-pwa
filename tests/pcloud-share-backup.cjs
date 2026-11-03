@@ -25,7 +25,7 @@ vm.createContext(box);vm.runInContext(src,box);
 const run=x=>vm.runInContext(x,box);
 (async()=>{
  const file=await run('unityBackupFile()');
- assert.ok(file.name.startsWith('UNITY-LAB_BACKUP_2026-'));
+ assert.ok(file.name.startsWith('UNITY-LAB-VOLLSICHERUNG_2026-'));
  assert.ok(file.name.endsWith('.json'));
  assert.equal(file.type,'application/json');
  const obj=JSON.parse(await file.text());
@@ -40,7 +40,7 @@ const run=x=>vm.runInContext(x,box);
  await run('unityBackupShare()');
  assert.equal(shareCalled,1);
  assert.equal(downloaded,0);
- assert.match(selected.files[0].name,/^UNITY-LAB_BACKUP_.*\.json$/);
+ assert.match(selected.files[0].name,/^UNITY-LAB-VOLLSICHERUNG_.*\.json$/);
  assert.match(status,/Bitte in pCloud prüfen/);
  assert.doesNotMatch(status,/erfolgreich gesichert/);
  shareMode='abort';await run('unityBackupShare()');

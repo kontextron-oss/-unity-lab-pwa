@@ -284,8 +284,10 @@ function unityHome(){
       const cl=valid?(p.pnl>0?'home-profit-up':p.pnl<0?'home-profit-down':'home-profit-flat'):'home-profit-flat';
       const pct=valid&&p.cost>0?p.pnl/p.cost*100:NaN;
       const unit=p.market?.price>0?number(p.market.price,2)+' '+esc(p.s.currency):'Kurs fehlt';
+      const monitor=typeof unityPositionMonitor==='function'?unityPositionMonitor(p.s):null;
+      const monitorText=monitor?'<span class="home-position-monitor home-position-'+esc(monitor.kind)+'">'+esc(monitor.label)+'</span>':'';
       h+='<div class="home-holding-entry"><button type="button" class="home-holding-card" data-home-open="'+esc(p.s.id)+'" aria-label="'+esc(p.s.name)+': Depotposition und Analyse ansehen">'+
-        '<span class="home-holding-top"><strong>'+esc(p.s.name)+'</strong><b class="'+cl+'">'+(valid?depotSignedMoney(p.pnl):'Bewertung offen')+'</b></span>'+
+        '<span class="home-holding-top"><strong>'+esc(p.s.name)+monitorText+'</strong><b class="'+cl+'">'+(valid?depotSignedMoney(p.pnl):'Bewertung offen')+'</b></span>'+
         '<span class="home-holding-sub"><span>'+number(p.qty,4)+' Stk · Ø Einstand '+(Number.isFinite(p.avg)?depotMoney(p.avg):'–')+'</span>'+
         '<b class="'+cl+'">'+(valid?depotSignedPct(pct):'–')+'</b></span>'+
         '<span class="home-holding-sub"><span>Kurs: '+unit+'</span><span>Wert: <b>'+depotMoney(p.value)+'</b></span></span>'+
@@ -347,6 +349,7 @@ function unityHomeDetail(sid){
   }
   h+='<section class="home-research-detail home-research-'+research.kind+'"><strong>Recherche-Indikator: '+esc(research.label)+'</strong><p>'+esc(research.detail)+'</p><small>Technische Vorauswahl, keine Kauf- oder Verkaufsfreigabe.</small></section>';
   if(typeof unityDecisionReadinessPanel==='function')h+=unityDecisionReadinessPanel(s);
+  if(typeof unityPositionMonitorPanel==='function')h+=unityPositionMonitorPanel(s);
   if(typeof unityDeepDecisionPanel==='function')h+=unityDeepDecisionPanel(s);
   if(typeof unityDecisionResultPanel==='function')h+='<details class="unity-secondary-check"><summary>Weitere technische Prüfbedingungen anzeigen</summary>'+unityDecisionResultPanel(s)+'</details>';
   if(x)h+=unityChartPanel(x);

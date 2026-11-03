@@ -87,6 +87,22 @@ function unityFundPilotPanel(s){
       '</b><small>'+(valid?'Aus geprüften Berichtskennzahlen berechnet':'Keine ausreichend vergleichbaren Geschäftsjahre')+'</small></div>';
   }
   h+='<p class="tiny muted">Letzte Quellenprüfung: '+esc(item.checkedAt||'unbekannt')+' · '+esc(item.source||'ESEF')+'</p>';
+  const decisionEvidence=item.decisionEvidence;
+  if(decisionEvidence){
+    const evidenceRows=[
+      ['Fundamentaldaten',decisionEvidence.fundamentals?.verified,decisionEvidence.fundamentals?.label,decisionEvidence.fundamentals?.periodEnd,decisionEvidence.fundamentals?.sourceUrl],
+      ['Nächster Ergebnisbericht',decisionEvidence.earnings?.confirmed,decisionEvidence.earnings?.label,decisionEvidence.earnings?.date,decisionEvidence.earnings?.sourceUrl],
+      ['Guidance',decisionEvidence.guidance?.verified,decisionEvidence.guidance?.label,decisionEvidence.guidance?.asOf,decisionEvidence.guidance?.sourceUrl]
+    ];
+    h+='<h4>Datierte Entscheidungsbelege</h4><div class="unity-issuer-events">';
+    for(const [label,ok,detail,date,url] of evidenceRows){
+      const safeUrl=/^https:\/\/www\\.jenoptik\\.com\//.test(String(url||''))?url:'';
+      h+='<div class="unity-issuer-event"><span><strong>'+esc(label)+'</strong><small>'+
+        esc(ok?'✓ belegt':'○ offen')+(date?' · '+esc(date):'')+(detail?' · '+esc(detail):'')+
+        '</small></span>'+(safeUrl?'<a href="'+esc(safeUrl)+'" target="_blank" rel="noopener noreferrer">Original öffnen</a>':'')+'</div>';
+    }
+    h+='</div><p class="tiny muted">Der bestätigte Ergebnisbericht ist ein Ereignisrisiko, keine positive Kursprognose. Guidance ist eine Unternehmensprognose und keine unabhängige Bestätigung.</p>';
+  }
   if(item.investorRelations&&/^https:\/\//.test(item.investorRelations))
    h+='<p><a href="'+esc(item.investorRelations)+'" target="_blank" rel="noopener noreferrer">Offizielle Investor-Relations-Seite öffnen</a></p>';
   if(item.note)h+='<p class="tiny muted">'+esc(item.note)+'</p>';

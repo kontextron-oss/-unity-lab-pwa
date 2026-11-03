@@ -96,7 +96,7 @@ function unityFundPilotPanel(s){
     ];
     h+='<h4>Datierte Entscheidungsbelege</h4><div class="unity-issuer-events">';
     for(const [label,ok,detail,date,url] of evidenceRows){
-      const safeUrl=/^https:\/\/www\\.jenoptik\\.com\//.test(String(url||''))?url:'';
+      const safeUrl=/^https:\/\/www\.jenoptik\.com\//.test(String(url||''))?url:'';
       h+='<div class="unity-issuer-event"><span><strong>'+esc(label)+'</strong><small>'+
         esc(ok?'✓ belegt':'○ offen')+(date?' · '+esc(date):'')+(detail?' · '+esc(detail):'')+
         '</small></span>'+(safeUrl?'<a href="'+esc(safeUrl)+'" target="_blank" rel="noopener noreferrer">Original öffnen</a>':'')+'</div>';

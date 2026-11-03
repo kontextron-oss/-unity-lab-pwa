@@ -227,6 +227,34 @@ function unityCockpitPanel(s){
     '<p class="tiny muted">Das Verhaltensprofil unterscheidet konstruktiven Aufbau, Euphorie, Panik und fragile Marktphasen anhand deterministischer Kurs-/Volumen-Proxys; es ist kein aus Twitter, X, Reddit oder Nachrichten abgerufenes Sentiment. '+
     'Reale Handelsfreigaben bleiben ausgeschlossen; die bestehende UNITY-Tiefenanalyse behält ihre eigenen harten Veto-Regeln.</p></section>';
 }
+function unityDecisionReadinessPanel(s){
+  const d=unityCockpitForStock(s);
+  if(!d)return '';
+  const f=(cache?.fundamentals||[]).find(x=>x.id===s.id)||null;
+  const guidance=f?.guidanceChecked===true;
+  const quote=typeof unityMarketForStock==='function'?unityMarketForStock(s):null;
+  const source=String(quote?.source||quote?.providerSymbol||'Nicht eindeutig ausgewiesen');
+  const rows=[
+    ['Kurs & Börsenplatz',d.gates.market,'Aktuell plausibler, zugeordneter Kurs','Kursquelle, Börsenplatz oder Zeitstand prüfen'],
+    ['Fundamentaldaten',d.gates.fundamental,'Jüngere geprüfte Unternehmenszahlen vorhanden','Primärquelle mit Bilanz- und Ergebnisdaten fehlt'],
+    ['Earnings',d.gates.earnings,'Nächster Termin bestätigt','Nächster Ergebnistermin nicht bestätigt'],
+    ['Guidance',guidance,'Guidance dokumentiert und geprüft','Aktuelle Guidance nicht geprüft'],
+    ['Bewertung & Risiko',d.gates.valuation,'Bewertung, Sicherheitsmarge und CRV belastbar','Bewertung, Sicherheitsmarge oder CRV noch offen']
+  ];
+  const complete=rows.filter(x=>x[1]).length,total=rows.length;
+  const blocked=d.kind==='blocked';
+  const status=blocked?d.action:complete===total?'Vollständige Entscheidung vertieft prüfen':'Noch nicht entscheidungsreif';
+  const behavior=d.behavior?.label||d.mood||'Nicht messbar';
+  let h='<section class="unity-readiness-panel"><div class="unity-readiness-head"><div><small>UNITY · Entscheidungsreife</small><h3>'+esc(status)+'</h3></div><b>'+complete+'/'+total+' Pflichtbereiche belegt</b></div>'+
+    '<p>Die Karte trennt belegte Daten, offene Prüfpunkte und unmittelbare Vetos. Sie ersetzt keinen fehlenden Bericht durch einen geschätzten Wert.</p>'+
+    '<div class="unity-readiness-grid">';
+  for(const [label,ok,yes,no] of rows)h+='<div class="unity-readiness-row '+(ok?'ready':'open')+'"><span>'+esc(label)+'</span><b>'+(ok?'✓ belegt':'○ offen')+'</b><small>'+esc(ok?yes:no)+'</small></div>';
+  h+='</div><div class="unity-readiness-meta"><div><small>Marktverhalten</small><b>'+esc(behavior)+'</b><small>Aus beobachtetem Kurs-/ggf. Volumenverhalten, kein behauptetes Social-Media-Sentiment.</small></div>'+
+    '<div><small>Kursstichtag</small><b>'+esc(d.stamp||'–')+'</b><small>Quelle: '+esc(source)+'</small></div></div>';
+  if(blocked||d.warnings?.length)h+='<div class="unity-readiness-veto"><b>'+ (blocked?'Aktives Veto':'Risiko prüfen')+'</b><span>'+esc(blocked?d.action:d.warnings[0])+'</span></div>';
+  h+='<p class="tiny muted">Eine positive operative Testentscheidung setzt alle Pflichtbereiche, ein nachvollziehbares Chance-Risiko-Verhältnis und keine harten Vetos voraus. Reale Orderfreigaben bleiben ausgeschlossen.</p></section>';
+  return h;
+}
 function unityCockpitOverview(){
   const list=unityCockpitSorted(),active=list.length;
   let html='<section class="panel unity-cockpit-overview"><h2>UNITY Entscheidungscockpit</h2>'+

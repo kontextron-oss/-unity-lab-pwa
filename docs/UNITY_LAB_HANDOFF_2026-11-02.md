@@ -45,3 +45,15 @@
 - Nur tatsächliche Veröffentlichungsdaten dürfen Nachrichtenmarkierungen auslösen; der Tag der Quellenprüfung gilt nicht als Veröffentlichungsdatum.
 - Für spätere Verbesserung: SEC-kompatiblen, ausdrücklich erlaubten Datenzugang oder alternative belastbare offene Quelle prüfen. Keine unnötigen Proxys mit unklaren Nutzungsbedingungen.
 - Der getrennte pCloud-Sicherungs- und Wiederherstellungstest bleibt unverändert als nächster persönlicher Arbeitsschritt vorgesehen.
+
+## Ergänzung 3. November 2026 – Inkrementelle pCloud-Sicherung
+
+- Neue veröffentlichte App-Version: **UNITY LAB 0.13.48**.
+- **Änderungen vorbereiten** erzeugt zuerst einen vollständigen BASIS-Satz, danach nur noch geänderte/neu hinzugefügte Datenblöcke mit SHA-256-Prüfsummen und einem kleinen Index pro Änderung.
+- Auf dem iPhone erst **Datei nach pCloud teilen**, dort im gleichen privaten Ordner UNITY-LAB/Sicherungen ablegen, prüfen, danach **Speicherung in pCloud bestätigen**. Der lokale Backup-Cursor wird erst nach der ausdrücklichen Bestätigung fortgeschrieben; iOS Safari erlaubt hier noch keinen unbeaufsichtigten Ordnerzugriff.
+- **Inkrementellen Stand wiederherstellen** erfordert gleichzeitig die ursprüngliche BASIS-Datei und alle nachfolgenden AENDERUNG-Dateien der Kette. Fehlende, manipulierte oder widersprüchliche Teile werden abgewiesen; lokale abweichende Datensätze werden nicht automatisch überschrieben.
+- **Neuen vollständigen Basisstand beginnen** verdichtet eine lange Änderungskette. Nur nach geprüfter Ablage dieser neuen Basis dürfen frühere Sicherungsketten separat archiviert bzw. gelöscht werden. Es erfolgt keine automatische Löschung alter Sicherungsdateien.
+- Die bisherige vollständige JSON-Sicherung/Importfunktion bleibt als unabhängige Rückfallebene erhalten.
+- Das inkrementelle Verfahren verwendet auf dem iPhone **eine kleine JSON-Änderungsdatei je Sicherung** mit content-addressed Datensätzen und Index. Das ist bewusst nicht derselbe Dateicontainer wie beim WERK-ARCHIV mit separaten .part-Dateien, aber das gleiche Prinzip ohne wiederholte Vollkopien.
+- Der Code wurde im GitHub-Hauptzweig mit 33 erfolgreichen automatisierten Prüfungen validiert; der tatsächliche Ablauf auf dem iPhone in pCloud muss separat einmal praktisch kontrolliert werden. Bestehende persönliche Daten und alte Backups nicht löschen, bevor der vollständige Wiederherstellungstest besteht.
+

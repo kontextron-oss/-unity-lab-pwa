@@ -141,7 +141,7 @@ function unityCapitalReadiness(){
 }
 function unityCapitalView(){
   const doc=unityCapitalData,expired=!unityCapitalFresh(doc);
-  let h='<section class="panel unity-cap-intro"><h2>Kapital- und Ereignisradar</h2>'+
+  let h=(typeof unityCockpitOverview==='function'?unityCockpitOverview():'')+'<section class="panel unity-cap-intro"><h2>Kapital- und Ereignisradar</h2>'+
     '<p>Öffentliche Infrastrukturprojekte früh erkennen und anschließend gezielt prüfen, '+
     'welche Unternehmen tatsächlich profitieren könnten.</p>'+
     '<p class="tiny muted">Erste Phase: <b>amtliche EU-Vergabebekanntmachungen</b>. '+

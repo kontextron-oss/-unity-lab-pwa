@@ -1,3 +1,33 @@
+## UNITY LAB 0.13.49 – Private pCloud-Ordner deutlich getrennt
+
+Im iPhone-Bereich **Datensicherung** sind jetzt zwei getrennte Sicherungsarten
+mit eindeutigem Namen und empfohlenem pCloud-Ziel zu sehen:
+
+- `UNITY-LAB/01-AENDERUNGEN/`: regelmäßiger Sicherungssatz, erste BASIS-Datei
+  und alle nachfolgenden AENDERUNG-Dateien müssen gemeinsam in diesem Ordner
+  bleiben. Neue Dateinamen: `UNITY-LAB-AENDERUNGEN-<Zeitstempel>-BASIS.json`
+  beziehungsweise `...-AENDERUNG.json`.
+- `UNITY-LAB/02-VOLLSICHERUNG/`: unabhängige vollständige JSON-Rückfallebene.
+  Neue Dateinamen: `UNITY-LAB-VOLLSICHERUNG_<Zeitstempel>.json`. Frühere
+  `UNITY-LAB_BACKUP_`-Dateien bleiben importierbar.
+
+**Bestehende Sicherungsketten:** Nicht durch das Verschieben oder Entfernen
+einzelner Dateien beschädigen. Entweder die vorhandene BASIS plus sämtliche
+Änderungen gemeinsam nach `01-AENDERUNGEN` verschieben, oder einen neuen
+vollständigen BASIS-Satz in dem neuen Ordner anlegen, die Speicherung bestätigen
+und erst danach alte Ketten separat archivieren. Die App greift noch
+nicht selbst auf den pCloud-Ordner zu.
+
+**Ziel Ein-Klick-Automatik:** Einmalige explizite pCloud-Autorisierung per
+OAuth, anschließend Datei automatisch per pCloud-API in den richtigen privaten
+Unterordner hochladen und erst nach bestätigtem Cloud-Abruf den lokalen
+Sicherungsstand fortschreiben. Für die bisher öffentlich gehostete statische
+PWA fehlt eine sichere serverseitige Autorisierungs-/Upload-Schnittstelle.
+Es gibt **noch keine direkte automatische pCloud-Verbindung**.
+Die Dateifreigabe und manuelle Bestätigung bleiben bis zur sicheren Einrichtung
+notwendig. Keine Zugangstokens, Client-Secrets oder persönlichen Sicherungen
+im öffentlichen GitHub-Repository.
+
 ## UNITY LAB 0.13.48 – Inkrementelle pCloud-Sicherung, Local-First
 
 Die neue Funktion übernimmt das WERK-ARCHIV-Prinzip, statt bei jeder

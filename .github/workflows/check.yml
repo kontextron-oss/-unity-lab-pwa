@@ -88,6 +88,9 @@ jobs:
       - name: Validate SEC official-source parser and stale fallback
         run: python3 -m unittest discover -s tests -p 'test_research.py'
 
+      - name: Validate separate private backup folders and filename formats
+        run: node tests/backup-folder-separation.cjs
+
       - name: Test incremental pCloud backups, integrity and non-destructive restore
         run: node tests/incremental-backup.cjs
 

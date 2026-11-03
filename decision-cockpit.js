@@ -83,8 +83,23 @@ function unityCockpitBehavior(m){
   return {kind:'mixed',label:'Gemischtes Marktverhalten',
     detail:'Keine eindeutige Übertreibung oder Panik, aber auch kein klarer konstruktiver Aufbau.'};
 }
+function unityIssuerDecisionEvidence(stock){
+  let item=null;
+  try{item=typeof unityFundPilotItem==='function'?unityFundPilotItem(stock):null}catch(_){}
+  const e=item?.decisionEvidence;
+  const fresh=x=>{
+    const t=Date.parse(x?.checkedAt||'');
+    return Number.isFinite(t)&&t<=Date.now()+3600000&&Date.now()-t<35*86400000;
+  };
+  const official=x=>/^https:\/\/www\\.jenoptik\\.com\//.test(String(x?.sourceUrl||''));
+  return e?{
+    fundamentals:{...e.fundamentals,verified:e.fundamentals?.verified===true&&fresh(e.fundamentals)&&official(e.fundamentals)},
+    earnings:{...e.earnings,confirmed:e.earnings?.confirmed===true&&fresh(e.earnings)&&official(e.earnings)},
+    guidance:{...e.guidance,verified:e.guidance?.verified===true&&fresh(e.guidance)&&official(e.guidance)}
+  }:null;
+}
 function unityCockpitInputs(stock){
-  let item=null,marketOk=false,fundamentalOk=false,filing=null;
+  let item=null,marketOk=false,fundamentalOk=false,filing=null,issuerEvidence=null;
   try{
     item=typeof unityMarketForStock==='function'?unityMarketForStock(stock):null;
     const quality=item&&typeof unityDataQuality==='function'?
@@ -100,10 +115,12 @@ function unityCockpitInputs(stock){
   }catch(_){}
   let f=null;
   try{f=(cache.fundamentals||[]).find(x=>x.id===stock.id)||null}catch(_){}
-  return {market,marketOk:marketOk&&!!market,filing,fundamentalOk,f,official:unityCockpitNews(stock)};
+  issuerEvidence=unityIssuerDecisionEvidence(stock);
+  fundamentalOk=fundamentalOk||issuerEvidence?.fundamentals?.verified===true;
+  return {market,marketOk:marketOk&&!!market,filing,fundamentalOk,f,issuerEvidence,official:unityCockpitNews(stock)};
 }
 function unityCockpitClassify(input){
-  const {market,marketOk,fundamentalOk,f,official}=input;
+  const {market,marketOk,fundamentalOk,f,issuerEvidence,official}=input;
   const evidence=[],warnings=[],missing=[];
   const stamp=market?.date||'';
   if(!marketOk||!market){
@@ -114,8 +131,9 @@ function unityCockpitClassify(input){
       socialSentimentMeasured:false,institutionalFlowsMeasured:false};
   }
   const behavior=unityCockpitBehavior(market);
-  const earningsTime=Date.parse(f?.earningsDate||'');
-  const earningsKnown=f?.earningsConfirmed===true&&Number.isFinite(earningsTime)&&
+  const issuerEarnings=issuerEvidence?.earnings;
+  const earningsTime=Date.parse(f?.earningsDate||issuerEarnings?.date||'');
+  const earningsKnown=(f?.earningsConfirmed===true||issuerEarnings?.confirmed===true)&&Number.isFinite(earningsTime)&&
     earningsTime>=Date.now()-86400000;
   const upcoming=earningsKnown&&earningsTime-Date.now()<7*86400000;
   const stop=Number(f?.stop),target=Number(f?.target);
@@ -231,7 +249,8 @@ function unityDecisionReadinessPanel(s){
   const d=unityCockpitForStock(s);
   if(!d)return '';
   const f=(cache?.fundamentals||[]).find(x=>x.id===s.id)||null;
-  const guidance=f?.guidanceChecked===true;
+  const issuerEvidence=unityIssuerDecisionEvidence(s);
+  const guidance=f?.guidanceChecked===true||issuerEvidence?.guidance?.verified===true;
   const quote=typeof unityMarketForStock==='function'?unityMarketForStock(s):null;
   const source=String(quote?.source||quote?.providerSymbol||'Nicht eindeutig ausgewiesen');
   const rows=[

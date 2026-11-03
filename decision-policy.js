@@ -178,21 +178,31 @@ function unityPositionMonitor(s){
   const opened=buys[0]||null,snapshot=opened?.decisionSnapshot||null;
   const current=typeof unityDeepDecision==='function'?unityDeepDecision(s):null;
   const pnlPct=Number.isFinite(position.pnl)&&position.cost>0?position.pnl/position.cost*100:NaN;
+  // A new-entry result is not an exit condition for an existing position.
+  // Reducing/exiting requires explicit, source-bound deterioration evidence.
+  let issuerRisk=null;
+  try{issuerRisk=typeof unityFundPilotItem==='function'?unityFundPilotItem(s)?.decisionEvidence?.positionRisk||null:null}catch(_){}
+  const fundamentalExit=issuerRisk?.verified===true&&
+    ['guidance-cut','thesis-broken','fundamental-deterioration'].includes(String(issuerRisk.kind||''))&&
+    /^https:\/\//.test(String(issuerRisk.sourceUrl||''));
   let kind='data',label='Daten prüfen',reason='Für die bestehende Testposition fehlt eine ausreichend aktuelle, vollständige Beurteilung.';
-  if(current?.kind==='no'){
+  if(fundamentalExit){
     kind='exit';label='Ausstieg im Testdepot erwägen';
-    reason='Aktueller Befund: '+current.decision+'. '+current.reason;
+    reason='Belegte fundamentale Verschlechterung: '+String(issuerRisk.label||'Unternehmensrisiko prüfen')+'.';
   }else if(current?.nearEarnings){
     kind='review';label='Prüfen – Ergebnisrisiko';
     reason='Vor dem bestätigten Ergebnis '+String(current.earningsDate||'').slice(0,10)+' keine technische Lage als Verkaufs- oder Haltebeweis überinterpretieren.';
+  }else if(current?.kind==='no'){
+    kind='review';label='Prüfen – technische Lage schwächer';
+    reason='Aktueller Befund: '+current.decision+'. Dies ist kein Ausstiegssignal; die Kaufthese bleibt ohne belegte fundamentale Verschlechterung offen.';
   }else if(current?.kind==='wait'){
     kind='review';label='Prüfen – These erneut abgleichen';
-    reason='Aktueller Befund: '+current.decision+'. '+current.reason;
+    reason='Aktueller Befund: '+current.decision+'. Ein technischer Rückgang allein ist kein Ausstiegssignal.';
   }else if(current?.kind==='technical'||current?.kind==='positive'){
     kind='hold';label='Halten – Lage weiter überwachen';
     reason='Die aktuelle technische Lage liefert kein aktives Ausstiegs-Veto. Bewertung, neue Ergebnisse und Guidance bleiben getrennt zu prüfen.';
   }
-  return {kind,label,reason,current,opened,snapshot,pnlPct,
+  return {kind,label,reason,current,opened,snapshot,pnlPct,fundamentalExit,issuerRisk,
     openedAt:String(opened?.executedAt||'').slice(0,10),
     currentDate:String(current?.sourceDate||'').slice(0,10)};
 }

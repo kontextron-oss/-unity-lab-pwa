@@ -1,3 +1,42 @@
+## UNITY LAB 0.13.48 – Inkrementelle pCloud-Sicherung, Local-First
+
+Die neue Funktion übernimmt das WERK-ARCHIV-Prinzip, statt bei jeder
+kleinen Änderung eine vollständige JSON-Datei zu erzeugen.
+
+**Bedienung:** Datensicherung → **Änderungen in pCloud sichern**.
+Beim ersten Mal exportiert UNITY die Datei UNITY-LAB-CLOUD-…-BASIS.json
+mit dem vollständigen Satz aller neun lokalen Stores. Später enthält jede
+UNITY-LAB-CLOUD-…-AENDERUNG.json nur neue, geänderte oder entfernte
+Datensätze plus einen kleinen Index der SHA-256-Prüfsummen sämtlicher
+gültiger Datensätze. Unveränderte große Kurshistorien werden nicht erneut
+übertragen. Es entstehen keine immer wieder vollständigen JSON-Sicherungen.
+
+Die iPhone-Safari-PWA kann den Ordner beim bestehenden Share-Sheet-Verfahren
+**nicht selbstständig überschreiben, kontrollieren oder in pCloud
+hinaufladen**. Nach Übergabe über die Dateifreigabe muss derselbe
+private pCloud-Sicherungsordner gewählt werden. Erst nach Kontrolle wird
+**Speicherung in pCloud bestätigen** gedrückt. Dadurch schreibt die
+App den lokalen Cursor im IndexedDB-Settings-Store fort. Er wird nicht
+als Investmentdatensatz in den Sicherungsdateien gespeichert.
+Abgebrochenes Teilen verschiebt den Cursor nicht. Keine unbeaufsichtigte
+pCloud-OAuth-Verbindung, kein automatischer Hintergrund-Sync.
+
+**Wiederherstellung:** Die BASIS-Datei und alle zugehörigen AENDERUNG-
+Dateien zusammen über die iPhone-Dateiauswahl auswählen. UNITY prüft
+Eltern-IDs, Index-Hashes und die SHA-256-Prüfsumme jedes Datenblocks.
+Fehlende oder widersprüchliche Dateien führen zum Abbruch.
+Neue Datensätze werden erst nach expliziter Bestätigung ergänzt;
+unterschiedliche bestehende Datensätze werden nicht überschrieben.
+Die ursprüngliche vollständige JSON-Sicherung bleibt separat erhalten.
+
+**Unterschied zum WERK-ARCHIV:** Dort sind inhaltsadressierte .part-Dateien
+und kleine JSON-Indizes getrennt gespeichert. UNITY verpackt die neuen
+inhaltsadressierten Datenblöcke und den Index in einer kleinen JSON-Datei,
+damit auf dem iPhone jeweils nur eine Datei geteilt werden muss.
+Eine automatische pCloud-Verzeichnissynchronisation ist weiterhin
+ein separates Projekt. Frühere Änderungssätze dürfen nicht entfernt
+werden, solange kein neuer bestätigter Basissatz vorhanden ist.
+
 ## UNITY LAB 0.13.46 – amtliche Unternehmensberichte und Ereignismonitor
 
 Das neue Recherchemodul **research.js** zeigt für bekannte Emittenten offizielle

@@ -92,11 +92,18 @@ function unityDeepDecision(s,base=null,candidate=null){
   if(!stat||!technical)add('missing','Mindestens 200 gültige Börsentage für die technische Tiefenanalyse erforderlich.');
   if(!filing.verified)add('missing','Vollständige aktuelle, überprüfte Unternehmensberichte sind nicht für alle Kennzahlen verfügbar.');
   if(!Number.isFinite(a?.score))add('missing','Vollständiger UNITY-Investmentscore fehlt: Bewertung, Finanzkennzahlen, Kapitalflüsse oder Vergleichsalternativen nicht belegt.');
-  if(!a?.f?.earningsConfirmed||!a?.f?.earningsDate||!Number.isFinite(Date.parse(a.f.earningsDate)))
+  // Issuer evidence may confirm an earnings date without pretending that every
+  // deep filing / valuation condition is fulfilled. A near event always vetoes
+  // the technical test-decision.
+  let issuerEvidence=null;
+  try{issuerEvidence=typeof unityIssuerDecisionEvidence==='function'?unityIssuerDecisionEvidence(s):null}catch(_){}
+  const confirmedEarnings=!!a?.f?.earningsConfirmed||issuerEvidence?.earnings?.confirmed===true;
+  const earningsDate=a?.f?.earningsDate||issuerEvidence?.earnings?.date||'';
+  if(!confirmedEarnings||!Number.isFinite(Date.parse(earningsDate)))
     add('missing','Nächster Earnings-Termin nicht bestätigt.');
-  const earningsDays=Date.parse(a?.f?.earningsDate||'');
-  const nearEarnings=Number.isFinite(earningsDays)&&earningsDays>=Date.now()-86400000&&earningsDays-Date.now()<7*86400000;
-  if(nearEarnings)add('problems','Ergebnisveröffentlichung innerhalb von sieben Tagen: erhöhtes Ereignisrisiko.');
+  const earningsDays=Date.parse(earningsDate);
+  const nearEarnings=confirmedEarnings&&Number.isFinite(earningsDays)&&earningsDays>=Date.now()-86400000&&earningsDays-Date.now()<7*86400000;
+  if(nearEarnings)add('problems','Bestätigte Ergebnisveröffentlichung innerhalb von sieben Tagen: aktives Ereignisrisiko.');
   if(technical){
     if(a.t.last>=a.t.ma200&&a.t.ma50>=a.t.ma200)add('positives','Langfristiger Aufwärtstrend (Kurs/SMA50 über SMA200).');
     else add('problems','Kein bestätigter langfristiger Aufwärtstrend.');
@@ -131,20 +138,20 @@ function unityDeepDecision(s,base=null,candidate=null){
   const investmentReady=eligible&&filing.verified&&valuationReady&&
     a?.f?.balanceChecked===true&&
     !(a?.checks?.hard||[]).length&&!(a?.checks?.data||[]).length&&
-    !!a?.f?.guidanceChecked&&!!a?.f?.earningsConfirmed&&
+    !!a?.f?.guidanceChecked&&confirmedEarnings&&
     Number.isFinite(earningsDays)&&earningsDays>Date.now()+7*86400000&&
     !!a?.f?.dataSource?.trim()&&!!a?.f?.thesis?.trim()&&!!a?.f?.risks?.trim();
   let kind='data',decision='OFFEN – Daten prüfen',reason='Die Datenlage reicht für eine belastbare Entscheidung nicht aus.';
   if(technical){
     if(Number.isFinite(rr)&&rr<2){kind='no';decision='NEIN – Chance/Risiko ungünstig';reason='UNITY-Hard-Rule unter 2:1.'}
-    else if(nearEarnings){kind='wait';decision='NEIN – Ereignisrisiko abwarten';reason='Eine bestätigte Ergebnisveröffentlichung steht kurz bevor.'}
+    else if(nearEarnings){kind='wait';decision='ABWARTEN – Ergebnisrisiko';reason='Bestätigte Ergebnisveröffentlichung am '+String(earningsDate).slice(0,10)+'. Technische Signale überstimmen dieses Veto nicht.'}
     else if(c?.status==='candidate'&&!inZone){kind='wait';decision='NEIN – Einstiegskurs abwarten';reason='Der Kurs liegt derzeit außerhalb der definierten SMA50-Kaufzone.'}
     else if(!eligible){kind='no';decision='NEIN – derzeit kein Einstieg';reason='Mindestens eine technische Risiko- oder Trendbedingung ist nicht erfüllt.'}
     else if(investmentReady){kind='positive';decision='JA – geprüften Einstieg im Testdepot prüfen';reason='Technik, Bewertung, dokumentierte Unternehmenskennzahlen, Earnings und Risikoregeln erfüllen die hinterlegten Kriterien. Keine reale Orderfreigabe.'}
     else {kind='technical';decision='JA – technischer Testkauf prüfenswert';reason='Die technischen Einstiegskriterien sind erfüllt. Eine fundamentale Kaufempfehlung bleibt wegen offener Quellen- und Bewertungsfragen ausdrücklich aus.'}
   }
   const totalSources=[usable,filing.verified,valuationReady,
-    Number.isFinite(earningsDays)&&earningsDays>Date.now()+7*86400000,
+    confirmedEarnings&&Number.isFinite(earningsDays)&&earningsDays>Date.now()+7*86400000,
     Number.isFinite(rr)&&rr>=2,Number.isFinite(rs)];
   const coverage=totalSources.filter(Boolean).length;
   const confidence=coverage>=6?'Hoch (nur für die modellierten Bedingungen)':coverage>=4?'Mittel':'Eingeschränkt';
@@ -156,7 +163,7 @@ function unityDeepDecision(s,base=null,candidate=null){
     scenarioRR:stat?.scenarioRR??NaN,
     entryLower:lower,entryUpper:upper,filing,investmentScore:a?.score??NaN,
     candidateScore:c?.score??NaN,rr,confidence,coverage,totalChecks:totalSources.length,
-    valuationReady,quoteVerified:usable,nearEarnings};
+    valuationReady,quoteVerified:usable,nearEarnings,earningsDate:earningsDate||''};
 }
 function unityDeepSimPosition(s,d){
   if(!['technical','positive'].includes(d?.kind)||!(d?.scenarioStop>0)||
@@ -176,7 +183,7 @@ function unityDeepDecisionPanel(s,base=null,candidate=null){
   const size=unityDeepSimPosition(s,d);
   const pill=d.kind==='positive'?'positive':d.kind==='technical'?'technical':d.kind==='no'?'negative':d.kind==='wait'?'wait':'data';
   let h='<section class="panel unity-policy-card unity-policy-'+pill+'" aria-label="Automatische UNITY-Entscheidungshilfe">'+
-    '<div class="unity-policy-top"><div><small>UNITY Tiefenanalyse · Entscheidungsstufe</small><h2>Ja oder Nein?</h2></div><span class="unity-policy-stage">'+escf(d.confidence)+' · '+d.coverage+'/'+d.totalChecks+' Datenprüfungen</span></div>'+
+    '<div class="unity-policy-top"><div><small>UNITY Tiefenanalyse · Entscheidungsstufe</small><h2>Entscheidung jetzt</h2></div><span class="unity-policy-stage">'+escf(d.confidence)+' · '+d.coverage+'/'+d.totalChecks+' vertiefte Prüfungen</span></div>'+
     '<strong class="unity-policy-action">'+escf(d.decision)+'</strong>'+
     '<p>'+escf(d.reason)+'</p>'+
     '<div class="unity-policy-metrics">'+

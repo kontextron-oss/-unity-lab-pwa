@@ -284,15 +284,15 @@ function unityHome(){
       const cl=valid?(p.pnl>0?'home-profit-up':p.pnl<0?'home-profit-down':'home-profit-flat'):'home-profit-flat';
       const pct=valid&&p.cost>0?p.pnl/p.cost*100:NaN;
       const unit=p.market?.price>0?number(p.market.price,2)+' '+esc(p.s.currency):'Kurs fehlt';
-      h+='<button type="button" class="home-holding-card" data-home-open="'+esc(p.s.id)+'" aria-label="'+esc(p.s.name)+': Depotposition und Analyse ansehen">'+
+      h+='<div class="home-holding-entry"><button type="button" class="home-holding-card" data-home-open="'+esc(p.s.id)+'" aria-label="'+esc(p.s.name)+': Depotposition und Analyse ansehen">'+
         '<span class="home-holding-top"><strong>'+esc(p.s.name)+'</strong><b class="'+cl+'">'+(valid?depotSignedMoney(p.pnl):'Bewertung offen')+'</b></span>'+
         '<span class="home-holding-sub"><span>'+number(p.qty,4)+' Stk · Ø Einstand '+(Number.isFinite(p.avg)?depotMoney(p.avg):'–')+'</span>'+
         '<b class="'+cl+'">'+(valid?depotSignedPct(pct):'–')+'</b></span>'+
         '<span class="home-holding-sub"><span>Kurs: '+unit+'</span><span>Wert: <b>'+depotMoney(p.value)+'</b></span></span>'+
         '<span class="home-holding-stamp">'+(p.market?'Kurs '+esc(p.market.date)+(p.market.indicative?' · indikativ':''):'Kurs-/FX-Prüfung offen')+' · Zur Analyse ›</span>'+
-        '</button>';
+        '</button><button type="button" class="home-position-reset" data-home-reset-position="'+esc(p.s.id)+'">Diese Position auf null setzen</button></div>';
     }
-    h+='<p class="home-holdings-note">Positionsgewinne berücksichtigen die erfassten Kaufgebühren und werden in EUR bewertet. Gesamtvermögen und Depotwerte sind Simulationen.</p></section>';
+    h+='<p class="home-holdings-note">Positionsgewinne berücksichtigen die erfassten Kaufgebühren und werden in EUR bewertet. Gesamtvermögen und Depotwerte sind Simulationen.</p><section class="home-depot-reset"><h3>Testdepot verwalten</h3><p>Ein Reset betrifft nur den aktiven Testlauf. Aktienauswahl, Kurse, Analysen und frühere Testbuchungen bleiben erhalten.</p><button type="button" class="home-depot-reset-all" data-home-reset-all>Aktives Simulationsdepot auf null setzen</button></section></section>';
   }
 
     if(reachedPullbacks.length||blockedPullbacks.length){
@@ -438,6 +438,8 @@ function unityHomeManagePanel(){
 
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.homeResetPosition){if(typeof depotResetPosition!=='function'){alert('Die Reset-Funktion wird noch geladen. Bitte kurz erneut versuchen.');return}depotResetPosition(b.dataset.homeResetPosition).catch(err=>alert(err.message||String(err)));return}
+  if(b.dataset.homeResetAll){if(typeof depotResetAll!=='function'){alert('Die Reset-Funktion wird noch geladen. Bitte kurz erneut versuchen.');return}depotResetAll().catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.homeToggle){const stock=stocks().find(s=>s.id===b.dataset.homeToggle);if(stock){put('instruments',{...stock,watchHidden:!stock.watchHidden}).then(()=>audit('WATCHLIST_TOGGLE',stock.id,!stock.watchHidden?'hidden':'shown')).then(refresh).catch(err=>alert(err.message||String(err)))}return}
   if(b.dataset.homeShift){unityHomeSort='manual';unityHomeShift(b.dataset.homeShift,Number(b.dataset.direction)).catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.policyTestbuy){

@@ -63,8 +63,8 @@ const cloneFile=async(file,transform)=>{
  assert.equal(delta.snapshot.changes.quotes.length,1);
  assert.equal(delta.snapshot.changes.analyses.length,1);
  assert.equal(delta.snapshot.changes.histories.length,0);
- assert.equal(delta.snapshot.parentId,base.snapshot.backupId);
- assert.equal(delta.snapshot.parentHash,base.snapshot.snapshotHash);
+ assert.equal(delta.snapshot.parentId,JSON.parse(await savedBase.text()).backupId);
+ assert.equal(delta.snapshot.parentHash,JSON.parse(await savedBase.text()).snapshotHash);
  assert.ok(delta.file.size<savedBase.size*.8,'incremental file should be materially smaller');
  await call('unityIncShare()');
  assert.equal(shared.length,2);

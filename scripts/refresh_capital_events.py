@@ -18,7 +18,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "capital_events.json"
 URL = "https://api.ted.europa.eu/v3/notices/search"
 FIELDS = [
-    "publication-number", "publication-date", "notice-type", "notice-title",
+    "publication-number", "publication-date", "notice-type", "notice-title", "official-language",
     "buyer-name", "buyer-country", "winner-name", "winner-identifier",
     "classification-cpv", "total-value", "total-value-cur",
 ]
@@ -62,12 +62,26 @@ def fetch(payload):
     return json.loads(raw)
 
 
-def single(value, limit=150):
-    """Only unambiguous leaf values; never join multi-winner lists as one winner."""
+def single(value, limit=150, preferred_lang=""):
+    """Return a single unambiguous text value, honoring TED multilingual maps.
+
+    TED buyer-name/winner-name use {lang: [names]}; never select the first
+    of *multiple* firms or merge multiple winners into one issuer.
+    """
     if isinstance(value, (str, int, float)) and not isinstance(value, bool):
         return str(value).strip()[:limit]
     if isinstance(value, list) and len(value) == 1:
-        return single(value[0], limit)
+        return single(value[0], limit, preferred_lang)
+    if isinstance(value, dict):
+        langs = list(value)
+        # Prefer the notice's original language where available, then German,
+        # then English; do not infer any legal entity from translated names.
+        options = [preferred_lang, "deu", "eng"] + langs
+        for lang in options:
+            if lang and lang in value:
+                txt = single(value[lang], limit, preferred_lang)
+                if txt:
+                    return txt
     return ""
 
 
@@ -106,10 +120,11 @@ def process(notices, cpv, today):
         values = codes if isinstance(codes, list) else re.split(r"[,;\s]+", str(codes))
         if cpv not in [str(c).strip() for c in values]:
             continue
-        title = single(obj.get("notice-title"), 250)
-        buyer = single(obj.get("buyer-name"), 180)
+        original_lang = single(obj.get("official-language"), 3).lower()
+        title = single(obj.get("notice-title"), 250, original_lang)
+        buyer = single(obj.get("buyer-name"), 180, original_lang)
         country = single(obj.get("buyer-country"), 3)
-        winner = single(obj.get("winner-name"), 180)
+        winner = single(obj.get("winner-name"), 180, original_lang)
         winner_id = single(obj.get("winner-identifier"), 100)
         # Multi-company text or missing legal identity: no issuer attribution.
         if ";" in winner or ";" in winner_id:
@@ -126,6 +141,7 @@ def process(notices, cpv, today):
         seen.add(number)
         result.append({
             "id": number, "publishedAt": published, "title": title or "EU-Vergabebekanntmachung",
+            "titleLanguage": original_lang if original_lang and title else "",
             "buyer": buyer, "buyerCountry": country, "winner": winner,
             "winnerIdentityVerified": False,
             "noticeType": "award-notice", "cpv": cpv,

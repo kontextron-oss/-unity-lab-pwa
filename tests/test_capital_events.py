@@ -42,6 +42,32 @@ class CapitalEventsTests(unittest.TestCase):
         self.assertFalse(e["winnerIdentityVerified"])
         self.assertNotIn("stock",e)
 
+    def test_multilingual_official_titles_and_buyer_not_cleared(self):
+        record=item(**{
+            "official-language":["DEU"],
+            "notice-title":{"eng":"Transformer contract",
+                            "deu":"Lieferung von Transformatoren"},
+            "buyer-name":{"deu":["Stadtwerke Dresden"]},
+            "winner-name":{"deu":["Lieferant GmbH"]},
+        })
+        result=mod.process([record],"31170000",TODAY.date())
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0]["title"],"Lieferung von Transformatoren")
+        self.assertEqual(result[0]["titleLanguage"],"deu")
+        self.assertEqual(result[0]["buyer"],"Stadtwerke Dresden")
+        self.assertEqual(result[0]["winner"],"Lieferant GmbH")
+        self.assertFalse(result[0]["winnerIdentityVerified"])
+
+    def test_multilingual_competing_winners_are_not_single_company(self):
+        record=item(**{
+            "official-language":["ENG"],
+            "winner-name":{"eng":["Vendor A", "Vendor B"]},
+            "winner-identifier":["ID-A","ID-B"],
+        })
+        result=mod.process([record],"31170000",TODAY.date())
+        self.assertEqual(result[0]["winner"],"")
+        self.assertFalse(result[0]["winnerIdentityVerified"])
+
     def test_wrong_cpv_and_multi_winner_not_attributed(self):
         e=item(**{"winner-name":"Vendor A; Vendor B",
                   "winner-identifier":"id-a; id-b",

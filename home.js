@@ -339,8 +339,16 @@ function unityHomeDetail(sid){
   const s=stocks().find(x=>x.id===sid);
   if(!s)return '';
   const {x,m,valid}=unityHomeQuote(s),d=unityHomeDecision(s),signal=unityHomeSignal(s),research=unityResearchIndicator(s),pullback=unityPullbackAlert(s);
-  let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>Aktienansicht</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
+  const isCrypto=typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s);
+  let h='<section class="home-detail" id="home-stock-detail"><div class="home-detail-title"><div><small>'+(isCrypto?'Kryptoanalyse':'Aktienansicht')+'</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.ticker)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</p></div><button type="button" class="secondary" data-home-close>Schließen</button></div>';
   const dq=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null;
+  if(isCrypto){
+    if(typeof unityCryptoAnalysisPanel==='function')h+=unityCryptoAnalysisPanel(s);
+    if(x)h+=unityChartPanel(x);else h+='<p class="home-missing">Kein überprüfbarer Krypto-Kursverlauf vorhanden. Es wird keine Kurve und keine technische Zone erfunden.</p>';
+    if(dq)h+='<p class="home-price-time">'+esc(dq.label)+': <b>'+number(dq.price,6)+' '+esc(s.currency)+'</b> · '+(dq.quotedAt?esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}))+' MEZ/MESZ':esc(dq.date))+' · '+esc(dq.exchange)+'</p>';
+    h+='<p class="tiny muted">Krypto handelt rund um die Uhr. Der aktuelle Kurs ist nur eine Referenz, solange Quelle und Zeitstempel nicht als belastbare Krypto-Marktdaten bestätigt sind.</p>';
+    h+=unityHomeTradeActions(s);return h+'</section>';
+  }
   if(['reached','blocked','watch'].includes(pullback.kind)){
     h+='<section class="home-pullback-detail home-pullback-'+pullback.kind+'"><strong>'+esc(pullback.label)+'</strong>'+
       '<p>'+esc(pullback.detail)+'</p>'+

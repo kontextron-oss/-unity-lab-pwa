@@ -1,3 +1,17 @@
+## UNITY LAB 0.13.52 – Vergabeergebnisse fachlich eindeutig
+
+EU-TED-Bekanntmachungen vom Typ `can-standard` sind nicht automatisch
+erteilte Aufträge. Der Collector berücksichtigt jetzt zusätzlich das
+amtliche eForms-Losresultat `BT-142-LotResult`. Nur `selec-w` kennzeichnet
+einen für mindestens ein Los ausgewählten Gewinner. Alle anderen
+Bekanntmachungen werden als **„Zuschlag nicht bestätigt“** geführt.
+Genannte Auftragnehmer sind weiterhin **nicht** als UNITY-Emittenten
+verifiziert. Die iPhone-Ansicht zeigt diesen Unterschied ausdrücklich,
+listet vier der jüngsten Meldungen je Thema und bietet weitere Meldungen
+zum Ausklappen an. Amtlich genannte Verfahrenswerte dürfen mehrere Lose
+umfassen. Aus ihnen werden keine ETF-Zuflüsse, Anlegertransaktionen oder
+Unternehmensumsätze berechnet.
+
 ## UNITY LAB 0.13.51 – Neues Kapital- und Ereignisradar (EU TED)
 
 Die mobile App hat einen sechsten Hauptbereich **Kapitalradar**. Dort werden

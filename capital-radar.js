@@ -8,7 +8,7 @@ const unityCapitalThemeStocks={
   'power-cables':['PRY','NEX','ABBN'],
   'cooling':['VRT','LR','BEAN']
 };
-let unityCapitalData=null,unityCapitalError='',unityCapitalLoading=false;
+let unityCapitalData=null,unityCapitalError='',unityCapitalLoading=false,unityCapitalLastAttempt=0;
 function unityCapitalTime(value){
   const ms=Date.parse(value||'');
   return Number.isFinite(ms)?ms:NaN;
@@ -156,7 +156,8 @@ function unityCapitalView(){
   return h;
 }
 async function unityCapitalLoad(force=false){
-  if(unityCapitalLoading||(!force&&unityCapitalData))return;
+  if(unityCapitalLoading||(!force&&(unityCapitalData||Date.now()-unityCapitalLastAttempt<300000)))return;
+  unityCapitalLastAttempt=Date.now();
   unityCapitalLoading=true;
   try{
     const r=await fetch(unityCapitalUrl+'?t='+Date.now(),{cache:'no-store'});

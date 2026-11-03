@@ -20,6 +20,17 @@ function unityFundPilotItem(s){
  const entry=unityFundPilot?.items?.[s?.isin];
  return entry?.isin===s?.isin?entry:null;
 }
+// A decision source must belong to this issuer's IR domain, or to an explicitly
+// whitelisted issuer disclosure host in its own record. No cross-company reuse.
+function unityFundEvidenceSourceAllowed(item,url){
+ try{
+  const source=new URL(String(url||'')),ir=new URL(String(item?.investorRelations||''));
+  if(source.protocol!=='https:')return false;
+  const extra=Array.isArray(item?.decisionEvidence?.sourceHosts)?item.decisionEvidence.sourceHosts:[];
+  const allowed=new Set([ir.hostname,...extra].map(x=>String(x||'').toLowerCase()));
+  return allowed.has(source.hostname.toLowerCase());
+ }catch(_){return false}
+}
 function unityFundPilotPanel(s){
  const item=unityFundPilotItem(s);
  if(!item&&!['CH0012221716','FR0000121972','DE000ENER6Y0','DE0006231004'].includes(s?.isin))return '';
@@ -96,7 +107,7 @@ function unityFundPilotPanel(s){
     ];
     h+='<h4>Datierte Entscheidungsbelege</h4><div class="unity-issuer-events">';
     for(const [label,ok,detail,date,url] of evidenceRows){
-      const safeUrl=/^https:\/\/www\.jenoptik\.com\//.test(String(url||''))?url:'';
+      const safeUrl=unityFundEvidenceSourceAllowed(item,url)?url:'';
       h+='<div class="unity-issuer-event"><span><strong>'+esc(label)+'</strong><small>'+
         esc(ok?'✓ belegt':'○ offen')+(date?' · '+esc(date):'')+(detail?' · '+esc(detail):'')+
         '</small></span>'+(safeUrl?'<a href="'+esc(safeUrl)+'" target="_blank" rel="noopener noreferrer">Original öffnen</a>':'')+'</div>';

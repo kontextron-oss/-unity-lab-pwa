@@ -129,7 +129,7 @@ def process(notices, cpv, today):
         winner_id = single(obj.get("winner-identifier"), 100)
         lot_result = obj.get("BT-142-LotResult")
         raw_status = lot_result if isinstance(lot_result, list) else re.split(
-            r"[,;\\s]+", str(lot_result or ""))
+            r"[,;\s]+", str(lot_result or ""))
         status_values = {str(x).strip() for x in raw_status if str(x).strip()}
         # can-standard is only the *type* of outcome notice, and does NOT
         # prove that every lot is awarded (closed / cancelled results exist).

@@ -53,6 +53,39 @@ function depotPosition(s){
   return {s,...l,market,value,pnl:Number.isFinite(value)?value-l.cost:NaN};
 }
 function depotPositions(){return stocks().map(depotPosition).filter(p=>p.qty>1e-8)}
+
+/* A review queue for existing simulated positions. It documents which thesis
+   deserves attention first; it never creates a sell order or ranks P/L. */
+function depotExitPriority(){
+  const order={exit:0,review:1,data:2,hold:3};
+  return depotPositions().map(p=>{
+    let monitor=null;
+    try{monitor=typeof unityPositionMonitor==='function'?unityPositionMonitor(p.s):null}catch(_){}
+    const kind=monitor?.kind||'data';
+    return {...p,monitor,priority:order[kind]??2};
+  }).sort((a,b)=>a.priority-b.priority||String(a.s.name||'').localeCompare(String(b.s.name||''),'de'));
+}
+function depotExitPriorityPanel(){
+  const list=depotExitPriority();
+  if(!list.length)return '';
+  const active=list.filter(p=>['exit','review','data'].includes(p.monitor?.kind||'data'));
+  let h='<section class="panel depot-exit-priority"><h3>Positionsmonitor · Verkaufspriorität</h3>'+
+    '<p>Die Reihenfolge priorisiert nur die nächste Prüfung. Sie löst keinen Verkauf aus; Gewinn oder Verlust allein verändern sie nicht.</p>';
+  if(!active.length){
+    h+='<p class="muted">Derzeit kein belegter Anlass, eine Position vorrangig zu reduzieren oder zu verlassen. Alle Positionen bleiben in Beobachtung.</p>';
+  }else{
+    h+='<div class="depot-rows">';
+    for(const p of active){
+      const m=p.monitor||{},rank=m.kind==='exit'?'Ausstieg prüfen':m.kind==='review'?'These prüfen':'Daten nachziehen';
+      const cls=m.kind==='exit'?'negative':m.kind==='review'?'':'muted';
+      h+='<button type="button" class="depot-row" data-depot-open="'+esc(p.s.id)+'"><span class="depot-row-top"><strong>'+esc(p.s.name)+'</strong><span class="depot-holding-label '+cls+'">'+esc(rank)+'</span></span>'+
+        '<span class="depot-row-facts"><span><b>'+esc(m.label||'Daten prüfen')+'</b></span><span>Seit Kauf '+depotSignedPct(p.cost>0?p.pnl/p.cost*100:NaN)+'</span></span>'+
+        '<span class="tiny muted">'+esc(m.reason||'Für diese Position fehlt eine aktuelle, vollständige Beurteilung.')+'</span></button>';
+    }
+    h+='</div>';
+  }
+  return h+'<p class="tiny muted">Reihenfolge: belegte fundamentale Verschlechterung → Ereignis- oder technische Neubewertung → Datenlücke. Ein Minus ist ausdrücklich kein Verkaufsgrund.</p></section>';
+}
 function depotMoney(v){return Number.isFinite(v)?euro(v):'–'}
 function depotCapital(){
   const cfg=(cache.settings||[]).find(x=>x.id==='portfolio-capital');
@@ -99,6 +132,7 @@ function depotOverview(){
   let h='<section class="panel depot-panel" id="depot-overview"><div class="depot-title"><h2>Mein Depot · Überblick</h2><span class="depot-sim">Simulation · lokal gespeichert</span></div>'+
     '<div class="depot-totals"><div><small>Gesamtvermögen inklusive freiem Kapital</small><strong>'+depotMoney(capital.total)+'</strong></div><div><small>Gesamtgewinn / -verlust</small><strong class="'+(capital.gain>0?'positive':capital.gain<0?'negative':'')+'">'+depotSignedMoney(capital.gain)+'</strong><small>'+depotSignedPct(capital.gainPct)+' auf Nettoeinzahlungen</small></div><div><small>Aktueller Depotwert</small><strong>'+depotMoney(value)+'</strong></div><div><small>Einstand offener Positionen</small><strong>'+depotMoney(cost)+'</strong></div><div><small>Buchgewinn / -verlust</small><strong>'+depotSignedMoney(value-cost)+'</strong></div><div><small>Realisierter Gewinn / Verlust</small><strong>'+depotSignedMoney(realized)+'</strong></div></div>';
   h+='<section class="panel" id="depot-capital"><h3>Fiktives Kapital</h3><div class="depot-totals"><div><small>Einzahlungen gesamt</small><strong>'+depotMoney(capital.funded)+'</strong></div><div><small>Frei verfügbar</small><strong>'+depotMoney(capital.free)+'</strong></div><div><small>Angelegt · offene Positionen</small><strong>'+depotMoney(capital.invested)+'</strong></div><div><small>Fiktives Gesamtvermögen</small><strong>'+depotMoney(capital.total)+'</strong></div></div><form id="capital-form"><label>Fiktives Startkapital in EUR<input name="capital" type="number" min="0" step="0.01" value="'+(capital.opening?String(capital.opening):'')+'" placeholder="z. B. 10000"></label><button class="secondary" type="submit">Startkapital speichern</button></form><form id="deposit-form"><label>Weitere fiktive Einzahlung in EUR<input name="amount" type="number" min="0.01" step="0.01" required placeholder="z. B. 500"></label><label>Notiz (optional)<input name="note" maxlength="120" placeholder="z. B. Monatsrate"></label><button class="primary" type="submit">Mehr Geld einzahlen</button></form><h3 style="margin-top:18px">Einzahlungsverlauf</h3>'+depotCashHistory()+'<p class="tiny muted">Testkäufe einschließlich Gebühren mindern das freie Kapital. Testverkäufe erhöhen es um den Nettoerlös. Ohne Startkapital oder Einzahlung bleibt das Simulationsdepot unbegrenzt.</p></section><section class="panel depot-reset-panel"><h3>Testlauf zurücksetzen</h3><p class="muted">Setzt ausschließlich das aktive Simulationsdepot zurück. Deine Aktienauswahl, Kurse, Analysen und die bisherigen Testbuchungen bleiben erhalten.</p><div class="actions"><button type="button" class="danger" id="depot-reset-all">Aktives Simulationsdepot auf null setzen</button></div><p class="tiny muted">Der aktuelle Testlauf wird nicht gelöscht, sondern als archivierter Verlauf markiert. Das fiktive Startkapital bleibt als neuer Ausgangsbetrag verfügbar; zusätzliche Einzahlungen und Testkäufe werden aus dem aktiven Lauf herausgenommen.</p></section>';
+  h+=depotExitPriorityPanel();
   h+='<div class="depot-range" aria-label="Zeitraum der Depot-Kursverläufe">'+[['1W','Woche'],['1M','Monat'],['1Y','Jahr'],['3Y','3 Jahre'],['6Y','6 Jahre']].map(([r,label])=>'<button type="button" data-depot-range="'+r+'" class="'+(depotRange===r?'active':'')+'">'+label+'</button>').join('')+'</div>';
   if(!pos.length)h+='<p class="muted">Noch keine simulierten Depotpositionen. Deine tatsächlichen Depotbestände sind nicht verbunden. Du kannst Aktien im Simulationsdepot erfassen; vorhandene Daten bleiben unverändert.</p>';
   else{

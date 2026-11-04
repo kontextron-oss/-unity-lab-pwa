@@ -73,7 +73,9 @@ def select_metric(payload, names):
             candidates.append((concept, rows))
     if not candidates:
         return None, [], None
-    concept, rows = max(candidates, key=lambda x: len(x[1]))
+    # Prefer the concept with the most recent annual filing. Older, deprecated
+    # concepts must never win merely because they contain more history.
+    concept, rows = max(candidates, key=lambda x: (x[1][-1]["periodEnd"], len(x[1])))
     return concept, rows, rows[-1]
 
 def fact(value, concept, cik):
@@ -103,9 +105,13 @@ def build_issuer(ticker, issuer, now):
         if concept and latest:
             selected[label] = (concept, latest)
             series[label] = rows
-    # Use the latest annual end supported by at least revenue plus net income.
-    ends = [entry[1]["periodEnd"] for entry in selected.values()]
-    end = max(ends) if ends else ""
+    # Keep one internally comparable fiscal year: prefer the latest period that
+    # is covered by the most required metrics instead of mixing reporting years.
+    end_counts = {}
+    for rows in series.values():
+        for row in rows:
+            end_counts[row["periodEnd"]] = end_counts.get(row["periodEnd"], 0) + 1
+    end = max(end_counts, key=lambda value: (end_counts[value], value)) if end_counts else ""
     current, prior = {}, {}
     previous_end = ""
     for label, (concept, row) in selected.items():
@@ -118,7 +124,8 @@ def build_issuer(ticker, issuer, now):
             prior[label] = fact(earlier[-1], concept, issuer["cik"])
             previous_end = max(previous_end, earlier[-1]["periodEnd"])
     report_url = f"{BASE}/CIK{issuer['cik']}.json"
-    status = "metrics-partial" if len(current) >= 3 else "filing-no-validated-metrics"
+    required = {"revenue", "netIncome", "assets", "equity", "operatingCashFlow"}
+    status = "metrics-complete" if required.issubset(current) else ("metrics-partial" if len(current) >= 3 else "filing-no-validated-metrics")
     latest_filing = {"periodEnd": end, "published": max((x.get("filed","") for x in current.values()), default=""), "reportUrl": report_url, "filingSystem": "SEC EDGAR"}
     return {
       "name": issuer["name"], "ticker": ticker, "isin": issuer["isin"], "cik": issuer["cik"],

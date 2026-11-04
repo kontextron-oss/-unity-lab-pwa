@@ -93,9 +93,9 @@ const core={
  assert.match(panel,/Soziale Medien/);
  assert.match(panel,/nicht unabhängig gemessen/);
  assert.doesNotMatch(panel,/Aktie kaufen!/);
- assert.match(html,/decision-cockpit\.js\?v=0\.13\.78/);
- assert.match(sw,/decision-cockpit\.js\?v=0\.13\.78/);
- assert.match(sw,/unity-lab-v0\.13\.78/);
+ assert.match(html,/decision-cockpit\.js\?v=0\.13\.79/);
+ assert.match(sw,/decision-cockpit\.js\?v=0\.13\.79/);
+ assert.match(sw,/unity-lab-v0\.13\.79/);
  assert.match(fs.readFileSync('analysis.js','utf8'),/unityCockpitPanel\(s\)/);
  assert.match(fs.readFileSync('capital-radar.js','utf8'),/unityCockpitOverview\(\)/);
  console.log('UNITY decision cockpit: all stocks, 3 horizons, psychology-proxy disclaimer, earnings/RR/overheating veto, no false capital-flow evidence passed.');

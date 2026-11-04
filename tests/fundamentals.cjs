@@ -6,7 +6,7 @@ assert.match(fs.readFileSync('analysis.js','utf8'),/unityFundPilotPanel\(s\)/);
 assert.match(fs.readFileSync('index.html','utf8'),/fundamentals\.js/);
 const ctx={Date,Number,Math,JSON,Object,Intl,esc:x=>String(x),db:null,
  fetch:async()=>({ok:true,json:async()=>({schemaVersion:1,items:{
-  FR0000121972:{isin:'FR0000121972',name:'Schneider Electric',status:'metrics-partial',reportCurrency:'EUR',source:'XBRL',checkedAt:'2026-11-01',
+  FR0000121972:{isin:'FR0000121972',name:'Schneider Electric',status:'metrics-complete',reportCurrency:'EUR',source:'XBRL',checkedAt:'2026-11-01',
    latestFiling:{periodEnd:'2025-12-31',reportUrl:'https://filings.xbrl.org/test'},priorFiling:{periodEnd:'2024-12-31'},derived:{revenueGrowth:{value:5.2,unit:'percent',periodEnd:'2025-12-31',priorPeriodEnd:'2024-12-31'}},
    metrics:{revenue:{value:123000000,currency:'EUR',periodEnd:'2025-12-31',concept:'ifrs-full:Revenue'},
             equity:{value:1,currency:'USD',periodEnd:'2025-12-31',concept:'ifrs-full:Equity'}}}
@@ -25,7 +25,7 @@ vm.createContext(ctx);vm.runInContext(src,ctx);
  ctx.unknown={isin:'US92537N1081'};
  assert.equal(vm.runInContext('unityFundPilotPanel(unknown)',ctx),'');
  ctx.s={isin:'DE0006231004'};
- assert.match(vm.runInContext('unityFundPilotPanel(s)',ctx),/noch nicht verfügbar/);
+ assert.equal(vm.runInContext('unityFundPilotPanel(s)',ctx),'');
  vm.runInContext('unityFundPilot.items["DE0006231004"]={isin:"DE0006231004",status:"issuer-release-only",reportCurrency:"EUR",officialHighlights:{fiscalYear:"2025",sourceType:"issuer-primary-disclosure",sourceUrl:"https://www.infineon.com/press-release/2025/infxx202511-021",currency:"EUR",facts:{revenue:{value:14662000000,currency:"EUR",periodEnd:"2025",kind:"issuer-release",label:"Umsatz"},adjustedFreeCashFlow:{value:1803000000,currency:"EUR",periodEnd:"2025",kind:"issuer-release",label:"Bereinigter Free Cashflow"}}}}',ctx);
  const officialPanel=vm.runInContext('unityFundPilotPanel(s)',ctx);
  assert.match(officialPanel,/14\.662\.000\.000/);

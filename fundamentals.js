@@ -135,7 +135,7 @@ function unityFundPilotPanel(s){
    const rows=[['Kurs-Gewinn-Verhältnis (KGV)',valuation.pe],['Kurs-Buchwert-Verhältnis (KBV)',valuation.pb],['Free-Cashflow-Rendite',valuation.fcfYield]];
    for(const [label,value] of rows)if(Number.isFinite(value)){
      const suffix=label.includes('Rendite')?' %':'';
-     h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+esc(unityNumber?unityNumber(value,2):Number(value).toFixed(2))+suffix+'</b><small>Jahresabschluss '+esc(valuation.period)+' + verfügbarer Referenzkurs</small></div>';
+     h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+esc(typeof unityNumber==='function'?unityNumber(value,2):Number(value).toFixed(2))+suffix+'</b><small>Jahresabschluss '+esc(valuation.period)+' + verfügbarer Referenzkurs</small></div>';
    }
    h+='<p class="tiny muted">Multiplikatoren beschreiben die aktuelle Kombination aus Abschluss und Kurs. Sie bestimmen keinen inneren Wert und sind keine Kaufempfehlung.</p>';
   }else h+='<p class="tiny muted">Bewertung noch offen: '+esc(valuation.missing.join(', '))+'. Fehlende Werte werden nicht geschätzt.</p>';

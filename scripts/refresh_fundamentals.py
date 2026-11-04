@@ -41,6 +41,10 @@ CONCEPTS = {
     "operatingCashFlow": ("CashFlowsFromUsedInOperatingActivities",),
 }
 DURATION = {"revenue", "netIncome", "operatingCashFlow"}
+# A full annual-filing set is only complete when each core metric comes from
+# the same validated consolidated fiscal period. Press-release highlights
+# deliberately never satisfy this requirement.
+REQUIRED_METRICS=frozenset(CONCEPTS)
 HEADERS = {"User-Agent": "UNITY-Lab-Research/0.10 (https://github.com/kontextron-oss/-unity-lab-pwa)",
            "Accept": "application/vnd.api+json, application/json"}
 def get_json(url, max_bytes=7_000_000):
@@ -260,7 +264,9 @@ def build():
                         try:
                             report=get_json(docurl)
                             row["metrics"]=extract_metrics(report,filings[0]["periodEnd"],stock["currency"],docurl)
-                            row["status"]="metrics-partial" if row["metrics"] else "filing-no-validated-metrics"
+                            row["status"]=("metrics-complete" if REQUIRED_METRICS.issubset(row["metrics"])
+                                           else "metrics-partial" if row["metrics"]
+                                           else "filing-no-validated-metrics")
                             previous=next((f for f in filings[1:] if f["periodEnd"]!=filings[0]["periodEnd"]),None)
                             if previous and previous.get("jsonUrl"):
                                 row["priorFiling"]=previous

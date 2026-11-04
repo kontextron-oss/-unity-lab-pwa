@@ -64,10 +64,9 @@ function unityDeepFilingEvidence(s){
   const count=Object.keys(ratios).length;
   // Only non-stale, source-checked filings, not stand-alone press release headlines.
   const checked=Date.parse(f?.checkedAt||'');
-  const verified=!!f&&f.status==='metrics-partial'&&!!f.latestFiling?.reportUrl&&
-    /^https:\/\/filings\.xbrl\.org\//.test(f.latestFiling.reportUrl)&&
-    Number.isFinite(checked)&&Date.now()-checked<35*86400000&&validPeriod&&count>=4;
-  const score=count>=4?unityPolicyClamp(Math.round(
+  const trustedReport=/^https:\/\/(filings\.xbrl\.org|data\.sec\.gov)\//.test(String(f?.latestFiling?.reportUrl||''));
+  const verified=!!f&&['metrics-partial','metrics-complete'].includes(f.status)&&trustedReport&&
+    Number.isFinite(checked)&&Date.now()-checked<35*86400000&&validPeriod&&count>=4;  const score=count>=4?unityPolicyClamp(Math.round(
     35+(ratios.revenueGrowth||0)*1.3+(ratios.netIncomeGrowth||0)*.65+
     (ratios.equityRatio||0)*.35+(ratios.netMargin||0)*.75+
     (ratios.operatingCashFlowMargin||0)*.45)):NaN;

@@ -17,7 +17,7 @@ function unityCryptoEnsureMarket(s){
   for(const row of Array.isArray(raw.points)?raw.points:[]){const date=String(row?.date||'').slice(0,10),close=Number(row?.close),volume=Number(row?.volume);if(date&&close>0)byDate.set(date,{date,close,volume:Number.isFinite(volume)&&volume>0?volume:0})}
   const points=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date)),price=Number(raw?.price),fetchedAt=String(raw?.fetchedAt||snapshot.generatedAt||'');
   if(!(price>0)||points.length<200||!Number.isFinite(Date.parse(fetchedAt)))throw Error('Krypto-Snapshot ist unvollständig.');
-  unityCryptoMarketCache.set(s.id,{points,date:String(raw.date||points.at(-1)?.date||''),price,volume24:Number(raw.volume24),marketCap:Number(raw.marketCap),source:String(raw.source||snapshot.source||'CoinPaprika · USD-Referenz · Marktaggregat'),venue:String(raw.venue||'Marktaggregat'),fetchedAt});
+  unityCryptoMarketCache.set(s.id,{points,date:String(raw.date||points.at(-1)?.date||''),price,volume24:Number(raw.volume24),marketCap:Number(raw.marketCap),source:String(raw.source||snapshot.source||'Krypto-Marktdaten-Snapshot'),venue:String(raw.venue||'Marktaggregat'),fetchedAt});
  }catch(e){unityCryptoMarketErrors.set(s.id,String(e?.message||e))}
  finally{unityCryptoMarketLoading.delete(s.id);if(typeof render==='function'&&typeof db!=='undefined'&&db)render()}
 }

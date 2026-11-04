@@ -186,7 +186,9 @@ function unityCockpitClassify(input){
   else if(behavior.kind==='fragile'){kind='wait';action='Abwarten – Preisverhalten noch fragil';}
   else if(!market.trend){kind='wait';action='Abwarten – Trend nicht bestätigt';}
   else if(!setup){kind='watch';action='Beobachten – Einstiegszone abwarten';}
-  else if(investmentReady&&fundamentalReady&&earningsKnown&&!rrBad){
+  else if(!fundamentalOk){
+    kind='data';action='Unternehmensdaten ergänzen – nur technischer Radar';
+  }else if(investmentReady&&fundamentalReady&&earningsKnown&&!rrBad){
     kind='investment';action='Favorit für geprüfte, fiktive Kaufentscheidung';
   }else{kind='review';action='Favorit für vertiefte Prüfung – kein Kaufurteil';}
   const checks=[marketOk,fundamentalOk,earningsKnown,fundamentalReady];

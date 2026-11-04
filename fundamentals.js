@@ -24,6 +24,32 @@ function unityFundPilotItem(s){
  if(sec&&String(sec.ticker||'').toUpperCase()===symbol)return sec;
  return null;
 }
+// Source-bound annual-report multiples. These are descriptive valuation
+// ratios, not a fair-value model or a buy signal.
+function unityFundValuation(s, referencePrice){
+ const item=unityFundPilotItem(s),period=String(item?.latestFiling?.periodEnd||'');
+ const age=Date.parse(period+'T12:00:00Z');
+ const fresh=Number.isFinite(age)&&age<=Date.now()&&Date.now()-age<=550*86400000;
+ const metric=key=>Number(item?.metrics?.[key]?.value);
+ const samePeriod=key=>item?.metrics?.[key]?.periodEnd===period;
+ const price=Number(referencePrice),eps=metric('epsDiluted'),shares=metric('sharesDiluted'),equity=metric('equity');
+ const fcf=Number(item?.derived?.freeCashFlow?.value);
+ const fcfValid=item?.derived?.freeCashFlow?.kind==='derived'&&item?.derived?.freeCashFlow?.periodEnd===period;
+ const priceOk=Number.isFinite(price)&&price>0&&fresh;
+ const epsOk=priceOk&&samePeriod('epsDiluted')&&Number.isFinite(eps)&&eps>0;
+ const sharesOk=priceOk&&samePeriod('sharesDiluted')&&Number.isFinite(shares)&&shares>0;
+ const equityOk=sharesOk&&samePeriod('equity')&&Number.isFinite(equity)&&equity>0;
+ const fcfOk=sharesOk&&fcfValid&&Number.isFinite(fcf)&&fcf>0;
+ const missing=[];
+ if(!fresh)missing.push('aktueller geprüfter Jahresbericht');
+ if(!priceOk)missing.push('plausibler Referenzkurs');
+ if(!epsOk)missing.push('verwässerter Gewinn je Aktie');
+ if(!sharesOk)missing.push('verwässerte Aktienzahl');
+ if(!fcfOk)missing.push('Cashflow und Investitionsausgaben');
+ return {item,period,price,pe:epsOk?price/eps:NaN,pb:equityOk?price/(equity/shares):NaN,
+  fcfYield:fcfOk?fcf/(shares*price)*100:NaN,available:[epsOk,equityOk,fcfOk].filter(Boolean).length,
+  missing};
+}
 // A decision source must belong to this issuer's IR domain, or to an explicitly
 // whitelisted issuer disclosure host in its own record. No cross-company reuse.
 function unityFundEvidenceSourceAllowed(item,url){
@@ -102,6 +128,17 @@ function unityFundPilotPanel(s){
       (valid?new Intl.NumberFormat('de-DE',{minimumFractionDigits:1,maximumFractionDigits:2,signDisplay:key.endsWith('Growth')?'exceptZero':'auto'}).format(Number(r.value))+' %':'Nicht berechenbar')+
       '</b><small>'+(valid?'Aus geprüften Berichtskennzahlen berechnet':'Keine ausreichend vergleichbaren Geschäftsjahre')+'</small></div>';
   }
+  const quote=typeof unityMarketForStock==='function'?unityMarketForStock(s):null;
+  const valuation=unityFundValuation(s,quote?.price);
+  h+='<h4>Bewertungskennzahlen · Abschluss + Referenzkurs</h4>';
+  if(valuation.available){
+   const rows=[['Kurs-Gewinn-Verhältnis (KGV)',valuation.pe],['Kurs-Buchwert-Verhältnis (KBV)',valuation.pb],['Free-Cashflow-Rendite',valuation.fcfYield]];
+   for(const [label,value] of rows)if(Number.isFinite(value)){
+     const suffix=label.includes('Rendite')?' %':'';
+     h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+esc(unityNumber?unityNumber(value,2):Number(value).toFixed(2))+suffix+'</b><small>Jahresabschluss '+esc(valuation.period)+' + verfügbarer Referenzkurs</small></div>';
+   }
+   h+='<p class="tiny muted">Multiplikatoren beschreiben die aktuelle Kombination aus Abschluss und Kurs. Sie bestimmen keinen inneren Wert und sind keine Kaufempfehlung.</p>';
+  }else h+='<p class="tiny muted">Bewertung noch offen: '+esc(valuation.missing.join(', '))+'. Fehlende Werte werden nicht geschätzt.</p>';
   h+='<p class="tiny muted">Letzte Quellenprüfung: '+esc(item.checkedAt||'unbekannt')+' · '+esc(item.source||'ESEF')+'</p>';
   const decisionEvidence=item.decisionEvidence;
   if(decisionEvidence){

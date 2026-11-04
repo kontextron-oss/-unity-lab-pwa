@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a source-bound US fundamentals snapshot from SEC Company Facts.
 
-No browser requests, no API key and no estimated values. A company is published
+No browser requests, no API key and no estimated values. Snapshot publication is atomic. A company is published
 only with its own CIK-bound SEC facts. Missing concepts remain missing.
 """
 from __future__ import annotations

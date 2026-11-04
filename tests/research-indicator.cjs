@@ -13,6 +13,7 @@ const context={
  Date,Math,Number,Array,JSON,
  stocks:()=>list,unityMarket:{generatedAt:'2026-11-02T16:00:00Z'},unityMarketLoading:false,
  unityMarketItem:()=>quote,unityMetrics:()=>metric,unityDataQuality:()=>({canCompare:true}),
+ unityFundPilotItem:()=>({latestFiling:{periodEnd:'2026-09-26'},metrics:{revenue:{value:1},netIncome:{value:1},assets:{value:1},equity:{value:1},operatingCashFlow:{value:1}}}),
  unityChartData:(item,range)=>range==='1M'?item.points.slice(-22):range==='3M'?item.points.slice(-66):item.points.slice(-2),
  unityDisplayQuote:()=>({price:quote.price,currency:stock.currency,date:quote.date,precision:'day',source:'test'}),
  unityEuroRate:()=>({rate:.86,date:'2026-11-02',source:'test'}),

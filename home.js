@@ -39,7 +39,6 @@ async function unityHomeShift(sid,delta){
 const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr']];
 function unityHomeQuote(s){
   const crypto=typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s);
-  if(crypto&&typeof unityCryptoEnsureMarket==='function')unityCryptoEnsureMarket(s);
   const verified=crypto&&typeof unityCryptoMarketOverride==='function'?unityCryptoMarketOverride(s):null;
   const full=crypto?verified:(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),x=full||(crypto?null:(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null)),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
@@ -49,7 +48,6 @@ function unityHomeQuote(s){
 function unityHomeDataState(s){
   const crypto=typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s);
   if(crypto){
-    if(typeof unityCryptoEnsureMarket==='function')unityCryptoEnsureMarket(s);
     const verified=typeof unityCryptoMarketOverride==='function'?unityCryptoMarketOverride(s):null;
     const loading=typeof unityCryptoMarketLoading!=='undefined'&&unityCryptoMarketLoading.has(s?.id);
     const error=typeof unityCryptoMarketErrors!=='undefined'?unityCryptoMarketErrors.get(s?.id):'';

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T19:04:11Z",
+  "generatedAt": "2026-11-04T19:09:57Z",
   "source": "SEC EDGAR Company Facts · XBRL",
   "scope": "US/SEC issuer universe; annual XBRL facts only, no estimated valuation",
   "items": {
@@ -11,8 +11,16 @@
       "cik": "0000789019",
       "reportCurrency": "USD",
       "investorRelations": "https://www.microsoft.com/en-us/Investor/",
-      "status": "metrics-partial",
+      "status": "metrics-complete",
       "metrics": {
+        "revenue": {
+          "value": 331839000000.0,
+          "currency": "USD",
+          "periodEnd": "2026-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+        },
         "netIncome": {
           "value": 133749000000.0,
           "currency": "USD",
@@ -48,11 +56,11 @@
       },
       "priorMetrics": {
         "revenue": {
-          "value": 23317000000.0,
+          "value": 281724000000.0,
           "currency": "USD",
-          "periodEnd": "2017-06-30",
-          "filed": "2017-08-02",
-          "concept": "us-gaap:SalesRevenueNet",
+          "periodEnd": "2025-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
         },
         "netIncome": {
@@ -89,6 +97,15 @@
         }
       },
       "derived": {
+        "netMargin": {
+          "value": 40.31,
+          "unit": "percent",
+          "periodEnd": "2026-06-30",
+          "basis": [
+            "netIncome",
+            "revenue"
+          ]
+        },
         "equityRatio": {
           "value": 58.33,
           "unit": "percent",
@@ -96,6 +113,24 @@
           "basis": [
             "equity",
             "assets"
+          ]
+        },
+        "operatingCashFlowMargin": {
+          "value": 55.13,
+          "unit": "percent",
+          "periodEnd": "2026-06-30",
+          "basis": [
+            "operatingCashFlow",
+            "revenue"
+          ]
+        },
+        "revenueGrowth": {
+          "value": 17.79,
+          "unit": "percent",
+          "periodEnd": "2026-06-30",
+          "priorPeriodEnd": "2025-06-30",
+          "basis": [
+            "revenue"
           ]
         },
         "netIncomeGrowth": {
@@ -117,7 +152,7 @@
       "priorFiling": {
         "periodEnd": "2025-06-30"
       },
-      "checkedAt": "2026-11-04T19:04:11Z",
+      "checkedAt": "2026-11-04T19:09:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -128,8 +163,16 @@
       "cik": "0000320193",
       "reportCurrency": "USD",
       "investorRelations": "https://investor.apple.com/",
-      "status": "metrics-partial",
+      "status": "metrics-complete",
       "metrics": {
+        "revenue": {
+          "value": 478834000000.0,
+          "currency": "USD",
+          "periodEnd": "2026-09-26",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+        },
         "netIncome": {
           "value": 132175000000.0,
           "currency": "USD",
@@ -165,11 +208,11 @@
       },
       "priorMetrics": {
         "revenue": {
-          "value": 52579000000.0,
+          "value": 416161000000.0,
           "currency": "USD",
-          "periodEnd": "2017-09-30",
-          "filed": "2017-11-03",
-          "concept": "us-gaap:SalesRevenueNet",
+          "periodEnd": "2025-09-27",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
         },
         "netIncome": {
@@ -206,6 +249,15 @@
         }
       },
       "derived": {
+        "netMargin": {
+          "value": 27.6,
+          "unit": "percent",
+          "periodEnd": "2026-09-26",
+          "basis": [
+            "netIncome",
+            "revenue"
+          ]
+        },
         "equityRatio": {
           "value": 27.71,
           "unit": "percent",
@@ -213,6 +265,24 @@
           "basis": [
             "equity",
             "assets"
+          ]
+        },
+        "operatingCashFlowMargin": {
+          "value": 30.3,
+          "unit": "percent",
+          "periodEnd": "2026-09-26",
+          "basis": [
+            "operatingCashFlow",
+            "revenue"
+          ]
+        },
+        "revenueGrowth": {
+          "value": 15.06,
+          "unit": "percent",
+          "periodEnd": "2026-09-26",
+          "priorPeriodEnd": "2025-09-27",
+          "basis": [
+            "revenue"
           ]
         },
         "netIncomeGrowth": {
@@ -234,7 +304,7 @@
       "priorFiling": {
         "periodEnd": "2025-09-27"
       },
-      "checkedAt": "2026-11-04T19:04:11Z",
+      "checkedAt": "2026-11-04T19:09:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -245,7 +315,7 @@
       "cik": "0000796343",
       "reportCurrency": "USD",
       "investorRelations": "https://www.adobe.com/investor-relations.html",
-      "status": "metrics-partial",
+      "status": "metrics-complete",
       "metrics": {
         "revenue": {
           "value": 23769000000.0,
@@ -386,7 +456,7 @@
       "priorFiling": {
         "periodEnd": "2024-11-29"
       },
-      "checkedAt": "2026-11-04T19:04:11Z",
+      "checkedAt": "2026-11-04T19:09:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -397,8 +467,16 @@
       "cik": "0000002488",
       "reportCurrency": "USD",
       "investorRelations": "https://ir.amd.com/",
-      "status": "metrics-partial",
+      "status": "metrics-complete",
       "metrics": {
+        "revenue": {
+          "value": 34639000000.0,
+          "currency": "USD",
+          "periodEnd": "2025-12-27",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+        },
         "netIncome": {
           "value": 4335000000.0,
           "currency": "USD",
@@ -434,11 +512,11 @@
       },
       "priorMetrics": {
         "revenue": {
-          "value": 5329000000.0,
+          "value": 25785000000.0,
           "currency": "USD",
-          "periodEnd": "2017-12-30",
-          "filed": "2018-02-27",
-          "concept": "us-gaap:SalesRevenueGoodsNet",
+          "periodEnd": "2024-12-28",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
         },
         "netIncome": {
@@ -475,6 +553,15 @@
         }
       },
       "derived": {
+        "netMargin": {
+          "value": 12.51,
+          "unit": "percent",
+          "periodEnd": "2025-12-27",
+          "basis": [
+            "netIncome",
+            "revenue"
+          ]
+        },
         "equityRatio": {
           "value": 81.9,
           "unit": "percent",
@@ -482,6 +569,24 @@
           "basis": [
             "equity",
             "assets"
+          ]
+        },
+        "operatingCashFlowMargin": {
+          "value": 22.26,
+          "unit": "percent",
+          "periodEnd": "2025-12-27",
+          "basis": [
+            "operatingCashFlow",
+            "revenue"
+          ]
+        },
+        "revenueGrowth": {
+          "value": 34.34,
+          "unit": "percent",
+          "periodEnd": "2025-12-27",
+          "priorPeriodEnd": "2024-12-28",
+          "basis": [
+            "revenue"
           ]
         },
         "netIncomeGrowth": {
@@ -503,7 +608,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-28"
       },
-      "checkedAt": "2026-11-04T19:04:11Z",
+      "checkedAt": "2026-11-04T19:09:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -514,7 +619,7 @@
       "cik": "0001050915",
       "reportCurrency": "USD",
       "investorRelations": "https://investors.quantaservices.com/",
-      "status": "metrics-partial",
+      "status": "metrics-complete",
       "metrics": {
         "revenue": {
           "value": 28479697000.0,
@@ -655,7 +760,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-04T19:04:11Z",
+      "checkedAt": "2026-11-04T19:09:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -670,7 +775,7 @@
       "derived": {},
       "latestFiling": null,
       "priorFiling": null,
-      "checkedAt": "2026-11-04T19:04:11Z",
+      "checkedAt": "2026-11-04T19:09:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": [
         "SEC source unavailable: HTTP Error 404: Not Found"

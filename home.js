@@ -79,6 +79,12 @@ function unityPreAnalysis(s){
   if(state.kind==='failed')return {kind:'data',label:'Daten prüfen',score:NaN,rank:5,detail:state.detail||'Keine Kursreihe abrufbar.'};
   if(state.kind==='missing')return {kind:'data',label:'Daten prüfen',score:NaN,rank:5,detail:'Für diesen Wert fehlt eine Kursquelle.'};
   if(!technical||!m||!x)return {kind:'data',label:'Daten prüfen',score:NaN,rank:5,detail:'Für die Vorauswahl fehlen noch ausreichende Kursdaten.'};
+  const report=typeof unityFundPilotItem==='function'?unityFundPilotItem(s):null;
+  const required=['revenue','netIncome','assets','equity','operatingCashFlow'];
+  const reportEnd=String(report?.latestFiling?.periodEnd||'');
+  const reportFresh=Number.isFinite(Date.parse(reportEnd))&&Date.now()-Date.parse(reportEnd+'T12:00:00Z')<=550*86400000;
+  const reportComplete=!!report&&reportFresh&&required.every(key=>Number.isFinite(Number(report.metrics?.[key]?.value)));
+  if(!reportComplete)return {kind:'data',label:'Technischer Radar · Unternehmensdaten offen',score:NaN,rank:5,detail:'Der Kursverlauf ist technisch auswertbar, aber geprüfte Unternehmenszahlen, Bewertung, Guidance oder Ergebnisrisiko reichen noch nicht für eine Investment-Rangfolge.'};
   const rsi=Number(m.rsi),index=Number(m.technicalIndex),m1=unityHomeMovement(x,'1M'),m3=unityHomeMovement(x,'3M');
   const macdAvailable=Number.isFinite(Number(m.macd))&&Number.isFinite(Number(m.signal))&&m.macd!==undefined&&m.signal!==undefined;
   const macdUp=macdAvailable?Number(m.macd)>=Number(m.signal):false;
@@ -96,7 +102,7 @@ function unityResearchIndicator(s){
   const pre=unityPreAnalysis(s);
   if(pre.kind==='research')return {kind:'research',label:'Analyse sinnvoll',detail:pre.detail,score:pre.score};
   if(pre.kind==='weak')return {kind:'weak',label:'Derzeit nachrangig',detail:pre.detail,score:pre.score};
-  if(pre.kind==='data')return {kind:'data',label:'Daten prüfen',detail:pre.detail,score:NaN};
+  if(pre.kind==='data')return {kind:'data',label:pre.label||'Daten prüfen',detail:pre.detail,score:NaN};
   return {kind:'observe',label:'Beobachten',detail:pre.detail,score:pre.score};
 }
 /* Daily pullback monitor for the SAME SMA50 ±2% setup used by unityCandidate.

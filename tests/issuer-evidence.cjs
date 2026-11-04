@@ -6,7 +6,7 @@ const end=new Date(Date.now()-120*86400000).toISOString().slice(0,10);
 const ctx={Date,Number,String,Array,JSON,esc:x=>String(x),render:()=>{},
  unityFundPilotItem:()=>({latestFiling:{periodEnd:end,reportUrl:'https://data.sec.gov/api/xbrl/companyfacts/CIK0000000001.json'},
   metrics:{revenue:{value:1},netIncome:{value:1},assets:{value:1},equity:{value:1},operatingCashFlow:{value:1}}}),
- fetch:async()=>({ok:true,json:async()=>({generatedAt:new Date().toISOString(),items:{ABCD:{status:'confirmed-future-earnings',nextEarnings:'2026-12-01',sourceUrl:'https://investor.example.com/calendar'}}})};
+ fetch:async()=>({ok:true,json:async()=>({generatedAt:new Date().toISOString(),items:{ABCD:{status:'confirmed-future-earnings',nextEarnings:'2026-12-01',sourceUrl:'https://investor.example.com/calendar'}}})})};
 vm.createContext(ctx);vm.runInContext(source,ctx);
 (async()=>{
  await new Promise(resolve=>setTimeout(resolve,10));

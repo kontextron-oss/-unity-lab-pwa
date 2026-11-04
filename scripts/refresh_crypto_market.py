@@ -2,7 +2,7 @@
 """Build a public, keyless crypto market snapshot for the UNITY Lab PWA.
 
 The browser never calls the external provider.  A GitHub Action downloads,
-validates and publishes the static snapshot.  If one required asset is
+validates and publishes the static snapshot. The source is a public USD spot-market feed.  If one required asset is
 incomplete, no file is written and the last valid snapshot remains online.
 """
 from __future__ import annotations

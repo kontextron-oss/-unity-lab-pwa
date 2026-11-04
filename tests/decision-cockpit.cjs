@@ -33,19 +33,19 @@ const core={
 (async()=>{
  box.input=core;
  let decision=run('unityCockpitClassify(input)');
- assert.equal(decision.kind,'review');
+ assert.equal(decision.kind,'data');
  assert.equal(decision.priority,100);
  assert.equal(decision.gates.flows,false);
  assert.equal(decision.socialSentimentMeasured,false);
  assert.equal(decision.institutionalFlowsMeasured,false);
- assert.match(decision.action,/vertiefte Prüfung/);
+ assert.match(decision.action,/technischer Radar/);
  assert.match(decision.short,/Kein gemessenes Medien/);
  assert.ok(decision.missing.some(x=>x.includes('Earnings')));
  assert.ok(decision.missing.some(x=>x.includes('Institutionelle')));
  // An irrelevant official filing cannot itself be positive investment evidence.
  box.input={...core,official:{filedAt:'2026-11-03',form:'8-K',label:'Meldung'}};
  decision=run('unityCockpitClassify(input)');
- assert.equal(decision.kind,'review');
+ assert.equal(decision.kind,'data');
  assert.ok(decision.evidence.some(x=>x.includes('amtliche Unternehmensmeldung')));
  // Positive technical data cannot override earnings within 7 days.
  box.input={...core,f:{earningsConfirmed:true,earningsDate:new Date(Date.now()+2*86400000).toISOString()}};

@@ -25,7 +25,7 @@ ISSUERS = {
  "ETN": {"cik": "0001558370", "name": "Eaton", "isin": "IE00B8KQN827", "ir": "https://www.eaton.com/us/en-us/company/investor-relations.html"},
 }
 CONCEPTS = {
- "revenue": ("RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet"),
+ "revenue": ("RevenueFromContractWithCustomerExcludingAssessedTax", "RevenueFromContractWithCustomerIncludingAssessedTax", "Revenues", "SalesRevenueNet", "SalesRevenueGoodsNet"),
  "netIncome": ("NetIncomeLoss",),
  "assets": ("Assets",),
  "equity": ("StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"),

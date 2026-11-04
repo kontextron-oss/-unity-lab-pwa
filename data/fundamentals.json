@@ -53,7 +53,7 @@
       "reportCurrency": "EUR",
       "investorRelations": "https://www.se.com/ww/en/about-us/investor-relations/",
       "note": "ESEF-Recherche über eindeutige französische Konzern-LEI.",
-      "status": "metrics-partial",
+      "status": "metrics-complete",
       "metrics": {
         "revenue": {
           "value": 40152000000,

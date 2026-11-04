@@ -39,6 +39,11 @@ class FundamentalsTests(unittest.TestCase):
         self.assertEqual(result["operatingCashFlowMargin"]["value"],15.0)
         self.assertNotIn("revenueGrowth",mod.derived_ratios(current,previous,"2025-12-31","2022-12-31"))
         self.assertNotIn("netIncomeGrowth",mod.derived_ratios(current,{"netIncome":{"value":-5}},"2025-12-31","2024-12-31"))
+    def test_complete_status_requires_all_five_core_metrics(self):
+        self.assertEqual(mod.REQUIRED_METRICS, frozenset(("revenue","netIncome","assets","equity","operatingCashFlow")))
+        current={key:{"value":1} for key in mod.REQUIRED_METRICS}
+        self.assertTrue(mod.REQUIRED_METRICS.issubset(current))
+        self.assertFalse(mod.REQUIRED_METRICS.issubset({"revenue":{"value":1},"netIncome":{"value":1}}))
     def test_official_issuer_highlights_parse_without_cross_mixing(self):
         abb='<html><body>ABB FY 2025 Revenues $33.2 billion and Cash flow from operating activities $5,469 million</body></html>'
         x=mod.parse_official_highlights(abb,mod.OFFICIAL_SOURCES["CH0012221716"])

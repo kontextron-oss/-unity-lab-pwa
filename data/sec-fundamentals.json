@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T19:09:57Z",
+  "generatedAt": "2026-11-04T21:20:51Z",
   "source": "SEC EDGAR Company Facts · XBRL",
   "scope": "US/SEC issuer universe; annual XBRL facts only, no estimated valuation",
   "items": {
@@ -16,6 +16,7 @@
         "revenue": {
           "value": 331839000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -24,6 +25,7 @@
         "netIncome": {
           "value": 133749000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:NetIncomeLoss",
@@ -32,6 +34,7 @@
         "assets": {
           "value": 758376000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:Assets",
@@ -40,6 +43,7 @@
         "equity": {
           "value": 442387000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:StockholdersEquity",
@@ -48,9 +52,37 @@
         "operatingCashFlow": {
           "value": 182935000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+        },
+        "epsDiluted": {
+          "value": 17.95,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2026-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+        },
+        "sharesDiluted": {
+          "value": 7453000000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2026-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+        },
+        "capitalExpenditure": {
+          "value": 115948000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2026-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
         }
       },
@@ -58,6 +90,7 @@
         "revenue": {
           "value": 281724000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -66,6 +99,7 @@
         "netIncome": {
           "value": 101832000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:NetIncomeLoss",
@@ -74,6 +108,7 @@
         "assets": {
           "value": 619003000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:Assets",
@@ -82,6 +117,7 @@
         "equity": {
           "value": 343479000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:StockholdersEquity",
@@ -90,13 +126,51 @@
         "operatingCashFlow": {
           "value": 136162000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-06-30",
           "filed": "2026-07-29",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+        },
+        "epsDiluted": {
+          "value": 13.64,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2025-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+        },
+        "sharesDiluted": {
+          "value": 7465000000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2025-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+        },
+        "capitalExpenditure": {
+          "value": 64551000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-06-30",
+          "filed": "2026-07-29",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
         }
       },
       "derived": {
+        "freeCashFlow": {
+          "value": 66987000000.0,
+          "unit": "USD",
+          "periodEnd": "2026-06-30",
+          "basis": [
+            "operatingCashFlow",
+            "capitalExpenditure"
+          ],
+          "kind": "derived"
+        },
         "netMargin": {
           "value": 40.31,
           "unit": "percent",
@@ -152,7 +226,7 @@
       "priorFiling": {
         "periodEnd": "2025-06-30"
       },
-      "checkedAt": "2026-11-04T19:09:57Z",
+      "checkedAt": "2026-11-04T21:20:51Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -168,6 +242,7 @@
         "revenue": {
           "value": 478834000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-09-26",
           "filed": "2026-11-03",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -176,6 +251,7 @@
         "netIncome": {
           "value": 132175000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-09-26",
           "filed": "2026-11-03",
           "concept": "us-gaap:NetIncomeLoss",
@@ -184,6 +260,7 @@
         "assets": {
           "value": 404548000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-09-26",
           "filed": "2026-11-03",
           "concept": "us-gaap:Assets",
@@ -192,6 +269,7 @@
         "equity": {
           "value": 112093000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-09-26",
           "filed": "2026-11-03",
           "concept": "us-gaap:StockholdersEquity",
@@ -200,9 +278,37 @@
         "operatingCashFlow": {
           "value": 145097000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2026-09-26",
           "filed": "2026-11-03",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+        },
+        "epsDiluted": {
+          "value": 8.98,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2026-09-26",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+        },
+        "sharesDiluted": {
+          "value": 14720306000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2026-09-26",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+        },
+        "capitalExpenditure": {
+          "value": 9041000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2026-09-26",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
         }
       },
@@ -210,6 +316,7 @@
         "revenue": {
           "value": 416161000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-09-27",
           "filed": "2026-11-03",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -218,6 +325,7 @@
         "netIncome": {
           "value": 112010000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-09-27",
           "filed": "2026-11-03",
           "concept": "us-gaap:NetIncomeLoss",
@@ -226,6 +334,7 @@
         "assets": {
           "value": 359241000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-09-27",
           "filed": "2026-11-03",
           "concept": "us-gaap:Assets",
@@ -234,6 +343,7 @@
         "equity": {
           "value": 73733000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-09-27",
           "filed": "2026-11-03",
           "concept": "us-gaap:StockholdersEquity",
@@ -242,13 +352,51 @@
         "operatingCashFlow": {
           "value": 111482000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-09-27",
           "filed": "2026-11-03",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+        },
+        "epsDiluted": {
+          "value": 7.46,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2025-09-27",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+        },
+        "sharesDiluted": {
+          "value": 15004697000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2025-09-27",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+        },
+        "capitalExpenditure": {
+          "value": 12715000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-09-27",
+          "filed": "2026-11-03",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
         }
       },
       "derived": {
+        "freeCashFlow": {
+          "value": 136056000000.0,
+          "unit": "USD",
+          "periodEnd": "2026-09-26",
+          "basis": [
+            "operatingCashFlow",
+            "capitalExpenditure"
+          ],
+          "kind": "derived"
+        },
         "netMargin": {
           "value": 27.6,
           "unit": "percent",
@@ -304,7 +452,7 @@
       "priorFiling": {
         "periodEnd": "2025-09-27"
       },
-      "checkedAt": "2026-11-04T19:09:57Z",
+      "checkedAt": "2026-11-04T21:20:51Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -320,6 +468,7 @@
         "revenue": {
           "value": 23769000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-11-28",
           "filed": "2026-01-15",
           "concept": "us-gaap:Revenues",
@@ -328,6 +477,7 @@
         "netIncome": {
           "value": 7130000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-11-28",
           "filed": "2026-01-15",
           "concept": "us-gaap:NetIncomeLoss",
@@ -336,6 +486,7 @@
         "assets": {
           "value": 29496000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-11-28",
           "filed": "2026-01-15",
           "concept": "us-gaap:Assets",
@@ -344,6 +495,7 @@
         "equity": {
           "value": 11623000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-11-28",
           "filed": "2026-01-15",
           "concept": "us-gaap:StockholdersEquity",
@@ -352,9 +504,37 @@
         "operatingCashFlow": {
           "value": 10031000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-11-28",
           "filed": "2026-01-15",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
+        },
+        "epsDiluted": {
+          "value": 16.7,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2025-11-28",
+          "filed": "2026-01-15",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
+        },
+        "sharesDiluted": {
+          "value": 427000000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2025-11-28",
+          "filed": "2026-01-15",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
+        },
+        "capitalExpenditure": {
+          "value": 179000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-11-28",
+          "filed": "2026-01-15",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
         }
       },
@@ -362,6 +542,7 @@
         "revenue": {
           "value": 21505000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-11-29",
           "filed": "2026-01-15",
           "concept": "us-gaap:Revenues",
@@ -370,6 +551,7 @@
         "netIncome": {
           "value": 5560000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-11-29",
           "filed": "2026-01-15",
           "concept": "us-gaap:NetIncomeLoss",
@@ -378,6 +560,7 @@
         "assets": {
           "value": 30230000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-11-29",
           "filed": "2026-01-15",
           "concept": "us-gaap:Assets",
@@ -386,6 +569,7 @@
         "equity": {
           "value": 14105000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-11-29",
           "filed": "2026-01-15",
           "concept": "us-gaap:StockholdersEquity",
@@ -394,13 +578,51 @@
         "operatingCashFlow": {
           "value": 8056000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-11-29",
           "filed": "2026-01-15",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
+        },
+        "epsDiluted": {
+          "value": 12.36,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2024-11-29",
+          "filed": "2026-01-15",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
+        },
+        "sharesDiluted": {
+          "value": 449700000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2024-11-29",
+          "filed": "2026-01-15",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
+        },
+        "capitalExpenditure": {
+          "value": 183000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-11-29",
+          "filed": "2026-01-15",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
         }
       },
       "derived": {
+        "freeCashFlow": {
+          "value": 9852000000.0,
+          "unit": "USD",
+          "periodEnd": "2025-11-28",
+          "basis": [
+            "operatingCashFlow",
+            "capitalExpenditure"
+          ],
+          "kind": "derived"
+        },
         "netMargin": {
           "value": 30.0,
           "unit": "percent",
@@ -456,7 +678,7 @@
       "priorFiling": {
         "periodEnd": "2024-11-29"
       },
-      "checkedAt": "2026-11-04T19:09:57Z",
+      "checkedAt": "2026-11-04T21:20:51Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -472,6 +694,7 @@
         "revenue": {
           "value": 34639000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-27",
           "filed": "2026-02-04",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -480,6 +703,7 @@
         "netIncome": {
           "value": 4335000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-27",
           "filed": "2026-02-04",
           "concept": "us-gaap:NetIncomeLoss",
@@ -488,6 +712,7 @@
         "assets": {
           "value": 76926000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-27",
           "filed": "2026-02-04",
           "concept": "us-gaap:Assets",
@@ -496,6 +721,7 @@
         "equity": {
           "value": 62999000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-27",
           "filed": "2026-02-04",
           "concept": "us-gaap:StockholdersEquity",
@@ -504,9 +730,37 @@
         "operatingCashFlow": {
           "value": 7709000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-27",
           "filed": "2026-02-04",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+        },
+        "epsDiluted": {
+          "value": 2.65,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2025-12-27",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+        },
+        "sharesDiluted": {
+          "value": 1636000000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2025-12-27",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+        },
+        "capitalExpenditure": {
+          "value": 974000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-27",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
         }
       },
@@ -514,6 +768,7 @@
         "revenue": {
           "value": 25785000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-28",
           "filed": "2026-02-04",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -522,6 +777,7 @@
         "netIncome": {
           "value": 1641000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-28",
           "filed": "2026-02-04",
           "concept": "us-gaap:NetIncomeLoss",
@@ -530,6 +786,7 @@
         "assets": {
           "value": 69226000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-28",
           "filed": "2026-02-04",
           "concept": "us-gaap:Assets",
@@ -538,6 +795,7 @@
         "equity": {
           "value": 57568000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-28",
           "filed": "2026-02-04",
           "concept": "us-gaap:StockholdersEquity",
@@ -546,13 +804,51 @@
         "operatingCashFlow": {
           "value": 3041000000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-28",
           "filed": "2026-02-04",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+        },
+        "epsDiluted": {
+          "value": 1.0,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2024-12-28",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+        },
+        "sharesDiluted": {
+          "value": 1637000000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2024-12-28",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+        },
+        "capitalExpenditure": {
+          "value": 636000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-28",
+          "filed": "2026-02-04",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
         }
       },
       "derived": {
+        "freeCashFlow": {
+          "value": 6735000000.0,
+          "unit": "USD",
+          "periodEnd": "2025-12-27",
+          "basis": [
+            "operatingCashFlow",
+            "capitalExpenditure"
+          ],
+          "kind": "derived"
+        },
         "netMargin": {
           "value": 12.51,
           "unit": "percent",
@@ -608,7 +904,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-28"
       },
-      "checkedAt": "2026-11-04T19:09:57Z",
+      "checkedAt": "2026-11-04T21:20:51Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -624,6 +920,7 @@
         "revenue": {
           "value": 28479697000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -632,6 +929,7 @@
         "netIncome": {
           "value": 1028378000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:NetIncomeLoss",
@@ -640,6 +938,7 @@
         "assets": {
           "value": 24926901000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:Assets",
@@ -648,6 +947,7 @@
         "equity": {
           "value": 9027874000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
@@ -656,9 +956,37 @@
         "operatingCashFlow": {
           "value": 2229970000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2025-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
+        },
+        "epsDiluted": {
+          "value": 6.8,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-19",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
+        },
+        "sharesDiluted": {
+          "value": 151291000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-19",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
+        },
+        "capitalExpenditure": {
+          "value": 609154000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-19",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
         }
       },
@@ -666,6 +994,7 @@
         "revenue": {
           "value": 23672795000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -674,6 +1003,7 @@
         "netIncome": {
           "value": 904824000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:NetIncomeLoss",
@@ -682,6 +1012,7 @@
         "assets": {
           "value": 18683894000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:Assets",
@@ -690,6 +1021,7 @@
         "equity": {
           "value": 7329717000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
@@ -698,13 +1030,51 @@
         "operatingCashFlow": {
           "value": 2081196000.0,
           "currency": "USD",
+          "unit": "USD",
           "periodEnd": "2024-12-31",
           "filed": "2026-02-19",
           "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
           "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
+        },
+        "epsDiluted": {
+          "value": 6.03,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-19",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
+        },
+        "sharesDiluted": {
+          "value": 150056000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-19",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
+        },
+        "capitalExpenditure": {
+          "value": 604078000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-19",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json"
         }
       },
       "derived": {
+        "freeCashFlow": {
+          "value": 1620816000.0,
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "operatingCashFlow",
+            "capitalExpenditure"
+          ],
+          "kind": "derived"
+        },
         "netMargin": {
           "value": 3.61,
           "unit": "percent",
@@ -760,7 +1130,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-04T19:09:57Z",
+      "checkedAt": "2026-11-04T21:20:51Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -775,7 +1145,7 @@
       "derived": {},
       "latestFiling": null,
       "priorFiling": null,
-      "checkedAt": "2026-11-04T19:09:57Z",
+      "checkedAt": "2026-11-04T21:20:51Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": [
         "SEC source unavailable: HTTP Error 404: Not Found"

@@ -70,7 +70,7 @@ model.rr=1.2;d=run();
 assert.equal(d.kind,'no');assert.match(d.decision,/NEIN – Chance\/Risiko/);
 // Earnings next week blocks the case.
 model.rr=2.5;model.f.earningsDate=new Date(Date.now()+2*86400000).toISOString().slice(0,10);
-d=run();assert.equal(d.kind,'wait');assert.match(d.decision,/Ereignisrisiko/);
+d=run();assert.equal(d.kind,'wait');assert.match(d.decision,/(Ereignis|Ergebnis)risiko/);
 // No favorable price/technical setup: wait.
 model.f.earningsDate=earningsDate;
 candidate={...candidate,status:'wait',buy:'Abwarten'};

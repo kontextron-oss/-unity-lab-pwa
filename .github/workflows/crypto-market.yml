@@ -1,0 +1,49 @@
+name: Refresh crypto market snapshot
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/refresh_crypto_market.py
+      - .github/workflows/crypto-market.yml
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+concurrency:
+  group: unity-crypto-snapshot
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download and validate public crypto market data
+        run: python scripts/refresh_crypto_market.py
+      - name: Publish only a complete snapshot
+        run: |
+          git config user.name "unity-lab-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/crypto-market.json data/crypto-market.js
+          if git diff --cached --quiet; then
+            echo "No crypto snapshot changes"
+          else
+            git commit -m "data: refresh crypto market snapshot [skip ci]"
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo "Crypto snapshot published"
+                exit 0
+              fi
+              sleep $((attempt * 3))
+            done
+            echo "Crypto snapshot publication failed after 3 attempts" >&2
+            exit 1
+          fi

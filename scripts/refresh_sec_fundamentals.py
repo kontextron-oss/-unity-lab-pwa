@@ -31,6 +31,13 @@ CONCEPTS = {
  "equity": ("StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"),
  "operatingCashFlow": ("NetCashProvidedByUsedInOperatingActivities",),
 }
+# Valuation inputs are supplemental: they never change the completeness of a
+# financial filing and stay absent when their SEC XBRL unit is not exact.
+VALUATION_CONCEPTS = {
+ "epsDiluted": (("EarningsPerShareDiluted",), ("USD/shares",)),
+ "sharesDiluted": (("WeightedAverageNumberOfDilutedSharesOutstanding",), ("shares",)),
+ "capitalExpenditure": (("PaymentsToAcquirePropertyPlantAndEquipment",), ("USD",)),
+}
 
 def get_json(url):
     request = Request(url, headers=HEADERS)
@@ -42,12 +49,12 @@ def get_json(url):
     except (HTTPError, URLError, TimeoutError) as exc:
         raise RuntimeError(f"SEC source unavailable: {exc}") from exc
 
-def annual_rows(payload, concept):
+def annual_rows(payload, concept, accepted_units=("USD",)):
     facts = ((payload.get("facts") or {}).get("us-gaap") or {}).get(concept) or {}
-    units = facts.get("units") or {}
-    rows = units.get("USD") or []
+    unit_map = facts.get("units") or {}
     out = []
-    for row in rows:
+    for unit in accepted_units:
+      for row in unit_map.get(unit, []):
         if row.get("form") not in FORMS or row.get("fp") != "FY":
             continue
         try:
@@ -58,17 +65,17 @@ def annual_rows(payload, concept):
             continue
         if not end or not filed or abs(value) >= 1e15:
             continue
-        out.append({"value": value, "periodEnd": end, "filed": filed, "form": row.get("form"), "accn": row.get("accn"), "fy": str(row.get("fy") or "")})
+        out.append({"value": value, "unit": unit, "periodEnd": end, "filed": filed, "form": row.get("form"), "accn": row.get("accn"), "fy": str(row.get("fy") or "")})
     # SEC facts can include amendments; retain newest filed value for each fiscal end.
     latest = {}
     for row in sorted(out, key=lambda x: (x["periodEnd"], x["filed"])):
         latest[row["periodEnd"]] = row
     return [latest[key] for key in sorted(latest)]
 
-def select_metric(payload, names):
+def select_metric(payload, names, accepted_units=("USD",)):
     candidates = []
     for concept in names:
-        rows = annual_rows(payload, concept)
+        rows = annual_rows(payload, concept, accepted_units)
         if rows:
             candidates.append((concept, rows))
     if not candidates:
@@ -81,12 +88,19 @@ def select_metric(payload, names):
 def fact(value, concept, cik):
     if not value:
         return None
-    return {"value": value["value"], "currency": "USD", "periodEnd": value["periodEnd"],
-            "filed": value["filed"], "concept": "us-gaap:" + concept,
+    unit = str(value.get("unit") or "USD")
+    return {"value": value["value"], "currency": "USD" if unit.startswith("USD") else None, "unit": unit,
+            "periodEnd": value["periodEnd"], "filed": value["filed"], "concept": "us-gaap:" + concept,
             "sourceUrl": f"{BASE}/CIK{cik}.json"}
 
 def derived(current, prior, end_current, end_prior):
     result = {}
+    # Free cash flow is calculated only when both cash flow from operations and
+    # cash capital expenditure come from the same annual SEC period.
+    ocf, capex = current.get("operatingCashFlow", {}).get("value"), current.get("capitalExpenditure", {}).get("value")
+    if isinstance(ocf, (int,float)) and isinstance(capex, (int,float)) and ocf > 0 and capex >= 0:
+        result["freeCashFlow"] = {"value": round(ocf-capex, 2), "unit": "USD", "periodEnd": end_current,
+                                    "basis": ["operatingCashFlow", "capitalExpenditure"], "kind": "derived"}
     for key, num, den in (("netMargin", "netIncome", "revenue"), ("equityRatio", "equity", "assets"), ("operatingCashFlowMargin", "operatingCashFlow", "revenue")):
         n, d = current.get(num, {}).get("value"), current.get(den, {}).get("value")
         if isinstance(n, (int,float)) and isinstance(d, (int,float)) and d > 0:
@@ -102,6 +116,11 @@ def build_issuer(ticker, issuer, now):
     selected, series = {}, {}
     for label, names in CONCEPTS.items():
         concept, rows, latest = select_metric(payload, names)
+        if concept and latest:
+            selected[label] = (concept, latest)
+            series[label] = rows
+    for label, (names, units) in VALUATION_CONCEPTS.items():
+        concept, rows, latest = select_metric(payload, names, units)
         if concept and latest:
             selected[label] = (concept, latest)
             series[label] = rows

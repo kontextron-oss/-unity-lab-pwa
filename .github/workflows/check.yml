@@ -91,6 +91,9 @@ jobs:
       - name: Validate official issuer event and source status UI
         run: node tests/research-monitor.cjs
 
+      - name: Validate issuer decision evidence matrix
+        run: node tests/issuer-evidence.cjs
+
       - name: Validate SEC official-source parser and stale fallback
         run: python3 -m unittest discover -s tests -p 'test_research.py'
 

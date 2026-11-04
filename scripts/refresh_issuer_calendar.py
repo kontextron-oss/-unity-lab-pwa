@@ -19,7 +19,7 @@ ISSUERS={
  "AAPL":{"name":"Apple","url":"https://investor.apple.com/investor-relations/default.aspx"},
  "AMD":{"name":"AMD","url":"https://ir.amd.com/news-events/ir-calendar"},
  "ADBE":{"name":"Adobe","url":"https://www.adobe.com/investor-relations.html"},
- "PWR":{"name":"Quanta Services","url":"https://investors.quantaservices.com/events-and-presentations/default.aspx"},
+ "PWR":{"name":"Quanta Services","url":"https://investors.quantaservices.com/news-events/ir-calendar"},
 }
 ALLOWED={"www.microsoft.com","investor.apple.com","ir.amd.com","www.adobe.com","investors.quantaservices.com"}
 MONTHS={m:i for i,m in enumerate(("january","february","march","april","may","june","july","august","september","october","november","december"),1)}

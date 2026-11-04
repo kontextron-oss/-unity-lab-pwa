@@ -49,6 +49,7 @@ function unityFundPilotPanel(s){
    'filing-found':'Ein Bericht wurde gefunden; Zahlen konnten noch nicht geprüft werden.',
    'filing-no-validated-metrics':'Ein Bericht wurde gefunden, aber keine Kennzahlen erfüllen die strengen Prüfregeln.',
    'metrics-partial':'Einzelne Berichtskennzahlen konnten eindeutig zugeordnet werden.',
+   'metrics-complete':'Fünf zentrale Jahreskennzahlen wurden direkt aus einer geprüften Berichtsquelle zugeordnet.',
    'source-unavailable':'Die Quelle war beim letzten automatischen Abruf nicht erreichbar.',
    'stale-previous':'Die Quelle ist derzeit nicht erreichbar. Der zuletzt gespeicherte Bericht kann veraltet sein.'
   };

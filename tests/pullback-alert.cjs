@@ -73,7 +73,7 @@ assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.\d+/);
 const analyse=fs.readFileSync('analysis.js','utf8');
 const ac={Date,Math,Number,Array,JSON,Intl,document:{addEventListener(){}},cache:{fundamentals:[],histories:[],strategies:[]},
  unityCalc:()=>({q:{price:100},p:100,t:{n:260,last:97,ma50:100,ma200:90,rsi:55}}),
- unityFundPilotItem:()=>({latestFiling:{periodEnd:'2026-09-26'},metrics:{revenue:{value:1},netIncome:{value:1},assets:{value:1},equity:{value:1},operatingCashFlow:{value:1}},derived:{revenueGrowth:{value:1},equityRatio:{value:50}})};
+ unityFundPilotItem:()=>({latestFiling:{periodEnd:'2026-09-26'},metrics:{revenue:{value:1},netIncome:{value:1},assets:{value:1},equity:{value:1},operatingCashFlow:{value:1}},derived:{revenueGrowth:{value:1},equityRatio:{value:50}}})};
 ac.uc=n=>Math.max(0,Math.min(100,n));ac.unityNumber=(n,d=2)=>Number(n).toFixed(d);
 const candidateStart=analyse.indexOf('function unityCandidate(s){'),candidateEnd=analyse.indexOf('/* Compact decision brief',candidateStart);
 assert.ok(candidateStart>0&&candidateEnd>candidateStart);

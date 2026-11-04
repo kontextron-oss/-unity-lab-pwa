@@ -13,8 +13,8 @@ async function unityCryptoEnsureMarket(s){
  const coin=unityCryptoCoinId(s);if(!coin){unityCryptoMarketErrors.set(s.id,'Für diesen Kryptowert ist noch keine schlüssellose Referenzquelle hinterlegt.');return}
  unityCryptoMarketLoading.add(s.id);unityCryptoMarketErrors.delete(s.id);
  try{
-  const end=new Date(),start=new Date(end.getTime()-370*86400000),base='https://api.coinpaprika.com/v1/tickers/'+encodeURIComponent(coin);
-  const [t,h]=await Promise.all([fetch(base,{cache:'no-store'}),fetch(base+'/historical?start='+start.toISOString().slice(0,10)+'&end='+end.toISOString().slice(0,10)+'&interval=24h',{cache:'no-store'})]);
+  const end=new Date(),start=new Date(end.getTime()-370*86400000),base='https://api.coinpaprika.com/v1/tickers/'+encodeURIComponent(coin),controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+  let t,h;try{[t,h]=await Promise.all([fetch(base,{cache:'no-store',signal:controller.signal}),fetch(base+'/historical?start='+start.toISOString().slice(0,10)+'&end='+end.toISOString().slice(0,10)+'&interval=24h',{cache:'no-store',signal:controller.signal})])}finally{clearTimeout(timer)}
   if(!t.ok||!h.ok)throw Error('CoinPaprika antwortet derzeit nicht vollständig.');
   const [ticker,history]=await Promise.all([t.json(),h.json()]),quote=ticker?.quotes?.USD;
   const byDate=new Map();

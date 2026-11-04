@@ -17,12 +17,12 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT_JSON = ROOT / "data" / "crypto-market.json"
 OUT_JS = ROOT / "data" / "crypto-market.js"
 ASSETS = {
-    "ADA": "ada-cardano",
-    "SOL": "sol-solana",
-    "ETC": "etc-ethereum-classic",
+    "ADA": "ADAUSD",
+    "SOL": "SOLUSD",
+    "ETC": "ETCUSD",
 }
-API = "https://api.coinpaprika.com/v1/tickers"
-SOURCE = "CoinPaprika · USD-Referenz · Marktaggregat"
+API = "https://api.kraken.com/0/public"
+SOURCE = "Kraken · USD-Spotmarkt"
 MIN_POINTS = 200
 TIMEOUT_SECONDS = 25
 
@@ -53,13 +53,19 @@ def daily_points(history):
 
 
 def build_asset(ticker: str, provider_id: str, start: str, end: str, checked_at: str):
-    ticker_data = get_json(f"{API}/{provider_id}")
-    history = get_json(f"{API}/{provider_id}/historical?start={start}&end={end}&interval=24h")
-    quote = (ticker_data.get("quotes") or {}).get("USD") or {}
+    ticker_data = get_json(f"{API}/Ticker?pair={provider_id}")
+    history_data = get_json(f"{API}/OHLC?pair={provider_id}&interval=1440")
+    if ticker_data.get("error") or history_data.get("error"):
+        raise RuntimeError(f"{ticker}: Kraken returned an error")
+    ticker_rows = ticker_data.get("result") or {}
+    history_rows = history_data.get("result") or {}
+    ticker_quote = next((value for key, value in ticker_rows.items() if key != "last"), {})
+    ohlc = next((value for key, value in history_rows.items() if key != "last"), [])
     try:
-        price = float(quote.get("price"))
-    except (TypeError, ValueError):
+        price = float((ticker_quote.get("c") or [0])[0])
+    except (TypeError, ValueError, IndexError):
         price = 0
+    history = [{"timestamp": datetime.fromtimestamp(int(row[0]), timezone.utc).isoformat(), "price": row[4], "volume_24h": row[6]} for row in ohlc if isinstance(row, list) and len(row) >= 7]
     points = daily_points(history)
     if price <= 0 or len(points) < MIN_POINTS:
         raise RuntimeError(f"{ticker}: insufficient validated market history ({len(points)} daily points)")
@@ -67,12 +73,12 @@ def build_asset(ticker: str, provider_id: str, start: str, end: str, checked_at:
         "ticker": ticker,
         "currency": "USD",
         "price": price,
-        "volume24": float(quote.get("volume_24h") or 0),
-        "marketCap": float(quote.get("market_cap") or 0),
+        "volume24": float((ticker_quote.get("v") or [0, 0])[1] or 0),
+        "marketCap": 0,
         "date": points[-1]["date"],
         "fetchedAt": checked_at,
         "source": SOURCE,
-        "venue": "Marktaggregat",
+        "venue": "Kraken Spot",
         "points": points,
     }
 

@@ -38,12 +38,26 @@ async function unityHomeShift(sid,delta){
 }
 const unityHomePeriods=[['1D','Aktuell'],['1W','Woche'],['1M','Monat'],['3M','3 Monate'],['1Y','Jahr']];
 function unityHomeQuote(s){
-  const full=typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin),x=full||(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null),m=x?unityMetrics(x):null;
+  const crypto=typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s);
+  if(crypto&&typeof unityCryptoEnsureMarket==='function')unityCryptoEnsureMarket(s);
+  const verified=crypto&&typeof unityCryptoMarketOverride==='function'?unityCryptoMarketOverride(s):null;
+  const full=crypto?verified:(typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin)),x=full||(crypto?null:(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null)),m=x?unityMetrics(x):null;
   const quality=x?unityDataQuality(x,s.isin):null;
   const technical=!!m&&!m.stale&&Array.isArray(x?.points)&&x.points.length>=200;
   return {x,m,quality,technical,valid:!!m&&!m.stale&&!!quality?.canCompare};
 }
 function unityHomeDataState(s){
+  const crypto=typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s);
+  if(crypto){
+    if(typeof unityCryptoEnsureMarket==='function')unityCryptoEnsureMarket(s);
+    const verified=typeof unityCryptoMarketOverride==='function'?unityCryptoMarketOverride(s):null;
+    const loading=typeof unityCryptoMarketLoading!=='undefined'&&unityCryptoMarketLoading.has(s?.id);
+    const error=typeof unityCryptoMarketErrors!=='undefined'?unityCryptoMarketErrors.get(s?.id):'';
+    if(verified&&Array.isArray(verified.points)&&verified.points.length>=200)return {kind:'ready',label:'Kryptoquelle bestätigt'};
+    if(loading)return {kind:'loading',label:'Krypto-Marktdaten werden geprüft'};
+    if(error)return {kind:'failed',label:'Kryptoquelle nicht erreichbar',detail:error};
+    return {kind:'waiting',label:'Kryptoquelle wird geprüft'};
+  }
   const symbol=String(s?.providerSymbol||'').toUpperCase();
   const dynamic=typeof unityDynamicItems!=='undefined'&&unityDynamicItems.has(symbol);
   const loading=!!(symbol&&typeof unityDynamicPending!=='undefined'&&unityDynamicPending.has(symbol));
@@ -56,6 +70,12 @@ function unityHomeDataState(s){
   return {kind:'waiting',label:'noch nicht geprüft'};
 }
 function unityPreAnalysis(s){
+  if(typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s)){
+    const d=typeof unityCryptoAnalysis==='function'?unityCryptoAnalysis(s):null;
+    if(d?.loading)return {kind:'data',label:'Krypto-Daten werden erfasst',score:NaN,rank:5,detail:'Kursquelle und Tageshistorie werden geprüft.'};
+    if(d?.loadError)return {kind:'data',label:'Kryptoquelle prüfen',score:NaN,rank:5,detail:d.loadError};
+    return {kind:'data',label:'Kryptoanalyse ergänzen',score:NaN,rank:5,detail:d?.priceReady?'Preis und Liquidität sind belegt; Trend, Netzwerk, Tokenökonomie und Ereignisse werden getrennt geprüft.':'Für diese Kryptoanalyse fehlt noch eine bestätigte Kursquelle.'};
+  }
   const state=unityHomeDataState(s),{x,m,technical}=unityHomeQuote(s);
   if(state.kind==='loading')return {kind:'data',label:'Daten werden erfasst',score:NaN,rank:5,detail:'Kursreihe wird geladen.'};
   if(state.kind==='failed')return {kind:'data',label:'Daten prüfen',score:NaN,rank:5,detail:state.detail||'Keine Kursreihe abrufbar.'};

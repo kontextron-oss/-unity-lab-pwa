@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T00:00:00+00:00",
+  "generatedAt": "2026-11-04T21:15:21+00:00",
   "source": "XBRL International filings.xbrl.org",
-  "scope": "European pilot issuers with source-bound annual figures and selected, dated issuer evidence; no live valuations",
+  "scope": "Four European pilot issuers; partial annual filings, no live valuations",
   "items": {
     "CH0012221716": {
       "name": "ABB",
@@ -21,7 +21,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-02T08:41:48+00:00",
+        "verifiedAt": "2026-11-04T21:15:22+00:00",
         "currency": "USD",
         "facts": {
           "revenue": {
@@ -42,7 +42,7 @@
           }
         }
       },
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     },
@@ -56,35 +56,35 @@
       "status": "metrics-complete",
       "metrics": {
         "revenue": {
-          "value": 40152000000,
+          "value": 40152000000.0,
           "currency": "EUR",
           "periodEnd": "2025-12-31",
           "concept": "ifrs-full:RevenueFromContractsWithCustomers",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr.json"
         },
         "netIncome": {
-          "value": 4351000000,
+          "value": 4351000000.0,
           "currency": "EUR",
           "periodEnd": "2025-12-31",
           "concept": "ifrs-full:ProfitLoss",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr.json"
         },
         "assets": {
-          "value": 62504000000,
+          "value": 62504000000.0,
           "currency": "EUR",
           "periodEnd": "2025-12-31",
           "concept": "ifrs-full:Assets",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr.json"
         },
         "equity": {
-          "value": 24455000000,
+          "value": 24455000000.0,
           "currency": "EUR",
           "periodEnd": "2025-12-31",
           "concept": "ifrs-full:Equity",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr.json"
         },
         "operatingCashFlow": {
-          "value": 6131000000,
+          "value": 6131000000.0,
           "currency": "EUR",
           "periodEnd": "2025-12-31",
           "concept": "ifrs-full:CashFlowsFromUsedInOperatingActivities",
@@ -93,35 +93,35 @@
       },
       "priorMetrics": {
         "revenue": {
-          "value": 38153000000,
+          "value": 38153000000.0,
           "currency": "EUR",
           "periodEnd": "2024-12-31",
           "concept": "ifrs-full:RevenueFromContractsWithCustomers",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
         },
         "netIncome": {
-          "value": 4439000000,
+          "value": 4439000000.0,
           "currency": "EUR",
           "periodEnd": "2024-12-31",
           "concept": "ifrs-full:ProfitLoss",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
         },
         "assets": {
-          "value": 65943000000,
+          "value": 65943000000.0,
           "currency": "EUR",
           "periodEnd": "2024-12-31",
           "concept": "ifrs-full:Assets",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
         },
         "equity": {
-          "value": 31280000000,
+          "value": 31280000000.0,
           "currency": "EUR",
           "periodEnd": "2024-12-31",
           "concept": "ifrs-full:Equity",
           "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2024-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2024-12-31-fr.json"
         },
         "operatingCashFlow": {
-          "value": 5580000000,
+          "value": 5580000000.0,
           "currency": "EUR",
           "periodEnd": "2024-12-31",
           "concept": "ifrs-full:CashFlowsFromUsedInOperatingActivities",
@@ -196,7 +196,7 @@
         "validationWarnings": 0
       },
       "officialHighlights": null,
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -217,7 +217,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-02T08:41:54+00:00",
+        "verifiedAt": "2026-11-04T21:15:26+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -246,7 +246,7 @@
           }
         }
       },
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     },
@@ -267,7 +267,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-02T08:41:55+00:00",
+        "verifiedAt": "2026-11-04T21:15:26+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -288,89 +288,8 @@
           }
         }
       },
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
-      "errors": []
-    },
-    "DE000A2NB601": {
-      "name": "Jenoptik AG",
-      "isin": "DE000A2NB601",
-      "lei": null,
-      "reportCurrency": "EUR",
-      "investorRelations": "https://www.jenoptik.com/investors",
-      "note": "Primärquellen des Emittenten: Geschäftsjahr 2025 und datierte Mitteilungen zum Geschäftsjahr 2026. Kein geschätzter Wert und keine Live-Bewertung.",
-      "status": "issuer-release-only",
-      "metrics": {},
-      "priorMetrics": {},
-      "derived": {},
-      "latestFiling": null,
-      "priorFiling": null,
-      "officialHighlights": {
-        "fiscalYear": "2025",
-        "sourceUrl": "https://www.jenoptik.com/news/pressreleases/2026/03/25/financial-results-of-fiscal-year-2025",
-        "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-03T00:00:00+00:00",
-        "currency": "EUR",
-        "facts": {
-          "revenue": {
-            "value": 1046000000,
-            "currency": "EUR",
-            "periodEnd": "2025",
-            "label": "Umsatz",
-            "sourceUrl": "https://www.jenoptik.com/news/pressreleases/2026/03/25/financial-results-of-fiscal-year-2025",
-            "kind": "issuer-release"
-          },
-          "netIncome": {
-            "value": 74200000,
-            "currency": "EUR",
-            "periodEnd": "2025",
-            "label": "Ergebnis nach Steuern",
-            "sourceUrl": "https://www.jenoptik.com/news/pressreleases/2026/03/25/financial-results-of-fiscal-year-2025",
-            "kind": "issuer-release"
-          },
-          "ebitda": {
-            "value": 192500000,
-            "currency": "EUR",
-            "periodEnd": "2025",
-            "label": "EBITDA",
-            "sourceUrl": "https://www.jenoptik.com/news/pressreleases/2026/03/25/financial-results-of-fiscal-year-2025",
-            "kind": "issuer-release"
-          },
-          "freeCashFlow": {
-            "value": 152400000,
-            "currency": "EUR",
-            "periodEnd": "2025",
-            "label": "Free Cashflow vor Zinsen und Steuern",
-            "sourceUrl": "https://www.jenoptik.com/news/pressreleases/2026/03/25/financial-results-of-fiscal-year-2025",
-            "kind": "issuer-release"
-          }
-        }
-      },
-      "decisionEvidence": {
-        "fundamentals": {
-          "verified": true,
-          "periodEnd": "2025-12-31",
-          "checkedAt": "2026-11-03T00:00:00+00:00",
-          "label": "Geschäftsjahr 2025 mit Umsatz, Ergebnis und Finanzprofil",
-          "sourceUrl": "https://www.jenoptik.com/news/pressreleases/2026/03/25/financial-results-of-fiscal-year-2025"
-        },
-        "earnings": {
-          "confirmed": true,
-          "date": "2026-11-10",
-          "checkedAt": "2026-11-03T00:00:00+00:00",
-          "label": "Quartalsmitteilung Januar bis September 2026",
-          "sourceUrl": "https://www.jenoptik.com/investors/events"
-        },
-        "guidance": {
-          "verified": true,
-          "asOf": "2026-10-21",
-          "checkedAt": "2026-11-03T00:00:00+00:00",
-          "label": "2026: Umsatzwachstum 5–9 %; EBITDA-Marge rund 22 %",
-          "sourceUrl": "https://www.jenoptik.com/investors/news-and-adhoc-releases/2026/10/21/jenoptik-raises-ebitda-margin-guidance"
-        }
-      },
-      "checkedAt": "2026-11-03T00:00:00+00:00",
-      "source": "Offizielle Jenoptik-IR / Unternehmensmitteilungen",
       "errors": []
     }
   }

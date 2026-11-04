@@ -1,0 +1,28 @@
+name: Refresh official issuer calendars
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/refresh_issuer_calendar.py
+      - .github/workflows/issuer-calendar.yml
+  schedule:
+    - cron: '17 */6 * * *'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/refresh_issuer_calendar.py
+      - name: Commit snapshot
+        run: |
+          if git diff --quiet -- data/issuer-calendar.json; then exit 0; fi
+          git config user.name "UNITY Lab data bot"
+          git config user.email "actions@github.com"
+          git add data/issuer-calendar.json
+          git commit -m "data: refresh official issuer calendars [skip ci]"
+          git push

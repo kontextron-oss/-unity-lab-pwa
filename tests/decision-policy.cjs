@@ -40,7 +40,7 @@ assert.ok(Number.isFinite(d.relativeStrength));
 assert.ok(d.peerCount>=5);
 assert.ok(d.scenarioStop<item.price&&d.scenarioTarget>item.price);
 let p=vm.runInContext('unityDeepDecisionPanel(st)',box);
-assert.match(p,/Ja oder Nein/);
+assert.match(p,/Entscheidung jetzt/);
 assert.match(p,/Relative Stärke/);
 assert.match(p,/20-Tage-Volatilität/);
 assert.match(p,/Nicht vollständig/);

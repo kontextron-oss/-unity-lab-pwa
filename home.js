@@ -143,8 +143,11 @@ function unityPullbackAlert(s){
   }
   // Confirmed event and documented RR veto suppress a positive-looking flag.
   const f=typeof cache!=='undefined'?(cache.fundamentals||[]).find(v=>v.id===s.id):null;
-  const event=Date.parse(f?.earningsDate||'');
-  const near=!!f?.earningsConfirmed&&Number.isFinite(event)&&
+  let issuerEvent=null;
+  try{issuerEvent=typeof unityIssuerDecisionEvidence==='function'?unityIssuerDecisionEvidence(s):null}catch(_){}
+  const earningsDate=f?.earningsDate||(issuerEvent?.earnings?.confirmed?issuerEvent.earnings.date:'');
+  const event=Date.parse(earningsDate||'');
+  const near=(!!f?.earningsConfirmed||issuerEvent?.earnings?.confirmed===true)&&Number.isFinite(event)&&
     event>=Date.now()-86400000&&event<Date.now()+7*86400000;
   const stop=Number(f?.stop),target=Number(f?.target);
   const rr=stop>0&&stop<close&&target>close?(target-close)/(close-stop):NaN;
@@ -319,6 +322,15 @@ function unityHomeDecision(s){
 function unityHomeSignal(s){
   const {x,m,valid,technical,quality}=unityHomeQuote(s);
   const state=unityHomeDataState(s);
+  // Confirmed issuer-calendar dates are an event veto everywhere in the home
+  // view, not only inside the deep analysis. A chart signal must not hide an
+  // imminent earnings or guidance risk.
+  let issuerEvent=null;
+  try{issuerEvent=typeof unityIssuerDecisionEvidence==='function'?unityIssuerDecisionEvidence(s):null}catch(_){}
+  const earningsDate=issuerEvent?.earnings?.confirmed?issuerEvent.earnings.date:'';
+  const eventTime=Date.parse(earningsDate);
+  if(Number.isFinite(eventTime)&&eventTime>=Date.now()-86400000&&eventTime<Date.now()+7*86400000)
+    return {kind:'wait',label:'Earnings abwarten',icon:'!',detail:'Offiziell bestätigter Ergebnis-Termin am '+String(earningsDate).slice(0,10)+'. Neue Testkäufe bleiben bis danach gesperrt.',rank:0};
   if(!x||!m){
     if(state.kind==='loading')return {kind:'technical',label:'Kursreihe wird geladen',icon:'…',detail:'Sechs Jahre Tageskurse werden abgerufen und danach technisch ausgewertet.',rank:2};
     if(state.kind==='failed')return {kind:'warning',label:'Kursquelle nicht erreichbar',icon:'!',detail:state.detail||'Die externe Quelle hat keine Daten geliefert.',rank:3};

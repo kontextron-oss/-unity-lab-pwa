@@ -60,14 +60,18 @@ def dated_matches(body):
   except ValueError: continue
 
 def next_event(raw,today):
- body=re.sub(r"<[^>]+>"," ",html.unescape(raw))
- body=re.sub(r"\s+"," ",body)
+ # Keep table/list rows separate: a result label from one event must never
+ # validate the date of a nearby roadshow in another row.
+ body=html.unescape(raw)
+ body=re.sub(r"</(?:tr|li|p|h[1-6]|div|br|td|th)>","\\n",body,flags=re.I)
+ body=re.sub(r"<[^>]+>"," ",body)
  candidates=[]
- for start,end,date in dated_matches(body):
-  if date<=today: continue
-  context=body[max(0,start-260):end+260].lower()
-  if any(term in context for term in RESULT_TERMS):
-   candidates.append(date)
+ for line in body.splitlines():
+  line=re.sub(r"\\s+"," ",line).strip()
+  if not line: continue
+  for _start,_end,date in dated_matches(line):
+   if date>today and any(term in line.lower() for term in RESULT_TERMS):
+    candidates.append(date)
  return min(candidates).isoformat() if candidates else ""
 
 def main():

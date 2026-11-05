@@ -30,8 +30,8 @@ ISSUERS={
 ALLOWED={"www.microsoft.com","investor.apple.com","ir.amd.com","www.adobe.com","investors.quantaservices.com",
          "global.abb","www.siemens.com","www.jenoptik.com","www.se.com"}
 MONTHS={m:i for i,m in enumerate(("january","february","march","april","may","june","july","august","september","october","november","december"),1)}
-DATE_EN=re.compile(r"\\b("+ "|".join(MONTHS) +r")\\s+(\\d{1,2}),\\s*(20\\d{2})\\b",re.I)
-DATE_DE=re.compile(r"\\b(\\d{1,2})\\.(\\d{1,2})\\.(20\\d{2})\\b")
+DATE_EN=re.compile(r"\b("+ "|".join(MONTHS) +r")\s+(\d{1,2}),\s*(20\d{2})\b",re.I)
+DATE_DE=re.compile(r"\b(\d{1,2})\.(\d{1,2})\.(20\d{2})\b")
 # These terms identify a financial disclosure. Conference, roadshow, AGM and
 # generic investor-event dates never qualify on their own.
 RESULT_TERMS=(
@@ -61,7 +61,7 @@ def dated_matches(body):
 
 def next_event(raw,today):
  body=re.sub(r"<[^>]+>"," ",html.unescape(raw))
- body=re.sub(r"\\s+"," ",body)
+ body=re.sub(r"\s+"," ",body)
  candidates=[]
  for start,end,date in dated_matches(body):
   if date<=today: continue

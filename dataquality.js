@@ -21,9 +21,17 @@ function unityDataQuality(item,isin,market=unityMarket){
   if(item.dynamicExperimental)return {level:'warning',label:'Externe Referenz ungeprüft',detail:'Weltweite Kursreihe über einen externen CORS-Dienst; nicht börslich verifiziert, ISIN nicht unabhängig bestätigt. Diagramm nur zur Orientierung; keine operative Freigabe.',canCompare:false};
   const symbol=String(item.providerSymbol||'').toUpperCase();
   const expected=CATALOG.find(s=>s.isin===isin)||CATALOG.find(s=>String(s.providerSymbol||'').toUpperCase()===symbol);
-  const expectedKey=expected?.isin||('@'+String(expected?.providerSymbol||'').toUpperCase());
-  const identityOk=!!expected&&(expected.isin?item.isin===expected.isin:symbol===String(expected.providerSymbol||'').toUpperCase());
-  if(!identityOk||item.currency!==expected.currency)
+  const symbolKey='@'+symbol;
+  // Individuell hinzugefügte Werte (z. B. Apple) können außerhalb des festen
+  // Katalogs liegen. Für sie akzeptieren wir nur einen serverseitig gespeicherten
+  // Tageskurs, dessen Symbol und Währung bereits beim Aufruf abgeglichen wurden.
+  // Das ist ausreichend für technische Orientierung, aber kein ISIN-Nachweis.
+  const symbolOnly=!expected&&!!symbol&&String(item.marketKey||'').toUpperCase()===symbolKey&&
+    String(item.providerSymbol||'').toUpperCase()===symbol&&String(item.isin||'')===''; 
+  const expectedKey=expected?.isin||(symbolOnly?symbolKey:('@'+String(expected?.providerSymbol||'').toUpperCase()));
+  const identityOk=expected?(expected.isin?item.isin===expected.isin:symbol===String(expected.providerSymbol||'').toUpperCase()):symbolOnly;
+  const expectedCurrency=expected?.currency||item.currency;
+  if(!identityOk||item.currency!==expectedCurrency)
     return {level:'invalid',label:'Datenkonflikt',detail:'Wertpapierkennung oder Währung stimmt nicht mit dem Aktienkatalog überein.',canCompare:false};
   const p=item.points;
   if(!Array.isArray(p)||p.length<200||p.length>1900||!(Number(item.price)>0))

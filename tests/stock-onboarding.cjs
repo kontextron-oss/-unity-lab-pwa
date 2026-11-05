@@ -13,6 +13,12 @@ assert.match(html,/await unityFinishStockOnboarding\(obj\)/);
 assert.match(html,/function stocksView\(\)\{return unityRecentAdditionPanel\(\)/);
 assert.match(html,/matches\.slice\(0,term\?matches\.length:15\)/);
 assert.match(html,/0\.13\.\d+/);
+const catalogLiteral=html.slice(html.indexOf('const CATALOG=['),html.indexOf('];',html.indexOf('const CATALOG=['))+2);
+const catalogRows=[...catalogLiteral.matchAll(/\\{name:'([^']+)',ticker:'([^']+)',isin:'([^']+)'/g)];
+assert.equal(catalogRows.length,new Set(catalogRows.map(m=>m[3])).size,'each ISIN occurs once in the curated catalog');
+assert.ok(catalogRows.some(m=>m[1]==='RWE'&&m[3]==='DE0007037129'));
+assert.ok(catalogRows.some(m=>m[1]==='Airbus'&&m[3]==='NL0000235190'));
+assert.ok(!catalogRows.some(m=>/Bitcoin Cash|Physical Palladium/i.test(m[1])),'non-equity ETPs do not enter the stock catalog');
 
 const stock={id:'new1',name:'ASML',ticker:'ASML',currency:'EUR',isin:'',providerSymbol:'ASML.AS',exchange:'Euronext Amsterdam'};
 const noSymbol={id:'new2',name:'Private Placeholder',ticker:'TST',currency:'EUR',isin:'',exchange:'unbestätigt'};

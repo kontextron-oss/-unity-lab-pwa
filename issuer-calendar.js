@@ -24,7 +24,7 @@ function unityIssuerEvidenceMatrix(stock){
  return [
   {key:'fundamentals',title:'Fundamentaldaten',verified:fundamentals,
    detail:fundamentals?'Vollständiger geprüfter Jahresbericht '+end:'Vollständiger, frischer Jahresbericht fehlt',
-   date:fundamentals?end:'',sourceUrl:item?.latestFiling?.reportUrl||''},
+   date:fundamentals?end:'',sourceUrl:item?.latestFiling?.reportUrl||calendar?.annualReportUrl||''},
   {key:'earnings',title:'Nächster Ergebnisbericht',verified:earnings,
    detail:earnings?'Offiziell bestätigt':'Kein eindeutig zukünftiger Termin belegt',
    date:earnings?calendar.nextEarnings:'',sourceUrl:calendar?.sourceUrl||''},
@@ -64,6 +64,7 @@ function unityIssuerCalendarPanel(stock){
    '<p>'+ (confirmed?'Offizielle Ankündigung für '+esc(item.nextEarnings)+'.':'Die offizielle IR-Seite nennt derzeit keinen eindeutig zukünftigen Ergebnis-Termin. Es wird kein Datum geschätzt.')+'</p>'+
    '<p class="tiny muted">Guidance: noch nicht einzeln aus einer zugeordneten Unternehmensveröffentlichung geprüft · Quellenstand: '+esc(String(item.checkedAt||'').slice(0,10)||'offen')+'.</p>';
  if(/^https:\/\//.test(String(item.sourceUrl||'')))h+='<p><a href="'+esc(item.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Offizielle IR-Kalenderseite öffnen</a></p>';
+ if(/^https:\/\//.test(String(item.annualReportUrl||'')))h+='<p class="tiny muted">Jahresabschluss-Quelle registriert · <a href="'+esc(item.annualReportUrl)+'" target="_blank" rel="noopener noreferrer">offiziellen Jahresbericht öffnen</a>. Die Kennzahlen werden erst nach eindeutiger Extraktion als belegt gewertet.</p>';
  return h+'</section>';
 }
 async function unityLoadIssuerCalendar(){

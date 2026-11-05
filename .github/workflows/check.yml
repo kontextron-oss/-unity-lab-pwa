@@ -34,6 +34,8 @@ jobs:
           node --check depot.js
           node --check depotcsv.js
           node --check home.js
+          node --check crypto-sources.js
+          node --check crypto-policy.js
           node --check incremental.js
           node --check pcloud-direct.js
           node --check sw.js
@@ -63,6 +65,9 @@ jobs:
 
       - name: Test home dashboard and investment verdict
         run: node tests/home.cjs
+
+      - name: Keep crypto assets on the separate crypto analysis model
+        run: node tests/crypto-routing.cjs
 
       - name: Verify dated quote fallback without a full technical history
         run: node tests/quote-first.cjs

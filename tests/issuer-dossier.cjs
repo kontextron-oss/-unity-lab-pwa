@@ -9,7 +9,7 @@ const evidence=[
  {key:'risk',verified:false,date:'',detail:'Keine einzeln geprüften Risikofaktoren als Entscheidungsbeleg hinterlegt',sourceUrl:''}
 ];
 const sandbox={
- esc:v=>String(v??''),unityIsCryptoAsset:()=>false,
+ esc:v=>String(v??''),unityIsCryptoAsset:s=>/krypto|crypto/i.test(String(s?.exchange||'')),
  unityMarketForStock:()=>({price:240,date:'2026-11-05',source:'Xetra · Tages-Schlusskurs'}),
  unityFundPilotItem:()=>({latestFiling:{reportUrl:'https://filings.xbrl.org/report.json'}}),
  unityIssuerEvidenceMatrix:()=>evidence,

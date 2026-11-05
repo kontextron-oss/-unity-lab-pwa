@@ -183,6 +183,13 @@ function unityCalculatedEntry(s){
   const price=Number.isFinite(lower)?Math.max(lower,raw):raw;
   return {ready:Number.isFinite(price)&&price>0,decision,a,price,stop:stop>0?stop:NaN};
 }
+function unityTechnicalTestEntry(s){
+  const signal=unityPullbackAlert(s);
+  const price=Number(signal.high);
+  return {ready:signal.kind==='reached'&&Number.isFinite(price)&&price>0,price,signal};
+}
+function unityAutoBuyEntry(s,mode){return mode==='technical'?unityTechnicalTestEntry(s):unityCalculatedEntry(s)}
+function unityAutoBuyModeLabel(mode){return mode==='technical'?'Technischer Testkauf':'Strenge UNITY-Freigabe'}
 function unityAutoBuyRecommendation(s){
   const entry=unityCalculatedEntry(s),decision=entry.decision;
   if(entry.ready)return {kind:'buy',title:'UNITY empfiehlt: Auto-Testkauf möglich',text:'Berechneter Einstiegspreis bis '+number(entry.price,2)+' '+s.currency+'. Unternehmenswert, Sicherheitsmarge, Risiko und technisches Timing sind im Modell erfüllt.'};
@@ -201,7 +208,7 @@ function unityZonePlanState(s){
 }
 function unityZonePlanPanel(s){
   const auto=unityPullbackAlert(s);
-  const entry=unityCalculatedEntry(s),queued=unityAutoBuy(s),armed=!!queued&&entry.ready;
+  const entry=unityCalculatedEntry(s),queued=unityAutoBuy(s),queuedMode=queued?.mode||'strict',armed=!!queued&&unityAutoBuyEntry(s,queuedMode).ready;
   const recommendation=unityAutoBuyRecommendation(s);
   const position=depotPosition(s),sellArmed=unityAutoSell(s),exit=unityAutoExitZone(s);
   const technical=Number.isFinite(auto.low)&&Number.isFinite(auto.high);
@@ -213,7 +220,7 @@ function unityZonePlanPanel(s){
     '<div class="home-recommendation home-recommendation-'+esc(recommendation.kind)+'"><b>'+esc(recommendation.title)+'</b><small>'+esc(recommendation.text)+'</small></div>'+
     '<div class="home-limit-range"><div><small>Technische Rücksetzerzone</small><strong>'+esc(fmt(auto.low))+' – '+esc(fmt(auto.high))+'</strong></div><div><small>Status</small><strong>'+esc(status)+'</strong></div></div>'+
     '<div class="home-zone-state"><b>Noch kein Kauf-Limit</b><small>Die technische Zone ist nur ein Timing-Hinweis. Ein guter Einstiegspreis wird erst aus bestätigtem Unternehmenswert, Sicherheitsmarge, Risiko und Earnings berechnet.</small></div>'+
-    '<div class="home-auto-order"><div><b>'+(queued?'Auto-Testkauf aktiv · wartet':'Auto-Testkauf noch aus')+'</b><small>'+(queued?'Er bleibt vorgemerkt und wartet auf einen berechneten Einstiegspreis mit positiver UNITY-Empfehlung.':'Du kannst ihn bereits aktivieren; ausgeführt wird erst nach der positiven Empfehlung.')+'</small></div><button type="button" class="'+(queued?'secondary':'primary')+'" data-home-auto-buy="'+esc(s.id)+'">'+(queued?'Auto-Testkauf ausschalten':'Auto-Testkauf aktivieren')+'</button></div>'+
+    '<div class="home-auto-order"><div><b>'+(queued?'Auto-Testkauf aktiv · '+unityAutoBuyModeLabel(queuedMode):'Auto-Testkauf wählen')+'</b><small>'+(queued?'Der Auftrag bleibt vorgemerkt, bis seine gewählte Bedingung erfüllt ist.':'Technisch: Kaufzone erreicht. Streng: zusätzlich vollständige UNITY-Freigabe.')+'</small></div>'+(queued?'<button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'">Auto-Testkauf ausschalten</button>':'<span class="actions"><button type="button" class="primary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="technical">Technisch aktivieren</button><button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="strict">Streng aktivieren</button></span>')+'</div>'+
     '<div class="home-auto-order"><div><b>Sofort selbst entscheiden</b><small>Du kannst unabhängig von UNITYs Empfehlung zum aktuellen Referenzkurs einen Testkauf ausführen.</small></div><button type="button" class="secondary" data-home-trade="BUY">Jetzt Testkauf</button></div>'+
     '<p class="tiny muted">Bei Siemens wird derzeit nicht automatisch gekauft, weil noch kein berechneter Einstiegspreis und keine positive Empfehlung vorliegen.</p></section>';
   return '<section class="home-zone-plan home-auto-limit"><h3>Berechneter Einstiegspreis</h3>'+
@@ -221,8 +228,8 @@ function unityZonePlanPanel(s){
     '<div class="home-recommendation home-recommendation-'+esc(recommendation.kind)+'"><b>'+esc(recommendation.title)+'</b><small>'+esc(recommendation.text)+'</small></div>'+
     '<div class="home-limit-range"><div><small>Kauf-Limit</small><strong>bis '+esc(fmt(entry.price))+'</strong></div><div><small>Technische Rücksetzerzone</small><strong>'+esc(fmt(auto.low))+' – '+esc(fmt(auto.high))+'</strong></div></div>'+
     '<div class="home-zone-state home-zone-'+esc(auto.kind)+'"><b>'+esc(status)+'</b><small>Berechnet aus bestätigtem Unternehmenswert mit mindestens 10 % Sicherheitsmarge und technischem Timing.</small></div>'+
-    '<div class="home-auto-order"><div><b>'+(armed?'Auto-Testkauf aktiv':'Auto-Testkauf noch aus')+'</b><small>'+(armed?'Beim nächsten Kurs am oder unter dem berechneten Limit wird automatisch mit 10 % des freien Testkapitals gekauft.':'Kein eigener Limitkurs nötig. UNITY verwendet den berechneten Einstiegspreis.')+'</small></div>'+
-    '<button type="button" class="'+(armed?'secondary':'primary')+'" data-home-auto-buy="'+esc(s.id)+'">'+(armed?'Auto-Testkauf ausschalten':'Auto-Testkauf aktivieren')+'</button></div>'+
+    '<div class="home-auto-order"><div><b>'+(queued?'Auto-Testkauf aktiv · '+unityAutoBuyModeLabel(queuedMode):'Auto-Testkauf wählen')+'</b><small>'+(queued?(queuedMode==='technical'?'Kauft beim nächsten bestätigten Kurs in der technischen Einstiegszone mit 10 % Testkapital.':'Beim nächsten Kurs am oder unter dem berechneten Limit wird mit 10 % Testkapital gekauft.'):'Technisch: kleine Probe bei Kaufzone. Streng: erst bei vollständiger UNITY-Freigabe.')+'</small></div>'+
+    (queued?'<button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'">Auto-Testkauf ausschalten</button>':'<span class="actions"><button type="button" class="primary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="technical">Technisch aktivieren</button><button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="strict">Streng aktivieren</button></span>')+'</div>'+
     '<div class="home-auto-order home-auto-sell"><div><b>'+(sellArmed?'Auto-Testverkauf aktiv':'Auto-Testverkauf noch aus')+'</b><small>'+(position.qty>0&&exit?'Technische Verkaufszone: unter '+esc(fmt(exit))+'. Bei Unterschreitung wird der gesamte simulierte Bestand verkauft.':position.qty>0?'Verkaufszone wird erst nach ausreichenden technischen Daten berechnet.':'Für einen Auto-Testverkauf muss zuerst ein simulierter Bestand vorhanden sein.')+'</small></div>'+
     '<button type="button" class="'+(sellArmed?'secondary':'primary')+'" data-home-auto-sell="'+esc(s.id)+'" '+(position.qty>0&&exit?'':'disabled')+'>'+ (sellArmed?'Auto-Testverkauf ausschalten':'Auto-Testverkauf aktivieren')+'</button></div>'+
     '<p class="tiny muted">Nur im Simulationsdepot. Die Ausführung erfolgt beim nächsten Kurs-Check in der geöffneten App, nie als echte Brokerorder.</p></section>';
@@ -230,13 +237,13 @@ function unityZonePlanPanel(s){
 async function unityRunAutoTestBuys(){
   if(typeof cache==='undefined'||!cache.settings||typeof depotCapital!=='function')return;
   for(const s of stocks()){
-    const order=unityAutoBuy(s),entry=unityCalculatedEntry(s);if(!order||!entry.ready)continue;
+    const order=unityAutoBuy(s),mode=order?.mode||'strict',entry=unityAutoBuyEntry(s,mode);if(!order||!entry.ready)continue;
     const signal=unityPullbackAlert(s);if(signal.kind!=='reached'||Number(signal.close)>entry.price)continue;
     const capital=depotCapital();if(!capital.configured||!(capital.free>0))continue;
     const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN);
     const price=Number(signal.close),amount=Math.min(capital.free*.10,capital.free),quantity=amount/(price*rate);
     if(!(price>0&&rate>0&&quantity>0))continue;
-    const at=new Date().toISOString(),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: berechneter Einstiegspreis erreicht.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf',buy:'Berechneter Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.'}};
+    const at=new Date().toISOString(),modeLabel=unityAutoBuyModeLabel(mode),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: '+modeLabel+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf · '+modeLabel,buy:'Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:mode==='technical'?'Technische Kaufzone erreicht; kleiner simulierter Testkauf. Keine reale Order.':'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.'}};
     await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_BUY',trade.id,s.ticker+' · '+number(quantity,4)+' Stück');
     await refresh();
   }
@@ -600,7 +607,9 @@ document.addEventListener('click',e=>{
   if(b.dataset.homeAutoBuy){
     const s=stocks().find(x=>x.id===b.dataset.homeAutoBuy);if(!s)return;const prior=unityAutoBuy(s);
     if(prior){put('settings',{...prior,active:false,cancelledAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_OFF',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return}
-    if(confirm('Auto-Testkauf aktivieren?\n\nUNITY wartet zunächst auf eine positive Empfehlung und einen berechneten Einstiegspreis. Erst dann kauft es beim Erreichen des Limits 10 % des freien Testkapitals. Keine echte Brokerorder.'))put('settings',{id:unityAutoBuyId(s),kind:'auto-test-buy',instrumentId:s.id,active:true,createdAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_ON',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return;
+    const mode=b.dataset.autoMode==='technical'?'technical':'strict',label=unityAutoBuyModeLabel(mode);
+    const text=mode==='technical'?'UNITY kauft im Testdepot mit 10 % des freien Testkapitals, wenn die bestätigte technische Kaufzone erreicht wird. Earnings-Risiko oder eine gebrochene Zone blockieren den Kauf. Keine echte Brokerorder.':'UNITY wartet auf vollständige positive UNITY-Freigabe und den berechneten Einstiegspreis. Erst dann kauft es im Testdepot mit 10 % des freien Kapitals. Keine echte Brokerorder.';
+    if(confirm(label+' aktivieren?\n\n'+text))put('settings',{id:unityAutoBuyId(s),kind:'auto-test-buy',instrumentId:s.id,mode,active:true,createdAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_ON',s.id,label)).then(refresh).catch(err=>alert(err.message||String(err)));return;
   }
   if(b.dataset.homeAutoSell){
     const s=stocks().find(x=>x.id===b.dataset.homeAutoSell);if(!s)return;const prior=unityAutoSell(s);

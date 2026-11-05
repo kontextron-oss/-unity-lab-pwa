@@ -14,6 +14,6 @@ const stress={...benchmark,points:make(i=>i<235?120:120*Math.pow(.99,i-234)),pri
 sandbox.unityMarket={items:{'@SPY5.DE':stress}};
 const regime=vm.runInContext('unityMarketRegime(unityBenchmarkItem())',sandbox);
 assert.equal(regime.kind,'stress');
-sandbox.unityIsCryptoAsset:s=>/krypto/i.test(String(s?.exchange||''));
+sandbox.unityIsCryptoAsset=s=>/krypto/i.test(String(s?.exchange||''));
 assert.equal(vm.runInContext("unityMarketContextPanel({exchange:'Krypto USD'})",sandbox),'');
 console.log('Market context: aligned benchmark strength, volatility and stress filter passed.');

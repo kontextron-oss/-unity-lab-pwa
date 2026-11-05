@@ -5,12 +5,13 @@ Never label as intraday or independently verified. Fail closed if source unavail
 import datetime as dt
 import json
 import pathlib
+import re
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 
-STOCKS = [
+EXTRA_STOCKS = [
     ("CH0012221716", "ABBN.SW", "CHF", "ABB"),
     ("FR0000121972", "SU.PA", "EUR", "Schneider Electric"),
     ("IE00B8KQN827", "ETN", "USD", "Eaton"),
@@ -77,6 +78,53 @@ STOCKS = [
 ]
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "market.json"
+CATALOG_FILE = ROOT / "index.html"
+CATALOG_ROW = re.compile(
+    r"\\{name:'(?P<name>[^']+)',ticker:'(?P<ticker>[^']+)',isin:'(?P<isin>[^']+)',"
+    r"exchange:'(?P<exchange>[^']+)',currency:'(?P<currency>[^']+)',"
+    r"providerSymbol:'(?P<symbol>[^']*)',group:'[^']+'\\}"
+)
+
+def curated_catalog_stocks():
+    """Use the app's curated master data as the only source for catalog symbols.
+
+    The server snapshot must not silently drift from the visible selector: each
+    selected catalog share receives its own ISIN key, currency check and price
+    history.  This is a delayed technical reference, not a fundamental dataset.
+    """
+    rows = list(CATALOG_ROW.finditer(CATALOG_FILE.read_text(encoding="utf-8")))
+    if not rows:
+        raise RuntimeError("Could not read the curated equity catalog")
+    stocks, isins, symbols = [], set(), set()
+    for row in rows:
+        name, isin, currency, symbol = (row.group(k).strip() for k in ("name", "isin", "currency", "symbol"))
+        if not isin or not symbol or not currency:
+            continue
+        if isin in isins:
+            raise RuntimeError(f"Duplicate catalog ISIN: {isin}")
+        if symbol.upper() in symbols:
+            raise RuntimeError(f"Duplicate catalog price symbol: {symbol}")
+        isins.add(isin)
+        symbols.add(symbol.upper())
+        stocks.append((isin, symbol, currency, name))
+    if len(stocks) < 20:
+        raise RuntimeError("Curated catalog unexpectedly incomplete")
+    return stocks
+
+def build_stocks():
+    catalog = curated_catalog_stocks()
+    catalog_symbols = {symbol.upper() for _, symbol, _, _ in catalog}
+    extras, seen = [], set(catalog_symbols)
+    for key, symbol, currency, name in EXTRA_STOCKS:
+        # Catalog values are keyed by their verified ISIN.  Retaining them as
+        # @symbol duplicates would make the app ignore the catalog identity.
+        if symbol.upper() in seen:
+            continue
+        seen.add(symbol.upper())
+        extras.append((key, symbol, currency, name))
+    return catalog + extras
+
+STOCKS = build_stocks()
 
 def get_chart(symbol):
     query = urllib.parse.urlencode({"range": "10y", "interval": "1d", "events": "false"})

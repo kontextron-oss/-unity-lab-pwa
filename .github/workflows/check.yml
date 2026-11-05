@@ -39,6 +39,9 @@ jobs:
           node --check incremental.js
           node --check pcloud-direct.js
           node --check sw.js
+      - name: Check market snapshot generator
+        run: python3 -m py_compile scripts/refresh_market.py
+
       - name: Check inline application script
         run: |
           python3 - <<'PY'
@@ -86,6 +89,9 @@ jobs:
 
       - name: Test new-stock onboarding and automatic local history import
         run: node tests/stock-onboarding.cjs
+
+      - name: Test catalog-driven delayed market-data seeding
+        run: node tests/catalog-market-seed.cjs
 
       - name: Test daily technical pullback alert and stale-data safeguards
         run: node tests/pullback-alert.cjs

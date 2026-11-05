@@ -65,7 +65,7 @@ fundamentals.splice(0,1);
 assert.match(source,/const position=depotPosition\(s\),research=unityResearchIndicator\(s\),pullback=unityPullbackAlert\(s\)/);
 assert.match(source,/const reachedPullbacks=pullbackResults.filter/);
 assert.match(source,/function unityHomeActionSortMatch\(s,mode\)/);
-assert.match(source,/pullback\.kind==='reached'\|\|signal\.kind==='buy'/);
+assert.match(source,/pullback\.kind==='reached'\|\|candidate\?\.status==='candidate'/);
 assert.match(source,/data-home-sort="entry"/);
 assert.match(source,/data-home-sort="watch"/);
 assert.match(source,/data-home-sort="sell"/);

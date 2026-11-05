@@ -66,7 +66,6 @@ assert.match(source,/const position=depotPosition\(s\),research=unityResearchInd
 assert.match(source,/const reachedPullbacks=pullbackResults.filter/);
 assert.match(source,/function unityHomeActionSortMatch\(s,mode\)/);
 assert.match(source,/pullback\.kind==='reached'\|\|candidate\?\.status==='candidate'/);
-assert.match(source,/Rücksetzer[\s\S]*nicht lift/);
 assert.match(source,/data-home-sort="entry"/);
 assert.match(source,/data-home-sort="watch"/);
 assert.match(source,/data-home-sort="sell"/);

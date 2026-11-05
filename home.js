@@ -247,19 +247,21 @@ function unityHomeSignal(s){
   if(action==='Halten – freigegeben')return {kind:'hold',label:'Halten',icon:'=',detail:'Bestand nach vollständiger UNITY-Prüfung halten.',rank:2};
   return {kind:'wait',label:'Abwarten',icon:'·',detail:'Keine bestätigte Kauf- oder Verkaufsfreigabe.',rank:4};
 }
+function unityHomeActionSortMatch(s,mode){
+  const pullback=unityPullbackAlert(s),signal=unityHomeSignal(s);
+  if(mode==='entry')return pullback.kind==='reached'||signal.kind==='buy';
+  if(mode==='watch')return pullback.kind==='watch'||signal.kind==='wait'||signal.kind==='hold';
+  if(mode==='sell')return signal.kind==='sell';
+  return false;
+}
 function unityHomeDisplayedStocks(){
   const list=unityHomeStocks();
-  if(unityHomeSort==='priority'){
-    // Cache ranking once per render: do not recompute 200-day indicators for
-    // every sorting comparison on smaller iPhone devices.
-    const ranks=new Map(list.map(s=>{
-      const p=unityPullbackAlert(s);
-      const rank=p.kind==='reached'?0:p.kind==='blocked'?1:p.kind==='watch'?2:3+unityPreAnalysis(s).rank;
-      return [s.id,rank];
-    }));
-    list.sort((a,b)=>(ranks.get(a.id)??99)-(ranks.get(b.id)??99)||a.name.localeCompare(b.name));
-  }
-  return list;
+  if(unityHomeSort==='manual')return list;
+  // The manual order is retained inside every group.  Sorting only brings the
+  // requested existing UNITY action/status to the front; it never writes a new
+  // order and never invents a second buy/sell model.
+  return list.map((s,index)=>({s,index,match:unityHomeActionSortMatch(s,unityHomeSort)}))
+    .sort((a,b)=>Number(b.match)-Number(a.match)||a.index-b.index).map(row=>row.s);
 }
 
 function unityHome(){

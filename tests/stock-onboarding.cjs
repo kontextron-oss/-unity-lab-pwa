@@ -14,7 +14,7 @@ assert.match(html,/function stocksView\(\)\{return unityRecentAdditionPanel\(\)/
 assert.match(html,/matches\.slice\(0,term\?matches\.length:15\)/);
 assert.match(html,/0\.13\.\d+/);
 const catalogLiteral=html.slice(html.indexOf('const CATALOG=['),html.indexOf('];',html.indexOf('const CATALOG=['))+2);
-const catalogRows=[...catalogLiteral.matchAll(/\\{name:'([^']+)',ticker:'([^']+)',isin:'([^']+)'/g)];
+const catalogRows=[...catalogLiteral.matchAll(/\{name:'([^']+)',ticker:'([^']+)',isin:'([^']+)'/g)];
 assert.equal(catalogRows.length,new Set(catalogRows.map(m=>m[3])).size,'each ISIN occurs once in the curated catalog');
 assert.ok(catalogRows.some(m=>m[1]==='RWE'&&m[3]==='DE0007037129'));
 assert.ok(catalogRows.some(m=>m[1]==='Airbus'&&m[3]==='NL0000235190'));

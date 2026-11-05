@@ -64,6 +64,7 @@ def next_event(raw,today):
  # printed date. This stays safe even where a page uses nested DIVs instead of
  # an HTML table: labels from a later event cannot validate an earlier date.
  body=html.unescape(raw)
+ body=re.sub(r"<(footer|nav|script|style)[^>]*>.*?</\\1\\s*>"," ",body,flags=re.I|re.S)
  body=re.sub(r"<[^>]+>"," ",body)
  body=re.sub(r"\\s+"," ",body)
  matches=sorted(dated_matches(body),key=lambda item:item[0])

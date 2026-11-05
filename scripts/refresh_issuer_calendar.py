@@ -16,16 +16,16 @@ ROOT=Path(__file__).resolve().parents[1]
 DEST=ROOT/"data"/"issuer-calendar.json"
 HEADERS={"User-Agent":"UNITY-LAB-IR-Monitor/1.1 (https://github.com/kontextron-oss/-unity-lab-pwa)","Accept":"text/html,application/xhtml+xml"}
 ISSUERS={
- "MSFT":{"name":"Microsoft","url":"https://www.microsoft.com/en-us/Investor/"},
+ "MSFT":{"name":"Microsoft","url":"https://www.microsoft.com/en-us/Investor/","annualReportUrl":"https://www.microsoft.com/en-us/Investor/annual-reports.aspx"},
  "AAPL":{"name":"Apple","url":"https://investor.apple.com/investor-relations/default.aspx"},
  "AMD":{"name":"AMD","url":"https://ir.amd.com/news-events/ir-calendar"},
  "ADBE":{"name":"Adobe","url":"https://www.adobe.com/investor-relations.html"},
  "PWR":{"name":"Quanta Services","url":"https://investors.quantaservices.com/news-events/ir-calendar"},
  # European pilot values: official issuer pages, deliberately not market portals.
- "ABBN":{"name":"ABB","url":"https://global.abb/group/en/investors/overview"},
- "SIE":{"name":"Siemens","url":"https://www.siemens.com/de-de/company/investor-relations/financial-calendar/"},
- "JEN":{"name":"Jenoptik AG","url":"https://www.jenoptik.com/investors/events"},
- "SU":{"name":"Schneider Electric","url":"https://www.se.com/ww/en/about-us/investor-relations/financial-calendar-and-events/"}
+ "ABBN":{"name":"ABB","url":"https://global.abb/group/en/investors/overview","annualReportUrl":"https://global.abb/group/en/investors/results-and-reports/annual-reports"},
+ "SIE":{"name":"Siemens","url":"https://www.siemens.com/de-de/company/investor-relations/financial-calendar/","annualReportUrl":"https://www.siemens.com/de-de/company/investor-relations/annual-reports/"},
+ "JEN":{"name":"Jenoptik AG","url":"https://www.jenoptik.com/investors/events","annualReportUrl":"https://www.jenoptik.com/investors/annual-report-2025"},
+ "SU":{"name":"Schneider Electric","url":"https://www.se.com/ww/en/about-us/investor-relations/financial-calendar-and-events/","annualReportUrl":"https://www.se.com/ww/en/about-us/investor-relations/regulatory-information/annual-reports/"}
 }
 ALLOWED={"www.microsoft.com","investor.apple.com","ir.amd.com","www.adobe.com","investors.quantaservices.com",
          "global.abb","www.siemens.com","www.jenoptik.com","www.se.com"}
@@ -80,7 +80,7 @@ def next_event(raw,today):
 def main():
  checked=now(); today=dt.datetime.now(dt.timezone.utc).date(); items={}
  for ticker,issuer in ISSUERS.items():
-  item={"ticker":ticker,"name":issuer["name"],"source":"Offizielle Investor-Relations-Kalenderseite","sourceUrl":issuer["url"],"checkedAt":checked,"nextEarnings":"",
+  item={"ticker":ticker,"name":issuer["name"],"source":"Offizielle Investor-Relations-Kalenderseite","sourceUrl":issuer["url"],"annualReportUrl":issuer.get("annualReportUrl",""),"checkedAt":checked,"nextEarnings":"",
         "guidance":{"verified":False,"reason":"Guidance wird nur aus einer ausdrücklich zugeordneten Unternehmensveröffentlichung bestätigt."}}
   try:
    date=next_event(text_at(issuer["url"]),today)

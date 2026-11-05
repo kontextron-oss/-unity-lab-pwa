@@ -6,7 +6,7 @@ const end=new Date(Date.now()-120*86400000).toISOString().slice(0,10);
 const ctx={Date,Number,String,Array,JSON,esc:x=>String(x),render:()=>{},
  unityFundPilotItem:()=>({latestFiling:{periodEnd:end,reportUrl:'https://data.sec.gov/api/xbrl/companyfacts/CIK0000000001.json'},
   metrics:{revenue:{value:1},netIncome:{value:1},assets:{value:1},equity:{value:1},operatingCashFlow:{value:1}}}),
- fetch:async()=>({ok:true,json:async()=>({generatedAt:new Date().toISOString(),items:{ABCD:{status:'confirmed-future-earnings',nextEarnings:'2026-12-01',sourceUrl:'https://investor.example.com/calendar'}}})})};
+ fetch:async()=>({ok:true,json:async()=>({generatedAt:new Date().toISOString(),items:{ABCD:{status:'confirmed-future-earnings',nextEarnings:'2026-12-01',sourceUrl:'https://investor.example.com/calendar',annualReportUrl:'https://investor.example.com/annual-report'}}})})};
 vm.createContext(ctx);vm.runInContext(source,ctx);
 (async()=>{
  await new Promise(resolve=>setTimeout(resolve,10));
@@ -14,6 +14,7 @@ vm.createContext(ctx);vm.runInContext(source,ctx);
  const rows=vm.runInContext('unityIssuerEvidenceMatrix(stock)',ctx);
  assert.equal(rows.length,5);
  assert.equal(rows.find(x=>x.key==='fundamentals').verified,true);
+ assert.equal(rows.find(x=>x.key==='fundamentals').sourceUrl,'https://data.sec.gov/api/xbrl/companyfacts/CIK0000000001.json');
  assert.equal(rows.find(x=>x.key==='earnings').verified,true);
  assert.equal(rows.find(x=>x.key==='guidance').verified,false);
  assert.equal(rows.find(x=>x.key==='risk').verified,false);

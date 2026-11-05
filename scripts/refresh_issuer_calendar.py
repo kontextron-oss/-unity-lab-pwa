@@ -70,7 +70,7 @@ def next_event(raw,today):
  candidates=[]
  for index,(start,_end,date) in enumerate(matches):
   if date<=today: continue
-  next_start=matches[index+1][0] if index+1<len(matches) else min(len(body),start+600)
+  next_start=matches[index+1][0] if index+1<len(matches) else min(len(body),start+240)
   event_text=body[start:next_start].lower()
   if any(term in event_text for term in RESULT_TERMS):
    candidates.append(date)

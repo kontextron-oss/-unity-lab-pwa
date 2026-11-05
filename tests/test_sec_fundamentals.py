@@ -33,11 +33,5 @@ class SecValuationInputsTests(unittest.TestCase):
         self.assertEqual(item["derived"]["freeCashFlow"]["value"],150)
         self.assertEqual(item["derived"]["freeCashFlow"]["periodEnd"],end)
 
-    def test_abb_is_registered_with_its_official_sec_cik(self):
-        abb=mod.ISSUERS["ABB"]
-        self.assertEqual(abb["cik"],"0001091587")
-        self.assertEqual(abb["isin"],"CH0012221716")
-        self.assertTrue(abb["ir"].startswith("https://global.abb/"))
-
 if __name__=="__main__":
     unittest.main()

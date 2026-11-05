@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T07:27:50Z",
+  "generatedAt": "2026-11-05T07:42:09Z",
   "source": "Offizielle IR-Kalenderseiten",
-  "scope": "Nur explizit auf der Emittentenseite erkennbare zukünftige Ergebnis- oder Financial-Results-Termine; keine Schätzung.",
+  "scope": "Nur explizit auf der Emittentenseite erkennbare zukünftige Ergebnis- oder Financial-Results-Termine; keine Schätzung. Deutsche und englische Datumsformate, keine Konferenz- oder Roadshow-Termine.",
   "items": {
     "MSFT": {
       "ticker": "MSFT",
       "name": "Microsoft",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.microsoft.com/en-us/Investor/",
-      "checkedAt": "2026-11-05T07:27:50Z",
+      "checkedAt": "2026-11-05T07:42:09Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -27,7 +27,7 @@
       "name": "Apple",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investor.apple.com/investor-relations/default.aspx",
-      "checkedAt": "2026-11-05T07:27:50Z",
+      "checkedAt": "2026-11-05T07:42:09Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -45,7 +45,7 @@
       "name": "AMD",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://ir.amd.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T07:27:50Z",
+      "checkedAt": "2026-11-05T07:42:09Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -63,16 +63,16 @@
       "name": "Adobe",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.adobe.com/investor-relations.html",
-      "checkedAt": "2026-11-05T07:27:50Z",
-      "nextEarnings": "2026-12-09",
+      "checkedAt": "2026-11-05T07:42:09Z",
+      "nextEarnings": "",
       "guidance": {
         "verified": false,
         "reason": "Guidance wird nur aus einer ausdrücklich zugeordneten Unternehmensveröffentlichung bestätigt."
       },
-      "status": "confirmed-future-earnings",
+      "status": "no-confirmed-future-earnings",
       "earnings": {
-        "confirmed": true,
-        "date": "2026-12-09",
+        "confirmed": false,
+        "date": "",
         "sourceUrl": "https://www.adobe.com/investor-relations.html"
       }
     },
@@ -81,7 +81,7 @@
       "name": "Quanta Services",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investors.quantaservices.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T07:27:50Z",
+      "checkedAt": "2026-11-05T07:42:09Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -93,6 +93,78 @@
         "date": "",
         "sourceUrl": "https://investors.quantaservices.com/news-events/ir-calendar"
       }
+    },
+    "ABBN": {
+      "ticker": "ABBN",
+      "name": "ABB",
+      "source": "Offizielle Investor-Relations-Kalenderseite",
+      "sourceUrl": "https://global.abb/group/en/investors/overview",
+      "checkedAt": "2026-11-05T07:42:09Z",
+      "nextEarnings": "",
+      "guidance": {
+        "verified": false,
+        "reason": "Guidance wird nur aus einer ausdrücklich zugeordneten Unternehmensveröffentlichung bestätigt."
+      },
+      "status": "no-confirmed-future-earnings",
+      "earnings": {
+        "confirmed": false,
+        "date": "",
+        "sourceUrl": "https://global.abb/group/en/investors/overview"
+      }
+    },
+    "SIE": {
+      "ticker": "SIE",
+      "name": "Siemens",
+      "source": "Offizielle Investor-Relations-Kalenderseite",
+      "sourceUrl": "https://www.siemens.com/de-de/company/investor-relations/financial-calendar/",
+      "checkedAt": "2026-11-05T07:42:09Z",
+      "nextEarnings": "",
+      "guidance": {
+        "verified": false,
+        "reason": "Guidance wird nur aus einer ausdrücklich zugeordneten Unternehmensveröffentlichung bestätigt."
+      },
+      "status": "no-confirmed-future-earnings",
+      "earnings": {
+        "confirmed": false,
+        "date": "",
+        "sourceUrl": "https://www.siemens.com/de-de/company/investor-relations/financial-calendar/"
+      }
+    },
+    "JEN": {
+      "ticker": "JEN",
+      "name": "Jenoptik AG",
+      "source": "Offizielle Investor-Relations-Kalenderseite",
+      "sourceUrl": "https://www.jenoptik.com/investors/events",
+      "checkedAt": "2026-11-05T07:42:09Z",
+      "nextEarnings": "",
+      "guidance": {
+        "verified": false,
+        "reason": "Guidance wird nur aus einer ausdrücklich zugeordneten Unternehmensveröffentlichung bestätigt."
+      },
+      "status": "no-confirmed-future-earnings",
+      "earnings": {
+        "confirmed": false,
+        "date": "",
+        "sourceUrl": "https://www.jenoptik.com/investors/events"
+      }
+    },
+    "SU": {
+      "ticker": "SU",
+      "name": "Schneider Electric",
+      "source": "Offizielle Investor-Relations-Kalenderseite",
+      "sourceUrl": "https://www.se.com/ww/en/about-us/investor-relations/financial-calendar-and-events/",
+      "checkedAt": "2026-11-05T07:42:09Z",
+      "nextEarnings": "",
+      "guidance": {
+        "verified": false,
+        "reason": "Guidance wird nur aus einer ausdrücklich zugeordneten Unternehmensveröffentlichung bestätigt."
+      },
+      "status": "no-confirmed-future-earnings",
+      "earnings": {
+        "confirmed": false,
+        "date": "",
+        "sourceUrl": "https://www.se.com/ww/en/about-us/investor-relations/financial-calendar-and-events/"
+      }
     }
   }
-}
+}\n

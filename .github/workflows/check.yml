@@ -102,6 +102,9 @@ jobs:
       - name: Validate issuer data dossier and explicit evidence gaps
         run: node tests/issuer-dossier.cjs
 
+      - name: Validate benchmark strength, volatility and market stress context
+        run: node tests/market-context.cjs
+
       - name: Validate SEC official-source parser and stale fallback
         run: python3 -m unittest discover -s tests -p 'test_research.py'
 

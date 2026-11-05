@@ -60,18 +60,20 @@ def dated_matches(body):
   except ValueError: continue
 
 def next_event(raw,today):
- # Keep table/list rows separate: a result label from one event must never
- # validate the date of a nearby roadshow in another row.
+ # Each event starts at its printed date and ends immediately before the next
+ # printed date. This stays safe even where a page uses nested DIVs instead of
+ # an HTML table: labels from a later event cannot validate an earlier date.
  body=html.unescape(raw)
- body=re.sub(r"</(?:tr|li|p|h[1-6]|div|br)>","\n",body,flags=re.I)
  body=re.sub(r"<[^>]+>"," ",body)
+ body=re.sub(r"\\s+"," ",body)
+ matches=sorted(dated_matches(body),key=lambda item:item[0])
  candidates=[]
- for line in body.splitlines():
-  line=re.sub(r"\s+"," ",line).strip()
-  if not line: continue
-  for _start,_end,date in dated_matches(line):
-   if date>today and any(term in line.lower() for term in RESULT_TERMS):
-    candidates.append(date)
+ for index,(start,_end,date) in enumerate(matches):
+  if date<=today: continue
+  next_start=matches[index+1][0] if index+1<len(matches) else min(len(body),start+600)
+  event_text=body[start:next_start].lower()
+  if any(term in event_text for term in RESULT_TERMS):
+   candidates.append(date)
  return min(candidates).isoformat() if candidates else ""
 
 def main():

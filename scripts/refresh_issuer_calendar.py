@@ -63,7 +63,7 @@ def next_event(raw,today):
  # Keep table/list rows separate: a result label from one event must never
  # validate the date of a nearby roadshow in another row.
  body=html.unescape(raw)
- body=re.sub(r"</(?:tr|li|p|h[1-6]|div|br|td|th)>","\n",body,flags=re.I)
+ body=re.sub(r"</(?:tr|li|p|h[1-6]|div|br)>","\n",body,flags=re.I)
  body=re.sub(r"<[^>]+>"," ",body)
  candidates=[]
  for line in body.splitlines():

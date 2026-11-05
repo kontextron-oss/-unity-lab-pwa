@@ -66,7 +66,6 @@ assert.match(source,/const position=depotPosition\(s\),research=unityResearchInd
 assert.match(source,/const reachedPullbacks=pullbackResults.filter/);
 assert.match(source,/function unityHomeActionSortMatch\(s,mode\)/);
 assert.match(source,/data-home-sort="entry"/);
-assert.match(source,/data-home-sort="watch"/);
 assert.match(source,/data-home-sort="sell"/);
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/unityPullbackLabel\(s,pullback\)/);

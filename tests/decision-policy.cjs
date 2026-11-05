@@ -90,4 +90,15 @@ assert.match(fs.readFileSync('index.html','utf8'),/decision-policy\.js\?v=0\.13\
 assert.match(fs.readFileSync('sw.js','utf8'),/decision-policy\.js\?v=0\.13\.\d+/);
 assert.match(fs.readFileSync('analysis.js','utf8'),/deepDecision:/);
 assert.match(fs.readFileSync('home.js','utf8'),/b\.dataset\.policyTestbuy/);
+// A negative new-entry condition must not be displayed as negative position status.
+box.depotPosition=()=>({qty:1,pnl:3.52,cost:100});
+box.cache={transactions:[{instrumentId:stock.id,type:'BUY',executedAt:'2026-11-01T12:00:00Z',decisionSnapshot:{action:'Technischer Kaufkandidat'}}]};
+candidate={...candidate,status:'wait',buy:'Abwarten'};
+const monitor=vm.runInContext('unityPositionMonitor(st)',box);
+assert.equal(monitor.kind,'hold');
+assert.match(monitor.label,/Halten/);
+assert.match(monitor.reason,/zusätzlichen Neueinstieg/);
+const monitorPanel=vm.runInContext('unityPositionMonitorPanel(st)',box);
+assert.match(monitorPanel,/Neuer Einstieg heute/);
+assert.match(monitorPanel,/Halten – neuer Einstieg derzeit nicht aktiv/);
 console.log('UNITY deep policy: yes/no, source gates, peer relative strength, volatility, RR hard rule, earnings, sizing and archival passed.');

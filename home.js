@@ -365,23 +365,23 @@ function unityHome(){
   let h='<section class="home-hero" id="unity-home"><div class="home-hero-title"><span class="home-hero-mark" aria-hidden="true">↗</span><div><h2>Mein Depot</h2><small>UNITY Lab · persönliche Aktienübersicht</small></div><button type="button" class="home-hero-menu" data-home-add title="Aktien auswählen">＋</button></div>'+
     '<div class="home-periods" aria-label="Kurszeitraum">'+unityHomePeriods.map(([r,label])=>'<button type="button" data-home-range="'+r+'" class="'+(r===unityHomeRange?'active':'')+'">'+label+'</button>').join('')+'</div>';
   if(capital?.configured){
-    const complete=Number.isFinite(capital.total);
+    const complete=Number.isFinite(capital.total),shownTotal=complete?capital.total:capital.displayTotal;
     h+='<p class="home-wealth-kicker">Gesamtvermögen · Testdepot</p>'+
-      '<div class="home-big-number" aria-label="Fiktives Gesamtvermögen">'+(complete?euro(capital.total):'–')+'</div>'+
-      '<p class="home-value-label">'+(complete?(capital.indicative?'Indikativer Depotstand · nicht börslich verifizierte Kurse':'Freies Kapital + aktueller Depotwert · Simulation'):'Gesamtvermögen nicht berechenbar · Kursdaten fehlen')+'</p>';
+      '<div class="home-big-number" aria-label="Fiktives Gesamtvermögen">'+euro(shownTotal)+'</div>'+
+      '<p class="home-value-label">'+(complete?(capital.indicative?'Indikativer Depotstand · nicht börslich verifizierte Kurse':'Freies Kapital + aktueller Depotwert · Simulation'):'Vorläufiger Depotstand · fehlender Kurs zum Einstand angesetzt')+'</p>';
     if(complete){
       h+='<div class="home-wealth-profit '+gainClass+'"><b>Gewinn / Verlust gesamt: '+depotSignedMoney(capital.gain)+'</b>'+
         '<span>'+depotSignedPct(capital.gainPct)+' auf Nettoeinzahlungen</span></div>';
     }else{
       h+='<p class="home-wealth-warning">Für '+capital.missingCount+' gekaufte Position'+(capital.missingCount===1?'':'en')+
-        ' fehlen verwendbare aktuelle Kursdaten oder EUR-Wechselkurse. Freies Kapital wird nicht als Gesamtvermögen ausgegeben.</p>';
+        ' fehlen verwendbare aktuelle Kursdaten oder EUR-Wechselkurse. Der Einstand wird nur vorläufig eingesetzt; die Position bleibt zur Kursprüfung markiert.</p>';
     }
     h+='<div class="home-wealth-grid">'+
       '<div><small>Einzahlungen netto</small><b>'+depotMoney(capital.funded)+'</b></div>'+
       '<div><small>Frei verfügbar</small><b>'+depotMoney(capital.free)+'</b></div>'+
-      '<div><small>Depotwert aktuell</small><b>'+depotMoney(capital.market)+'</b></div>'+
+      '<div><small>Depotwert '+(complete?'aktuell':'vorläufig')+'</small><b>'+depotMoney(complete?capital.market:capital.displayMarket)+'</b></div>'+
       '<div><small>Einstand offener Aktien</small><b>'+depotMoney(capital.invested)+'</b></div>'+
-      '<div><small>Buchgewinn / -verlust</small><b class="'+(capital.unrealized>0?'home-profit-up':capital.unrealized<0?'home-profit-down':'')+'">'+depotSignedMoney(capital.unrealized)+'</b></div>'+
+      '<div><small>Buchgewinn / -verlust</small><b class="'+((complete?capital.unrealized:capital.displayUnrealized)>0?'home-profit-up':(complete?capital.unrealized:capital.displayUnrealized)<0?'home-profit-down':'')+'">'+depotSignedMoney(complete?capital.unrealized:capital.displayUnrealized)+'</b></div>'+
       '<div><small>Realisierter Gewinn / Verlust</small><b class="'+(capital.realized>0?'home-profit-up':capital.realized<0?'home-profit-down':'')+'">'+depotSignedMoney(capital.realized)+'</b></div>'+
       '</div>';
   }else if(pos.length&&allValid){

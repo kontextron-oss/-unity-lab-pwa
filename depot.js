@@ -103,14 +103,20 @@ function depotCapital(){
   const positions=depotPositions(),invested=positions.reduce((n,p)=>n+p.cost,0);
   const missing=positions.filter(p=>!Number.isFinite(p.value)),complete=missing.length===0;
   const market=complete?positions.reduce((n,p)=>n+p.value,0):NaN;
+  // A missing quote must never make the simulated depot disappear. For the
+  // provisional view, retain the last reliable booked value (cost) only for
+  // that position and label the total accordingly; no market value is invented.
+  const displayMarket=positions.reduce((n,p)=>n+(Number.isFinite(p.value)?p.value:p.cost),0);
   const funded=(Number.isFinite(opening)&&opening>=0?opening:0)+deposits-withdrawals;
   const free=funded+sells-buys,total=complete?free+market:NaN;
   const realized=(cache.instruments||[]).reduce((n,s)=>n+depotLedger(s.id).realized,0); // also include archived completed trades
   const unrealized=complete?market-invested:NaN;
   const gain=complete?total-funded:NaN;
   const gainPct=complete&&funded>0?gain/funded*100:NaN;
+  const displayTotal=complete?total:free+displayMarket;
+  const displayUnrealized=displayMarket-invested;
   return {configured:!!cfg||moves.length>0,opening:Number.isFinite(opening)&&opening>=0?opening:0,
-    deposits,withdrawals,funded,buys,sells,invested,free,market,total,
+    deposits,withdrawals,funded,buys,sells,invested,free,market,total,displayMarket,displayTotal,displayUnrealized,
     realized,unrealized,gain,gainPct,complete,missingCount:missing.length,
     missingNames:missing.map(p=>p.s.name),indicative:positions.some(p=>p.market?.indicative)};
 }

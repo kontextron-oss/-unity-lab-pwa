@@ -249,7 +249,11 @@ function unityHomeSignal(s){
 }
 function unityHomeActionSortMatch(s,mode){
   const pullback=unityPullbackAlert(s),signal=unityHomeSignal(s);
-  if(mode==='entry')return pullback.kind==='reached'||signal.kind==='buy';
+  const candidate=typeof unityCandidate==='function'?unityCandidate(s):null;
+  // "Einstieg" means a real reached zone or the explicit technical buy
+  // candidate. A generic downstream action must not lift a "Rücksetzer
+  // abwarten" card ahead of an actual entry-zone card.
+  if(mode==='entry')return pullback.kind==='reached'||candidate?.status==='candidate';
   if(mode==='watch')return pullback.kind==='watch'||signal.kind==='wait'||signal.kind==='hold';
   if(mode==='sell')return signal.kind==='sell';
   return false;

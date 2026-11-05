@@ -18,10 +18,10 @@ HEADERS={"User-Agent":"UNITY-LAB-IR-Monitor/1.1 (https://github.com/kontextron-o
 ISSUERS={
  # Each pilot includes its official annual-report landing page; registration is not metric verification.
  "MSFT":{"name":"Microsoft","url":"https://www.microsoft.com/en-us/Investor/","annualReportUrl":"https://www.microsoft.com/en-us/Investor/annual-reports.aspx"},
- "AAPL":{"name":"Apple","url":"https://investor.apple.com/investor-relations/default.aspx"},
- "AMD":{"name":"AMD","url":"https://ir.amd.com/news-events/ir-calendar"},
- "ADBE":{"name":"Adobe","url":"https://www.adobe.com/investor-relations.html"},
- "PWR":{"name":"Quanta Services","url":"https://investors.quantaservices.com/news-events/ir-calendar"},
+ "AAPL":{"name":"Apple","url":"https://investor.apple.com/investor-relations/default.aspx","annualReportUrl":"https://investor.apple.com/sec-filings/default.aspx"},
+ "AMD":{"name":"AMD","url":"https://ir.amd.com/news-events/ir-calendar","annualReportUrl":"https://ir.amd.com/financial-information/sec-filings"},
+ "ADBE":{"name":"Adobe","url":"https://www.adobe.com/investor-relations.html","annualReportUrl":"https://www.adobe.com/investor-relations/sec-filings.html"},
+ "PWR":{"name":"Quanta Services","url":"https://investors.quantaservices.com/news-events/ir-calendar","annualReportUrl":"https://investors.quantaservices.com/financial-information/sec-filings"},
  # European pilot values: official issuer pages, deliberately not market portals.
  "ABBN":{"name":"ABB","url":"https://global.abb/group/en/investors/overview","annualReportUrl":"https://global.abb/group/en/investors/results-and-reports/annual-reports"},
  "SIE":{"name":"Siemens","url":"https://www.siemens.com/de-de/company/investor-relations/financial-calendar/","annualReportUrl":"https://www.siemens.com/de-de/company/investor-relations/annual-reports/"},

@@ -331,8 +331,8 @@ function unityHome(){
       '<small>Zuletzt verfügbare Tages-Schlusskurse, keine Echtzeit-Meldung und keine Kaufempfehlung. Betroffene Aktie antippen und Tiefenanalyse neu prüfen.</small></section>';
   }
 h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
-    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="priority" class="'+(unityHomeSort==='priority'?'active':'')+'">Recherche-Radar</button></div>'+
-    '<p class="home-sort-hint">„Recherche-Radar“ ordnet zuerst Werte mit vertiefungswürdiger Entwicklung. Reihenfolge per ☰ oder ↑ ↓ ändern.</p>';
+    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="entry" class="'+(unityHomeSort==='entry'?'active':'')+'">Einstieg</button><button type="button" data-home-sort="watch" class="'+(unityHomeSort==='watch'?'active':'')+'">Beobachten</button><button type="button" data-home-sort="sell" class="'+(unityHomeSort==='sell'?'active':'')+'">Verkauf prüfen</button></div>'+
+    '<p class="home-sort-hint">„Einstieg“ stellt erreichte technische Zonen und bestehende UNITY-Einstiegsbefunde voran. „Beobachten“ und „Verkauf prüfen“ ordnen jeweils nur den vorhandenen Befund nach oben. Deine eigene Reihenfolge bleibt innerhalb jeder Gruppe erhalten; ☰ oder ↑ ↓ schaltet zurück auf sie.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x}=unityHomeQuote(s);

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T07:42:44+00:00",
+  "generatedAt": "2026-11-05T07:45:01+00:00",
   "source": "SEC EDGAR und XBRL-/Emittentenpilot",
   "scope": "Öffentliche Emittenten, keine privaten Portfoliodaten",
   "usIssuerCount": 10,
@@ -10,7 +10,7 @@
       "name": "ABB",
       "isin": "CH0012221716",
       "status": "european-pilot",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "XBRL / Emittentenpilot",
       "sourceUrl": "https://global.abb/group/en/investors",
       "events": [
@@ -31,7 +31,7 @@
       "name": "Schneider Electric",
       "isin": "FR0000121972",
       "status": "european-pilot",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "XBRL / Emittentenpilot",
       "sourceUrl": "https://filings.xbrl.org/969500A1YF1XUYYXS284/2025-12-31/ESEF/FR/0/969500A1YF1XUYYXS284-2025-12-31-fr/reports/ixbrlviewer.html",
       "events": [
@@ -52,7 +52,7 @@
       "name": "Siemens Energy",
       "isin": "DE000ENER6Y0",
       "status": "european-pilot",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "XBRL / Emittentenpilot",
       "sourceUrl": "https://www.siemens-energy.com/global/en/home/investor-relations.html",
       "events": [
@@ -73,7 +73,7 @@
       "name": "Infineon",
       "isin": "DE0006231004",
       "status": "european-pilot",
-      "checkedAt": "2026-11-02T08:41:47+00:00",
+      "checkedAt": "2026-11-04T21:15:21+00:00",
       "source": "XBRL / Emittentenpilot",
       "sourceUrl": "https://www.infineon.com/cms/en/about-infineon/investor/",
       "events": [
@@ -90,32 +90,11 @@
         "Europäische Bilanzkennzahlen im bestehenden Pilot ansehen; keine doppelten SEC-Fakten."
       ]
     },
-    "DE000A2NB601": {
-      "name": "Jenoptik AG",
-      "isin": "DE000A2NB601",
-      "status": "european-pilot",
-      "checkedAt": "2026-11-03T00:00:00+00:00",
-      "source": "XBRL / Emittentenpilot",
-      "sourceUrl": "https://www.jenoptik.com/investors",
-      "events": [
-        {
-          "form": "ISSUER",
-          "label": "Offizielle Unternehmensmitteilung",
-          "filedAt": "",
-          "url": "https://www.jenoptik.com/news/pressreleases/2026/03/25/financial-results-of-fiscal-year-2025",
-          "source": "Emittent / Pflichtmitteilung"
-        }
-      ],
-      "metrics": {},
-      "issues": [
-        "Europäische Bilanzkennzahlen im bestehenden Pilot ansehen; keine doppelten SEC-Fakten."
-      ]
-    },
     "IE00B8KQN827": {
       "ticker": "ETN",
       "name": "Eaton",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -127,7 +106,7 @@
       "ticker": "VRT",
       "name": "Vertiv",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -139,7 +118,7 @@
       "ticker": "GEV",
       "name": "GE Vernova",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -151,7 +130,7 @@
       "ticker": "NVT",
       "name": "nVent",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -163,7 +142,7 @@
       "ticker": "HUBB",
       "name": "Hubbell",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -175,7 +154,7 @@
       "ticker": "PWR",
       "name": "Quanta Services",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -187,7 +166,7 @@
       "ticker": "AMD",
       "name": "AMD",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -199,7 +178,7 @@
       "ticker": "AAPL",
       "name": "Apple",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -211,7 +190,7 @@
       "ticker": "MSFT",
       "name": "Microsoft",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},
@@ -223,7 +202,7 @@
       "ticker": "NVDA",
       "name": "NVIDIA",
       "status": "source-unavailable",
-      "checkedAt": "2026-11-04T07:42:44+00:00",
+      "checkedAt": "2026-11-05T07:45:01+00:00",
       "source": "SEC EDGAR",
       "events": [],
       "metrics": {},

@@ -248,11 +248,15 @@ function unityHomeSignal(s){
   return {kind:'wait',label:'Abwarten',icon:'·',detail:'Keine bestätigte Kauf- oder Verkaufsfreigabe.',rank:4};
 }
 function unityHomeActionSortMatch(s,mode){
-  const pullback=unityPullbackAlert(s),signal=unityHomeSignal(s);
-  // "Einstieg" deliberately means only the visibly confirmed entry zone.\n  // A candidate or "Rücksetzer abwarten" stays outside this priority group.\n  if(mode==='entry')return pullback.kind==='reached';
-  if(mode==='watch')return pullback.kind==='watch'||signal.kind==='wait'||signal.kind==='hold';
+  const pullback=unityPullbackAlert(s),signal=unityHomeSignal(s),research=unityResearchIndicator(s);
+  // These groups mirror only visible, explicit statuses on the cards.
+  if(mode==='entry')return pullback.kind==='reached';
+  if(mode==='watch')return pullback.kind==='watch'||['observe','improving','wait'].includes(research.kind);
   if(mode==='sell')return signal.kind==='sell';
   return false;
+}
+function unityHomeActionSortCount(mode){
+  return unityHomeStocks().filter(s=>unityHomeActionSortMatch(s,mode)).length;
 }
 function unityHomeDisplayedStocks(){
   const list=unityHomeStocks();
@@ -331,8 +335,8 @@ function unityHome(){
       '<small>Zuletzt verfügbare Tages-Schlusskurse, keine Echtzeit-Meldung und keine Kaufempfehlung. Betroffene Aktie antippen und Tiefenanalyse neu prüfen.</small></section>';
   }
 h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
-    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="entry" class="'+(unityHomeSort==='entry'?'active':'')+'">Einstieg</button><button type="button" data-home-sort="watch" class="'+(unityHomeSort==='watch'?'active':'')+'">Beobachten</button><button type="button" data-home-sort="sell" class="'+(unityHomeSort==='sell'?'active':'')+'">Verkauf prüfen</button></div>'+
-    '<p class="home-sort-hint">„Einstieg“ stellt erreichte technische Zonen und bestehende UNITY-Einstiegsbefunde voran. „Beobachten“ und „Verkauf prüfen“ ordnen jeweils nur den vorhandenen Befund nach oben. Deine eigene Reihenfolge bleibt innerhalb jeder Gruppe erhalten; ☰ oder ↑ ↓ schaltet zurück auf sie.</p>';
+    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="entry" class="'+(unityHomeSort==='entry'?'active':'')+'">Einstieg ('+unityHomeActionSortCount('entry')+')</button><button type="button" data-home-sort="watch" class="'+(unityHomeSort==='watch'?'active':'')+'">Beobachten ('+unityHomeActionSortCount('watch')+')</button><button type="button" data-home-sort="sell" class="'+(unityHomeSort==='sell'?'active':'')+'">Verkauf prüfen ('+unityHomeActionSortCount('sell')+')</button></div>'+
+    '<p class="home-sort-hint">Die Zahl zeigt, wie viele Werte der Schalter nach oben stellt. „Einstieg“ meint nur „Einstiegszone erreicht“. Deine eigene Reihenfolge bleibt innerhalb jeder Gruppe erhalten; ☰ oder ↑ ↓ schaltet zurück auf sie.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x}=unityHomeQuote(s);

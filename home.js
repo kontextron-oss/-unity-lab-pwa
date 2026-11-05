@@ -389,6 +389,7 @@ function unityHomeDetail(sid){
   if(dq)h+='<p class="home-price-time">'+esc(dq.label)+': <b>'+number(dq.price,2)+' '+esc(s.currency)+'</b> · '+(dq.quotedAt?esc(new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin'}))+' MEZ/MESZ':esc(dq.date))+' · '+esc(dq.exchange)+'</p>';
   if(s.providerSymbol)h+='<p class="tiny muted">Weltweiter Kursabruf: inoffizielle Yahoo-Daten über cors.dev, nicht börslich geprüft. Keine Handelsfreigabe; Suchanfrage und Symbol werden an externe Dienste übertragen.</p>';
   if(s.note)h+='<p><b>Unternehmensbereich:</b> '+esc(s.note)+'</p>';
+  if(typeof unityMarketContextPanel==='function')h+=unityMarketContextPanel(s);
   h+=unityHomeSecurityDetails(s,x);
   if(typeof unityFundPilotPanel==='function')h+=unityFundPilotPanel(s);
   if(typeof unityResearchPanel==='function')h+=unityResearchPanel(s);

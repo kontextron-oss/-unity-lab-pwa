@@ -40,7 +40,18 @@ jobs:
           node --check pcloud-direct.js
           node --check sw.js
       - name: Check market snapshot generator
-        run: python3 -m py_compile scripts/refresh_market.py
+        run: |
+          python3 -m py_compile scripts/refresh_market.py
+          python3 - <<'PY'
+          import runpy
+          scope = runpy.run_path('scripts/refresh_market.py')
+          stocks = scope['STOCKS']
+          assert len(stocks) >= 90
+          fme = next(x for x in stocks if x[0] == 'DE0005785802')
+          assert fme[1:] == ('FME.DE', 'EUR', 'Fresenius Medical Care')
+          assert len({x[0] for x in stocks}) == len(stocks)
+          print('Catalog market parser: identity keys and Fresenius history seed passed.')
+          PY
 
       - name: Check inline application script
         run: |

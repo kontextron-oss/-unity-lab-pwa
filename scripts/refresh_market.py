@@ -80,9 +80,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "market.json"
 CATALOG_FILE = ROOT / "index.html"
 CATALOG_ROW = re.compile(
-    r"\\{name:'(?P<name>[^']+)',ticker:'(?P<ticker>[^']+)',isin:'(?P<isin>[^']+)',"
+    r"\{name:'(?P<name>[^']+)',ticker:'(?P<ticker>[^']+)',isin:'(?P<isin>[^']+)',"
     r"exchange:'(?P<exchange>[^']+)',currency:'(?P<currency>[^']+)',"
-    r"providerSymbol:'(?P<symbol>[^']*)',group:'[^']+'\\}"
+    r"providerSymbol:'(?P<symbol>[^']*)',group:'[^']+'\}"
 )
 
 def curated_catalog_stocks():

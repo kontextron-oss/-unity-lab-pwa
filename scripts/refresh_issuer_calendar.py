@@ -63,11 +63,11 @@ def next_event(raw,today):
  # Keep table/list rows separate: a result label from one event must never
  # validate the date of a nearby roadshow in another row.
  body=html.unescape(raw)
- body=re.sub(r"</(?:tr|li|p|h[1-6]|div|br|td|th)>","\\n",body,flags=re.I)
+ body=re.sub(r"</(?:tr|li|p|h[1-6]|div|br|td|th)>","\n",body,flags=re.I)
  body=re.sub(r"<[^>]+>"," ",body)
  candidates=[]
  for line in body.splitlines():
-  line=re.sub(r"\\s+"," ",line).strip()
+  line=re.sub(r"\s+"," ",line).strip()
   if not line: continue
   for _start,_end,date in dated_matches(line):
    if date>today and any(term in line.lower() for term in RESULT_TERMS):
@@ -93,5 +93,5 @@ def main():
   items[ticker]=item
  data={"schemaVersion":1,"generatedAt":checked,"source":"Offizielle IR-Kalenderseiten",
        "scope":"Nur explizit auf der Emittentenseite erkennbare zukünftige Ergebnis- oder Financial-Results-Termine; keine Schätzung. Deutsche und englische Datumsformate, keine Konferenz- oder Roadshow-Termine.","items":items}
- DEST.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
+ DEST.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 if __name__=="__main__": main()

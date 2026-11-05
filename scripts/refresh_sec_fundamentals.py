@@ -17,6 +17,7 @@ BASE = "https://data.sec.gov/api/xbrl/companyfacts"
 HEADERS = {"User-Agent": "UNITY-Lab-Research contact@kontextron.de", "Accept": "application/json"}
 FORMS = {"10-K", "20-F", "40-F"}
 ISSUERS = {
+ "ABB": {"cik": "0001091587", "name": "ABB", "isin": "CH0012221716", "ir": "https://global.abb/group/en/investors"},
  "MSFT": {"cik": "0000789019", "name": "Microsoft", "isin": "US5949181045", "ir": "https://www.microsoft.com/en-us/Investor/"},
  "AAPL": {"cik": "0000320193", "name": "Apple", "isin": "US0378331005", "ir": "https://investor.apple.com/"},
  "ADBE": {"cik": "0000796343", "name": "Adobe", "isin": "US00724F1012", "ir": "https://www.adobe.com/investor-relations.html"},

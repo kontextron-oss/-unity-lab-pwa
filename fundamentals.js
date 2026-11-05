@@ -18,11 +18,17 @@ async function unityLoadFundPilot(){
 }
 function unityFundPilotItem(s){
  const european=unityFundPilot?.items?.[s?.isin];
- if(european&&european.isin===s?.isin)return european;
+ const secItems=unitySecFundamentals?.items||{};
+ const secByIsin=Object.values(secItems).find(item=>item?.isin===s?.isin);
+ const secVerified=!!secByIsin&&['metrics-partial','metrics-complete'].includes(secByIsin.status);
+ if(european&&european.isin===s?.isin){
+  const europeanVerified=['metrics-partial','metrics-complete'].includes(european.status);
+  return !europeanVerified&&secVerified?secByIsin:european;
+ }
  const symbol=String(s?.providerSymbol||s?.ticker||'').toUpperCase();
- const sec=unitySecFundamentals?.items?.[symbol];
+ const sec=secItems[symbol];
  if(sec&&String(sec.ticker||'').toUpperCase()===symbol)return sec;
- return null;
+ return secVerified?secByIsin:null;
 }
 // Source-bound annual-report multiples. These are descriptive valuation
 // ratios, not a fair-value model or a buy signal.

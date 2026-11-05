@@ -163,7 +163,15 @@ function unityPullbackLabel(s,signal=unityPullbackAlert(s)){
 /* Personal price zones are deliberately a local watcher, not a broker order.
    It checks the last available reference price when UNITY is opened/refreshed. */
 const unityZonePlanId=s=>'zone-plan:'+s.id;
+const unityAutoBuyId=s=>'auto-test-buy:'+s.id;
+const unityAutoSellId=s=>'auto-test-sell:'+s.id;
 function unityZonePlan(s){return ((typeof cache!=='undefined'&&cache.settings)||[]).find(x=>x.id===unityZonePlanId(s)&&!x.deletedAt)||null}
+function unityAutoBuy(s){return ((typeof cache!=='undefined'&&cache.settings)||[]).find(x=>x.id===unityAutoBuyId(s)&&x.active&&!x.executedAt)||null}
+function unityAutoSell(s){return ((typeof cache!=='undefined'&&cache.settings)||[]).find(x=>x.id===unityAutoSellId(s)&&x.active&&!x.executedAt)||null}
+function unityAutoExitZone(s){
+  const {m,technical}=unityHomeQuote(s);if(!technical||!m||!Number.isFinite(Number(m.ma50))||!Number.isFinite(Number(m.ma200)))return null;
+  return Math.max(Number(m.ma200)*.99,Number(m.ma50)*.96);
+}
 function unityZonePlanState(s){
   const plan=unityZonePlan(s),quote=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null,price=Number(quote?.price);
   if(!plan)return {plan:null,price,kind:'none',label:''};
@@ -175,21 +183,44 @@ function unityZonePlanState(s){
   return {plan,price,kind:'watch',label:'Zonenwächter aktiv'};
 }
 function unityZonePlanPanel(s){
-  const auto=unityPullbackAlert(s),state=unityZonePlanState(s),plan=state.plan;
+  const auto=unityPullbackAlert(s);
+  const armed=unityAutoBuy(s);
+  const position=depotPosition(s),sellArmed=unityAutoSell(s),exit=unityAutoExitZone(s);
   const technical=Number.isFinite(auto.low)&&Number.isFinite(auto.high);
-  const val=(v)=>Number.isFinite(Number(v))&&Number(v)>0?String(Number(v)):'',fmt=v=>Number.isFinite(Number(v))&&Number(v)>0?number(Number(v),2)+' '+s.currency:'–';
-  let h='<section class="home-zone-plan"><h3>Preis-Zonen</h3>';
-  h+='<div class="home-zone-auto"><b>Automatische technische Kaufzone</b><strong>'+(technical?fmt(auto.low)+' – '+fmt(auto.high):'Noch nicht bestimmbar')+'</strong><small>SMA50 ±2 %. Sie wird nur bei bestätigtem Trend und ausreichenden Tagesdaten angezeigt.</small></div>';
-  if(plan)h+='<div class="home-zone-state home-zone-'+state.kind+'"><b>'+esc(state.label)+'</b><small>Letzter Referenzkurs: '+fmt(state.price)+' · prüft beim Öffnen oder Aktualisieren der App.</small></div>';
-  h+='<details '+(plan?'':'open')+'><summary>Eigene Kauf- und Verkaufszonen '+(plan?'ändern':'festlegen')+'</summary><form id="home-zone-form" class="home-zone-form">'+
-    '<input type="hidden" name="instrumentId" value="'+esc(s.id)+'">'+
-    '<label>Kaufzone von<input name="entryLow" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.entryLow??(technical?auto.low:'')))+'"></label>'+
-    '<label>Kaufzone bis<input name="entryHigh" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.entryHigh??(technical?auto.high:'')))+'"></label>'+
-    '<label>Verkauf prüfen unter<input name="exitLow" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.exitLow))+'"></label>'+
-    '<label>Verkauf prüfen über<input name="exitHigh" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.exitHigh))+'"></label>'+
-    '<div class="full"><button class="primary" type="submit">Zonenwächter speichern</button>'+(plan?'<button class="secondary" type="button" data-home-zone-clear="'+esc(s.id)+'">Löschen</button>':'')+'</div>'+
-    '<small class="full">Der Wächter kennzeichnet eine Zone und erinnert beim nächsten App-Check. Er löst keine echte Order und keine automatische Testbuchung aus.</small></form></details></section>';
-  return h+'</section>';
+  const fmt=v=>Number.isFinite(Number(v))&&Number(v)>0?number(Number(v),2)+' '+s.currency:'–';
+  if(!technical)return '<section class="home-zone-plan"><h3>Automatische Kaufzone</h3><div class="home-zone-auto"><b>Noch nicht berechenbar</b><small>Für ein Limit benötigt UNITY einen bestätigten Trend, SMA50/SMA200, RSI und aktuelle Tagesdaten.</small></div></section>';
+  const current=fmt(auto.close),status=auto.kind==='reached'?'Kaufzone erreicht':auto.kind==='watch'?'Rücksetzer abwarten':auto.kind==='broken'?'Untergrenze unterschritten – neu prüfen':'Kaufzone prüfen';
+  return '<section class="home-zone-plan home-auto-limit"><h3>Automatische Kaufzone</h3>'+
+    '<div class="home-limit-current"><small>Aktueller Referenzkurs</small><strong>'+esc(current)+'</strong></div>'+
+    '<div class="home-limit-range"><div><small>Kauf-Limit</small><strong>bis '+esc(fmt(auto.high))+'</strong></div><div><small>Untergrenze</small><strong>'+esc(fmt(auto.low))+'</strong></div></div>'+
+    '<div class="home-zone-state home-zone-'+esc(auto.kind)+'"><b>'+esc(status)+'</b><small>UNITY berechnet diese Zone automatisch aus Trend, SMA50 und RSI. Unterhalb der Untergrenze wird nicht nachgekauft, sondern neu geprüft.</small></div>'+
+    '<div class="home-auto-order"><div><b>'+(armed?'Auto-Testkauf aktiv':'Auto-Testkauf noch aus')+'</b><small>'+(armed?'Beim nächsten verfügbaren Tageskurs innerhalb der Kaufzone wird automatisch mit 10 % des freien Testkapitals gekauft.':'Kein eigener Limitkurs nötig. UNITY verwendet das berechnete Kauf-Limit.')+'</small></div>'+
+    '<button type="button" class="'+(armed?'secondary':'primary')+'" data-home-auto-buy="'+esc(s.id)+'">'+(armed?'Auto-Testkauf ausschalten':'Auto-Testkauf aktivieren')+'</button></div>'+
+    '<div class="home-auto-order home-auto-sell"><div><b>'+(sellArmed?'Auto-Testverkauf aktiv':'Auto-Testverkauf noch aus')+'</b><small>'+(position.qty>0&&exit?'Technische Verkaufszone: unter '+esc(fmt(exit))+'. Bei Unterschreitung wird der gesamte simulierte Bestand verkauft.':position.qty>0?'Verkaufszone wird erst nach ausreichenden technischen Daten berechnet.':'Für einen Auto-Testverkauf muss zuerst ein simulierter Bestand vorhanden sein.')+'</small></div>'+
+    '<button type="button" class="'+(sellArmed?'secondary':'primary')+'" data-home-auto-sell="'+esc(s.id)+'" '+(position.qty>0&&exit?'':'disabled')+'>'+ (sellArmed?'Auto-Testverkauf ausschalten':'Auto-Testverkauf aktivieren')+'</button></div>'+
+    '<p class="tiny muted">Nur im Simulationsdepot. Die Ausführung erfolgt beim nächsten Kurs-Check in der geöffneten App, nie als echte Brokerorder.</p></section>';
+}
+async function unityRunAutoTestBuys(){
+  if(typeof cache==='undefined'||!cache.settings||typeof depotCapital!=='function')return;
+  for(const s of stocks()){
+    const order=unityAutoBuy(s);if(!order)continue;
+    const signal=unityPullbackAlert(s);if(signal.kind!=='reached')continue;
+    const capital=depotCapital();if(!capital.configured||!(capital.free>0))continue;
+    const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN);
+    const price=Number(signal.close),amount=Math.min(capital.free*.10,capital.free),quantity=amount/(price*rate);
+    if(!(price>0&&rate>0&&quantity>0))continue;
+    const at=new Date().toISOString(),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: technische Kaufzone erreicht.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf',buy:'Automatische Kaufzone erreicht',quoteDate:signal.date,quotePrice:price,reason:'Trend, SMA50-Zone und RSI erfüllten die technische Kauf-Vorauswahl. Keine reale Order.'}};
+    await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_BUY',trade.id,s.ticker+' · '+number(quantity,4)+' Stück');
+    await refresh();
+  }
+  for(const s of stocks()){
+    const order=unityAutoSell(s);if(!order)continue;
+    const exit=unityAutoExitZone(s),signal=unityPullbackAlert(s),position=depotPosition(s);if(!(exit>0&&position.qty>0&&Number(signal.close)<=exit))continue;
+    const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN),price=Number(signal.close);
+    if(!(price>0&&rate>0))continue;
+    const at=new Date().toISOString(),trade={id:id(),instrumentId:s.id,type:'SELL',quantity:position.qty,price,fx:rate,amount:position.qty*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testverkauf: technische Verkaufszone unterschritten.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testverkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testverkauf',sell:'Technische Verkaufszone unterschritten',quoteDate:signal.date,quotePrice:price,reason:'Automatische Schutzregel im Simulationsdepot. Keine reale Order.'}};
+    await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_SELL',trade.id,s.ticker+' · '+number(position.qty,4)+' Stück');await refresh();
+  }
 }
 
 function unityHomeVerdict(s){return unityResearchIndicator(s);}
@@ -380,13 +411,13 @@ h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählt
     const cls=rising?'home-up':falling?'home-down':'home-flat';
     const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
     const eur=s.currency!=='EUR'&&rate&&Number(rate.rate)>0&&price>0?price*Number(rate.rate):NaN;
-    const position=depotPosition(s),research=unityResearchIndicator(s),pullback=unityPullbackAlert(s),zoneState=unityZonePlanState(s),issuerBadge=typeof unityResearchBadge==='function'?unityResearchBadge(s):'';
+    const position=depotPosition(s),research=unityResearchIndicator(s),pullback=unityPullbackAlert(s),issuerBadge=typeof unityResearchBadge==='function'?unityResearchBadge(s):'';
     const stamp=dq?.precision==='15m-bar'&&dq.quotedAt
       ?'15m-Referenz · '+new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
       :quoteItem?.date?String(quoteItem.date)+' · Schluss':'Keine Kursdaten';
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button><button type="button" class="home-remove-btn" data-watch-remove="'+esc(s.id)+'" title="Aus Liste entfernen" aria-label="'+esc(s.name)+' aus aktiver Aktienliste entfernen">×</button></div>'+
       '<button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'" aria-label="'+esc(s.name)+': Kurs und Analyse öffnen"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong>'+issuerBadge+unityPullbackLabel(s,pullback)+(zoneState.kind==='entry'||zoneState.kind==='exit'?'<span class="home-zone-flag home-zone-'+zoneState.kind+'">'+esc(zoneState.label)+'</span>':'')+'<span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">● Im Testdepot · '+number(position.qty,4)+' Stück</small><small class="home-position-profit '+(position.pnl>0?'home-profit-up':position.pnl<0?'home-profit-down':'')+'">Depotwert '+depotMoney(position.value)+' · '+depotSignedMoney(position.pnl)+'</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong>'+issuerBadge+unityPullbackLabel(s,pullback)+'<span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">● Im Testdepot · '+number(position.qty,4)+' Stück</small><small class="home-position-profit '+(position.pnl>0?'home-profit-up':position.pnl<0?'home-profit-down':'')+'">Depotwert '+depotMoney(position.value)+' · '+depotSignedMoney(position.pnl)+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+unityPct(change)+'</strong><small class="home-quote-price">'+(price>0?number(price,2)+' '+esc(s.currency):'Kurs fehlt')+'</small>'+
       (s.currency!=='EUR'?'<small class="home-eur-price">'+(Number.isFinite(eur)?'≈ '+euro(eur):'EUR-Kurs fehlt')+'</small>':'')+
       '<small class="home-quote-date">'+esc(stamp)+'</small></span><span class="home-chevron" aria-hidden="true">›</span></button></div>';
@@ -528,6 +559,16 @@ document.addEventListener('click',e=>{
     return;
   }
   if(b.dataset.homeTrade){unityHomeTradeMode=b.dataset.homeTrade;render();document.getElementById('home-trade-form')?.scrollIntoView({block:'nearest'});return}
+  if(b.dataset.homeAutoBuy){
+    const s=stocks().find(x=>x.id===b.dataset.homeAutoBuy);if(!s)return;const prior=unityAutoBuy(s);
+    if(prior){put('settings',{...prior,active:false,cancelledAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_OFF',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return}
+    if(confirm('Auto-Testkauf aktivieren?\n\nUNITY kauft beim nächsten verfügbaren Tageskurs innerhalb der automatisch berechneten Kaufzone 10 % des freien Testkapitals. Keine echte Brokerorder.'))put('settings',{id:unityAutoBuyId(s),kind:'auto-test-buy',instrumentId:s.id,active:true,createdAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_ON',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return;
+  }
+  if(b.dataset.homeAutoSell){
+    const s=stocks().find(x=>x.id===b.dataset.homeAutoSell);if(!s)return;const prior=unityAutoSell(s);
+    if(prior){put('settings',{...prior,active:false,cancelledAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_SELL_OFF',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return}
+    if(confirm('Auto-Testverkauf aktivieren?\n\nUNITY verkauft beim nächsten verfügbaren Tageskurs unterhalb der automatisch berechneten Schutz-/Verkaufszone den gesamten simulierten Bestand. Keine echte Brokerorder.'))put('settings',{id:unityAutoSellId(s),kind:'auto-test-sell',instrumentId:s.id,active:true,createdAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_SELL_ON',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return;
+  }
   if(b.dataset.homeZoneClear){
     const record=unityZonePlan({id:b.dataset.homeZoneClear});
     if(record&&confirm('Eigene Preiszonen löschen? Die automatische technische SMA50-Zone bleibt erhalten.'))put('settings',{...record,deletedAt:new Date().toISOString(),entryLow:null,entryHigh:null,exitLow:null,exitHigh:null}).then(()=>audit('ZONE_PLAN_CLEAR',b.dataset.homeZoneClear,'Eigene Preiszonen gelöscht')).then(refresh).catch(err=>alert(err.message||String(err)));

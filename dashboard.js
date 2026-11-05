@@ -161,6 +161,7 @@ async function unityLoadMarket(){
     if(data.schemaVersion!==1||!data.items||typeof data.items!=='object')throw Error('Ungültiges Datenformat');
     if(!Number.isFinite(Date.parse(data.generatedAt)))throw Error('Fehlender Datenzeitpunkt');
     unityMarket=data;
+    if(typeof unityRunAutoTestBuys==='function')await unityRunAutoTestBuys();
   }catch(e){unityMarketError=e.message||String(e);unityMarket=null}
   finally{unityMarketLoading=false;if(typeof db!=='undefined'&&db&&typeof render==='function')render()}
 }

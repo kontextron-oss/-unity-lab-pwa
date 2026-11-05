@@ -39,6 +39,9 @@ jobs:
           node --check incremental.js
           node --check pcloud-direct.js
           node --check sw.js
+      - name: Check market snapshot generator
+        run: python3 -m py_compile scripts/refresh_market.py
+
       - name: Check inline application script
         run: |
           python3 - <<'PY'

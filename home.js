@@ -301,6 +301,7 @@ function unityHome(){
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p><details class="home-status-fold"><summary>Kursdaten & Analysefortschritt anzeigen</summary>'+unityHomeAnalysisStatus(selected)+'</details>'+
     (capital?'<details class="home-capital-fold"><summary>'+(capital.configured?'Startkapital ändern':'Startkapital festlegen')+'</summary><form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form><small>Ändert nur das fiktive Startkapital, nicht deine bisherigen Käufe und Verkäufe.</small></details>':'')+'</section>';
+  if(typeof unityResearchLifecyclePanel==='function')h+=unityResearchLifecyclePanel();
   if(pos.length){
     h+='<section class="home-holdings" aria-label="Gekaufte Aktien im Testdepot"><div class="home-holdings-head"><h2>Gekaufte Aktien <span>'+pos.length+'</span></h2><small>Deine simulierten Positionen · Gewinn/Verlust seit Kauf</small></div>';
     for(const p of pos){
@@ -533,7 +534,7 @@ async function unityPullRefresh(){
       typeof unityLoadMarket==='function'?unityLoadMarket():Promise.resolve(),
       typeof unityLoadIntraday==='function'?unityLoadIntraday():Promise.resolve(),
       typeof unityLoadFx==='function'?unityLoadFx():Promise.resolve(),
-      typeof unityRefreshDynamicHistories==='function'?unityRefreshDynamicHistories(stocks()):Promise.resolve()
+      typeof unityRefreshDynamicHistories==='function'?unityRefreshDynamicHistories(typeof unityResearchRefreshTargets==='function'?unityResearchRefreshTargets('background'):stocks()):Promise.resolve()
     ]);
     unityHomeLastCheck=Date.now();unityPullStatus('Kursdaten geprüft');
   }finally{

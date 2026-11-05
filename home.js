@@ -180,6 +180,12 @@ function unityCalculatedEntry(s){
   const price=Number.isFinite(lower)?Math.max(lower,raw):raw;
   return {ready:Number.isFinite(price)&&price>0,decision,a,price,stop:stop>0?stop:NaN};
 }
+function unityAutoBuyRecommendation(s){
+  const entry=unityCalculatedEntry(s),decision=entry.decision;
+  if(entry.ready)return {kind:'buy',title:'UNITY empfiehlt: Auto-Testkauf möglich',text:'Berechneter Einstiegspreis bis '+number(entry.price,2)+' '+s.currency+'. Unternehmenswert, Sicherheitsmarge, Risiko und technisches Timing sind im Modell erfüllt.'};
+  if(decision?.kind==='wait'||decision?.kind==='no')return {kind:'wait',title:'UNITY empfiehlt: Abwarten',text:decision.reason||'Die Voraussetzungen für einen Einstieg sind derzeit nicht erfüllt.'};
+  return {kind:'open',title:'UNITY empfiehlt: Noch nicht entscheiden',text:decision?.reason||'Für eine belastbare Empfehlung fehlen noch Unternehmens-, Bewertungs-, Earnings- oder Risikodaten.'};
+}
 function unityZonePlanState(s){
   const plan=unityZonePlan(s),quote=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null,price=Number(quote?.price);
   if(!plan)return {plan:null,price,kind:'none',label:''};
@@ -193,6 +199,7 @@ function unityZonePlanState(s){
 function unityZonePlanPanel(s){
   const auto=unityPullbackAlert(s);
   const entry=unityCalculatedEntry(s),queued=unityAutoBuy(s),armed=!!queued&&entry.ready;
+  const recommendation=unityAutoBuyRecommendation(s);
   const position=depotPosition(s),sellArmed=unityAutoSell(s),exit=unityAutoExitZone(s);
   const technical=Number.isFinite(auto.low)&&Number.isFinite(auto.high);
   const fmt=v=>Number.isFinite(Number(v))&&Number(v)>0?number(Number(v),2)+' '+s.currency:'–';
@@ -200,6 +207,7 @@ function unityZonePlanPanel(s){
   const current=fmt(auto.close),status=auto.kind==='reached'?'Kaufzone erreicht':auto.kind==='watch'?'Rücksetzer abwarten':auto.kind==='broken'?'Untergrenze unterschritten – neu prüfen':'Kaufzone prüfen';
   if(!entry.ready)return '<section class="home-zone-plan home-auto-limit"><h3>Berechneter Einstiegspreis</h3>'+
     '<div class="home-limit-current"><small>Aktueller Referenzkurs</small><strong>'+esc(current)+'</strong></div>'+
+    '<div class="home-recommendation home-recommendation-'+esc(recommendation.kind)+'"><b>'+esc(recommendation.title)+'</b><small>'+esc(recommendation.text)+'</small></div>'+
     '<div class="home-limit-range"><div><small>Technische Rücksetzerzone</small><strong>'+esc(fmt(auto.low))+' – '+esc(fmt(auto.high))+'</strong></div><div><small>Status</small><strong>'+esc(status)+'</strong></div></div>'+
     '<div class="home-zone-state"><b>Noch kein Kauf-Limit</b><small>Die technische Zone ist nur ein Timing-Hinweis. Ein guter Einstiegspreis wird erst aus bestätigtem Unternehmenswert, Sicherheitsmarge, Risiko und Earnings berechnet.</small></div>'+
     '<div class="home-auto-order"><div><b>'+(queued?'Auto-Testkauf aktiv · wartet':'Auto-Testkauf noch aus')+'</b><small>'+(queued?'Er bleibt vorgemerkt und wartet auf einen berechneten Einstiegspreis mit positiver UNITY-Empfehlung.':'Du kannst ihn bereits aktivieren; ausgeführt wird erst nach der positiven Empfehlung.')+'</small></div><button type="button" class="'+(queued?'secondary':'primary')+'" data-home-auto-buy="'+esc(s.id)+'">'+(queued?'Auto-Testkauf ausschalten':'Auto-Testkauf aktivieren')+'</button></div>'+
@@ -207,6 +215,7 @@ function unityZonePlanPanel(s){
     '<p class="tiny muted">Bei Siemens wird derzeit nicht automatisch gekauft, weil noch kein berechneter Einstiegspreis und keine positive Empfehlung vorliegen.</p></section>';
   return '<section class="home-zone-plan home-auto-limit"><h3>Berechneter Einstiegspreis</h3>'+
     '<div class="home-limit-current"><small>Aktueller Referenzkurs</small><strong>'+esc(current)+'</strong></div>'+
+    '<div class="home-recommendation home-recommendation-'+esc(recommendation.kind)+'"><b>'+esc(recommendation.title)+'</b><small>'+esc(recommendation.text)+'</small></div>'+
     '<div class="home-limit-range"><div><small>Kauf-Limit</small><strong>bis '+esc(fmt(entry.price))+'</strong></div><div><small>Technische Rücksetzerzone</small><strong>'+esc(fmt(auto.low))+' – '+esc(fmt(auto.high))+'</strong></div></div>'+
     '<div class="home-zone-state home-zone-'+esc(auto.kind)+'"><b>'+esc(status)+'</b><small>Berechnet aus bestätigtem Unternehmenswert mit mindestens 10 % Sicherheitsmarge und technischem Timing.</small></div>'+
     '<div class="home-auto-order"><div><b>'+(armed?'Auto-Testkauf aktiv':'Auto-Testkauf noch aus')+'</b><small>'+(armed?'Beim nächsten Kurs am oder unter dem berechneten Limit wird automatisch mit 10 % des freien Testkapitals gekauft.':'Kein eigener Limitkurs nötig. UNITY verwendet den berechneten Einstiegspreis.')+'</small></div>'+

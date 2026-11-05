@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T01:13:51Z",
+  "generatedAt": "2026-11-05T07:27:50Z",
   "source": "Offizielle IR-Kalenderseiten",
   "scope": "Nur explizit auf der Emittentenseite erkennbare zukünftige Ergebnis- oder Financial-Results-Termine; keine Schätzung.",
   "items": {
@@ -9,7 +9,7 @@
       "name": "Microsoft",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.microsoft.com/en-us/Investor/",
-      "checkedAt": "2026-11-05T01:13:51Z",
+      "checkedAt": "2026-11-05T07:27:50Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -27,7 +27,7 @@
       "name": "Apple",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investor.apple.com/investor-relations/default.aspx",
-      "checkedAt": "2026-11-05T01:13:51Z",
+      "checkedAt": "2026-11-05T07:27:50Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -45,7 +45,7 @@
       "name": "AMD",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://ir.amd.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T01:13:51Z",
+      "checkedAt": "2026-11-05T07:27:50Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -63,7 +63,7 @@
       "name": "Adobe",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.adobe.com/investor-relations.html",
-      "checkedAt": "2026-11-05T01:13:51Z",
+      "checkedAt": "2026-11-05T07:27:50Z",
       "nextEarnings": "2026-12-09",
       "guidance": {
         "verified": false,
@@ -81,7 +81,7 @@
       "name": "Quanta Services",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investors.quantaservices.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T01:13:51Z",
+      "checkedAt": "2026-11-05T07:27:50Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,

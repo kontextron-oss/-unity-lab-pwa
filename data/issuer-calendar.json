@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T07:45:40Z",
+  "generatedAt": "2026-11-05T07:46:13Z",
   "source": "Offizielle IR-Kalenderseiten",
   "scope": "Nur explizit auf der Emittentenseite erkennbare zukünftige Ergebnis- oder Financial-Results-Termine; keine Schätzung. Deutsche und englische Datumsformate, keine Konferenz- oder Roadshow-Termine.",
   "items": {
@@ -9,7 +9,7 @@
       "name": "Microsoft",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.microsoft.com/en-us/Investor/",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -27,7 +27,7 @@
       "name": "Apple",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investor.apple.com/investor-relations/default.aspx",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -45,7 +45,7 @@
       "name": "AMD",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://ir.amd.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -63,7 +63,7 @@
       "name": "Adobe",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.adobe.com/investor-relations.html",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -81,7 +81,7 @@
       "name": "Quanta Services",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investors.quantaservices.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -99,7 +99,7 @@
       "name": "ABB",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://global.abb/group/en/investors/overview",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -117,7 +117,7 @@
       "name": "Siemens",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.siemens.com/de-de/company/investor-relations/financial-calendar/",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -135,7 +135,7 @@
       "name": "Jenoptik AG",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.jenoptik.com/investors/events",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -153,7 +153,7 @@
       "name": "Schneider Electric",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.se.com/ww/en/about-us/investor-relations/financial-calendar-and-events/",
-      "checkedAt": "2026-11-05T07:45:40Z",
+      "checkedAt": "2026-11-05T07:46:13Z",
       "nextEarnings": "2026-11-10",
       "guidance": {
         "verified": false,
@@ -167,4 +167,4 @@
       }
     }
   }
-}\n
+}

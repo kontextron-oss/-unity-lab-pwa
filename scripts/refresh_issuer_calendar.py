@@ -16,6 +16,7 @@ ROOT=Path(__file__).resolve().parents[1]
 DEST=ROOT/"data"/"issuer-calendar.json"
 HEADERS={"User-Agent":"UNITY-LAB-IR-Monitor/1.1 (https://github.com/kontextron-oss/-unity-lab-pwa)","Accept":"text/html,application/xhtml+xml"}
 ISSUERS={
+ # Each pilot includes its official annual-report landing page; registration is not metric verification.
  "MSFT":{"name":"Microsoft","url":"https://www.microsoft.com/en-us/Investor/","annualReportUrl":"https://www.microsoft.com/en-us/Investor/annual-reports.aspx"},
  "AAPL":{"name":"Apple","url":"https://investor.apple.com/investor-relations/default.aspx"},
  "AMD":{"name":"AMD","url":"https://ir.amd.com/news-events/ir-calendar"},

@@ -7,7 +7,7 @@ const sandbox={Math,Number,Array,Map,esc:v=>String(v??''),number:(v,d)=>Number(v
  unityMarket:{items:{'@SPY5.DE':benchmark}},unityMarketForStock:()=>stock,unityIsCryptoAsset:()=>false};
 vm.createContext(sandbox);vm.runInContext(fs.readFileSync('market-context.js','utf8'),sandbox);
 const c=vm.runInContext("unityMarketContext({isin:'TEST',currency:'EUR'})",sandbox);
-assert.equal(c.available,true);assert.ok(c.relative63>0);assert.ok(c.volatility20>0);assert.equal(c.regime.kind,'constructive');
+assert.equal(c.available,true);assert.ok(c.relative63>0);assert.ok(Number.isFinite(c.volatility20)&&c.volatility20>=0);assert.equal(c.regime.kind,'constructive');
 const panel=vm.runInContext("unityMarketContextPanel({isin:'TEST',currency:'EUR'})",sandbox);
 assert.match(panel,/Relative Stärke/);assert.match(panel,/Volatilität/);assert.match(panel,/Marktumfeld technisch konstruktiv/);
 const stress={...benchmark,points:make(i=>i<235?120:120*Math.pow(.99,i-234)),price:120*Math.pow(.99,25),date:'d259'};

@@ -99,6 +99,9 @@ jobs:
       - name: Validate issuer decision evidence matrix
         run: node tests/issuer-evidence.cjs
 
+      - name: Validate issuer data dossier and explicit evidence gaps
+        run: node tests/issuer-dossier.cjs
+
       - name: Validate SEC official-source parser and stale fallback
         run: python3 -m unittest discover -s tests -p 'test_research.py'
 

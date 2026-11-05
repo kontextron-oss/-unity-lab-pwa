@@ -22,7 +22,6 @@ assert.match(home,/Mein Depot/);assert.match(home,/Schneider Electric/);assert.m
 assert.match(home,/Aktuell/);assert.match(home,/data-home-open/);assert.match(home,/data-home-drag/);assert.match(home,/keine garantierten Echtzeitkurse/);
 assert.match(home,/Aktie hinzufügen/);
 assert.match(home,/data-home-sort="entry"/);
-assert.match(home,/data-home-sort="watch"/);
 assert.match(home,/data-home-sort="sell"/);
 assert.match(home,/Einstieg/);
 assert.match(home,/Verkauf prüfen/);

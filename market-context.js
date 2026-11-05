@@ -46,6 +46,7 @@ function unityMarketContext(stock){
   return {available:true,benchmark,regime:unityMarketRegime(benchmark),relative63:Number.isFinite(stock63)&&Number.isFinite(benchmark63)?stock63-benchmark63:NaN,relative21:Number.isFinite(stock21)&&Number.isFinite(benchmark21)?stock21-benchmark21:NaN,volatility20:unityAnnualizedVolatility(aligned,20),sessions:aligned.length};
 }
 function unityMarketContextPanel(stock){
+  if(typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(stock))return '';
   const c=unityMarketContext(stock);
   let h='<section class="panel unity-market-context"><h3>Marktvergleich & Risikorahmen</h3>';
   if(!c.available)return h+'<p class="tiny muted">'+esc(c.reason)+' Keine Annahme wird daraus abgeleitet.</p></section>';

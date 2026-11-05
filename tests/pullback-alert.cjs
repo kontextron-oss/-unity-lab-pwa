@@ -64,7 +64,11 @@ fundamentals.splice(0,1);
 // Portfolio and chart view both show the same status, all stocks remain rendered.
 assert.match(source,/const position=depotPosition\(s\),research=unityResearchIndicator\(s\),pullback=unityPullbackAlert\(s\)/);
 assert.match(source,/const reachedPullbacks=pullbackResults.filter/);
-assert.match(source,/ranks=new Map\(list.map/);
+assert.match(source,/function unityHomeActionSortMatch\(s,mode\)/);
+assert.match(source,/pullback\.kind==='reached'\|\|signal\.kind==='buy'/);
+assert.match(source,/data-home-sort="entry"/);
+assert.match(source,/data-home-sort="watch"/);
+assert.match(source,/data-home-sort="sell"/);
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/unityPullbackLabel\(s,pullback\)/);
 assert.match(html,/0\.13\.\d+/);

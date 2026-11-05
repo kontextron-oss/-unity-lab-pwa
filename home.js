@@ -1,6 +1,12 @@
 'use strict';
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
+function unitySetReleaseLabel(){
+  if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.13.98';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace('Unity Lab 0.13.97','Unity Lab 0.13.98');
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='entry';
 const UNITY_FIRST_TWENTY=['ABBN','SU','ETN','ENR','VRT','NDX1','PRY','LR','SIE','BEAN','GEV','NVT','HUBB','PWR','NEX','IFX','JEN','AMD','DWS','TKA'];
 const unityPilotStocks=()=>stocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())).sort((a,b)=>UNITY_FIRST_TWENTY.indexOf(String(a.ticker||'').toUpperCase())-UNITY_FIRST_TWENTY.indexOf(String(b.ticker||'').toUpperCase()));
@@ -153,6 +159,37 @@ function unityPullbackLabel(s,signal=unityPullbackAlert(s)){
   if(!['reached','blocked','watch'].includes(signal.kind))return '';
   return '<span class="home-pullback-flag home-pullback-'+signal.kind+'">'+
     (signal.kind==='reached'?'◆ ':signal.kind==='blocked'?'! ':'○ ')+esc(signal.label)+'</span>';
+}
+/* Personal price zones are deliberately a local watcher, not a broker order.
+   It checks the last available reference price when UNITY is opened/refreshed. */
+const unityZonePlanId=s=>'zone-plan:'+s.id;
+function unityZonePlan(s){return ((typeof cache!=='undefined'&&cache.settings)||[]).find(x=>x.id===unityZonePlanId(s)&&!x.deletedAt)||null}
+function unityZonePlanState(s){
+  const plan=unityZonePlan(s),quote=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null,price=Number(quote?.price);
+  if(!plan)return {plan:null,price,kind:'none',label:''};
+  const entryLow=Number(plan.entryLow),entryHigh=Number(plan.entryHigh),exitLow=Number(plan.exitLow),exitHigh=Number(plan.exitHigh);
+  if(!(price>0))return {plan,price,kind:'waiting',label:'Kurs prüfen'};
+  if(exitLow>0&&price<=exitLow)return {plan,price,kind:'exit',label:'Verkaufszone unten erreicht'};
+  if(exitHigh>0&&price>=exitHigh)return {plan,price,kind:'exit',label:'Verkaufszone oben erreicht'};
+  if(entryLow>0&&entryHigh>=entryLow&&price>=entryLow&&price<=entryHigh)return {plan,price,kind:'entry',label:'Eigene Kaufzone erreicht'};
+  return {plan,price,kind:'watch',label:'Zonenwächter aktiv'};
+}
+function unityZonePlanPanel(s){
+  const auto=unityPullbackAlert(s),state=unityZonePlanState(s),plan=state.plan;
+  const technical=Number.isFinite(auto.low)&&Number.isFinite(auto.high);
+  const val=(v)=>Number.isFinite(Number(v))&&Number(v)>0?String(Number(v)):'',fmt=v=>Number.isFinite(Number(v))&&Number(v)>0?number(Number(v),2)+' '+s.currency:'–';
+  let h='<section class="home-zone-plan"><h3>Preis-Zonen</h3>';
+  h+='<div class="home-zone-auto"><b>Automatische technische Kaufzone</b><strong>'+(technical?fmt(auto.low)+' – '+fmt(auto.high):'Noch nicht bestimmbar')+'</strong><small>SMA50 ±2 %. Sie wird nur bei bestätigtem Trend und ausreichenden Tagesdaten angezeigt.</small></div>';
+  if(plan)h+='<div class="home-zone-state home-zone-'+state.kind+'"><b>'+esc(state.label)+'</b><small>Letzter Referenzkurs: '+fmt(state.price)+' · prüft beim Öffnen oder Aktualisieren der App.</small></div>';
+  h+='<details '+(plan?'':'open')+'><summary>Eigene Kauf- und Verkaufszonen '+(plan?'ändern':'festlegen')+'</summary><form id="home-zone-form" class="home-zone-form">'+
+    '<input type="hidden" name="instrumentId" value="'+esc(s.id)+'">'+
+    '<label>Kaufzone von<input name="entryLow" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.entryLow??(technical?auto.low:'')))+'"></label>'+
+    '<label>Kaufzone bis<input name="entryHigh" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.entryHigh??(technical?auto.high:'')))+'"></label>'+
+    '<label>Verkauf prüfen unter<input name="exitLow" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.exitLow))+'"></label>'+
+    '<label>Verkauf prüfen über<input name="exitHigh" inputmode="decimal" type="number" min="0" step="any" value="'+esc(val(plan?.exitHigh))+'"></label>'+
+    '<div class="full"><button class="primary" type="submit">Zonenwächter speichern</button>'+(plan?'<button class="secondary" type="button" data-home-zone-clear="'+esc(s.id)+'">Löschen</button>':'')+'</div>'+
+    '<small class="full">Der Wächter kennzeichnet eine Zone und erinnert beim nächsten App-Check. Er löst keine echte Order und keine automatische Testbuchung aus.</small></form></details></section>';
+  return h+'</section>';
 }
 
 function unityHomeVerdict(s){return unityResearchIndicator(s);}
@@ -343,13 +380,13 @@ h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählt
     const cls=rising?'home-up':falling?'home-down':'home-flat';
     const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
     const eur=s.currency!=='EUR'&&rate&&Number(rate.rate)>0&&price>0?price*Number(rate.rate):NaN;
-    const position=depotPosition(s),research=unityResearchIndicator(s),pullback=unityPullbackAlert(s),issuerBadge=typeof unityResearchBadge==='function'?unityResearchBadge(s):'';
+    const position=depotPosition(s),research=unityResearchIndicator(s),pullback=unityPullbackAlert(s),zoneState=unityZonePlanState(s),issuerBadge=typeof unityResearchBadge==='function'?unityResearchBadge(s):'';
     const stamp=dq?.precision==='15m-bar'&&dq.quotedAt
       ?'15m-Referenz · '+new Date(dq.quotedAt).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
       :quoteItem?.date?String(quoteItem.date)+' · Schluss':'Keine Kursdaten';
     h+='<div class="home-stock-item" data-home-row="'+esc(s.id)+'"><div class="home-reorder-tools"><button type="button" class="home-drag-handle" data-home-drag="'+esc(s.id)+'" title="Aktie ziehen" aria-label="'+esc(s.name)+' durch Ziehen verschieben">☰</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="-1" '+(i===0?'disabled':'')+' aria-label="'+esc(s.name)+' nach oben verschieben">↑</button><button type="button" class="home-shift-btn" data-home-shift="'+esc(s.id)+'" data-direction="1" '+(i===selected.length-1?'disabled':'')+' aria-label="'+esc(s.name)+' nach unten verschieben">↓</button><button type="button" class="home-remove-btn" data-watch-remove="'+esc(s.id)+'" title="Aus Liste entfernen" aria-label="'+esc(s.name)+' aus aktiver Aktienliste entfernen">×</button></div>'+
       '<button type="button" class="home-stock-row" data-home-open="'+esc(s.id)+'" aria-label="'+esc(s.name)+': Kurs und Analyse öffnen"><span class="home-trend-icon '+cls+'" aria-hidden="true">'+(rising?'↗':falling?'↘':'–')+'</span>'+
-      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong>'+issuerBadge+unityPullbackLabel(s,pullback)+'<span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">● Im Testdepot · '+number(position.qty,4)+' Stück</small><small class="home-position-profit '+(position.pnl>0?'home-profit-up':position.pnl<0?'home-profit-down':'')+'">Depotwert '+depotMoney(position.value)+' · '+depotSignedMoney(position.pnl)+'</small>':'')+'</span>'+
+      '<span class="home-stock-main"><strong>'+esc(s.name)+'</strong>'+issuerBadge+unityPullbackLabel(s,pullback)+(zoneState.kind==='entry'||zoneState.kind==='exit'?'<span class="home-zone-flag home-zone-'+zoneState.kind+'">'+esc(zoneState.label)+'</span>':'')+'<span class="home-research-flag home-research-'+research.kind+'">'+esc(research.label)+'</span><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small>'+(position.qty>0?'<small class="home-position-label">● Im Testdepot · '+number(position.qty,4)+' Stück</small><small class="home-position-profit '+(position.pnl>0?'home-profit-up':position.pnl<0?'home-profit-down':'')+'">Depotwert '+depotMoney(position.value)+' · '+depotSignedMoney(position.pnl)+'</small>':'')+'</span>'+
       '<span class="home-stock-right"><strong class="'+cls+'">'+unityPct(change)+'</strong><small class="home-quote-price">'+(price>0?number(price,2)+' '+esc(s.currency):'Kurs fehlt')+'</small>'+
       (s.currency!=='EUR'?'<small class="home-eur-price">'+(Number.isFinite(eur)?'≈ '+euro(eur):'EUR-Kurs fehlt')+'</small>':'')+
       '<small class="home-quote-date">'+esc(stamp)+'</small></span><span class="home-chevron" aria-hidden="true">›</span></button></div>';
@@ -383,6 +420,7 @@ function unityHomeDetail(sid){
   }
   h+='<section class="home-research-detail home-research-'+research.kind+'"><strong>Recherche-Indikator: '+esc(research.label)+'</strong><p>'+esc(research.detail)+'</p><small>Technische Vorauswahl, keine Kauf- oder Verkaufsfreigabe.</small></section>';
   if(typeof unityDecisionReadinessPanel==='function')h+=unityDecisionReadinessPanel(s);
+  h+=unityZonePlanPanel(s);
   if(typeof unityPositionMonitorPanel==='function')h+=unityPositionMonitorPanel(s);
   if(typeof unityDeepDecisionPanel==='function')h+=unityDeepDecisionPanel(s);
   if(typeof unityDecisionResultPanel==='function')h+='<details class="unity-secondary-check"><summary>Weitere technische Prüfbedingungen anzeigen</summary>'+unityDecisionResultPanel(s)+'</details>';
@@ -490,6 +528,11 @@ document.addEventListener('click',e=>{
     return;
   }
   if(b.dataset.homeTrade){unityHomeTradeMode=b.dataset.homeTrade;render();document.getElementById('home-trade-form')?.scrollIntoView({block:'nearest'});return}
+  if(b.dataset.homeZoneClear){
+    const record=unityZonePlan({id:b.dataset.homeZoneClear});
+    if(record&&confirm('Eigene Preiszonen löschen? Die automatische technische SMA50-Zone bleibt erhalten.'))put('settings',{...record,deletedAt:new Date().toISOString(),entryLow:null,entryHigh:null,exitLow:null,exitHigh:null}).then(()=>audit('ZONE_PLAN_CLEAR',b.dataset.homeZoneClear,'Eigene Preiszonen gelöscht')).then(refresh).catch(err=>alert(err.message||String(err)));
+    return;
+  }
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
   if(b.dataset.homeSort){unityHomeSort=['entry','sell'].includes(b.dataset.homeSort)?b.dataset.homeSort:'manual';render();return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
@@ -585,9 +628,20 @@ document.addEventListener('pointercancel',()=>{
   unityHomeDrag=null;document.querySelectorAll('[data-home-row]').forEach(el=>el.classList.remove('home-dragging','home-drop-target'));
 });
 document.addEventListener('submit',async e=>{
-  if(e.target.id!=='home-trade-form'&&e.target.id!=='home-capital-form')return;
+  if(!['home-trade-form','home-capital-form','home-zone-form'].includes(e.target.id))return;
   e.preventDefault();
   try{
+    if(e.target.id==='home-zone-form'){
+      const d=Object.fromEntries(new FormData(e.target)),s=stocks().find(x=>x.id===d.instrumentId);if(!s)throw Error('Aktie nicht gefunden.');
+      const read=k=>String(d[k]??'').trim()===''?null:Number(String(d[k]).replace(',','.'));
+      const entryLow=read('entryLow'),entryHigh=read('entryHigh'),exitLow=read('exitLow'),exitHigh=read('exitHigh');
+      if([entryLow,entryHigh,exitLow,exitHigh].some(v=>v!==null&&(!(v>0)||!Number.isFinite(v))))throw Error('Preisgrenzen müssen positiv sein.');
+      if((entryLow===null)!==(entryHigh===null))throw Error('Bitte die Kaufzone immer mit Unter- und Obergrenze angeben.');
+      if(entryLow!==null&&entryHigh<entryLow)throw Error('Die Obergrenze der Kaufzone muss mindestens so hoch wie die Untergrenze sein.');
+      if(entryLow===null&&exitLow===null&&exitHigh===null)throw Error('Mindestens eine Zone angeben.');
+      await put('settings',{id:unityZonePlanId(s),kind:'price-zone-plan',instrumentId:s.id,entryLow,entryHigh,exitLow,exitHigh,updatedAt:new Date().toISOString()});
+      await audit('ZONE_PLAN_SAVE',s.id,'Lokaler Zonenwächter · '+s.ticker);await refresh();return;
+    }
     if(e.target.id==='home-capital-form'){
       if(typeof depotSaveCapital!=='function')throw Error('Kapitalverwaltung ist noch nicht verfügbar.');
       await depotSaveCapital(new FormData(e.target).get('capital'));

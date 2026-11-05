@@ -1,7 +1,7 @@
 'use strict';
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
-let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='manual';
+let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='entry';
 const UNITY_FIRST_TWENTY=['ABBN','SU','ETN','ENR','VRT','NDX1','PRY','LR','SIE','BEAN','GEV','NVT','HUBB','PWR','NEX','IFX','JEN','AMD','DWS','TKA'];
 const unityPilotStocks=()=>stocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())).sort((a,b)=>UNITY_FIRST_TWENTY.indexOf(String(a.ticker||'').toUpperCase())-UNITY_FIRST_TWENTY.indexOf(String(b.ticker||'').toUpperCase()));
 async function unityEnsurePilotTwenty(){
@@ -248,15 +248,10 @@ function unityHomeSignal(s){
   return {kind:'wait',label:'Abwarten',icon:'·',detail:'Keine bestätigte Kauf- oder Verkaufsfreigabe.',rank:4};
 }
 function unityHomeActionSortMatch(s,mode){
-  const pullback=unityPullbackAlert(s),signal=unityHomeSignal(s),research=unityResearchIndicator(s);
-  // These groups mirror only visible, explicit statuses on the cards.
-  if(mode==='entry')return pullback.kind==='reached';
-  if(mode==='watch')return pullback.kind==='watch'||['observe','improving','wait'].includes(research.kind);
-  if(mode==='sell')return signal.kind==='sell';
+  // Keep the watchlist lightweight: calculate only the condition requested.
+  if(mode==='entry')return unityPullbackAlert(s).kind==='reached';
+  if(mode==='sell')return unityHomeSignal(s).kind==='sell';
   return false;
-}
-function unityHomeActionSortCount(mode){
-  return unityHomeStocks().filter(s=>unityHomeActionSortMatch(s,mode)).length;
 }
 function unityHomeDisplayedStocks(){
   const list=unityHomeStocks();
@@ -335,8 +330,8 @@ function unityHome(){
       '<small>Zuletzt verfügbare Tages-Schlusskurse, keine Echtzeit-Meldung und keine Kaufempfehlung. Betroffene Aktie antippen und Tiefenanalyse neu prüfen.</small></section>';
   }
 h+='<section class="home-list"><div class="home-list-head"><h2>Meine ausgewählten Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
-    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="entry" class="'+(unityHomeSort==='entry'?'active':'')+'">Einstieg ('+unityHomeActionSortCount('entry')+')</button><button type="button" data-home-sort="watch" class="'+(unityHomeSort==='watch'?'active':'')+'">Beobachten ('+unityHomeActionSortCount('watch')+')</button><button type="button" data-home-sort="sell" class="'+(unityHomeSort==='sell'?'active':'')+'">Verkauf prüfen ('+unityHomeActionSortCount('sell')+')</button></div>'+
-    '<p class="home-sort-hint">Die Zahl zeigt, wie viele Werte der Schalter nach oben stellt. „Einstieg“ meint nur „Einstiegszone erreicht“. Deine eigene Reihenfolge bleibt innerhalb jeder Gruppe erhalten; ☰ oder ↑ ↓ schaltet zurück auf sie.</p>';
+    '<div class="home-sort-controls"><span>Reihenfolge:</span><button type="button" data-home-sort="entry" class="'+(unityHomeSort==='entry'?'active':'')+'">Einstieg oben</button><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Meine Reihenfolge</button><button type="button" data-home-sort="sell" class="'+(unityHomeSort==='sell'?'active':'')+'">Verkauf prüfen</button></div>'+
+    '<p class="home-sort-hint">„Einstieg oben“ zeigt bestätigte Einstiegszonen zuerst. Danach folgen automatisch alle übrigen Werte zum Beobachten. Deine Reihenfolge bleibt verfügbar.</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x}=unityHomeQuote(s);
@@ -496,7 +491,7 @@ document.addEventListener('click',e=>{
   }
   if(b.dataset.homeTrade){unityHomeTradeMode=b.dataset.homeTrade;render();document.getElementById('home-trade-form')?.scrollIntoView({block:'nearest'});return}
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
-  if(b.dataset.homeSort){unityHomeSort=['entry','watch','sell'].includes(b.dataset.homeSort)?b.dataset.homeSort:'manual';render();return}
+  if(b.dataset.homeSort){unityHomeSort=['entry','sell'].includes(b.dataset.homeSort)?b.dataset.homeSort:'manual';render();return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
   if(b.dataset.analyze){unityHomeSelected=b.dataset.analyze;unityHomeTradeMode='';activeTab='overview';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);if(stock&&typeof unityLoadNews==='function')unityLoadNews(stock);return}
   if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);if(stock&&typeof unityLoadNews==='function')unityLoadNews(stock);return}

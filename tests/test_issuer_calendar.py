@@ -14,6 +14,11 @@ class IssuerCalendarTests(unittest.TestCase):
             self.assertIn(ticker,mod.ISSUERS)
             self.assertTrue(mod.ISSUERS[ticker]["url"].startswith("https://"))
 
+    def test_every_monitored_issuer_has_a_report_source(self):
+        self.assertGreaterEqual(len(mod.ISSUERS),9)
+        for issuer in mod.ISSUERS.values():
+            self.assertTrue(issuer["annualReportUrl"].startswith("https://"))
+
     def test_german_results_date_is_confirmed(self):
         raw="<table><tr><td>10.11.2026</td><td>Quarterly Statement January - September 2026</td></tr></table>"
         self.assertEqual(mod.next_event(raw,dt.date(2026,11,5)),"2026-11-10")

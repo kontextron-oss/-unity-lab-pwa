@@ -26,5 +26,9 @@ class IssuerCalendarTests(unittest.TestCase):
         raw="<p>Upcoming event: February 11, 2027 – 1st quarter financial results</p>"
         self.assertEqual(mod.next_event(raw,dt.date(2026,11,5)),"2027-02-11")
 
+    def test_final_non_results_event_cannot_use_page_footer(self):
+        raw="December 1, 2026 UBS Industrials Conference " + ("x" * 300) + " Financial results"
+        self.assertEqual(mod.next_event(raw,dt.date(2026,11,5),),"")
+
 if __name__=="__main__":
     unittest.main()

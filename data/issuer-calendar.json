@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T07:52:14Z",
+  "generatedAt": "2026-11-05T07:57:49Z",
   "source": "Offizielle IR-Kalenderseiten",
   "scope": "Nur explizit auf der Emittentenseite erkennbare zukünftige Ergebnis- oder Financial-Results-Termine; keine Schätzung. Deutsche und englische Datumsformate, keine Konferenz- oder Roadshow-Termine.",
   "items": {
@@ -9,7 +9,8 @@
       "name": "Microsoft",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.microsoft.com/en-us/Investor/",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "https://www.microsoft.com/en-us/Investor/annual-reports.aspx",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -27,7 +28,8 @@
       "name": "Apple",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investor.apple.com/investor-relations/default.aspx",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -45,7 +47,8 @@
       "name": "AMD",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://ir.amd.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -63,7 +66,8 @@
       "name": "Adobe",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.adobe.com/investor-relations.html",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "2026-12-09",
       "guidance": {
         "verified": false,
@@ -81,7 +85,8 @@
       "name": "Quanta Services",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investors.quantaservices.com/news-events/ir-calendar",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -99,7 +104,8 @@
       "name": "ABB",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://global.abb/group/en/investors/overview",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "https://global.abb/group/en/investors/results-and-reports/annual-reports",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -117,7 +123,8 @@
       "name": "Siemens",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.siemens.com/de-de/company/investor-relations/financial-calendar/",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "https://www.siemens.com/de-de/company/investor-relations/annual-reports/",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "2026-11-12",
       "guidance": {
         "verified": false,
@@ -135,7 +142,8 @@
       "name": "Jenoptik AG",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.jenoptik.com/investors/events",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "https://www.jenoptik.com/investors/annual-report-2025",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "2026-11-10",
       "guidance": {
         "verified": false,
@@ -153,7 +161,8 @@
       "name": "Schneider Electric",
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.se.com/ww/en/about-us/investor-relations/financial-calendar-and-events/",
-      "checkedAt": "2026-11-05T07:52:14Z",
+      "annualReportUrl": "https://www.se.com/ww/en/about-us/investor-relations/regulatory-information/annual-reports/",
+      "checkedAt": "2026-11-05T07:57:49Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,

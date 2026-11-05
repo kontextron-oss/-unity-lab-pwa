@@ -99,6 +99,9 @@ jobs:
       - name: Validate issuer decision evidence matrix
         run: node tests/issuer-evidence.cjs
 
+      - name: Validate official issuer calendar parsing
+        run: python3 -m unittest discover -s tests -p 'test_issuer_calendar.py'
+
       - name: Validate issuer data dossier and explicit evidence gaps
         run: node tests/issuer-dossier.cjs
 

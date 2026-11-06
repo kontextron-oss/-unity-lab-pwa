@@ -14,7 +14,8 @@ const assumptions={isin:s.isin,periodEnd:finance.period,currency:'USD',reviewed:
  reviewedBy:'verified-research-reviewer',analystReviewedAt:today,
  guidanceSourceUrl:official,
  debtRiskReview:{status:'reviewed',isin:s.isin,periodEnd:finance.period,currency:'USD',
- grossDebt:300,cashAndEquivalents:120,asOf:today,sourceUrl:source,sourceHost:'www.eaton.com',outcome:'acceptable'},
+ grossDebt:300,cashAndEquivalents:120,cashFlowBasisVerified:true,
+ asOf:today,sourceUrl:source,sourceHost:'www.eaton.com',outcome:'acceptable'},
  years:5,marginOfSafetyPct:25,
  scenarios:{
   bear:{growthPct:-5,discountPct:16,terminalGrowthPct:0,rationale:'Prolonged cyclical slowdown'},

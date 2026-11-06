@@ -42,7 +42,7 @@ const box={
  cache:{fundamentals:[manual]},stocks:()=>instruments,
  unityHomeQuote:s=>missingQuote&&s.id==='abb'?{x:null,m:null,quality:null,valid:false,technical:false}:
    badIdentity&&s.id==='abb'?{...stockData[s.id].quote,valid:false,quality:{level:'invalid',detail:'ISIN-Konflikt'}}:
-   stockData[s.id].quote,
+   (stockData[s.id]?.quote||null),
  unityEuroRate:c=>c==='EUR'?{rate:1,date:stamp,source:'EUR'}:fxCHF,
  unityFundPilotItem:s=>reports[s.id],
  unityDeepFilingEvidence:s=>({verified:s.id==='su',period:s.id==='su'?'2025-12-31':'',source:s.id==='su'?'https://filings.xbrl.org/a':''}),

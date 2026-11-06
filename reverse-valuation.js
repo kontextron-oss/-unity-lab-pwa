@@ -70,7 +70,7 @@ function unityReverseValuation(s,options={}){
   isin:String(s?.isin||''),ticker:String(s?.ticker||''),
   status:'blocked',underlyingPeriod:String(m?.period||''),
   guidanceSource:g?.sourceUrl||null,
-  fcfPerShare:null,priceReportCurrency:null,priceDate:null,
+  fcfPerShare:null,priceReportCurrency:null,reportCurrency:String(m?.reportCurrency||''),priceDate:null,
   forwardGaapPE:null,assumptions:{
     horizonYears:5,terminalGrowthPct:2,
     rateCases:UNITY_REVERSE_RATE_CASES.map(c=>({...c})),
@@ -127,7 +127,7 @@ function unityReverseValuationPanel(s){
  }
  const de=n=>new Intl.NumberFormat('de-DE',{minimumFractionDigits:1,maximumFractionDigits:2}).format(n);
  h+='<p class="tiny muted">Prüfbare Basis: OCF minus Capex je Stichtagsaktie aus Konzernjahr '+esc(r.underlyingPeriod)+
-   ' · '+de(r.fcfPerShare)+' '+esc(s?.currency||'')+
+   ' · '+de(r.fcfPerShare)+' '+esc(r.reportCurrency)+
    ' (Berechnung in Konzernberichtswährung). Kursreferenz: '+esc(r.priceDate)+
    '. Dies ist keine normalisierte 2026-FCF-Prognose.</p>';
  if(r.forwardGaapPE){
@@ -140,6 +140,6 @@ function unityReverseValuationPanel(s){
     (caseValue.impliedGrowthPct===null?'Außerhalb Rechenbereich':de(caseValue.impliedGrowthPct)+' % p. a.')+
     '</b><small>5 Jahre, Endwertwachstum 2 %. Annahme zur Sensitivität, nicht Unternehmensprognose.</small></div>';
  }
- h+='<p class="tiny muted">**Keine freigegebene Einstiegszone:** Für einen inneren Wert fehlen unabhängig geprüfte Wachstums- und Diskontannahmen, aktuelle Schuldenprüfung und die vollständigen UNITY-5.1-Marktveto-Daten. Ein hoher unterstellter Zuwachs zeigt Bewertungsanfälligkeit, kein automatisches Verkaufssignal.</p>';
+ h+='<p class="tiny muted"><b>Keine freigegebene Einstiegszone:</b> Für einen inneren Wert fehlen unabhängig geprüfte Wachstums- und Diskontannahmen, aktuelle Schuldenprüfung und die vollständigen UNITY-5.1-Marktveto-Daten. Ein hoher unterstellter Zuwachs zeigt Bewertungsanfälligkeit, kein automatisches Verkaufssignal.</p>';
  return h;
 }

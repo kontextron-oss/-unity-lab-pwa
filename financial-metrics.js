@@ -35,6 +35,18 @@ function unityFinancialFact(report,key,prior=false){
  const currency=String(report?.reportCurrency||'').toUpperCase();
  const value=unityFinancialNumber(fact?.value);
  if(!period||!fact||fact.periodEnd!==period||fact.currency!==currency||!currency||value===null)return null;
+ const kind=unityFinancialSourceKind(report);
+ const issuerSource=String(fact.sourceUrl||'');
+ const reportSource=String(report?.latestFiling?.reportUrl||'');
+ const sameHost=host=>{
+   try{return new URL(issuerSource).hostname===host&&new URL(reportSource).hostname===host}
+   catch(_){return false}
+ };
+ if(kind==='issuer-pdf'&&
+   (issuerSource!==reportSource||fact.sourceType!=='issuer-audited-annual-report'))return null;
+ if(kind==='sec'&&
+   (issuerSource!==reportSource||!String(fact.concept||'').startsWith('us-gaap:')))return null;
+ if(kind==='esef'&&!sameHost('filings.xbrl.org'))return null;
  return value;
 }
 function unityFinancialRatio(n,d){

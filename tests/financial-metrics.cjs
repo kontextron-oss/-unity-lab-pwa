@@ -102,9 +102,10 @@ secReport.metrics.debtLongTermNoncurrent=secFact(300e6,'LongTermDebtNoncurrent')
 secReport.metrics.shortTermBorrowings=secFact(10e6,'ShortTermBorrowings');
 r=view(secStock,{report:secReport,quote:{x:{price:200,currency:'USD',date:day,exchange:'NYSE'},valid:true,quality:{canCompare:true}},fxLookup});
 assert.equal(r.valuation.sharesOutstanding,100e6);
-assert.equal(r.valuation.pb,40);
-assert.equal(r.valuation.freeCashFlow,130e6);
-assert.equal(r.valuation.freeCashFlowYield,0.65);
+assert.equal(r.valuation.pb,Math.round(100*200/(five.equity*1e6/100e6))/100);
+const auditedFcf=five.operatingCashFlow*1e6-50e6;
+assert.equal(r.valuation.freeCashFlow,auditedFcf);
+assert.equal(r.valuation.freeCashFlowYield,Math.round(10000*auditedFcf/(200*100e6))/100);
 assert.equal(r.valuation.cashAndEquivalents,120e6);
 assert.equal(r.valuation.debtLongTermReported,300e6);
 assert.equal(r.valuation.shortTermBorrowings,10e6);

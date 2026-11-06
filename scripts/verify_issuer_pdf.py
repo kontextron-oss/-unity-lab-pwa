@@ -185,28 +185,78 @@ def parse_issuer_pdf(spec, pdf_bytes):
     finally:
         doc.close()
 
+def parse_prior_period_pdf(spec, pdf_bytes):
+    """Read prior fiscal-year comparatives from *the same* audited PDF tables.
+
+    These figures have separate fiscal periods and keep their page references.
+    Any missing/ambiguous figure blocks ALL automatic growth calculations.
+    """
+    import fitz
+    report=fitz.open(stream=io.BytesIO(pdf_bytes), filetype="pdf")
+    try:
+        prior_year=spec["year"]-1
+        prior_period=str(prior_year)+spec["periodEnd"][4:]
+        facts={}
+        for name,params in spec["facts"].items():
+            page_index,table,label=params[:3]
+            max_y=params[4] if len(params)>4 else 1.0
+            page=report[page_index]
+            value=parse_statement_row(page.get_text("words",sort=True),
+                page.rect.width,page.rect.height,prior_year,table,label,max_y,
+                0.08 if spec["name"]=="ABB" else 0.0)
+            if not isinstance(value,int) or value<=0:
+                raise ValueError("Prior-period value is not positive: "+name)
+            facts[name]={
+                "value":value*spec["unitScale"],"currency":spec["currency"],
+                "periodEnd":prior_period,"sourceUrl":spec["url"],
+                "sourceType":"issuer-audited-annual-report",
+                "page":page_index+1,"label":label,"basis":"consolidated-group",
+                "sourceUnit":"million","comparisonPeriod":True,
+            }
+        if set(facts)!=set(spec["facts"]) or facts["equity"]["value"]>facts["assets"]["value"]:
+            raise ValueError("Incomplete or implausible prior-period consolidated facts")
+        return facts
+    finally:
+        report.close()
+
 def extract_issuer(isin):
     spec = SOURCES[isin]
-    fields = parse_issuer_pdf(spec, fetch_pdf(spec["url"], spec["host"]))
+    pdf = fetch_pdf(spec["url"], spec["host"])
+    fields = parse_issuer_pdf(spec, pdf)
+    prior,prior_error={},None
+    try:
+        prior = parse_prior_period_pdf(spec,pdf)
+    except ValueError as err:
+        prior_error=str(err)[:180]
     return {"isin": isin, "name": spec["name"], "periodEnd": spec["periodEnd"],
             "currency": spec["currency"], "standard": spec["standard"],
             "sourceUrl": spec["url"], "sourceType": "issuer-audited-annual-report",
             "reviewed": True, "reviewScope": "FY2025 five core metrics",
-            "metrics": fields}
+            "metrics": fields, "priorMetrics": prior,
+            "priorPeriodEnd": str(spec["year"]-1)+spec["periodEnd"][4:],
+            "priorError": prior_error}
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--probe", action="store_true", help="Read-only official PDF connectivity and extraction test")
+    p.add_argument("--probe-prior", action="store_true", help="Read-only prior FY comparison figures from the same audited PDF")
     args = p.parse_args()
-    if not args.probe:
-        p.error("Read-only pilot: use --probe; importing data requires separate approval")
+    if not (args.probe or args.probe_prior):
+        p.error("Read-only pilot: use --probe or --probe-prior")
     result = {}
     for isin in SOURCES:
         try:
             row = extract_issuer(isin)
-            result[isin] = {"status": "verified", "name": row["name"],
+            status="verified"
+            values=row["metrics"]
+            if args.probe_prior:
+                values=row["priorMetrics"]
+                status="verified" if len(values)==len(SOURCES[isin]["facts"]) else "unavailable"
+            result[isin] = {"status": status, "name": row["name"],
                             "source": row["sourceUrl"],
-                            "valuesInMillions": {k: v["value"]/1_000_000 for k,v in row["metrics"].items()}}
+                            "fiscalPeriod": row["priorPeriodEnd"] if args.probe_prior else row["periodEnd"],
+                            "valuesInMillions": {k: v["value"]/1_000_000 for k,v in values.items()},
+                            "error": row.get("priorError") if args.probe_prior else None}
         except Exception as err:
             result[isin] = {"status": "unavailable", "reason": str(err)[:180]}
     print(json.dumps(result, indent=2, ensure_ascii=False))

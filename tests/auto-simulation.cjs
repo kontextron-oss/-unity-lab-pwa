@@ -32,7 +32,7 @@ vm.runInContext(source.slice(start,end),sandbox);
 const html=sandbox; // all global function declarations are exposed on this sandbox
 assert.match(vm.runInContext('unityAutoOrdersSummary()',sandbox),/Automatik · Testdepot/);
 assert.match(vm.runInContext('unityAutoOrdersSummary()',sandbox),/Auftrag stoppen/);
-assert.match(vm.runInContext('unityAutoStockPanel(sellStock)',Object.assign(sandbox,{sellStock})),/Auto-Testverkauf/);
+assert.match(vm.runInContext('unityAutoStockPanel(sellStock)',Object.assign(sandbox,{sellStock})),/Automatischer Testverkauf/);
 assert.match(vm.runInContext('unityAutoStockBadge(buyStock)',Object.assign(sandbox,{buyStock})),/vorgemerkt/);
 (async()=>{
  await vm.runInContext('unityRunAutoTestBuys()',sandbox);

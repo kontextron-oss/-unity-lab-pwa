@@ -8,7 +8,7 @@ const cache={instruments:[s],fundamentals:[report],analyses:[],transactions:[],s
 let quotes={x:{date:today,price:100,exchange:'Xetra',currency:'EUR',source:'verified EOD'},quality:{canCompare:true,level:'eod'},valid:true,technical:true};
 let fx={rate:1,source:'EUR',date:today},miss=[],adverse=[],available=true,position=0,
  signal={kind:'reached',high:103,low:97,date:today,close:100},exitLevel=94,issuer=null;
-let autoOrder={mode:'technical',allocationPct:5};
+let autoOrder={mode:'technical',allocationEur:250};
 let deep={kind:'positive',investmentReady:true,investmentScore:81.2,entryLower:97,entryUpper:103,
  rr:2.8,confidence:'Hoch (nur für die modellierten Bedingungen)',missing:[],reason:'Freigabe geprüft'};
 const stored=[],sandbox={
@@ -44,20 +44,20 @@ const assertContract=x=>{
  let v=evaluate();
  assertContract(v);
  assert.equal(v.action,'BUY');assert.equal(v.reasonCode,'fundamentally-approved');
- assert.equal(v.capitalPct,2);assert.equal(v.scoreBand,'80–89 / 100');
+ assert.equal(v.capitalPct,null);assert.equal(v.scoreBand,'80–89 / 100');
  assert.equal(v.priceRef.price,100);assert.equal(v.priceRef.exchange,'Xetra');
  assert.equal(v.testActionEligible,true);
  let copy=evaluate();
  assert.deepEqual(JSON.parse(JSON.stringify(v)),JSON.parse(JSON.stringify(copy)),'Same inputs must yield same decision');
  let tech=evaluate('technical');assert.equal(tech.action,'BUY');
- assert.equal(tech.capitalPct,5);
+ assert.equal(tech.capitalPct,null);
  assert.equal(tech.confidence,'Nur technisches Signal – keine Anlagefreigabe');
  autoOrder={mode:'technical',allocationEur:250};
  tech=evaluate('technical');
  assert.equal(tech.capitalEur,250,'Decision must show configured EUR amount');
  assert.equal(tech.capitalPct,null,'EUR allocation must not be described as 2 percent');
  assert.match(vm.runInContext('unityDecisionPanel(stock)',sandbox),/Fester Testbetrag 250.00 €/);
- autoOrder={mode:'technical',allocationPct:5};
+ autoOrder={mode:'technical',allocationEur:250};
  // Source missing must NOT imply a negative company opinion or a SELL.
  miss=['Geprüfte Unternehmenszahlen'];
  v=evaluate();

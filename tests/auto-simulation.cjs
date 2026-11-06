@@ -153,8 +153,8 @@ assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"techn
  assert.equal(invoke('unityAutoBudgetStatus().remaining'),50);
  assert.equal(deepCalls,0,'Strict evaluation is not called for technical orders');
  const idx=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
- assert.match(idx,/home\.js\?v=0\.15\.1\.2/);
- assert.match(sw,/home\.js\?v=0\.15\.1\.2/);
- assert.match(sw,/unity-lab-v0\.15\.1\.2/);
+ assert.match(idx,/home\.js\?v=0\.15\.1\.3/);
+ assert.match(sw,/home\.js\?v=0\.15\.1\.3/);
+ assert.match(sw,/unity-lab-v0\.15\.1\.3/);
  console.log('Auto simulation: atomic once-only percentage-to-EUR migration, 10 armed orders, budget cap, no partial fills/double booking, offline version passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

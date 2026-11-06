@@ -3,8 +3,8 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.1.2';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.1.2');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.1.3';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.1.3');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
@@ -205,9 +205,66 @@ function unityTechnicalTestEntry(s){
 }
 function unityAutoBuyEntry(s,mode){return mode==='technical'?unityTechnicalTestEntry(s):unityCalculatedEntry(s)}
 function unityAutoBuyModeLabel(mode){return mode==='technical'?'Technischer Testkauf':'Strenge UNITY-Freigabe'}
-function unityAutoBuyPercent(order){const value=Number(order?.allocationPct);return [2,5,10,15,20,25,50].includes(value)?value:2}
-/* Legacy percentage orders remain valid until the user changes them. New
-   automatic test buys use a FIXED EUR amount and require a spending cap. */
+/* Auto-test buys use fixed EUR amounts only. Existing active percentage
+   orders are converted ONCE from the current free-capital snapshot before UI
+   rendering or simulated execution. Historic executed/closed records remain
+   untouched; no old percentage rule participates in the order runner. */
+const UNITY_AUTO_EUR_MIGRATION_VERSION=1;
+function unityAutoMigrationPlan(settings,freeCash,alreadySpent,at){
+  const records=Array.isArray(settings)?settings:[];
+  const available=Number.isFinite(Number(freeCash))?Math.max(0,Math.floor(Number(freeCash)*100+1e-7)/100):0;
+  const changes=[],pending=[];
+  for(const order of records){
+    if(order?.kind!=='auto-test-buy'||!order.active||order.executedAt)continue;
+    const current=unityAutoEurAmount(order);
+    if(Number.isFinite(current)&&current>0){
+      pending.push(current);
+      continue;
+    }
+    const raw=Number(order.allocationPct);
+    const percentage=[2,5,10,15,20,25,50].includes(raw)?raw:2;
+    const cents=Math.round(available*percentage); // percentage of EUR * 100 cents
+    const amount=cents/100;
+    const updated={...order,allocationEur:amount,updatedAt:at,
+      euroMigration:{version:UNITY_AUTO_EUR_MIGRATION_VERSION,baseEur:available,
+        previousPercent:percentage,convertedAt:at,needsReview:amount<1}};
+    delete updated.allocationPct;
+    changes.push(updated);
+    if(amount>=1)pending.push(amount);
+  }
+  const priorBudget=records.find(r=>r.id===UNITY_AUTO_BUDGET_KEY);
+  let budget=null;
+  if(changes.length&&!priorBudget&&available>=1){
+    const totalPending=pending.reduce((n,a)=>n+a,0);
+    const limit=Math.round((Math.max(0,alreadySpent)+Math.min(available,totalPending))*100)/100;
+    if(limit>=1)budget={id:UNITY_AUTO_BUDGET_KEY,kind:'auto-test-budget',
+      limitEur:limit,updatedAt:at,
+      migrationSetup:true,migrationBaseEur:available};
+  }
+  return {changes,budget,available,count:changes.length};
+}
+async function unityAutoMigrateLegacy(){
+  if(typeof db==='undefined'||!db||typeof cache==='undefined'||!Array.isArray(cache.settings))return false;
+  const capital=typeof depotCapital==='function'?depotCapital():null,now=new Date().toISOString();
+  const plan=unityAutoMigrationPlan(cache.settings,capital?.free,unityAutoBudgetSpent(),now);
+  if(!plan.count)return false;
+  // One settings+audit transaction: either every pending order is converted,
+  // or none is. A retry/reopen cannot accidentally reconvert EUR orders.
+  await new Promise((resolve,reject)=>{
+    const tx=db.transaction(['settings','audit'],'readwrite');
+    const store=tx.objectStore('settings'),aud=tx.objectStore('audit');
+    for(const o of plan.changes)store.put(o);
+    if(plan.budget)store.put(plan.budget);
+    aud.put({id:id(),at:now,type:'AUTO_EURO_MIGRATION',ref:'auto-test-buy',
+      detail:plan.count+' offene Prozentaufträge aus freiem Testkapital '+
+        depotMoney(plan.available)+' in feste Eurobeträge umgerechnet'+
+        (plan.budget?'; Budget '+depotMoney(plan.budget.limitEur):'; Budget manuell festlegen')});
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error||new Error('Auftragsmigration fehlgeschlagen'));
+    tx.onabort=()=>reject(tx.error||new Error('Auftragsmigration abgebrochen'));
+  });
+  return true;
+}
 const UNITY_AUTO_BUDGET_KEY='auto-test-buy-total-budget';
 const UNITY_AUTO_FIXED_DEFAULT=100;
 function unityAutoEurAmount(order){
@@ -257,7 +314,7 @@ async function unityAutoBuyChangeAllocation(s,allocation){
   // Preserve order identity, mode, and activation date; never change transactions.
   await put('settings',updated);
   await audit('AUTO_TEST_BUY_AMOUNT_CHANGED',s.id,
-    (Number.isFinite(old)?depotMoney(old):unityAutoBuyPercent(existing)+' % (Altauftrag)')+
+    (Number.isFinite(old)?depotMoney(old):'noch kein Eurobetrag')+
     ' → '+depotMoney(amount)+' · '+unityAutoBuyModeLabel(existing.mode));
   await refresh();return true;
 }
@@ -267,9 +324,7 @@ function unityAutoBuyControls(s,queued,mode){
   if(queued){
     const stamp=queued.updatedAt&&Number.isFinite(Date.parse(queued.updatedAt))?
       ' · '+new Date(queued.updatedAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
-    const legacy=!Number.isFinite(fixed);
-    const saved=legacy?'Bisheriger Prozentauftrag: '+unityAutoBuyPercent(queued)+
-      ' %. Durch Speichern ausdrücklich auf einen festen Eurobetrag umstellen.':
+    const saved=!(fixed>=1)?'Noch kein ausführbarer Eurobetrag · bitte Betrag festlegen.':
       queued.updatedAt?'✓ Betrag gespeichert: '+depotMoney(fixed)+stamp:
       'Aktiver Auftrag · fester Betrag '+depotMoney(fixed);
     return '<div class="home-auto-allocation"><span class="actions">'+input+
@@ -344,7 +399,7 @@ function unityAutoOrdersSummary(){
     '<button type="button" class="primary" data-home-auto-budget-save>Budget speichern</button></div>'+
     '<small class="home-auto-budget-state" role="status" aria-live="polite">'+
     esc(budget.configured?'✓ Budget gespeichert'+budgetStamp+'. Neue Testkäufe dürfen die Grenze nicht überschreiten.':
-      'Für neue automatische Euro-Aufträge zuerst das Gesamtbudget festlegen. Bestehende Prozentaufträge bleiben unverändert.')+
+      'Bitte Gesamtbudget festlegen; ohne Budget führt UNITY keine automatischen Käufe aus.')+
     '</small></div>';
   if(!orders.length)h+='<p class="tiny muted">Keine Aufträge aktiv. Aktie öffnen und dort zwischen technischem und strengem UNITY-Testkauf wählen.</p>';
   for(const order of orders){
@@ -352,10 +407,11 @@ function unityAutoOrdersSummary(){
     const kind=order.kind==='auto-test-buy'?'Kauf':'Verkauf';
     const euro=unityAutoEurAmount(order);
     const label=order.kind==='auto-test-buy'?unityAutoBuyModeLabel(order.mode||'strict')+' · '+
-      (Number.isFinite(euro)&&euro>0?depotMoney(euro):unityAutoBuyPercent(order)+' % · Altauftrag'):
+      (Number.isFinite(euro)&&euro>=1?depotMoney(euro):'Betrag noch festzulegen'):
       'Technische Verkaufszone · gesamter Testbestand';
     const signal=stock&&order.kind==='auto-test-buy'?unityAutoBuyEntry(stock,order.mode||'strict'):null;
     const status=!stock||stock.watchArchivedAt?'Aktie archiviert · Auftrag beenden':
+      order.kind==='auto-test-buy'&&!(euro>=1)?'Eurobetrag bitte auf mindestens 1 € setzen':
       order.kind==='auto-test-buy'&&budget.configured&&budget.remaining<
         (Number.isFinite(euro)?euro:0.01)?'Budgetrest reicht nicht aus · Budget oder Betrag ändern':
       order.kind==='auto-test-buy'&&signal?.ready?'Kriterium erreicht · auf neuen Tageskurs nach Aktivierung prüfen':
@@ -395,7 +451,7 @@ function unityAutoStockPanel(s){
   const entry=unityAutoBuyEntry(s,buy?.mode||'technical'),exit=unityAutoExitZone(s),signal=unityPullbackAlert(s);
   const buyEur=unityAutoEurAmount(buy);
   const status=buy?(unityAutoBuyModeLabel(buy.mode||'strict')+' · '+
-    (Number.isFinite(buyEur)&&buyEur>0?depotMoney(buyEur):unityAutoBuyPercent(buy)+' % (Altauftrag)')+' aktiv · '+
+    (Number.isFinite(buyEur)&&buyEur>=1?depotMoney(buyEur):'Betrag noch festzulegen')+' aktiv · '+
     (buy.mode==='technical'?(signal.kind==='reached'?'Technische Zone erreicht · neuer Schlusskurs nötig':'Technische Zone wird beobachtet'):
     entry.ready?'UNITY-Kauflimit berechnet · neuer Schlusskurs nötig':'Strenge Freigabe noch offen')):'Kein automatischer Testkauf aktiv';
   const maySell=position.qty>0&&Number.isFinite(exit)&&exit>0;
@@ -424,13 +480,9 @@ async function unityRunAutoTestBuys(){
     const capital=depotCapital();if(!capital.configured||!(capital.free>0))continue;
     const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN);
     const price=Number(signal.close),fixed=unityAutoEurAmount(order),budget=unityAutoBudgetStatus();
-    // Existing percentage orders are preserved; a newly created EUR order
-    // needs a configured global cap. All buys obey that cap once configured.
-    if(Number.isFinite(fixed)&&fixed>0&&!budget.configured)continue;
-    const wanted=Number.isFinite(fixed)&&fixed>0?fixed:
-      Math.round(capital.free*unityAutoBuyPercent(order))/100;
-    const cents=Math.round(wanted*100),freeCents=Math.floor(capital.free*100+1e-7),
-      budgetCents=budget.configured?Math.floor(budget.remaining*100+1e-7):Infinity;
+    if(!budget.configured||!(fixed>=1))continue;
+    const cents=Math.round(fixed*100),freeCents=Math.floor(capital.free*100+1e-7),
+      budgetCents=Math.floor(budget.remaining*100+1e-7);
     if(!(price>0&&rate>0&&cents>=100&&freeCents>=cents&&budgetCents>=cents))continue;
     const amount=cents/100,quantity=amount/(price*rate);
     const at=new Date().toISOString(),modeLabel=unityAutoBuyModeLabel(mode),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: '+modeLabel+' · '+depotMoney(amount)+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf · '+modeLabel,buy:'Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:mode==='technical'?'Technische Kaufzone erreicht; kleiner simulierter Testkauf. Keine reale Order.':'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.',unityDecision:{version:approval.version,action:approval.action,mode:approval.mode,reasonCode:approval.reasonCode,signalAt:approval.signalAt,priceRef:approval.priceRef,veto:approval.veto,sourceRefs:approval.sourceRefs}}};

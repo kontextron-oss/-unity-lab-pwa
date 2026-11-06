@@ -20,8 +20,7 @@ function unityDecisionResolve(input){
     priceRef:priceOk?{price,currency:String(ref.currency),exchange:String(ref.exchange),
       date:String(ref.date),source:String(ref.source||'Tageskursreferenz')} : null,
     trigger:'',invalidation:'Bei neuer, verifizierter Datenlage erneut prüfen',
-    capitalPct:Number.isFinite(unityDecisionSafeNum(input?.capitalEur))&&unityDecisionSafeNum(input.capitalEur)>0?
-      null:[2,5,10,15,20,25,50].includes(Number(input?.capitalPct))?Number(input.capitalPct):2,
+    capitalPct:null, // retained as a null compatibility field, no percent-based trading
     capitalEur:Number.isFinite(unityDecisionSafeNum(input?.capitalEur))&&unityDecisionSafeNum(input.capitalEur)>0?
       Number(input.capitalEur):null,
     why:[],reasonCode:'missing-data',sourceRefs:Array.isArray(input?.sourceRefs)?input.sourceRefs.map(e=>({
@@ -158,14 +157,13 @@ function unityDecisionForStock(s,mode='strict'){
   if(Number.isFinite(rr)&&rr<2)riskAdverse.push('Bestätigtes Chance-Risiko-Verhältnis unter 2:1');
   const blockers=unityDecisionCleanList(riskAdverse);
   const currentBuy=typeof unityAutoBuy==='function'?unityAutoBuy(s):null;
-  const pct=currentBuy?.mode===chosen?currentBuy.allocationPct:2;
   const euro=currentBuy?.mode===chosen&&typeof unityAutoEurAmount==='function'?
     unityAutoEurAmount(currentBuy):NaN;
   const input={mode:chosen,positionQty:qty,quoteValid:valid,
     priceRef:ref,technicalReady,technicalSignal,technicalExit,exitLimit,
     entryLimit:chosen==='technical'?technicalLimit:strictLimitOk?strictLimit:NaN,
     deep,nearEarnings,verifiedFundamentalExit:fundamentalExit,exitReason:issuerRisk?.label||'',
-    capitalPct:pct,capitalEur:Number.isFinite(euro)&&euro>0?euro:null,
+    capitalEur:Number.isFinite(euro)&&euro>0?euro:null,
     missing:unityDecisionCleanList(missing),hardVeto:blockers,
     sourceRefs:Object.values(readiness?.fields||{}).map(f=>({key:f.key,status:f.status,
       stamp:f.stamp,source:f.source})),
@@ -226,7 +224,7 @@ function unityDecisionPanel(s){
     '<p><b>'+escf(label(tech))+'</b> · '+escf(tech.why.join(' · '))+'</p>'+
     '<p class="tiny muted">'+(Number.isFinite(tech.capitalEur)&&tech.capitalEur>0?
       'Fester Testbetrag '+escf(depotMoney(tech.capitalEur)):
-      'Kapitalanteil '+escf(tech.capitalPct)+' % (bisheriger Modus)')+' · '+escf(tech.trigger)+
+      'Noch kein fester Testbetrag gesetzt')+' · '+escf(tech.trigger)+
     '. Eine technische Testsimulation ist keine fundamentale Kaufempfehlung.</p></details>'+
     '<details class="unity-engine-ledger"><summary>Entscheidungsprotokoll ('+previous.length+' zuletzt)</summary>'+
     (previous.length?previous.map(x=>'<p class="tiny">'+escf(x.createdAt.slice(0,16).replace('T',' '))+

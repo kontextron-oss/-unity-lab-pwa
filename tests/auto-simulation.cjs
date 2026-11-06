@@ -8,7 +8,7 @@ const sellStock={id:'s2',name:'Siemens Energy',ticker:'ENR',currency:'EUR'};
 const cache={instruments:[buyStock,sellStock],settings:[
   {id:'auto-test-buy:s1',kind:'auto-test-buy',instrumentId:'s1',mode:'technical',allocationPct:2,active:true,createdAt:'2026-11-06T10:00:00Z'},
   {id:'auto-test-sell:s2',kind:'auto-test-sell',instrumentId:'s2',active:true,createdAt:'2026-11-06T10:00:00Z'}
-],transactions:[]};
+],transactions:[],audit:[]};
 let marketDate='2026-11-06',sellPrice=85,seq=0,deepCalls=0,allowBuy=true,refreshes=0;
 const sandbox={Date,Math,Number,Array,JSON,cache,
  stocks:()=>cache.instruments,esc:x=>String(x??''),
@@ -27,7 +27,22 @@ const sandbox={Date,Math,Number,Array,JSON,cache,
  number:(n,d=2)=>Number(n).toFixed(d),
  id:()=> 'test-'+(++seq),
  put:async(store,entry)=>{const records=cache[store],index=records.findIndex(x=>x.id===entry.id);if(index>=0)records[index]=entry;else records.push(entry);},
- audit:async()=>{},refresh:async()=>{refreshes++;}
+ audit:async()=>{},refresh:async()=>{refreshes++;},
+ db:{transaction:(stores,mode)=>{
+   assert.deepEqual([...stores],['settings','audit']);
+   assert.equal(mode,'readwrite');
+   const writes=[];
+   const tx={oncomplete:null,onerror:null,onabort:null,
+     objectStore:name=>({put:entry=>writes.push({name,entry})})};
+   queueMicrotask(()=>{
+     for(const {name,entry} of writes){
+       const rows=cache[name],i=rows.findIndex(x=>x.id===entry.id);
+       if(i>=0)rows[i]=entry;else rows.push(entry);
+     }
+     tx.oncomplete?.();
+   });
+   return tx;
+ }}
 };
 vm.createContext(sandbox);
 vm.runInContext(source.slice(start,end),sandbox);
@@ -39,13 +54,35 @@ assert.match(invoke('unityAutoOrdersSummary()'),/Gesamtbudget für automatische 
 assert.match(invoke('unityAutoOrdersSummary()'),/Noch nicht festgelegt/);
 assert.match(invoke('unityAutoStockPanel(sellStock)',Object.assign(sandbox,{sellStock})),/Automatischer Testverkauf/);
 assert.match(invoke('unityAutoStockBadge(buyStock)',Object.assign(sandbox,{buyStock})),/vorgemerkt/);
-assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/Prozentauftrag: 2 %/);
+assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/bitte Betrag festlegen/);
 assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/Betrag speichern/);
 assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/100.00/);
 (async()=>{
  await invoke('unityRunAutoTestBuys()');
  assert.equal(cache.transactions.length,0,'No fill from a close dated on/before activation date');
- await assert.rejects(invoke('unityAutoBuyChangeAllocation(buyStock,100)'),/Gesamtbudget/);
+ const tenOld=Array.from({length:10},(_,i)=>({id:'auto-test-buy:old-'+i,kind:'auto-test-buy',
+   active:true,allocationPct:10,createdAt:'2026-11-05T10:00:00Z'}));
+ const migrationPlan=invoke('unityAutoMigrationPlan('+JSON.stringify(tenOld)+',1000,0,"2026-11-06T11:00:00Z")');
+ assert.equal(migrationPlan.count,10,'Ten old orders should be convertible');
+ assert.equal(migrationPlan.changes.reduce((n,o)=>n+o.allocationEur,0),1000,
+   'Percentages fixed against identical 1000 EUR capital snapshot');
+ assert.equal(migrationPlan.budget.limitEur,1000,'Auto budget limited to sum of migrated orders and free capital');
+ assert.ok(migrationPlan.changes.every(o=>o.allocationPct===undefined));
+ const before=cache.settings.find(x=>x.instrumentId==='s1'&&x.kind==='auto-test-buy');
+ assert.equal(await invoke('unityAutoMigrateLegacy()'),true,'Refresh auto-migrates prior orders in one transaction');
+ const migrated=cache.settings.find(x=>x.instrumentId==='s1'&&x.kind==='auto-test-buy');
+ assert.equal(migrated.id,before.id);
+ assert.equal(migrated.createdAt,before.createdAt,'Original trigger date must survive conversion');
+ assert.equal(migrated.mode,'technical');
+ assert.equal(migrated.active,true);
+ assert.equal(migrated.allocationPct,undefined);
+ assert.equal(migrated.allocationEur,20,'2% of the 1000 EUR free-capital snapshot is fixed at 20 EUR');
+ assert.equal(migrated.euroMigration.previousPercent,2);
+ assert.equal(invoke('unityAutoBudgetStatus().limit'),20,'Budget initially fixed to outstanding amount');
+ assert.equal(cache.audit.length,1,'One migration audit written in same atomic transaction');
+ assert.equal(await invoke('unityAutoMigrateLegacy()'),false,'Second refresh must not migrate or add another audit');
+ assert.equal(cache.audit.length,1);
+ assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/Betrag gespeichert: 20.00 €/);
  await assert.rejects(invoke('unityAutoSetBudget(0)'),/mindestens/);
  await assert.rejects(invoke('unityAutoSetBudget(200.001)'),/Nachkommastellen/);
  assert.equal(await invoke('unityAutoSetBudget(300)'),true);
@@ -59,7 +96,7 @@ assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"techn
  assert.equal(newOrder.mode,'technical','Conversion must not alter mode');
  assert.equal(newOrder.createdAt,oldOrder.createdAt,'Conversion must not reset activation date');
  assert.equal(newOrder.active,true);
- assert.equal(newOrder.allocationPct,undefined,'Old percent removed only after deliberate euro change');
+ assert.equal(newOrder.allocationPct,undefined,'Only Euro amounts remain after automatic migration');
  assert.equal(newOrder.allocationEur,100);
  assert.equal(cache.transactions.length,0,'Editing an order must not create trades');
  assert.equal(await invoke('unityAutoBuyChangeAllocation(buyStock,100)'),false,'Same euro amount no-op');
@@ -116,8 +153,8 @@ assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"techn
  assert.equal(invoke('unityAutoBudgetStatus().remaining'),50);
  assert.equal(deepCalls,0,'Strict evaluation is not called for technical orders');
  const idx=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
- assert.match(idx,/home\.js\?v=0\.15\.1\.2/);
- assert.match(sw,/home\.js\?v=0\.15\.1\.2/);
- assert.match(sw,/unity-lab-v0\.15\.1\.2/);
- console.log('Auto simulation: euro amount conversion, saved status, 10 active orders, 300 EUR cap, budget increase, no partial fills, no double booking, offline version passed.');
+ assert.match(idx,/home\.js\?v=0\.15\.1\.3/);
+ assert.match(sw,/home\.js\?v=0\.15\.1\.3/);
+ assert.match(sw,/unity-lab-v0\.15\.1\.3/);
+ console.log('Auto simulation: atomic once-only percentage-to-EUR migration, 10 armed orders, budget cap, no partial fills/double booking, offline version passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

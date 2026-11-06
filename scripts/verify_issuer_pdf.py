@@ -165,21 +165,9 @@ def parse_issuer_pdf(spec, pdf_bytes):
             max_y_fraction = settings[4] if len(settings) > 4 else 1.0
             page = doc[page_idx]
             words = page.get_text("words", sort=True)
-            try:
-                value = parse_statement_row(words, page.rect.width, page.rect.height,
-                                            spec["year"], table, label, max_y_fraction,
-                                            0.08 if spec["name"] == "ABB" else 0.0)
-            except ValueError:
-                if spec["name"] == "ABB":
-                    rows = group_lines(words)
-                    print("ABB PDF diagnostic", field, "page", page_idx,
-                          "width", page.rect.width, "height", page.rect.height,
-                          "2025", [(round(x,1),round(row["y"],1)) for row in rows for x,t in row["terms"] if t=="2025"][:15],
-                          "labelRows", [(" ".join(w for _,w in row["terms"])[:140],
-                                        [(round(x,1),w) for x,w in row["terms"]][-8:])
-                                       for row in rows if label.casefold().split()[0] in
-                                       " ".join(w for _,w in row["terms"]).casefold()][:7], flush=True)
-                raise
+            value = parse_statement_row(words, page.rect.width, page.rect.height,
+                                        spec["year"], table, label, max_y_fraction,
+                                        0.08 if spec["name"] == "ABB" else 0.0)
             if value != reference:
                 raise ValueError("Annual report fact conflicts with reviewed FY2025 benchmark: " + field)
             fields[field] = {

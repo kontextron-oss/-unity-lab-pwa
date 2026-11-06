@@ -23,7 +23,7 @@ let writes=0,shareCalls=0,lastShared;
 const controls={};
 for(const id of ['unity-exchange-status','unity-exchange-share','unity-exchange-inspect-file'])
   controls[id]={textContent:'',hidden:true,files:[]};
-const sandbox={cache,console,Date,Math,Number,JSON,Array,Map,Set,TextEncoder,
+const sandbox={cache,console,Date,Math,Number,Array,Map,Set,TextEncoder,
   Uint8Array,File:TestFile,crypto:webcrypto,
   document:{getElementById:id=>controls[id]},
   navigator:{canShare:({files})=>files.length===1,share:data=>{

@@ -126,6 +126,6 @@ const transactions=()=>cache.transactions.filter(x=>x.type==='BUY'||x.type==='SE
  assert.equal(limitation.status,'limit-exceeded','Buy must never chase a price beyond the signalled ceiling');
  assert.equal(cache.transactions.length,4);
  assert.match(invoke('unityPaperCostsPanel()'),/Modellkosten und Ausführungsannahmen/);
- assert.match(invoke('unityPaperCostsPanel()'),/nicht/);
+ assert.match(invoke('unityPaperCostsPanel()'),/keine handelbaren Kurse/);
  console.log('UNITY paper-order 0.15.2: D+1 modeled fills, slippage/fees, cash/budget atomicity, abort/retry, exact-once, sell and limit gates passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

@@ -87,7 +87,9 @@ def parse_statement_row(words, width, height, year, column, label):
     year_x = year_columns(rows, width, height, year, column)
     found = []
     for row in rows:
-        left = [word for x, word in row["terms"] if x < year_x - width*.045]
+        left_floor = year_x - width*.32 if column else 0
+        left = [word for x, word in row["terms"]
+                if left_floor < x < year_x - width*.045]
         prefix = normalized(" ".join(left))
         target = normalized(label)
         if not prefix.startswith(target):

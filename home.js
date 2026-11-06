@@ -3,8 +3,8 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.1.3';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.1.3');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.2';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.2');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
@@ -309,8 +309,13 @@ async function unityAutoBuyChangeAllocation(s,allocation){
   if(!unityAutoBudgetStatus().configured)throw Error('Bitte zunächst das Gesamtbudget für automatische Testkäufe festlegen.');
   const amount=unityAutoValidateEur(allocation),old=unityAutoEurAmount(existing);
   if(Number.isFinite(old)&&old===amount)return false;
-  const updated={...existing,allocationEur:amount,updatedAt:new Date().toISOString()};
-  delete updated.allocationPct; // deliberate user-initiated conversion from old percentage order
+  // Editing a pending fill clears its trigger. Otherwise a user could increase
+  // spending after the price signal while a previous quote is already known.
+  const {triggerQuoteDate,triggeredAt,triggerLimit,triggerRefPrice,triggerMode,...rest}=existing;
+  const updated={...rest,allocationEur:amount,updatedAt:new Date().toISOString(),
+    state:'waiting',lastBlockedReason:triggerQuoteDate?'Kaufbetrag verändert · neuer Einstieg erforderlich':
+      rest.lastBlockedReason||''};
+  delete updated.allocationPct;
   // Preserve order identity, mode, and activation date; never change transactions.
   await put('settings',updated);
   await audit('AUTO_TEST_BUY_AMOUNT_CHANGED',s.id,
@@ -380,7 +385,7 @@ function unityAutoOrdersSummary(){
   const budget=unityAutoBudgetStatus();
   let h='<section class="panel home-auto-desk" aria-label="Automatisierung im Simulationsdepot">'+
     '<h2>Automatik · Testdepot</h2>'+
-    '<p class="tiny muted">Nur fiktive Käufe und Verkäufe; keine Brokerverbindung oder Hintergrundausführung. Je Aktie einen festen Eurobetrag wählen. Mehrere Aufträge werden bei neuen Tageskursen einzeln geprüft; Kapital wird nicht vorab reserviert. Verkaufsbeträge füllen das automatische Kaufbudget nicht wieder auf.</p>'+
+    '<p class="tiny muted">Nur fiktive Käufe und Verkäufe; keine Brokerverbindung oder Hintergrundausführung. Jeder Auftrag bekommt zuerst ein bestätigtes Signal und wird frühestens mit einem SPÄTER beobachteten Tageskurs modelliert – niemals rückwirkend zum auslösenden Schlusskurs. Kaufbudget wird nicht vorab reserviert; Verkäufe füllen es nicht wieder auf.</p>'+
     '<div class="home-auto-totals">'+
       '<div><small>Vorgemerkte Aufträge</small><b>'+orders.length+'</b></div>'+
       '<div><small>Automatisch für Testkäufe eingesetzt</small><b>'+depotMoney(buy)+'</b></div>'+
@@ -411,6 +416,7 @@ function unityAutoOrdersSummary(){
       'Technische Verkaufszone · gesamter Testbestand';
     const signal=stock&&order.kind==='auto-test-buy'?unityAutoBuyEntry(stock,order.mode||'strict'):null;
     const status=!stock||stock.watchArchivedAt?'Aktie archiviert · Auftrag beenden':
+      order.triggerQuoteDate?'Signal vom '+esc(order.triggerQuoteDate)+' · wartet auf späteren Tageskurs':
       order.kind==='auto-test-buy'&&!(euro>=1)?'Eurobetrag bitte auf mindestens 1 € setzen':
       order.kind==='auto-test-buy'&&budget.configured&&budget.remaining<
         (Number.isFinite(euro)?euro:0.01)?'Budgetrest reicht nicht aus · Budget oder Betrag ändern':
@@ -422,13 +428,16 @@ function unityAutoOrdersSummary(){
       (kind==='Kauf'&&stock?'<button type="button" class="primary" data-home-auto-edit="'+esc(order.instrumentId)+'">Betrag ändern</button>':'')+
       '<button type="button" class="secondary" data-home-'+(kind==='Kauf'?'auto-buy':'auto-sell')+'="'+esc(order.instrumentId)+'">Auftrag stoppen</button></span></div>';
   }
+  h+=typeof unityPaperCostsPanel==='function'?unityPaperCostsPanel():'';
   if(trades.length){
     const newest=[...trades].sort((a,b)=>String(b.executedAt||'').localeCompare(String(a.executedAt||''))).slice(0,3);
     h+='<details class="home-auto-history"><summary>Letzte automatische Testbuchungen ('+trades.length+')</summary>';
     for(const t of newest){
       const stock=(cache.instruments||[]).find(s=>s.id===t.instrumentId);
       h+='<p class="tiny">'+esc(String(t.executedAt||'').slice(0,10))+' · '+esc(stock?.name||t.instrumentId)+
-        ' · '+(t.type==='BUY'?'Kauf':'Verkauf')+' · '+depotMoney((Number(t.amount)||0)*(Number(t.fx)||0))+'</p>';
+        ' · '+(t.type==='BUY'?'Kauf':'Verkauf')+' · '+depotMoney((Number(t.amount)||0)*(Number(t.fx)||0)+(t.type==='BUY'?1:-1)*(Number(t.fee)||0))+
+        (t.decisionSnapshot?.simulatedModel?' · Modellschlusskurs '+esc(t.decisionSnapshot.quoteDate||'')+
+          ' · Gebühr '+depotMoney(Number(t.fee)||0):'')+'</p>';
     }
     h+='</details>';
   }
@@ -452,8 +461,9 @@ function unityAutoStockPanel(s){
   const buyEur=unityAutoEurAmount(buy);
   const status=buy?(unityAutoBuyModeLabel(buy.mode||'strict')+' · '+
     (Number.isFinite(buyEur)&&buyEur>=1?depotMoney(buyEur):'Betrag noch festzulegen')+' aktiv · '+
-    (buy.mode==='technical'?(signal.kind==='reached'?'Technische Zone erreicht · neuer Schlusskurs nötig':'Technische Zone wird beobachtet'):
-    entry.ready?'UNITY-Kauflimit berechnet · neuer Schlusskurs nötig':'Strenge Freigabe noch offen')):'Kein automatischer Testkauf aktiv';
+    (buy.triggerQuoteDate?'Signal '+buy.triggerQuoteDate+' gesichert · wartet auf späteren Tageskurs':
+      buy.mode==='technical'?(signal.kind==='reached'?'Technische Zone erreicht · Signal wird gesichert':'Technische Zone wird beobachtet'):
+    entry.ready?'UNITY-Kauflimit berechnet · auf bestätigtes Signal warten':'Strenge Freigabe noch offen')):'Kein automatischer Testkauf aktiv';
   const maySell=position.qty>0&&Number.isFinite(exit)&&exit>0;
   const fmt=n=>Number.isFinite(n)&&n>0?number(n,2)+' '+s.currency:'–';
   return '<section class="panel home-auto-stock" aria-label="Automatik für diese Aktie">'+
@@ -461,7 +471,8 @@ function unityAutoStockPanel(s){
     '<p class="tiny muted">Wähle einen festen Eurobetrag je Aktie und den technischen oder strengen UNITY-Testkauf. Bei aktivem Auftrag lässt sich der Betrag ohne Abbruch ändern. Das gemeinsame Budget ist in „Automatik · Testdepot“ einstellbar. Bereits ausgeführte Käufe bleiben unverändert.</p>'+
     '<div class="home-auto-task"><div><b>Automatischer Testkauf</b><small>'+esc(status)+'</small></div>'+unityAutoBuyControls(s,buy,buy?.mode||'technical')+'</div>'+
     '<div class="home-auto-task"><div><b>Automatischer Testverkauf</b><small>'+
-      (sell?'Aktiv · Abbruch jederzeit möglich':maySell?'Verkaufsgrenze: unter '+esc(fmt(exit)):'Erst bei Testbestand und gültigen technischen Kursdaten verfügbar')+
+      (sell?(sell.triggerQuoteDate?'Signal '+esc(sell.triggerQuoteDate)+' gesichert · wartet auf späteren Tageskurs':
+        'Aktiv · Abbruch jederzeit möglich'):maySell?'Verkaufsgrenze: unter '+esc(fmt(exit)):'Erst bei Testbestand und gültigen technischen Kursdaten verfügbar')+
       '</small></div><button type="button" class="'+(sell?'secondary':'primary')+'" data-home-auto-sell="'+esc(s.id)+'" '+
       (sell||maySell?'':'disabled')+'>'+(sell?'Auftrag stoppen':'Auto-Testverkauf aktivieren')+'</button></div>'+
     '<p class="tiny muted">Prüfung nur mit gültigen Schlusskursen, frühestens ab dem nächsten Handelstag nach Aktivierung. Keine Echtzeitorder und keine garantierte Ausführung zum angezeigten Preis.</p></section>';
@@ -904,6 +915,21 @@ document.addEventListener('click',e=>{
     if(!s||!unityAutoBuy(s))return;
     activeTab='overview';unityHomeSelected=s.id;unityHomeTradeMode='';render();
     document.querySelector('.home-auto-stock')?.scrollIntoView({block:'start',behavior:'smooth'});
+    return;
+  }
+  if(b.hasAttribute('data-paper-costs-save')){
+    if(b.disabled)return;
+    const get=x=>document.getElementById(x)?.value;
+    const values={spreadBps:get('paper-spread-bps'),slippageBps:get('paper-slippage-bps'),
+      feeEur:get('paper-fee-eur')};
+    const status=b.closest('.home-paper-costs')?.querySelector('.paper-costs-status');
+    b.disabled=true;b.textContent='Speichere …';
+    if(status)status.textContent='Kostenannahmen werden gespeichert …';
+    unityPaperSavePolicy(values).catch(err=>{
+      b.disabled=false;b.textContent='Kostenannahmen speichern';
+      if(status)status.textContent='Speichern fehlgeschlagen';
+      alert(err.message||String(err));
+    });
     return;
   }
   if(b.hasAttribute('data-home-auto-budget-save')){

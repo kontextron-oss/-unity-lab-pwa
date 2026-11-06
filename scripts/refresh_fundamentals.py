@@ -202,11 +202,11 @@ ANNUAL_REPORT_REFERENCES={
  "DE000ENER6Y0":{
   "sourceUrl":"https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
   "fiscalYear":"2025","periodEnd":"2025-09-30",
-  "accountingStandard":"IFRS","format":"issuer-consolidated-annual-pdf"},
+  "accountingStandard":"IFRS","accountingCurrency":"EUR","format":"issuer-consolidated-annual-pdf"},
  "DE0006231004":{
   "sourceUrl":"https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
   "fiscalYear":"2025","periodEnd":"2025-09-30",
-  "accountingStandard":"IFRS","format":"issuer-consolidated-annual-pdf"},
+  "accountingStandard":"IFRS","accountingCurrency":"EUR","format":"issuer-consolidated-annual-pdf"},
 }
 def annual_report_reference(isin):
  ref=ANNUAL_REPORT_REFERENCES.get(isin)
@@ -260,6 +260,76 @@ def official_highlights(isin):
  return {"fiscalYear":"2025","sourceUrl":source["url"],"sourceType":"issuer-primary-disclosure",
          "verifiedAt":dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
          "currency":source["currency"],"facts":facts}
+
+def attach_source_checked_pdf(row, previous, isin, extractor=None):
+    """Attach exactly five annual audited statement facts from the scoped source.
+
+    Never converts an official press-release highlight into audited IFRS data.
+    Never overwrites a complete ESEF data set, and never treats a failed
+    PDF refresh as fresh. Trading policy explicitly excludes PDF-only status.
+    """
+    if isin not in {"DE000ENER6Y0", "DE0006231004"}:
+        return row
+    if row.get("status") == "metrics-complete":
+        return row
+    try:
+        if extractor is None:
+            from verify_issuer_pdf import extract_issuer
+            extractor = extract_issuer
+        result = extractor(isin)
+        expected = ANNUAL_REPORT_REFERENCES[isin]
+        if (result.get("isin") != isin or result.get("periodEnd") != expected["periodEnd"]
+                or result.get("sourceUrl") != expected["sourceUrl"]
+                or result.get("currency") != expected["accountingCurrency"]
+                or result.get("sourceType") != "issuer-audited-annual-report"
+                or set(result.get("metrics", {})) != REQUIRED_METRICS):
+            raise ValueError("PDF source, period, currency or mandatory fields mismatch")
+        metrics = result["metrics"]
+        for key in REQUIRED_METRICS:
+            fact = metrics[key]
+            if (fact.get("periodEnd") != expected["periodEnd"]
+                    or fact.get("currency") != result["currency"]
+                    or fact.get("sourceUrl") != expected["sourceUrl"]
+                    or fact.get("sourceType") != "issuer-audited-annual-report"
+                    or not isinstance(fact.get("page"), int)
+                    or not isinstance(fact.get("value"), (float, int))
+                    or fact["value"] <= 0):
+                raise ValueError("Unverifiable PDF financial fact: " + key)
+        for key in metrics:
+            metrics[key]["concept"] = "issuer-consolidated-pdf:" + key
+        row["metrics"] = metrics
+        row["status"] = "issuer-pdf-metrics-complete"
+        row["source"] = "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft"
+        row["latestFiling"] = {
+            "id": isin + "-FY2025-official-consolidated-pdf",
+            "periodEnd": result["periodEnd"], "reportUrl": result["sourceUrl"],
+            "filingSystem": "Issuer audited annual PDF",
+            "sourceType": result["sourceType"]
+        }
+        row["annualReport"] = {
+            **row["annualReport"], "extractionStatus": "checked-pdf-fy2025",
+            "coreMetricsValidated": True, "stale": False,
+        }
+        print(row["name"], "official PDF core metrics verified", sorted(metrics), flush=True)
+    except Exception as err:
+        row["errors"].append("Jahresbericht PDF: " + str(err)[:140])
+        # An outage is not grounds for deleting previously checked financial facts.
+        old = previous or {}
+        if old.get("status") in {"issuer-pdf-metrics-complete", "stale-previous"} and \
+                set(old.get("metrics", {})) == REQUIRED_METRICS and \
+                old.get("latestFiling", {}).get("sourceType") == "issuer-audited-annual-report":
+            row["metrics"] = old["metrics"]
+            row["latestFiling"] = old["latestFiling"]
+            row["priorMetrics"] = old.get("priorMetrics", {})
+            row["priorFiling"] = old.get("priorFiling")
+            row["derived"] = old.get("derived", {})
+            row["annualReport"] = {**row["annualReport"],
+                "extractionStatus": "stale-previous-pdf",
+                "coreMetricsValidated": False, "stale": True}
+            row["status"] = "stale-previous"
+            row["previousCheckedAt"] = old.get("checkedAt")
+            row["source"] = "Vorheriger PDF-Konzernabschluss, erneute Prüfung fehlgeschlagen"
+    return row
 
 def build():
     old={}
@@ -335,10 +405,11 @@ def build():
             row["derived"]=prior.get("derived",{})
             row["status"]="stale-previous"
             row["previousCheckedAt"]=prior.get("checkedAt")
+        row=attach_source_checked_pdf(row,prior,isin)
         items[isin]=row
         print(stock["name"],row["status"],"metrics",list(row["metrics"]),"issuer",list((row["officialHighlights"] or {}).get("facts",{})),flush=True)
     output={"schemaVersion":1,"generatedAt":now,"source":"XBRL International filings.xbrl.org",
-            "scope":"Four European pilot issuers; partial annual filings, no live valuations",
+            "scope":"Four European pilot issuers; official PDF statement facts verified for DE000ENER6Y0 and DE0006231004, no live valuations",
             "items":items}
     OUTPUT.parent.mkdir(parents=True,exist_ok=True)
     OUTPUT.write_text(json.dumps(output,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")

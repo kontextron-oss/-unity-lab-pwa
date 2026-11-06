@@ -330,7 +330,7 @@ async function unityRunAutoTestBuys(){
     const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN);
     const price=Number(signal.close),allocation=unityAutoBuyPercent(order)/100,amount=Math.min(capital.free*allocation,capital.free),quantity=amount/(price*rate);
     if(!(price>0&&rate>0&&quantity>0))continue;
-    const at=new Date().toISOString(),modeLabel=unityAutoBuyModeLabel(mode),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: '+modeLabel+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf · '+modeLabel,buy:'Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:mode==='technical'?'Technische Kaufzone erreicht; kleiner simulierter Testkauf. Keine reale Order.':'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.'}};
+    const at=new Date().toISOString(),modeLabel=unityAutoBuyModeLabel(mode),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: '+modeLabel+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf · '+modeLabel,buy:'Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:mode==='technical'?'Technische Kaufzone erreicht; kleiner simulierter Testkauf. Keine reale Order.':'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.',unityDecision:{version:approval.version,action:approval.action,mode:approval.mode,reasonCode:approval.reasonCode,signalAt:approval.signalAt,priceRef:approval.priceRef,veto:approval.veto,sourceRefs:approval.sourceRefs}}};
     if(typeof unityDecisionLedgerCapture==='function')await unityDecisionLedgerCapture(s,mode,approval);
     await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_BUY',trade.id,s.ticker+' · '+number(quantity,4)+' Stück');
     await refresh();
@@ -342,10 +342,12 @@ async function unityRunAutoTestBuys(){
     if(approval?.action!=='SELL'||approval.testActionEligible!==true)continue;
     if(!quote.x||!quote.quality?.canCompare||!quote.technical||quote.x.dynamicExperimental||
       quote.x.currency!==s.currency||!quote.x.date||quote.x.date<=String(order.createdAt||'').slice(0,10)||
-      !(exit>0&&position.qty>0&&Number(quote.x.price)<=exit))continue;
+      !(position.qty>0&&(approval.reasonCode==='verified-exit'||(exit>0&&Number(quote.x.price)<=exit))))continue;
     const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN),price=Number(quote.x.price);
     if(!(price>0&&rate>0))continue;
-    const at=new Date().toISOString(),trade={id:id(),instrumentId:s.id,type:'SELL',quantity:position.qty,price,fx:rate,amount:position.qty*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testverkauf: technische Verkaufszone unterschritten.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testverkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testverkauf',sell:'Technische Verkaufszone unterschritten',quoteDate:quote.x.date,quotePrice:price,reason:'Automatische Schutzregel im Simulationsdepot. Keine reale Order.'}};
+    const at=new Date().toISOString(),sellReason=approval.reasonCode==='verified-exit'?
+      'Quellengebundene fundamentale Verschlechterung der bestehenden Position':
+      'Technische Verkaufszone unterschritten',trade={id:id(),instrumentId:s.id,type:'SELL',quantity:position.qty,price,fx:rate,amount:position.qty*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testverkauf: '+sellReason+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testverkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testverkauf',sell:sellReason,quoteDate:quote.x.date,quotePrice:price,reason:'Prüfbarer UNITY-Schutzgrund im Simulationsdepot. Keine reale Order.',unityDecision:{version:approval.version,action:approval.action,mode:approval.mode,reasonCode:approval.reasonCode,signalAt:approval.signalAt,priceRef:approval.priceRef,veto:approval.veto,sourceRefs:approval.sourceRefs}}};
     if(typeof unityDecisionLedgerCapture==='function')await unityDecisionLedgerCapture(s,'technical',approval);
     await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_SELL',trade.id,s.ticker+' · '+number(position.qty,4)+' Stück');await refresh();
   }
@@ -726,7 +728,9 @@ document.addEventListener('click',e=>{
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
   if(b.dataset.homeSort){unityHomeSelectSort(b.dataset.homeSort).catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
-  if(b.dataset.analyze){unityHomeSelected=b.dataset.analyze;unityHomeTradeMode='';activeTab='overview';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);if(stock&&typeof unityLoadNews==='function')unityLoadNews(stock);return}
+  if(b.dataset.analyze){unityHomeSelected=b.dataset.analyze;unityHomeTradeMode='';activeTab='overview';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);
+    if(stock&&typeof unityDecisionLedgerCapture==='function')unityDecisionLedgerCapture(stock,'strict').catch(err=>console.warn('UNITY Decision Ledger:',err));
+    if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);if(stock&&typeof unityLoadNews==='function')unityLoadNews(stock);return}
   if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);
     if(stock&&typeof unityDecisionLedgerCapture==='function'){
       unityDecisionLedgerCapture(stock,'strict').catch(err=>console.warn('UNITY Decision Ledger:',err));
@@ -734,7 +738,9 @@ document.addEventListener('click',e=>{
     }
     if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);if(stock&&typeof unityLoadNews==='function')unityLoadNews(stock);return}
   if(b.hasAttribute('data-home-close')){unityHomeSelected='';unityHomeTradeMode='';render();return}
-  if(b.dataset.homeAnalyze){selectedUnityStock=b.dataset.homeAnalyze;activeTab='analysis';render();document.getElementById('app')?.scrollIntoView({block:'start'});return}
+  if(b.dataset.homeAnalyze){selectedUnityStock=b.dataset.homeAnalyze;activeTab='analysis';render();document.getElementById('app')?.scrollIntoView({block:'start'});
+    const stock=stocks().find(x=>x.id===selectedUnityStock);
+    if(stock&&typeof unityDecisionLedgerCapture==='function')unityDecisionLedgerCapture(stock,'strict').catch(err=>console.warn('UNITY Decision Ledger:',err));return}
   if(b.hasAttribute('data-home-add')){activeTab='stocks';if(typeof unityUniverseCategory!=='undefined')unityUniverseCategory='all';if(typeof unityUniverseTerm!=='undefined')unityUniverseTerm='';render();document.querySelector('.universe-tabs')?.scrollIntoView({block:'start'});return}
   if(b.hasAttribute('data-home-all')){unityScope='all';activeTab='stocks';render();return}
   if(b.hasAttribute('data-home-capital')){activeTab='trades';render();document.getElementById('depot-capital')?.scrollIntoView({behavior:'smooth',block:'start'});return}

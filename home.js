@@ -3,8 +3,8 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.1.1';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.1.1');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.1.2';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.1.2');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
@@ -225,9 +225,16 @@ function unityAutoBuyControls(s,queued,mode){
   const select='<label class="tiny">Anteil am freien Testkapital<select id="auto-buy-percent-'+esc(s.id)+'">'+
     UNITY_AUTO_BUY_ALLOCATIONS.map(pct=>'<option value="'+pct+'"'+(pct===selected?' selected':'')+'>'+pct+' %</option>').join('')+
     '</select></label>';
-  if(queued)return '<span class="actions">'+select+
-    '<button type="button" class="primary" data-home-auto-buy-save="'+esc(s.id)+'">Anteil speichern</button>'+
-    '<button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'">Auto-Testkauf ausschalten</button></span>';
+  if(queued){
+    const stamp=queued.updatedAt&&Number.isFinite(Date.parse(queued.updatedAt))?
+      ' · '+new Date(queued.updatedAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    const saved=queued.updatedAt?'✓ Anteil gespeichert: '+selected+' %'+stamp:
+      'Aktiver Auftrag · '+selected+' % des freien Testkapitals';
+    return '<div class="home-auto-allocation"><span class="actions">'+select+
+      '<button type="button" class="primary" data-home-auto-buy-save="'+esc(s.id)+'">Anteil speichern</button>'+
+      '<button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'">Auto-Testkauf ausschalten</button></span>'+
+      '<small class="home-auto-save-state" role="status" aria-live="polite">'+esc(saved)+'</small></div>';
+  }
   return '<span class="actions">'+select+
     '<button type="button" class="primary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="technical">Technisch aktivieren</button>'+
     '<button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="strict">Streng aktivieren</button></span>';
@@ -275,7 +282,7 @@ function unityAutoOrdersSummary(){
   const capital=typeof depotCapital==='function'?depotCapital():null;
   let h='<section class="panel home-auto-desk" aria-label="Automatisierung im Simulationsdepot">'+
     '<h2>Automatik · Testdepot</h2>'+
-    '<p class="tiny muted">Nur fiktive Käufe und Verkäufe. Keine Brokerverbindung, kein Hintergrundhandel. Prüfung beim neuen Tageskurs in der geöffneten App.</p>'+
+    '<p class="tiny muted">Nur fiktive Käufe und Verkäufe. Keine Brokerverbindung, kein Hintergrundhandel. Prüfung beim neuen Tageskurs in der geöffneten App. Mehrere vorgemerkte Testkäufe werden einzeln und nacheinander geprüft; Kapital wird nicht vorab reserviert.</p>'+
     '<div class="home-auto-totals">'+
       '<div><small>Vorgemerkte Aufträge</small><b>'+orders.length+'</b></div>'+
       '<div><small>Automatisch für Testkäufe eingesetzt</small><b>'+depotMoney(buy)+'</b></div>'+
@@ -740,9 +747,26 @@ document.addEventListener('click',e=>{
   }
   if(b.dataset.homeAutoBuySave){
     const s=(cache.instruments||[]).find(x=>x.id===b.dataset.homeAutoBuySave);
-    if(!s)return;
+    if(!s||b.disabled)return;
     const pct=document.getElementById('auto-buy-percent-'+s.id)?.value;
-    unityAutoBuyChangeAllocation(s,pct).catch(err=>alert(err.message||String(err)));
+    const status=b.closest('.home-auto-allocation')?.querySelector('.home-auto-save-state');
+    b.disabled=true;b.textContent='Speichere …';
+    if(status)status.textContent='Speichere '+String(pct||'')+' % …';
+    (async()=>{
+      try{
+        const changed=await unityAutoBuyChangeAllocation(s,pct);
+        // On change, refresh() rebuilds this panel with the persisted amount
+        // and its actual save timestamp. An unchanged order also gets feedback.
+        if(!changed){
+          b.textContent='✓ Bereits gespeichert';
+          if(status)status.textContent='✓ '+unityAutoBuyPercent(unityAutoBuy(s))+' % bereits gespeichert';
+        }
+      }catch(err){
+        b.disabled=false;b.textContent='Anteil speichern';
+        if(status)status.textContent='Speichern fehlgeschlagen · bitte erneut versuchen';
+        alert(err.message||String(err));
+      }
+    })();
     return;
   }
   if(b.dataset.homeAutoBuy){

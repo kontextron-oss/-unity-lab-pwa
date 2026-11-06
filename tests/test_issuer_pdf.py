@@ -64,6 +64,15 @@ class PdfStatementsTest(unittest.TestCase):
         self.assertLess(abb["facts"]["netIncome"][4], 1.0,
                         "Duplicate income-per-share rows must remain outside selected region")
 
+    def test_prior_year_uses_its_own_printed_column(self):
+        words=make_words([
+            (175,[(40,"Total revenues"),(450,"33,220"),(550,"30,583")]),
+            (210,[(40,"Net income"),(450,"4,823"),(550,"3,904")]),
+        ],[450])
+        words.append(word(550,90,"2024"))
+        self.assertEqual(mod.parse_statement_row(words,1000,1200,2024,0,"Total revenues"),30583)
+        self.assertEqual(mod.parse_statement_row(words,1000,1200,2024,0,"Net income"),3904)
+
     def test_conflicting_2025_rows_rejected(self):
         words = make_words([
             (170, [(40, "Revenue"), (800, "39,077")]),

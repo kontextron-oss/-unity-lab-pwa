@@ -298,6 +298,37 @@ def attach_source_checked_pdf(row, previous, isin, extractor=None):
         for key in metrics:
             metrics[key]["concept"] = "issuer-consolidated-pdf:" + key
         row["metrics"] = metrics
+        row.setdefault("priorMetrics", {})
+        row.setdefault("priorFiling", None)
+        previous_metrics = result.get("priorMetrics") or {}
+        previous_period = result.get("priorPeriodEnd")
+        expected_prior = str(int(result["periodEnd"][:4])-1)+result["periodEnd"][4:]
+        valid_prior = previous_period == expected_prior and set(previous_metrics) == REQUIRED_METRICS and \
+            330 <= (period_end(result["periodEnd"])-period_end(previous_period)).days <= 400
+        if valid_prior:
+            for key in REQUIRED_METRICS:
+                fact = previous_metrics[key]
+                if (fact.get("periodEnd") != previous_period
+                        or fact.get("currency") != result["currency"]
+                        or fact.get("sourceUrl") != result["sourceUrl"]
+                        or fact.get("sourceType") != "issuer-audited-annual-report"
+                        or not isinstance(fact.get("page"), int)
+                        or not isinstance(fact.get("value"), (float,int))
+                        or fact["value"] <= 0):
+                    valid_prior = False
+                    break
+        if valid_prior:
+            for key in previous_metrics:
+                previous_metrics[key]["concept"] = "issuer-consolidated-pdf:" + key
+            row["priorMetrics"] = previous_metrics
+            row["priorFiling"] = {"periodEnd": previous_period,
+                "reportUrl": result["sourceUrl"], "sourceType": result["sourceType"]}
+        else:
+            if result.get("priorError"):
+                row["errors"].append("Vorjahresvergleich PDF: "+str(result["priorError"])[:120])
+        row["derived"] = derived_ratios(
+            row["metrics"],row["priorMetrics"],result["periodEnd"],
+            row["priorFiling"]["periodEnd"] if row["priorFiling"] else None)
         row["status"] = "issuer-pdf-metrics-complete"
         row["source"] = "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft"
         row["latestFiling"] = {

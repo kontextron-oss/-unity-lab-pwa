@@ -126,7 +126,45 @@ class FundamentalsTests(unittest.TestCase):
         self.assertEqual(set(result["metrics"]), mod.REQUIRED_METRICS)
         self.assertTrue(result["annualReport"]["coreMetricsValidated"])
         self.assertEqual(result["latestFiling"]["sourceType"], "issuer-audited-annual-report")
-        self.assertNotIn("derived", result, "No unsupported ratios generated")
+        self.assertIn("derived", result, "Current-year ratios are derived only from the five verified source facts")
+        self.assertNotIn("revenueGrowth", result["derived"], "Without verified prior-year period, no growth")
+
+    def test_pdf_comparable_prior_2024_only_after_same_issuer_period_and_currency(self):
+        isin = "DE000ENER6Y0"
+        ref = mod.ANNUAL_REPORT_REFERENCES[isin]
+        source = ref["sourceUrl"]
+        current = {"revenue": 400, "netIncome": 40, "assets": 1000,
+                   "equity": 450, "operatingCashFlow": 90}
+        previous = {"revenue": 320, "netIncome": 30, "assets": 900,
+                    "equity": 410, "operatingCashFlow": 70}
+        def payload(values,period):
+            return {k: {"value": v*1_000_000, "periodEnd":period,
+                "currency":"EUR", "sourceUrl":source,
+                "sourceType":"issuer-audited-annual-report", "page":151}
+                for k,v in values.items()}
+        report = {"isin": isin, "periodEnd":"2025-09-30", "currency":"EUR",
+                  "sourceUrl":source,"sourceType":"issuer-audited-annual-report",
+                  "metrics":payload(current,"2025-09-30"),
+                  "priorPeriodEnd":"2024-09-30",
+                  "priorMetrics":payload(previous,"2024-09-30")}
+        row={"name":"Siemens Energy","status":"issuer-release-only","metrics":{},
+             "priorMetrics":{},"priorFiling":None,"derived":{},
+             "annualReport":mod.annual_report_reference(isin),"latestFiling":None,"errors":[]}
+        result=mod.attach_source_checked_pdf(row,{},isin,extractor=lambda _: report)
+        self.assertEqual(result["status"],"issuer-pdf-metrics-complete")
+        self.assertEqual(len(result["priorMetrics"]),5)
+        self.assertEqual(result["derived"]["revenueGrowth"]["value"],25.0)
+        self.assertEqual(result["derived"]["netIncomeGrowth"]["value"],33.33)
+        self.assertEqual(result["derived"]["netMargin"]["value"],10.0)
+        self.assertEqual(result["priorFiling"]["periodEnd"],"2024-09-30")
+        report["priorMetrics"]["revenue"]["currency"]="USD"
+        row={"name":"Siemens Energy","status":"issuer-release-only","metrics":{},
+             "priorMetrics":{},"priorFiling":None,"derived":{},
+             "annualReport":mod.annual_report_reference(isin),"latestFiling":None,"errors":[]}
+        rejected=mod.attach_source_checked_pdf(row,{},isin,extractor=lambda _: report)
+        self.assertEqual(rejected["priorMetrics"],{})
+        self.assertNotIn("revenueGrowth",rejected["derived"])
+        self.assertEqual(len(rejected["metrics"]),5,"Annual current data must survive unusable prior year")
 
     def test_pdf_core_rejected_if_missing_and_old_data_preserved_stale(self):
         isin = "DE0006231004"

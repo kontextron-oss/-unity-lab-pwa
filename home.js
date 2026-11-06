@@ -3,8 +3,8 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.14.0';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.14.0');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.14.1';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.14.1');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
@@ -306,7 +306,8 @@ async function unityRunAutoTestBuys(){
   unityAutoTestRunBusy=true;
   try{
   for(const s of stocks()){
-    const order=unityAutoBuy(s),mode=order?.mode||'strict',entry=unityAutoBuyEntry(s,mode);if(!order||!entry.ready)continue;
+    const order=unityAutoBuy(s);if(!order)continue;
+    const mode=order.mode||'strict',entry=unityAutoBuyEntry(s,mode);if(!entry.ready)continue;
     const signal=unityPullbackAlert(s);if(signal.kind!=='reached'||Number(signal.close)>entry.price||!signal.date||signal.date<=String(order.createdAt||'').slice(0,10))continue;
     const capital=depotCapital();if(!capital.configured||!(capital.free>0))continue;
     const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN);
@@ -680,7 +681,7 @@ document.addEventListener('click',e=>{
   }
   if(b.dataset.homeTrade){unityHomeTradeMode=b.dataset.homeTrade;render();document.getElementById('home-trade-form')?.scrollIntoView({block:'nearest'});return}
   if(b.dataset.homeAutoBuy){
-    const s=stocks().find(x=>x.id===b.dataset.homeAutoBuy);if(!s)return;const prior=unityAutoBuy(s);
+    const s=(cache.instruments||[]).find(x=>x.id===b.dataset.homeAutoBuy);if(!s)return;const prior=unityAutoBuy(s);
     if(prior){put('settings',{...prior,active:false,cancelledAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_OFF',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return}
     const mode=b.dataset.autoMode==='technical'?'technical':'strict',label=unityAutoBuyModeLabel(mode),input=document.getElementById('auto-buy-percent-'+s.id),allocation=Number(input?.value);
     if(![2,5,10,15,20,25,50].includes(allocation)){alert('Bitte einen gültigen Anteil des Testkapitals wählen.');return}
@@ -688,7 +689,7 @@ document.addEventListener('click',e=>{
     if(confirm(label+' aktivieren?\n\n'+text))put('settings',{id:unityAutoBuyId(s),kind:'auto-test-buy',instrumentId:s.id,mode,allocationPct:allocation,active:true,createdAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_ON',s.id,label+' · '+allocation+' %')).then(refresh).catch(err=>alert(err.message||String(err)));return;
   }
   if(b.dataset.homeAutoSell){
-    const s=stocks().find(x=>x.id===b.dataset.homeAutoSell);if(!s)return;const prior=unityAutoSell(s);
+    const s=(cache.instruments||[]).find(x=>x.id===b.dataset.homeAutoSell);if(!s)return;const prior=unityAutoSell(s);
     if(prior){put('settings',{...prior,active:false,cancelledAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_SELL_OFF',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return}
     if(confirm('Auto-Testverkauf aktivieren?\n\nUNITY verkauft beim nächsten verfügbaren Tageskurs unterhalb der automatisch berechneten Schutz-/Verkaufszone den gesamten simulierten Bestand. Keine echte Brokerorder.'))put('settings',{id:unityAutoSellId(s),kind:'auto-test-sell',instrumentId:s.id,active:true,createdAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_SELL_ON',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return;
   }

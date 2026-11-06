@@ -196,9 +196,9 @@ OFFICIAL_SOURCES={
 # A link alone does not validate any of the five machine-readable core metrics.
 ANNUAL_REPORT_REFERENCES={
  "CH0012221716":{
-  "sourceUrl":"https://www.abb.com/global/en/company/annual-reporting-suite",
+  "sourceUrl":"https://library.e.abb.com/public/b32991481e8b4418a5c5261c5ff25440/ABB%20Financial%20Report%202025.pdf",
   "fiscalYear":"2025","periodEnd":"2025-12-31",
-  "accountingStandard":"US-GAAP","format":"issuer-annual-report-portal"},
+  "accountingStandard":"US-GAAP","accountingCurrency":"USD","format":"issuer-consolidated-annual-pdf"},
  "DE000ENER6Y0":{
   "sourceUrl":"https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
   "fiscalYear":"2025","periodEnd":"2025-09-30",
@@ -268,7 +268,7 @@ def attach_source_checked_pdf(row, previous, isin, extractor=None):
     Never overwrites a complete ESEF data set, and never treats a failed
     PDF refresh as fresh. Trading policy explicitly excludes PDF-only status.
     """
-    if isin not in {"DE000ENER6Y0", "DE0006231004"}:
+    if isin not in {"CH0012221716", "DE000ENER6Y0", "DE0006231004"}:
         return row
     if row.get("status") == "metrics-complete":
         return row
@@ -409,7 +409,7 @@ def build():
         items[isin]=row
         print(stock["name"],row["status"],"metrics",list(row["metrics"]),"issuer",list((row["officialHighlights"] or {}).get("facts",{})),flush=True)
     output={"schemaVersion":1,"generatedAt":now,"source":"XBRL International filings.xbrl.org",
-            "scope":"Four European pilot issuers; official PDF statement facts verified for DE000ENER6Y0 and DE0006231004, no live valuations",
+            "scope":"Four European pilot issuers; source-checked FY2025 official financial statements for ABB, Siemens Energy and Infineon; no live valuations",
             "items":items}
     OUTPUT.parent.mkdir(parents=True,exist_ok=True)
     OUTPUT.write_text(json.dumps(output,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")

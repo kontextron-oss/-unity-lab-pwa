@@ -167,6 +167,49 @@ class FundamentalsTests(unittest.TestCase):
         row = {"status": "metrics-complete", "metrics": {"revenue": {"value": 1}}}
         self.assertEqual(mod.attach_source_checked_pdf(row, {}, isin), row)
 
+    def test_abb_us_gaap_five_validated_pdf_values_enter_common_model(self):
+        isin = "CH0012221716"
+        ref = mod.ANNUAL_REPORT_REFERENCES[isin]
+        self.assertEqual(ref["accountingStandard"], "US-GAAP")
+        self.assertEqual(ref["accountingCurrency"], "USD")
+        self.assertEqual(ref["periodEnd"], "2025-12-31")
+        reviewed = {"revenue": 33220, "netIncome": 4823, "assets": 44885,
+                    "equity": 16646, "operatingCashFlow": 5469}
+        def loader(target):
+            self.assertEqual(target, isin)
+            return {"isin": isin, "currency": "USD", "periodEnd": "2025-12-31",
+                    "sourceUrl": ref["sourceUrl"], "sourceType": "issuer-audited-annual-report",
+                    "metrics": {name: {
+                        "value": val*1_000_000, "periodEnd": "2025-12-31", "currency": "USD",
+                        "sourceUrl": ref["sourceUrl"], "sourceType": "issuer-audited-annual-report",
+                        "page": {"revenue":55,"netIncome":55,"assets":57,"equity":57,"operatingCashFlow":58}[name]}
+                        for name,val in reviewed.items()}}
+        row = {"name": "ABB", "status": "issuer-release-only", "metrics": {},
+               "annualReport": mod.annual_report_reference(isin),
+               "latestFiling": None, "errors": []}
+        result = mod.attach_source_checked_pdf(row, {}, isin, extractor=loader)
+        self.assertEqual(result["status"], "issuer-pdf-metrics-complete")
+        self.assertTrue(result["annualReport"]["coreMetricsValidated"])
+        self.assertEqual(result["latestFiling"]["periodEnd"], "2025-12-31")
+        self.assertEqual(set(result["metrics"]), set(reviewed))
+        self.assertEqual(result["metrics"]["revenue"]["value"], 33_220_000_000)
+        self.assertEqual(result["metrics"]["equity"]["currency"], "USD")
+
+    def test_abb_currency_mismatch_must_not_promote_unverified_data(self):
+        isin = "CH0012221716"
+        row = {"name": "ABB", "status": "issuer-release-only", "metrics": {},
+               "annualReport": mod.annual_report_reference(isin),
+               "latestFiling": None, "errors": []}
+        def wrong_currency(_):
+            return {"isin":isin, "currency":"CHF", "periodEnd":"2025-12-31",
+                    "sourceUrl": mod.ANNUAL_REPORT_REFERENCES[isin]["sourceUrl"],
+                    "sourceType":"issuer-audited-annual-report", "metrics":{}}
+        result = mod.attach_source_checked_pdf(row, {}, isin, extractor=wrong_currency)
+        self.assertEqual(result["status"], "issuer-release-only")
+        self.assertFalse(result["annualReport"]["coreMetricsValidated"])
+        self.assertEqual(result["metrics"], {})
+        self.assertTrue(result["errors"])
+
     def test_annual_period_not_quarterly(self):
         report={"facts":{"f1":{"dimensions":{"concept":"ifrs-full:Revenue","unit":"iso4217:EUR","period":"2025-10-01/2026-01-01"},"value":123}}}
         self.assertNotIn("revenue",mod.extract_metrics(report,"2025-12-31","EUR","https://filings.xbrl.org/a.json"))

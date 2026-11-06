@@ -64,6 +64,20 @@ assert.match(r.fields.filing.detail,/issuer-release-only/);
 assert.match(r.fields.filing.detail,/2 Fakten/);
 assert.equal(r.fields.earnings.status,'missing');
 assert.equal(r.tradeApproved,false);
+// Source-checked issuer PDFs count as verified *facts*, not a strict buy order.
+const priorSiemensReport=reports.se;
+const annualPeriod='2025-09-30',annualUrl='https://assets.siemens-energy.com/report.pdf';
+reports.se={status:'issuer-pdf-metrics-complete',reportCurrency:'EUR',
+ annualReport:{periodEnd:annualPeriod,coreMetricsValidated:true,stale:false},
+ latestFiling:{periodEnd:annualPeriod,sourceType:'issuer-audited-annual-report',reportUrl:annualUrl},
+ metrics:Object.fromEntries(['revenue','netIncome','assets','equity','operatingCashFlow'].map(k=>[
+  k,{value:100,currency:'EUR',periodEnd:annualPeriod,sourceUrl:annualUrl}
+ ]))};
+r=inspect('se');
+assert.equal(r.fields.filing.status,'ready','Five verified PDF annual figures must register as available');
+assert.match(r.fields.filing.detail,/strenge UNITY-Kauffreigabe bleibt gesondert/);
+assert.equal(r.tradeApproved,false);
+reports.se=priorSiemensReport;
 r=inspect('abb');
 assert.equal(r.fields.fx.status,'missing');
 assert.equal(r.adverse.length,0);

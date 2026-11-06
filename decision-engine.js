@@ -35,7 +35,7 @@ function unityDecisionResolve(input){
     ...base,action,label:UNITY_DECISION_ACTIONS[action],reasonCode:reason,
     why:unityDecisionCleanList(why),trigger,invalidation:invalid,
     veto:hard,technicalEligible:m==='technical'&&action==='BUY',
-    testActionEligible:(action==='BUY'||action==='SELL')&&priceOk&&hard.length===0
+    testActionEligible:(action==='SELL'&&priceOk)||(action==='BUY'&&priceOk&&hard.length===0)
   });
   // Highest gate: no executable reference or wrong/stale currency/market identity.
   if(!priceOk)return decide('BLOCKED','missing-data',
@@ -126,7 +126,6 @@ function unityDecisionForStock(s,mode='strict'){
   const technicalLimit=Number(technicalSignal?.high),exitLimit=typeof unityAutoExitZone==='function'?unityAutoExitZone(s):NaN;
   const technicalExit=valid&&qty>0&&Number.isFinite(Number(exitLimit))&&Number(exitLimit)>0&&
     Number(x.price)<=Number(exitLimit);
-  const entryFair=unityDecisionSafeNum(deep?.investmentReady?deep?.s?.fairValue:null);
   const userFund=typeof cache!=='undefined'?(cache.fundamentals||[]).find(f=>f.id===s.id)||null:null;
   const fair=unityDecisionSafeNum(userFund?.fairValue);
   const upper=unityDecisionSafeNum(deep?.entryUpper),lower=unityDecisionSafeNum(deep?.entryLower);
@@ -147,7 +146,7 @@ function unityDecisionForStock(s,mode='strict'){
   const missing=chosen==='strict'?(readiness?.missing||[]).map(f=>f.label):[];
   if(chosen==='strict'&&!deep)missing.push('Strenge UNITY-Tiefenanalyse nicht verfügbar');
   if(chosen==='strict'&&deep&&!deep.investmentReady&&deep.missing?.length)
-    missing.push(...deep.missing);
+    missing.push(...deep.missing.filter(x=>!/Vergleichsdaten fehlen|fünf vergleichbare gültige Kursreihen/.test(String(x))));
   const riskAdverse=(readiness?.adverse||[]).filter(v=>
     /Chance-Risiko-Verhältnis|Sicherheitsmarge/.test(v));
   const rr=unityDecisionSafeNum(deep?.rr);

@@ -35,6 +35,7 @@ jobs:
           node --check depotcsv.js
           node --check home.js
           node --check readiness-audit.js
+          node --check decision-engine.js
           node --check crypto-sources.js
           node --check crypto-policy.js
           node --check incremental.js
@@ -80,6 +81,8 @@ jobs:
 
       - name: Test home dashboard and investment verdict
         run: node tests/home.cjs
+      - name: Test unified deterministic BUY/HOLD/SELL/BLOCKED and immutable local ledger
+        run: node tests/decision-engine.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

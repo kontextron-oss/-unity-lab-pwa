@@ -9,7 +9,7 @@ const cache={instruments:[buyStock,sellStock],settings:[
   {id:'auto-test-buy:s1',kind:'auto-test-buy',instrumentId:'s1',mode:'technical',allocationPct:2,active:true,createdAt:'2026-11-06T10:00:00Z'},
   {id:'auto-test-sell:s2',kind:'auto-test-sell',instrumentId:'s2',active:true,createdAt:'2026-11-06T10:00:00Z'}
 ],transactions:[]};
-let marketDate='2026-11-06',sellPrice=85,seq=0,deepCalls=0;
+let marketDate='2026-11-06',sellPrice=85,seq=0,deepCalls=0,allowBuy=true;
 const sandbox={Date,Math,Number,Array,JSON,cache,
  stocks:()=>cache.instruments,esc:x=>String(x??''),
  unityHomeQuote:s=>({x:{date:marketDate,price:s.id==='s1'?100:sellPrice,currency:'EUR',dynamicExperimental:false},
@@ -17,6 +17,7 @@ const sandbox={Date,Math,Number,Array,JSON,cache,
  unityPullbackAlert:s=>s.id==='s1'?{kind:'reached',low:98,high:102,close:100,date:marketDate}:
    {kind:'none',label:'',detail:'Trend schwach'},
  unityDeepDecision:()=>{deepCalls++;return {investmentReady:false,kind:'data'};},
+ unityDecisionForStock:s=>({action:s.id==='s2'?'SELL':allowBuy?'BUY':'BLOCKED',testActionEligible:true}),
  unityCalc:()=>({f:{}}),
  depotPosition:s=>({qty:s.id==='s2'?5:0}),
  depotCapital:()=>({configured:true,free:1000}),
@@ -38,6 +39,10 @@ assert.match(vm.runInContext('unityAutoStockBadge(buyStock)',Object.assign(sandb
  await vm.runInContext('unityRunAutoTestBuys()',sandbox);
  assert.equal(cache.transactions.length,0,'No simulated fill using a close dated on/before activation date');
  marketDate='2026-11-09';
+ allowBuy=false;
+ await vm.runInContext('unityRunAutoTestBuys()',sandbox);
+ assert.equal(cache.transactions.filter(t=>t.type==='BUY').length,0,'Central decision veto must block even technically reachable zone');
+ allowBuy=true;
  await vm.runInContext('unityRunAutoTestBuys()',sandbox);
  assert.equal(cache.transactions.length,2,'Both technical buy and technical sell should execute');
  const buy=cache.transactions.find(t=>t.type==='BUY'),sell=cache.transactions.find(t=>t.type==='SELL');
@@ -52,8 +57,8 @@ assert.match(vm.runInContext('unityAutoStockBadge(buyStock)',Object.assign(sandb
  await vm.runInContext('unityRunAutoTestBuys()',sandbox);
  assert.equal(cache.transactions.length,2,'No duplicate fills on repeat refresh');
  const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
- assert.match(index,/home\.js\?v=0\.15\.0\.1/);
- assert.match(sw,/home\.js\?v=0\.15\.0\.1/);
- assert.match(sw,/unity-lab-v0\.15\.0\.1/);
+ assert.match(index,/home\.js\?v=0\.15\.1/);
+ assert.match(sw,/home\.js\?v=0\.15\.1/);
+ assert.match(sw,/unity-lab-v0\.15\.1/);
  console.log('Auto simulation: visible orders, EUR totals, 2% sizing, fresh closes, technical sell, no double-fill, cache version passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

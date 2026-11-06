@@ -48,7 +48,7 @@ function unityReverseImpliedGrowth(fcfPerShare,price,discountPct,terminalPct=2,y
  return Math.round(100*(lo+hi)/2)/100;
 }
 function unityReverseEpsGuidance(g){
- if(!g||!Array.isArray(g.guidance))return null;
+ if(!g||g.fiscalYear!==2026||!Array.isArray(g.guidance))return null;
  const matches=g.guidance.filter(x=>x.metric==='dilutedEPS'&&x.horizon==='FY2026'&&
    x.unit==='USD/shares'&&x.nonGAAP!==true);
  if(matches.length!==1)return null;

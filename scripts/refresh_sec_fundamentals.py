@@ -24,7 +24,7 @@ ISSUERS = {
  "PWR": {"cik": "0001050915", "name": "Quanta Services", "isin": "US74762E1029", "ir": "https://investors.quantaservices.com/"},
  "GEV": {"cik": "0001996810", "name": "GE Vernova", "isin": "US36828A1016", "ir": "https://www.gevernova.com/investors"},
  "VRT": {"cik": "0001674101", "name": "Vertiv", "isin": "US92537N1081", "ir": "https://investors.vertiv.com/"},
- "ETN": {"cik": "0001558370", "name": "Eaton", "isin": "IE00B8KQN827", "ir": "https://www.eaton.com/us/en-us/company/investor-relations.html"},
+ "ETN": {"cik": "0001551182", "name": "Eaton", "isin": "IE00B8KQN827", "ir": "https://www.eaton.com/us/en-us/company/investor-relations.html"},
 }
 CONCEPTS = {
  "revenue": ("RevenueFromContractWithCustomerExcludingAssessedTax", "RevenueFromContractWithCustomerIncludingAssessedTax", "Revenues", "SalesRevenueNet", "SalesRevenueGoodsNet"),

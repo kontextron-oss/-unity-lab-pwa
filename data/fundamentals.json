@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T17:17:22+00:00",
+  "generatedAt": "2026-11-06T17:33:00+00:00",
   "source": "XBRL International filings.xbrl.org",
-  "scope": "Four European pilot issuers; partial annual filings, no live valuations",
+  "scope": "Four European pilot issuers; official PDF statement facts verified for DE000ENER6Y0 and DE0006231004, no live valuations",
   "items": {
     "CH0012221716": {
       "name": "ABB",
@@ -21,7 +21,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-06T17:17:23+00:00",
+        "verifiedAt": "2026-11-06T17:33:01+00:00",
         "currency": "USD",
         "facts": {
           "revenue": {
@@ -52,7 +52,7 @@
         "extractionStatus": "not-machine-extracted",
         "coreMetricsValidated": false
       },
-      "checkedAt": "2026-11-06T17:17:22+00:00",
+      "checkedAt": "2026-11-06T17:33:00+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     },
@@ -207,7 +207,7 @@
       },
       "officialHighlights": null,
       "annualReport": null,
-      "checkedAt": "2026-11-06T17:17:22+00:00",
+      "checkedAt": "2026-11-06T17:33:00+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -218,17 +218,84 @@
       "reportCurrency": "EUR",
       "investorRelations": "https://www.siemens-energy.com/global/en/home/investor-relations.html",
       "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
-      "status": "issuer-release-only",
-      "metrics": {},
+      "status": "issuer-pdf-metrics-complete",
+      "metrics": {
+        "revenue": {
+          "value": 39077000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 148,
+          "label": "Revenue",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:revenue"
+        },
+        "netIncome": {
+          "value": 1685000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 148,
+          "label": "Net income (loss)",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:netIncome"
+        },
+        "assets": {
+          "value": 56637000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 150,
+          "label": "Total assets",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:assets"
+        },
+        "equity": {
+          "value": 10675000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 150,
+          "label": "Total equity",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:equity"
+        },
+        "operatingCashFlow": {
+          "value": 5821000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 151,
+          "label": "Cash flows from operating activities",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:operatingCashFlow"
+        }
+      },
       "priorMetrics": {},
       "derived": {},
-      "latestFiling": null,
+      "latestFiling": {
+        "id": "DE000ENER6Y0-FY2025-official-consolidated-pdf",
+        "periodEnd": "2025-09-30",
+        "reportUrl": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+        "filingSystem": "Issuer audited annual PDF",
+        "sourceType": "issuer-audited-annual-report"
+      },
       "priorFiling": null,
       "officialHighlights": {
         "fiscalYear": "2025",
         "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-06T17:17:27+00:00",
+        "verifiedAt": "2026-11-06T17:33:04+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -278,13 +345,15 @@
         "fiscalYear": "2025",
         "periodEnd": "2025-09-30",
         "accountingStandard": "IFRS",
+        "accountingCurrency": "EUR",
         "format": "issuer-consolidated-annual-pdf",
         "sourceType": "issuer-official-annual-report",
-        "extractionStatus": "not-machine-extracted",
-        "coreMetricsValidated": false
+        "extractionStatus": "checked-pdf-fy2025",
+        "coreMetricsValidated": true,
+        "stale": false
       },
-      "checkedAt": "2026-11-06T17:17:22+00:00",
-      "source": "Offizielle Emittentenmeldung (nicht ESEF)",
+      "checkedAt": "2026-11-06T17:33:00+00:00",
+      "source": "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft",
       "errors": []
     },
     "DE0006231004": {
@@ -294,17 +363,84 @@
       "reportCurrency": "EUR",
       "investorRelations": "https://www.infineon.com/cms/en/about-infineon/investor/",
       "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
-      "status": "issuer-release-only",
-      "metrics": {},
+      "status": "issuer-pdf-metrics-complete",
+      "metrics": {
+        "revenue": {
+          "value": 14662000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 93,
+          "label": "Revenue",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:revenue"
+        },
+        "netIncome": {
+          "value": 1015000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 93,
+          "label": "Profit (loss) for the period",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:netIncome"
+        },
+        "assets": {
+          "value": 30470000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 95,
+          "label": "Total assets",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:assets"
+        },
+        "equity": {
+          "value": 17051000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 95,
+          "label": "Total equity",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:equity"
+        },
+        "operatingCashFlow": {
+          "value": 3217000000,
+          "currency": "EUR",
+          "periodEnd": "2025-09-30",
+          "sourceUrl": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+          "sourceType": "issuer-audited-annual-report",
+          "page": 96,
+          "label": "Cash flows from operating activities",
+          "basis": "consolidated-group",
+          "sourceUnit": "million",
+          "concept": "issuer-consolidated-pdf:operatingCashFlow"
+        }
+      },
       "priorMetrics": {},
       "derived": {},
-      "latestFiling": null,
+      "latestFiling": {
+        "id": "DE0006231004-FY2025-official-consolidated-pdf",
+        "periodEnd": "2025-09-30",
+        "reportUrl": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+        "filingSystem": "Issuer audited annual PDF",
+        "sourceType": "issuer-audited-annual-report"
+      },
       "priorFiling": null,
       "officialHighlights": {
         "fiscalYear": "2025",
         "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-06T17:17:28+00:00",
+        "verifiedAt": "2026-11-06T17:33:06+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -338,13 +474,15 @@
         "fiscalYear": "2025",
         "periodEnd": "2025-09-30",
         "accountingStandard": "IFRS",
+        "accountingCurrency": "EUR",
         "format": "issuer-consolidated-annual-pdf",
         "sourceType": "issuer-official-annual-report",
-        "extractionStatus": "not-machine-extracted",
-        "coreMetricsValidated": false
+        "extractionStatus": "checked-pdf-fy2025",
+        "coreMetricsValidated": true,
+        "stale": false
       },
-      "checkedAt": "2026-11-06T17:17:22+00:00",
-      "source": "Offizielle Emittentenmeldung (nicht ESEF)",
+      "checkedAt": "2026-11-06T17:33:00+00:00",
+      "source": "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft",
       "errors": []
     }
   }

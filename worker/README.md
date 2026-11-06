@@ -33,7 +33,7 @@ node worker/run-demo.cjs
 **Beispielbefehle für eine spätere lokale PC-Testumgebung:**
 
 ```bash
-node worker/local-runner.cjs init
+node worker/local-runner.cjs init --date 2026-11-03
 node worker/local-runner.cjs status
 node worker/local-runner.cjs resume
 node worker/local-runner.cjs tick --date 2026-11-05
@@ -41,6 +41,8 @@ node worker/local-runner.cjs tick --date 2026-11-06
 node worker/local-runner.cjs status
 node worker/local-runner.cjs pause
 ```
+
+Das Datumsargument beim Anlegen dient **nur der reproduzierbaren synthetischen Simulation** (es ist kein reales Orderdatum). Ohne `--date` wird der heutige Tag als Demonstrationsaktivierung verwendet.
 
 Das Standardverzeichnis ist `~/UNITY-LAB-PRIVATE-WORKER/`; mit `--dir <absoluter Pfad>` kann ein anderer privater Speicherort gewählt werden, solange er **außerhalb** des Repos liegt. `serve --interval-seconds 3600` wiederholt die synthetische Prüfung, **solange der PC-Prozess tatsächlich läuft**. Es handelt sich ausdrücklich um keine Installation eines Startdienstes: Bei ausgeschaltetem PC bleibt die Demo stehen.
 

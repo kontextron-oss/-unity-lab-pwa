@@ -19,6 +19,8 @@ SOURCES = {
         "name": "ABB", "url": "https://library.e.abb.com/public/b32991481e8b4418a5c5261c5ff25440/ABB%20Financial%20Report%202025.pdf",
         "host": "library.e.abb.com", "year": 2025, "periodEnd": "2025-12-31",
         "currency": "USD", "unitScale": 1_000_000, "standard": "US-GAAP",
+        "priorBenchmarks": {"revenue": 30583, "netIncome": 3952, "assets": 40288,
+                            "equity": 14991, "operatingCashFlow": 4675},
         "facts": {
             "revenue": (54, 0, "Total revenues", 33220),
             "netIncome": (54, 0, "Net income", 4823, 0.58),
@@ -31,6 +33,8 @@ SOURCES = {
         "name": "Siemens Energy", "url": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
         "host": "assets.siemens-energy.com", "year": 2025, "periodEnd": "2025-09-30",
         "currency": "EUR", "unitScale": 1_000_000, "standard": "IFRS",
+        "priorBenchmarks": {"revenue": 34465, "netIncome": 1335, "assets": 50874,
+                            "equity": 9364, "operatingCashFlow": 2889},
         "facts": {
             "revenue": (147, 0, "Revenue", 39077),
             "netIncome": (147, 0, "Net income (loss)", 1685),
@@ -43,6 +47,8 @@ SOURCES = {
         "name": "Infineon", "url": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
         "host": "www.infineon.com", "year": 2025, "periodEnd": "2025-09-30",
         "currency": "EUR", "unitScale": 1_000_000, "standard": "IFRS",
+        "priorBenchmarks": {"revenue": 14955, "netIncome": 1301, "assets": 28639,
+                            "equity": 17219, "operatingCashFlow": 2780},
         "facts": {
             "revenue": (92, 0, "Revenue", 14662),
             "netIncome": (92, 0, "Profit (loss) for the period", 1015),
@@ -206,6 +212,9 @@ def parse_prior_period_pdf(spec, pdf_bytes):
                 0.08 if spec["name"]=="ABB" else 0.0)
             if not isinstance(value,int) or value<=0:
                 raise ValueError("Prior-period value is not positive: "+name)
+            benchmark=spec.get("priorBenchmarks",{}).get(name)
+            if benchmark is None or value!=benchmark:
+                raise ValueError("Prior-period value conflicts with reviewed audited comparator: "+name)
             facts[name]={
                 "value":value*spec["unitScale"],"currency":spec["currency"],
                 "periodEnd":prior_period,"sourceUrl":spec["url"],

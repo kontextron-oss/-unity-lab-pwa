@@ -44,10 +44,24 @@ function unityReadinessEvidence(s){
   const reportOk=filing?.verified===true;
   const reportStatus=String(report?.status||'kein Datensatz');
   const partial=Object.keys(report?.officialHighlights?.facts||{}).length;
-  set('filing',reportOk,reportOk?'Vergleichbare, geprüfte Kennzahlen aus '+filing.period:
+  const pdfCore=report?.status==='issuer-pdf-metrics-complete'&&
+    report?.annualReport?.coreMetricsValidated===true&&
+    report?.annualReport?.stale!==true&&
+    report?.latestFiling?.sourceType==='issuer-audited-annual-report'&&
+    report?.latestFiling?.periodEnd===report?.annualReport?.periodEnd&&
+    ['revenue','netIncome','assets','equity','operatingCashFlow'].every(k=>{
+      const f=report?.metrics?.[k];
+      return f&&f.periodEnd===report.latestFiling.periodEnd&&Number.isFinite(Number(f.value))&&
+        Number(f.value)>0&&f.currency===report.reportCurrency;
+    });
+  set('filing',reportOk||pdfCore,
+    reportOk?'Vergleichbare, geprüfte Kennzahlen aus '+filing.period:
+    pdfCore?'Fünf Konzernkennzahlen aus offiziellem, geprüften PDF-Jahresbericht '+report.latestFiling.periodEnd+
+      ' · Datenbeleg vorhanden; strenge UNITY-Kauffreigabe bleibt gesondert.':
     'Status: '+reportStatus+(partial?' · '+partial+' Fakten aus Emittentenmeldung, aber kein vollständig geprüfter Bericht':'')+
     '. Fehlende/ungeprüfte Berichtskennzahlen sind kein negatives Unternehmensurteil.',
-    filing?.source||report?.officialHighlights?.sourceUrl||'',filing?.period||report?.checkedAt||'',
+    filing?.source||report?.latestFiling?.reportUrl||report?.officialHighlights?.sourceUrl||'',
+    filing?.period||report?.latestFiling?.periodEnd||report?.checkedAt||'',
     reportStatus==='source-unavailable'?'failed':'missing');
   const cal=typeof unityIssuerCalendarItem==='function'?unityIssuerCalendarItem(s):null;
   const calFresh=typeof unityIssuerCalendarFresh==='function'&&unityIssuerCalendarFresh();

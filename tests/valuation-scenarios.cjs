@@ -77,6 +77,14 @@ for(const [isin,g] of Object.entries(publicGuidance.items)){
  assert.ok(g.sourceUrl.startsWith('https://'+g.sourceHost+'/'));
  assert.ok(g.guidance.length>=2);
 }
+// ABB's source uses "ABBN", but the price feed uses "ABBN.SW": the ISIN is unchanged.
+const abb=publicGuidance.items['CH0012221716'];
+context.stock={isin:'CH0012221716',ticker:'ABBN.SW',name:'ABB',currency:'CHF'};
+context.registry={'CH0012221716':abb};
+const abbResult=vm.runInContext('unityGuidanceEvidence(stock,registry)',context);
+assert.ok(abbResult,'Guidance must follow the exact ISIN, not the provider-specific ticker suffix');
+assert.equal(abbResult.isin,'CH0012221716');
+context.stock=s;
 const empty=JSON.parse(fs.readFileSync('data/valuation-assumptions.json','utf8'));
 assert.equal(Object.keys(empty.items).length,0,'Never deploy implicit growth/discount assumptions');
 const ix=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');

@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import re
 import tempfile
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKPOINTS = ROOT / "data" / "foresight-checkpoints.json"
@@ -134,7 +135,7 @@ def build(checkpoints: dict, sec_snapshot: dict, previous: dict,
         raise ValueError("Invalid SEC source snapshot")
     seen,entries=set(),{}
     for c in checkpoints["checkpoints"]:
-        if not checked_checkpoint(c, now.date()):
+        if not checked_checkpoint(c, now.astimezone(ZoneInfo('Europe/Berlin')).date()):
             raise ValueError("Unverified or future-dated checkpoint")
         cid = c["id"]
         if not isinstance(cid, str) or not cid or cid in seen:

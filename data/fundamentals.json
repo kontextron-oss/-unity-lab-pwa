@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T08:37:07+00:00",
+  "generatedAt": "2026-11-06T17:17:22+00:00",
   "source": "XBRL International filings.xbrl.org",
   "scope": "Four European pilot issuers; partial annual filings, no live valuations",
   "items": {
@@ -21,7 +21,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-05T08:37:08+00:00",
+        "verifiedAt": "2026-11-06T17:17:23+00:00",
         "currency": "USD",
         "facts": {
           "revenue": {
@@ -42,7 +42,17 @@
           }
         }
       },
-      "checkedAt": "2026-11-05T08:37:07+00:00",
+      "annualReport": {
+        "sourceUrl": "https://www.abb.com/global/en/company/annual-reporting-suite",
+        "fiscalYear": "2025",
+        "periodEnd": "2025-12-31",
+        "accountingStandard": "US-GAAP",
+        "format": "issuer-annual-report-portal",
+        "sourceType": "issuer-official-annual-report",
+        "extractionStatus": "not-machine-extracted",
+        "coreMetricsValidated": false
+      },
+      "checkedAt": "2026-11-06T17:17:22+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     },
@@ -196,7 +206,8 @@
         "validationWarnings": 0
       },
       "officialHighlights": null,
-      "checkedAt": "2026-11-05T08:37:07+00:00",
+      "annualReport": null,
+      "checkedAt": "2026-11-06T17:17:22+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -217,7 +228,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-05T08:37:13+00:00",
+        "verifiedAt": "2026-11-06T17:17:27+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -225,6 +236,22 @@
             "currency": "EUR",
             "periodEnd": "2025",
             "label": "Umsatz",
+            "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
+            "kind": "issuer-release"
+          },
+          "orders": {
+            "value": 58900000000,
+            "currency": "EUR",
+            "periodEnd": "2025",
+            "label": "Auftragseingang",
+            "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
+            "kind": "issuer-release"
+          },
+          "orderBacklog": {
+            "value": 138000000000,
+            "currency": "EUR",
+            "periodEnd": "2025",
+            "label": "Auftragsbestand",
             "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
             "kind": "issuer-release"
           },
@@ -246,7 +273,17 @@
           }
         }
       },
-      "checkedAt": "2026-11-05T08:37:07+00:00",
+      "annualReport": {
+        "sourceUrl": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+        "fiscalYear": "2025",
+        "periodEnd": "2025-09-30",
+        "accountingStandard": "IFRS",
+        "format": "issuer-consolidated-annual-pdf",
+        "sourceType": "issuer-official-annual-report",
+        "extractionStatus": "not-machine-extracted",
+        "coreMetricsValidated": false
+      },
+      "checkedAt": "2026-11-06T17:17:22+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     },
@@ -267,7 +304,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-05T08:37:14+00:00",
+        "verifiedAt": "2026-11-06T17:17:28+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -275,6 +312,14 @@
             "currency": "EUR",
             "periodEnd": "2025",
             "label": "Umsatz",
+            "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
+            "kind": "issuer-release"
+          },
+          "segmentResult": {
+            "value": 2560000000,
+            "currency": "EUR",
+            "periodEnd": "2025",
+            "label": "Segmentergebnis (bereinigt)",
             "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
             "kind": "issuer-release"
           },
@@ -288,7 +333,17 @@
           }
         }
       },
-      "checkedAt": "2026-11-05T08:37:07+00:00",
+      "annualReport": {
+        "sourceUrl": "https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+        "fiscalYear": "2025",
+        "periodEnd": "2025-09-30",
+        "accountingStandard": "IFRS",
+        "format": "issuer-consolidated-annual-pdf",
+        "sourceType": "issuer-official-annual-report",
+        "extractionStatus": "not-machine-extracted",
+        "coreMetricsValidated": false
+      },
+      "checkedAt": "2026-11-06T17:17:22+00:00",
       "source": "Offizielle Emittentenmeldung (nicht ESEF)",
       "errors": []
     }

@@ -52,8 +52,17 @@ async function unityForesightLoad(){
   unityForesightData=o;
   unityForesightError='';
   try{
-   const res=await fetch('./data/foresight-outcomes.json',{cache:'default',credentials:'omit'});
-   if(!res.ok)throw Error('HTTP '+res.status);
+   // Network-first for automated new SEC results; separate immutable
+   // cache key remains available offline on iPhone through the service worker.
+   let res;
+   try{
+    res=await fetch('./data/foresight-outcomes.json?t='+Date.now(),
+      {cache:'no-store',credentials:'omit'});
+    if(!res.ok)throw Error('HTTP '+res.status);
+   }catch(_){
+    res=await fetch('./data/foresight-outcomes.json',{cache:'default',credentials:'omit'});
+    if(!res.ok)throw Error('Offline-Audit nicht verfügbar');
+   }
    const audit=await res.json();
    if(audit?.schemaVersion!==1||!audit.entries||
       typeof audit.entries!=='object'||Array.isArray(audit.entries))

@@ -99,6 +99,8 @@ jobs:
         run: node tests/worker-local.cjs
       - name: Test versioned read-only iPhone-to-PC exchange, SHA-256 and no-write comparison
         run: node tests/exchange-protocol.cjs
+      - name: Test iPhone exchange Share Sheet and truly read-only incoming-file preview
+        run: node tests/exchange-ui.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

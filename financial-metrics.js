@@ -219,5 +219,6 @@ function unityFinancialSnapshotPanel(s){
  h+='<p class="tiny muted">Fehlende Nachweise: '+esc(m.missing.join(' · ')||'Keine in diesem Kennzahlensatz')+
    '. Fairer Unternehmenswert, Sicherheitsmarge und Kaufzone sind hier nicht geschätzt; keine Handelsfreigabe.</p>';
  if(typeof unityScenarioValuationPanel==='function')h+=unityScenarioValuationPanel(s);
+ if(typeof unityReverseValuationPanel==='function')h+=unityReverseValuationPanel(s);
  return h;
 }

@@ -3,9 +3,9 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const s1={id:'a',name:'ABB',isin:'CH0012221716',ticker:'ABBN',currency:'CHF',exchange:'SIX',createdAt:'2026-01-01T00:00:00Z'};
 const s2={id:'b',name:'Schneider Electric',isin:'FR0000121972',ticker:'SU',currency:'EUR',exchange:'Paris',createdAt:'2026-01-02T00:00:00Z'};
 const s3={id:'c',name:'Siemens Energy',isin:'DE000ENER6Y0',ticker:'ENR',currency:'EUR',exchange:'Xetra',createdAt:'2026-01-03T00:00:00Z'};
-let instruments=[s1,s2,s3],transactions=[],events=[],refreshes=0,sequence=0;
+let instruments=[s1,s2,s3],transactions=[],settings=[],events=[],refreshes=0,sequence=0;
 const sandbox={Date,Math,Number,Array,JSON,Set,Map,
- stocks:()=>instruments,cache:{instruments,transactions},
+ stocks:()=>instruments,cache:{instruments,transactions,settings},
  unityMarket:{generatedAt:'2026-10-30T20:00:00Z'},unityMarketLoading:false,
  unityMarketItem:()=>({price:240,date:'2026-10-30'}),unityDisplayQuote:()=>({price:240,currency:'EUR',date:'2026-10-30',precision:'day',source:'test EOD'}),unityEuroRate:currency=>({rate:currency==='EUR'?1:1.08,date:'2026-10-30',source:'test ECB'}),unityMetrics:()=>null,unityDataQuality:()=>({canCompare:true}),
  unityChartData:()=>[],unityCalc:()=>({veto:[]}),unityChartPanel:()=>'<svg/>',
@@ -14,7 +14,7 @@ const sandbox={Date,Math,Number,Array,JSON,Set,Map,
  depotLedger:()=>({qty:2}),depotActiveTrades:id=>transactions.filter(t=>t.instrumentId===id),localNow:()=> '2026-10-30T10:00',
  number:(v,d=2)=>Number(v).toFixed(d),euro:v=>Number(v).toFixed(2)+' €',esc:v=>String(v??''),unityPct:v=>Number.isFinite(v)?v.toFixed(1)+' %':'–',
  document:{addEventListener(){}},render(){},alert(){},confirm:()=>true,
- id:()=>String(++sequence),put:async(store,entry)=>{if(store==='transactions')transactions.push(entry);events.push(store);},
+ id:()=>String(++sequence),put:async(store,entry)=>{if(store==='transactions')transactions.push(entry);if(store==='settings'){const i=settings.findIndex(x=>x.id===entry.id);if(i<0)settings.push(entry);else settings[i]=entry;}events.push(store);},
  audit:async(...args)=>events.push(args),refresh:async()=>refreshes++,
  db:{transaction:()=>{
    const tx={oncomplete:null,onerror:null,onabort:null,objectStore:()=>({put:(entry)=>{
@@ -27,6 +27,15 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync('home.js','utf8'),sand
 (async()=>{
  assert.equal(vm.runInContext("unityHomeStocks().map(s=>s.id).join(',')",sandbox),'a,b,c');
  assert.match(vm.runInContext('unityHome()',sandbox),/data-home-drag="a"/);
+ assert.match(vm.runInContext('unityHome()',sandbox),/data-home-sort="manual"/);
+ assert.match(vm.runInContext('unityHome()',sandbox),/Eigene Reihenfolge/);
+ assert.equal(await vm.runInContext("unityHomeSelectSort('manual')",sandbox),true);
+ assert.equal(settings.find(x=>x.id==='watchlist-sort-preference').mode,'manual');
+ assert.equal(vm.runInContext('unityHomeSort',sandbox),'manual');
+ vm.runInContext("unityHomeSort='observe';unityHomeSortLoaded=false;unityHomeRestoreSort()",sandbox);
+ assert.equal(vm.runInContext('unityHomeSort',sandbox),'manual','Manual sort must survive a fresh session from saved setting');
+ assert.match(vm.runInContext('unityHome()',sandbox),/beim nächsten Öffnen wiederhergestellt/);
+
  assert.match(vm.runInContext('unityHome()',sandbox),/data-home-shift="a"/);
  assert.match(vm.runInContext('unityHome()',sandbox),/nach unten verschieben/);
  await vm.runInContext("unityHomeReorder('c','a')",sandbox);

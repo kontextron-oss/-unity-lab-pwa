@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T09:11:14Z",
+  "generatedAt": "2026-11-06T18:11:26Z",
   "source": "SEC EDGAR Company Facts · XBRL",
   "scope": "US/SEC issuer universe; annual XBRL facts only, no estimated valuation",
   "items": {
@@ -226,7 +226,7 @@
       "priorFiling": {
         "periodEnd": "2025-06-30"
       },
-      "checkedAt": "2026-11-06T09:11:14Z",
+      "checkedAt": "2026-11-06T18:11:26Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -452,7 +452,7 @@
       "priorFiling": {
         "periodEnd": "2025-09-27"
       },
-      "checkedAt": "2026-11-06T09:11:14Z",
+      "checkedAt": "2026-11-06T18:11:26Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -678,7 +678,7 @@
       "priorFiling": {
         "periodEnd": "2024-11-29"
       },
-      "checkedAt": "2026-11-06T09:11:14Z",
+      "checkedAt": "2026-11-06T18:11:26Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -904,7 +904,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-28"
       },
-      "checkedAt": "2026-11-06T09:11:14Z",
+      "checkedAt": "2026-11-06T18:11:26Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -1130,7 +1130,431 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-06T09:11:14Z",
+      "checkedAt": "2026-11-06T18:11:26Z",
+      "source": "SEC EDGAR Company Facts · XBRL",
+      "errors": []
+    },
+    "GEV": {
+      "name": "GE Vernova",
+      "ticker": "GEV",
+      "isin": "US36828A1016",
+      "cik": "0001996810",
+      "reportCurrency": "USD",
+      "investorRelations": "https://www.gevernova.com/investors",
+      "status": "metrics-complete",
+      "metrics": {
+        "revenue": {
+          "value": 38068000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "netIncome": {
+          "value": 4884000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:NetIncomeLoss",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "assets": {
+          "value": 63016000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:Assets",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "equity": {
+          "value": 12296000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "operatingCashFlow": {
+          "value": 4987000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "epsDiluted": {
+          "value": 17.69,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "sharesDiluted": {
+          "value": 276000000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        }
+      },
+      "priorMetrics": {
+        "revenue": {
+          "value": 34935000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "netIncome": {
+          "value": 1552000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:NetIncomeLoss",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "assets": {
+          "value": 51485000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:Assets",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "equity": {
+          "value": 10593000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "operatingCashFlow": {
+          "value": 2583000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "epsDiluted": {
+          "value": 5.58,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        },
+        "sharesDiluted": {
+          "value": 278000000.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-01-29",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json"
+        }
+      },
+      "derived": {
+        "netMargin": {
+          "value": 12.83,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "netIncome",
+            "revenue"
+          ]
+        },
+        "equityRatio": {
+          "value": 19.51,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "equity",
+            "assets"
+          ]
+        },
+        "operatingCashFlowMargin": {
+          "value": 13.1,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "operatingCashFlow",
+            "revenue"
+          ]
+        },
+        "revenueGrowth": {
+          "value": 8.97,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "priorPeriodEnd": "2024-12-31",
+          "basis": [
+            "revenue"
+          ]
+        },
+        "netIncomeGrowth": {
+          "value": 214.69,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "priorPeriodEnd": "2024-12-31",
+          "basis": [
+            "netIncome"
+          ]
+        }
+      },
+      "latestFiling": {
+        "periodEnd": "2025-12-31",
+        "published": "2026-01-29",
+        "reportUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json",
+        "filingSystem": "SEC EDGAR"
+      },
+      "priorFiling": {
+        "periodEnd": "2024-12-31"
+      },
+      "checkedAt": "2026-11-06T18:11:26Z",
+      "source": "SEC EDGAR Company Facts · XBRL",
+      "errors": []
+    },
+    "VRT": {
+      "name": "Vertiv",
+      "ticker": "VRT",
+      "isin": "US92537N1081",
+      "cik": "0001674101",
+      "reportCurrency": "USD",
+      "investorRelations": "https://investors.vertiv.com/",
+      "status": "metrics-complete",
+      "metrics": {
+        "revenue": {
+          "value": 10229900000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "netIncome": {
+          "value": 1332800000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:NetIncomeLoss",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "assets": {
+          "value": 12212400000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:Assets",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "equity": {
+          "value": 3941300000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:StockholdersEquity",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "operatingCashFlow": {
+          "value": 2113800000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "epsDiluted": {
+          "value": 3.41,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "sharesDiluted": {
+          "value": 390652824.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "capitalExpenditure": {
+          "value": 220000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        }
+      },
+      "priorMetrics": {
+        "revenue": {
+          "value": 8011800000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "netIncome": {
+          "value": 495800000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:NetIncomeLoss",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "assets": {
+          "value": 9132500000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:Assets",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "equity": {
+          "value": 2434300000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:StockholdersEquity",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "operatingCashFlow": {
+          "value": 1319300000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "epsDiluted": {
+          "value": 1.28,
+          "currency": "USD",
+          "unit": "USD/shares",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:EarningsPerShareDiluted",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "sharesDiluted": {
+          "value": 386325058.0,
+          "currency": null,
+          "unit": "shares",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        },
+        "capitalExpenditure": {
+          "value": 167000000.0,
+          "currency": "USD",
+          "unit": "USD",
+          "periodEnd": "2024-12-31",
+          "filed": "2026-02-13",
+          "concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+          "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json"
+        }
+      },
+      "derived": {
+        "freeCashFlow": {
+          "value": 1893800000.0,
+          "unit": "USD",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "operatingCashFlow",
+            "capitalExpenditure"
+          ],
+          "kind": "derived"
+        },
+        "netMargin": {
+          "value": 13.03,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "netIncome",
+            "revenue"
+          ]
+        },
+        "equityRatio": {
+          "value": 32.27,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "equity",
+            "assets"
+          ]
+        },
+        "operatingCashFlowMargin": {
+          "value": 20.66,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "basis": [
+            "operatingCashFlow",
+            "revenue"
+          ]
+        },
+        "revenueGrowth": {
+          "value": 27.69,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "priorPeriodEnd": "2024-12-31",
+          "basis": [
+            "revenue"
+          ]
+        },
+        "netIncomeGrowth": {
+          "value": 168.82,
+          "unit": "percent",
+          "periodEnd": "2025-12-31",
+          "priorPeriodEnd": "2024-12-31",
+          "basis": [
+            "netIncome"
+          ]
+        }
+      },
+      "latestFiling": {
+        "periodEnd": "2025-12-31",
+        "published": "2026-02-13",
+        "reportUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json",
+        "filingSystem": "SEC EDGAR"
+      },
+      "priorFiling": {
+        "periodEnd": "2024-12-31"
+      },
+      "checkedAt": "2026-11-06T18:11:26Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -1145,7 +1569,7 @@
       "derived": {},
       "latestFiling": null,
       "priorFiling": null,
-      "checkedAt": "2026-11-06T09:11:14Z",
+      "checkedAt": "2026-11-06T18:11:26Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": [
         "SEC source unavailable: HTTP Error 404: Not Found"

@@ -56,6 +56,25 @@ Das Standardverzeichnis ist `~/UNITY-LAB-PRIVATE-WORKER/`; mit `--dir <absoluter
 
 **Nicht verwechseln:** Die bereits vorhandene manuelle pCloud-Sicherung vom iPhone transportiert lokale Backup-Dateien. Dieser neue Demo-Runner greift nicht auf diese Sicherungen zu und kann **keine** Nutzerdaten von pCloud herunterladen oder zurückschreiben. Vor späterem automatischem Abgleich brauchen wir getrennte private Authentifizierung, einen einzigen autoritativen Auftrags-Schreiber, Abgleich-/Konfliktregeln und Testmigration des bisherigen iPhone-Depots.
 
+## Neu: UNITY 0.15.3.2 – manuelles iPhone/PC-Austauschformat (nur Prüfung)
+
+**Jetzt tatsächlich in der iPhone-PWA integriert:** Im Tab **Datensicherung**, Abschnitt **03 · Austausch für PC / Hintergrundprozess**, kann das iPhone eine getrennte Austauschdatei vorbereiten und anschließend über die **iOS-Dateifreigabe** bewusst in den privaten pCloud-Ordner `UNITY-LAB/03-AUSTAUSCH/` teilen. Eine vorhandene Austauschdatei lässt sich auf dem iPhone vor der Übernahme in irgendein anderes System auf SHA-256- und Schema-Konsistenz prüfen. Bei widersprüchlichen gleichen IDs werden Konfliktzahlen angezeigt, aber **niemals Daten überschrieben oder Testaufträge verbucht**.
+
+Die Austauschdatei enthält **nur** alle noch aktiven automatischen Aktien-Testaufträge, die dazu gehörenden Aktienkennungen, bereits abgeschlossene automatische Testbuchungen und das EUR-Gesamtbudget. Nicht enthalten sind sämtliche Unternehmensanalysen, generelle Depotdaten, Zugangsschlüssel oder automatisch generierte Brokerorderaufträge. Das Format ist `unity-exchange-readonly` / Schema 1, mit `authority:local-iphone`, `purpose:review-only` und `executionPermission:false`. Die iPhone-App speichert die Gerätekennung und Exportrevision als lokale Export-Metadaten; sie ändert keine vorhandenen Depotpositionen.
+
+**Später am PC, mit lokal heruntergeladener Datei:**
+
+```bash
+node worker/inspect-exchange.cjs /pfad/zur/UNITY-AUSTAUSCH-NUR-PRUEFUNG_....json
+node worker/inspect-exchange.cjs /pfad/zu/stand-A.json /pfad/zu/stand-B.json
+```
+
+Der erste Befehl validiert Format, Prüfsumme, Summen und Revision, der zweite meldet bei gleichen IDs gleiche, abweichende und nur in einer Version vorhandene Einträge. Der Befehl speichert die eingelesenen persönlichen Daten **nicht** in den Worker oder in das GitHub-Repository und erteilt keine Orderfreigabe. Ein korrupter oder unzulässiger Datensatz wird abgelehnt.
+
+**Datenschutz:** Die ausgetauschte JSON-Datei ist **nicht verschlüsselt**. Sie enthält persönliche simulierte Aufträge und gehört ausschließlich in das private pCloud-Konto oder andere geschützte Speichermedien. Der einfache SHA-256-Prüfwert erkennt versehentliche/unerkannte Änderungen und Konsistenzfehler, stellt aber **keine** kryptographische Herkunfts-/Authentizitätsgarantie gegen jemanden dar, der die Prüfsumme selbst neu berechnen kann. Für späteren automatischen Datentransport müssen private Authentifizierung, Integritätsschutz über authentifizierte Kanäle, Berechtigungen, konfliktfreie Migration und **eine** autoritative Order-Ausführungsinstanz hinzukommen.
+
+**Die vorhandene manuelle BASIS-/ÄNDERUNGSSICHERUNG nach pCloud bleibt unabhängig bestehen.** Die Austauschdatei ist kein Ersatz für ein vollständiges Backup. Der eigenständige Node-Worker handelt auch nach diesem Entwicklungsschritt weiterhin **nur synthetische Daten**; seine persönliche iPhone-Verbindung und automatische pCloud-Synchronisierung sind ausdrücklich noch **nicht** eingerichtet.
+
 ## Bereits nutzbar: manuelle pCloud-Sicherung vom iPhone
 
 **Der UNITY-iPhone-Backupworkflow ist bereits in der PWA vorhanden.** UNITY erstellt eine BASIS- oder inkrementelle ÄNDERUNG-Datei und reicht diese über die iOS-Dateifreigabe an pCloud weiter. Dort wählt der Nutzer den Zielordner selbst aus, kontrolliert die tatsächliche Ablage und bestätigt anschließend die Sicherung in UNITY. Das ist **funktionierender manueller Datentransport**, nicht automatischer Synchronisationsbetrieb. Er bleibt als sichere Rückfallebene erhalten.

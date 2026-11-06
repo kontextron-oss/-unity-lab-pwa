@@ -78,6 +78,17 @@ const transactions=()=>cache.transactions.filter(x=>x.type==='BUY'||x.type==='SE
  assert.equal(cache.transactions.length,1,'No extra transaction survived aborted write');
  assert.equal(currentOrder().active,true,'The order remains open after abort');
  assert.equal(cache.audit.filter(x=>x.type==='AUTO_TEST_BUY').length,1,'No audit pretends the aborted order filled');
+ // A failure AFTER the trade store accepted its put must still roll back
+ // all earlier writes in the same atomic transaction.
+ fake.failNextPut('settings');
+ await assert.rejects(invoke('unityPaperAtomicFill(order,stock,"BUY",quote,fx,{})'),/Injected simulated storage failure/);
+ assert.equal(cache.transactions.length,1,'A later settings-store failure rolls back the trade insertion');
+ assert.equal(currentOrder().active,true,'Order not silently closed after a partial crash');
+ assert.equal(cache.audit.filter(x=>x.type==='AUTO_TEST_BUY').length,1);
+ fake.failNextPut('audit');
+ await assert.rejects(invoke('unityPaperAtomicFill(order,stock,"BUY",quote,fx,{})'),/Injected simulated storage failure/);
+ assert.equal(cache.transactions.length,1,'Even a late audit-store failure must roll back both order and trade');
+ assert.equal(currentOrder().active,true);
  const resumed=await invoke('unityPaperAtomicFill(order,stock,"BUY",quote,fx,{})');
  assert.equal(resumed.status,'filled','Recovery after aborted transaction can settle exactly once');
  assert.equal(cache.transactions.length,2);

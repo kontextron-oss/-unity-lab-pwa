@@ -54,6 +54,13 @@ UNITY soll auf nachvollziehbaren, zeitgestempelten Kurs-, Unternehmens- und Erei
 
 **Fertig, wenn:** Neustart/Fehler zwischen beiden DB-Schreibvorgängen zu **keiner** doppelten oder verlorenen Buchung führt; Buchungssumme = Testkapital + Positionen stimmt nach Kauf, Verkauf und Storno; schlechte/fehlende Kurse lösen keine Ausführung aus.
 
+### Verbindliche Zielarchitektur – iPhone, PC und pCloud (06.11.2026)
+- **Ein System, zwei Oberflächen:** iPhone-PWA für schnelle Kontrolle und spätere native/portable **PC-Version** für umfangreiche Analysen, Massendaten und Verwaltung; beide verwenden dasselbe versionierte Daten- und Entscheidungsmodell. Die PC-Version ist ausdrücklich für eine spätere Entwicklungsstufe vorgesehen, nicht Voraussetzung für diese Phase.
+- **Privater Datendrehpunkt pCloud:** zukünftig sichere Synchronisation von ausgewählten Daten, Entscheidungsständen, Testaufträgen und Medien zwischen PC/iPhone. pCloud ist **ergänzend**, keine zwingende Voraussetzung für den Offline-Betrieb. Private Zugangsdaten und persönliche Depotbestände dürfen nie im öffentlichen GitHub-Repository oder in öffentlichen Actions-Artefakten stehen.
+- **Nicht-destruktive, nachvollziehbare Synchronisation:** stabile IDs, Änderungsrevisionen, schemaVersion, Zusammenführungs-/Konfliktregeln, keine stillen Überschreibungen und keine doppelte Testbuchung. Versionierte Backups; Import/Austausch von PC-Dateien später. Die PWA bleibt local-first.
+- **Plattformneutraler Kern:** Entscheidungskern, Sicherheitsregeln, Simulation, Simulationstransaktionen und Protokollierung werden von iPhone-, PC- und pCloud-Adaptern getrennt. Datenhoheit und Ausführungshoheit sind klar zuzuordnen, damit ein lokaler Auftrag nicht gleichzeitig von iPhone und PC/Worker ausgeführt wird.
+- **Aktuelle Phase:** Nur Grundlage/Demo für den unabhängigen Runner; **kein** Zugriff auf persönliche iPhone-IndexedDB, keine pCloud-OAuth- oder Sync-Anbindung, keine fertige PC-App. Dies ausdrücklich nicht als abgeschlossene Synchronisation ausgeben.
+
 ### [ ] Schritt 4 — 0.15.3: Autonomer Hintergrundprozess für Testsimulation
 **Implementierung:**
 - Technische Laufzeitentscheidung dokumentieren: privater kleiner Host/Worker (für zuverlässige Ausführung auch bei ausgeschaltetem PC) versus stets laufender lokaler PC-Prozess; iOS-PWA selbst ist **kein** verlässlicher Hintergrund-Runner.

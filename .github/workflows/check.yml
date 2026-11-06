@@ -37,6 +37,9 @@ jobs:
           node --check readiness-audit.js
           node --check decision-engine.js
           node --check paper-order-engine.js
+          node --check worker/core.cjs
+          node --check worker/demo-fixture.cjs
+          node --check worker/run-demo.cjs
           node --check crypto-sources.js
           node --check crypto-policy.js
           node --check incremental.js
@@ -86,6 +89,8 @@ jobs:
         run: node tests/decision-engine.cjs
       - name: Test staged paper-order fills, atomic crash rollback and idempotent ledger
         run: node tests/paper-order-engine.cjs
+      - name: Test platform-neutral synthetic runner, pause, quote veto and no duplicate trade
+        run: node tests/worker-demo.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

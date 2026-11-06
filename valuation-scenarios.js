@@ -34,7 +34,8 @@ function unityValuationUrlValid(value,host){
 }
 function unityGuidanceEvidence(s,registry){
  const g=(registry===undefined?unityIssuerGuidance?.items:registry)?.[s?.isin];
- if(!g||g.isin!==s?.isin||!g.ticker||!g.sourceUrl||!g.sourceHost)return null;
+ if(!g||g.isin!==s?.isin||!g.ticker||!!s?.ticker&&g.ticker!==s.ticker||
+   !g.sourceUrl||!g.sourceHost)return null;
  const pubAge=unityValuationDateAge(g.publishedAt);
  const reviewAge=unityValuationDateAge(g.reviewedAt);
  if(pubAge===null||reviewAge===null||pubAge < -1||pubAge>180||reviewAge < -1||reviewAge>180||
@@ -87,6 +88,7 @@ function unityScenarioValuation(s,options={}){
    review.periodEnd===financial.period&&review.currency===financial.reportCurrency&&
    unityScenarioNumber(review.grossDebt)!==null&&review.grossDebt>=0&&
    unityScenarioNumber(review.cashAndEquivalents)!==null&&review.cashAndEquivalents>=0&&
+   review.cashFlowBasisVerified===true&&
    ['acceptable','elevated'].includes(review.outcome);
  if(!debtComplete||reviewAge===null||reviewAge < -1||reviewAge>550||
    !unityValuationUrlValid(review.sourceUrl,review.sourceHost)){

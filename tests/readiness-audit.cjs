@@ -42,7 +42,7 @@ const box={
  cache:{fundamentals:[manual]},stocks:()=>instruments,
  unityHomeQuote:s=>missingQuote&&s.id==='abb'?{x:null,m:null,quality:null,valid:false,technical:false}:
    badIdentity&&s.id==='abb'?{...stockData[s.id].quote,valid:false,quality:{level:'invalid',detail:'ISIN-Konflikt'}}:
-   stockData[s.id].quote,
+   (stockData[s.id]?.quote||null),
  unityEuroRate:c=>c==='EUR'?{rate:1,date:stamp,source:'EUR'}:fxCHF,
  unityFundPilotItem:s=>reports[s.id],
  unityDeepFilingEvidence:s=>({verified:s.id==='su',period:s.id==='su'?'2025-12-31':'',source:s.id==='su'?'https://filings.xbrl.org/a':''}),
@@ -102,6 +102,33 @@ assert.equal(r.fields.quote.status,'missing');
 assert.equal(r.technicalReady,false);
 assert.equal(r.adverse.length,0,'Missing price must not invent valuation or trend rejection');
 missingQuote=false;
+// The standard contract must cover arbitrary newly added equities, not only
+// the four European pilot issuers. Missing sources are not negative signals.
+const dataset=vm.runInContext('unityReadinessStandardDataset(stocks())',box);
+assert.equal(dataset.schemaVersion,1);
+assert.equal(dataset.kind,'unity-equity-readiness-dataset');
+assert.equal(dataset.total,4);
+assert.equal(dataset.records.length,4);
+assert.equal(dataset.counts.technicalReady,4);
+assert.equal(dataset.counts.sourceComplete,1);
+assert.equal(dataset.counts.incomplete,3);
+assert.equal(dataset.counts.adverse,1,'Independent negative indicators stay separate');
+assert.equal(dataset.records[0].instrument.isin,ABB.isin);
+assert.equal(dataset.records[0].fields.filing.status,'missing');
+assert.equal(dataset.records[0].tradeApproved,false);
+assert.doesNotThrow(()=>JSON.stringify(dataset),'The contract must be portable JSON');
+const expanded=vm.runInContext('unityReadinessStandardDataset(stocks().concat([{id:"new",name:"Neuer Wert",isin:"GB0000000001",ticker:"NEW",exchange:"London",currency:"GBP"}]))',box);
+assert.equal(expanded.records.length,5,'New equities must use the same source schema');
+assert.equal(expanded.records.at(-1).instrument.name,'Neuer Wert');
+assert.equal(expanded.records.at(-1).dataStatus,'incomplete');
+assert.equal(expanded.records.at(-1).adverseSignals.length,0,'Unmapped issuer is not a SELL');
+assert.equal(expanded.records.at(-1).tradeApproved,false);
+badIdentity=true;
+assert.equal(vm.runInContext('unityReadinessStandardDataset(stocks())',box).records[0].dataStatus,'conflict');
+badIdentity=false;
+box.unityIsCryptoAsset=x=>x.id==='abb';
+assert.equal(vm.runInContext('unityReadinessStandardDataset(stocks())',box).total,3,'Cryptocurrencies require a separate model');
+delete box.unityIsCryptoAsset;
 let overview=vm.runInContext('unityReadinessOverview(stocks())',box);
 assert.match(overview,/technisch auswertbar/);
 assert.match(overview,/Prüffelder belegt/);
@@ -110,6 +137,7 @@ assert.match(overview,/Schneider Electric/);
 assert.match(overview,/Siemens Energy/);
 assert.match(overview,/Infineon/);
 assert.match(overview,/ABB/);
+assert.match(overview,/Datenstatus aller 4 Aktien der Masterliste/);
 box.unityIsCryptoAsset=x=>x.id==='abb';
 overview=vm.runInContext('unityReadinessOverview(stocks())',box);
 assert.match(overview,/3<\/b><small>technisch auswertbar/,'Crypto excluded from equity readiness counts');
@@ -119,10 +147,10 @@ assert.match(detail,/Warum ist die UNITY-Freigabe offen/);
 assert.match(detail,/issuer-release-only/);
 assert.match(detail,/Daten/);
 const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
-assert.match(index,/readiness-audit\.js\?v=0\.15\.3\.5/);
-assert.match(sw,/readiness-audit\.js\?v=0\.15\.3\.5/);
-assert.match(index,/home\.js\?v=0\.15\.3\.5/);
-assert.match(sw,/unity-lab-v0\.15\.3\.5/);
+assert.match(index,/readiness-audit\.js\?v=0\.15\.3\.6/);
+assert.match(sw,/readiness-audit\.js\?v=0\.15\.3\.6/);
+assert.match(index,/home\.js\?v=0\.15\.3\.6/);
+assert.match(sw,/unity-lab-v0\.15\.3\.6/);
 const source=fs.readFileSync('home.js','utf8');
 assert.match(source,/unityReadinessOverview/);
 assert.match(source,/unityReadinessDetail/);

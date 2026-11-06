@@ -108,8 +108,8 @@ assert.match(invoke('unityAutoStockBadge(buyStock)',Object.assign(sandbox,{buySt
  assert.equal(cache.audit.filter(x=>x.type==='AUTO_TEST_BUY').length,5);
  assert.equal(cache.audit.filter(x=>x.type==='AUTO_TEST_SELL').length,1);
  const idx=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
- assert.match(idx,/paper-order-engine\.js\?v=0\.15\.3\.5/);
- assert.match(sw,/paper-order-engine\.js\?v=0\.15\.3\.5/);
- assert.match(sw,/unity-lab-v0\.15\.3\.5/);
+ assert.match(idx,/paper-order-engine\.js\?v=0\.15\.3\.6/);
+ assert.match(sw,/paper-order-engine\.js\?v=0\.15\.3\.6/);
+ assert.match(sw,/unity-lab-v0\.15\.3\.6/);
  console.log('Auto simulation: 10 staged triggers, next-observed-EOD fills with fees/spread, 300/500 EUR caps, protective sell, no duplicate or partial fills passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

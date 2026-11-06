@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "createdDate": "2026-11-07",
+  "scope": "Immutable first-wave public FY2026 management-guidance checkpoints. No personal data, no brokerage actions.",
+  "source": "Issuer FY2026 results guidance with linked original sources; evaluate only after audited matching 2026 SEC company facts.",
+  "checkpoints": [
+    {
+      "id": "ETN-FY2026-epsDiluted-20261107",
+      "isin": "IE00B8KQN827",
+      "ticker": "ETN",
+      "issuer": "Eaton",
+      "recordedAt": "2026-11-07",
+      "sourcePublishedAt": "2026-11-03",
+      "sourceUrl": "https://www.eaton.com/us/en-us/company/news-insights/news-releases/2026/eaton-reports-record-third-quarter-2026-results.html",
+      "sourceType": "official-issuer-2026-management-guidance",
+      "fiscalYear": 2026,
+      "periodEnd": "2026-12-31",
+      "metric": "epsDiluted",
+      "unit": "USD/shares",
+      "basis": "US-GAAP",
+      "forecast": {
+        "kind": "range",
+        "low": 10.39,
+        "high": 10.49
+      },
+      "outcome": {
+        "status": "pending",
+        "value": null,
+        "sourceUrl": null,
+        "checkedAt": null
+      },
+      "note": "Vor Veröffentlichung des FY2026-Konzernabschlusses protokollierte Unternehmensprognose. Keine UNITY-Kursprognose oder Kaufentscheidung."
+    },
+    {
+      "id": "VRT-FY2026-revenue-20261107",
+      "isin": "US92537N1081",
+      "ticker": "VRT",
+      "issuer": "Vertiv",
+      "recordedAt": "2026-11-07",
+      "sourcePublishedAt": "2026-10-28",
+      "sourceUrl": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-Third-Quarter-2026-with-Net-Sales-Growth-of-61-Organic-Orders-Growth-over-100-and-Diluted-EPS-Growth-of-91-Adjusted-Diluted-EPS-Growth-of-78-Raises-Full-Year-2026-Guidance-Across-All-Key-Metrics/default.aspx",
+      "sourceType": "official-issuer-2026-management-guidance",
+      "fiscalYear": 2026,
+      "periodEnd": "2026-12-31",
+      "metric": "revenue",
+      "unit": "USD",
+      "basis": "US-GAAP",
+      "forecast": {
+        "kind": "range",
+        "low": 14450000000,
+        "high": 14850000000
+      },
+      "outcome": {
+        "status": "pending",
+        "value": null,
+        "sourceUrl": null,
+        "checkedAt": null
+      },
+      "note": "Vor Veröffentlichung des FY2026-Konzernabschlusses protokollierte Unternehmensprognose. Keine UNITY-Kursprognose oder Kaufentscheidung."
+    },
+    {
+      "id": "VRT-FY2026-epsDiluted-20261107",
+      "isin": "US92537N1081",
+      "ticker": "VRT",
+      "issuer": "Vertiv",
+      "recordedAt": "2026-11-07",
+      "sourcePublishedAt": "2026-10-28",
+      "sourceUrl": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-Third-Quarter-2026-with-Net-Sales-Growth-of-61-Organic-Orders-Growth-over-100-and-Diluted-EPS-Growth-of-91-Adjusted-Diluted-EPS-Growth-of-78-Raises-Full-Year-2026-Guidance-Across-All-Key-Metrics/default.aspx",
+      "sourceType": "official-issuer-2026-management-guidance",
+      "fiscalYear": 2026,
+      "periodEnd": "2026-12-31",
+      "metric": "epsDiluted",
+      "unit": "USD/shares",
+      "basis": "US-GAAP",
+      "forecast": {
+        "kind": "point",
+        "value": 6.29
+      },
+      "outcome": {
+        "status": "pending",
+        "value": null,
+        "sourceUrl": null,
+        "checkedAt": null
+      },
+      "note": "Vor Veröffentlichung des FY2026-Konzernabschlusses protokollierte Unternehmensprognose. Keine UNITY-Kursprognose oder Kaufentscheidung."
+    }
+  ]
+}

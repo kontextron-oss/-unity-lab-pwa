@@ -74,7 +74,7 @@ assert.ok(Math.abs(vm.runInContext('unityReverseImpliedGrowth(baseline,target,10
 assert.equal(vm.runInContext('unityReverseDcfPerShare(1,5,3,2,5)',ctx),null);
 const index=fs.readFileSync('index.html','utf8');
 const sw=fs.readFileSync('sw.js','utf8');
-assert.match(index,/reverse-valuation\.js\?v=0\.16\.0/);
-assert.match(sw,/reverse-valuation\.js\?v=0\.16\.0/);
-assert.match(sw,/unity-lab-v0\.16\.0/);
+assert.match(index,/reverse-valuation\.js\?v=0\.16\.1/);
+assert.match(sw,/reverse-valuation\.js\?v=0\.16\.1/);
+assert.match(sw,/unity-lab-v0\.16\.1/);
 console.log('UNITY 0.16 Eaton/Vertiv: strict same-ISIN 2026 GAAP forward P/E, reverse DCF and no-trade coverage passed.');

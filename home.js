@@ -3,8 +3,8 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.16.0';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.16.0');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.16.1';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.16.1');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
@@ -801,6 +801,7 @@ function unityHomeDetail(sid){
   if(typeof unityDecisionReadinessPanel==='function')h+=unityDecisionReadinessPanel(s);
   if(typeof unityDecisionPanel==='function')h+=unityDecisionPanel(s);
   if(typeof unityReadinessDetail==='function')h+=unityReadinessDetail(s);
+  if(typeof unityForesightPanel==='function')h+=unityForesightPanel(s);
   h+=unityZonePlanPanel(s);
   h+=unityAutoStockPanel(s);
   if(typeof unityPositionMonitorPanel==='function')h+=unityPositionMonitorPanel(s);

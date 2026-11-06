@@ -107,6 +107,8 @@ UNITY soll auf nachvollziehbaren, zeitgestempelten Kurs-, Unternehmens- und Erei
 | – | 2: Deterministische Entscheidungs-Engine · 0.15.1 | **offen** | – | Nach iPhone-Kontrolle Schritt 2 beginnen |
 | – | 3–7 | **offen** | – | Erst nach Abnahme der vorherigen Schritte |
 
+**Bedienungs-Update 06.11.2026:** UNITY **0.15.0.1** ergänzt in der Aktienübersicht eine sichtbare Schaltfläche **„Eigene Reihenfolge“**. Damit können Aktien bewusst per Ziehgriff oder Pfeilen sortiert werden; die Sortierauswahl bleibt als lokale Einstellung beim Neustart bestehen. Vorhandenes Hinzufügen, Archivieren/Wiederherstellen und Zurücksetzen einzelner Testdepotpositionen bleibt unverändert. [PR #44](https://github.com/kontextron-oss/-unity-lab-pwa/pull/44), CI und GitHub Pages erfolgreich. Dies ist eine kleine Bedienkorrektur, **kein** Beginn oder Abschluss der Entscheidungs-Engine 0.15.1. iPhone-Praxistest noch offen.
+
 ## 7. Wiederaufnahme in ChatGPT Work
 Arbeiten im GitHub-Repository `kontextron-oss/-unity-lab-pwa`; neueste `main` als Quelle der Wahrheit, insbesondere dieser Plan und die kritische Analyse. Keine erneute Grundsatzbestätigung notwendig; bestehende UI und lokale Testdaten unbeschädigt lassen. Je Sitzung genau den ersten offenen Teilpunkt mit Code, Tests, PR und aktualisierter Fortschrittszeile umsetzen. Ein Bericht über erfolgreiche Tests ersetzt nicht den praktischen iPhone-Test.
 

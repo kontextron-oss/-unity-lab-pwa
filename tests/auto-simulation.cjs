@@ -54,7 +54,7 @@ assert.match(invoke('unityAutoOrdersSummary()'),/Gesamtbudget für automatische 
 assert.match(invoke('unityAutoOrdersSummary()'),/Noch nicht festgelegt/);
 assert.match(invoke('unityAutoStockPanel(sellStock)',Object.assign(sandbox,{sellStock})),/Automatischer Testverkauf/);
 assert.match(invoke('unityAutoStockBadge(buyStock)',Object.assign(sandbox,{buyStock})),/vorgemerkt/);
-assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/Betrag noch festzulegen/);
+assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/bitte Betrag festlegen/);
 assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/Betrag speichern/);
 assert.match(invoke('unityAutoBuyControls(buyStock,unityAutoBuy(buyStock),"technical")'),/100.00/);
 (async()=>{

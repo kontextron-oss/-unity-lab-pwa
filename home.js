@@ -322,28 +322,48 @@ function unityAutoOrdersSummary(){
   const sell=trades.filter(t=>t.type==='SELL').reduce((n,t)=>n+
     (Number(t.amount)||0)*(Number(t.fx)||0)-(Number(t.fee)||0),0);
   const capital=typeof depotCapital==='function'?depotCapital():null;
+  const budget=unityAutoBudgetStatus();
   let h='<section class="panel home-auto-desk" aria-label="Automatisierung im Simulationsdepot">'+
     '<h2>Automatik · Testdepot</h2>'+
-    '<p class="tiny muted">Nur fiktive Käufe und Verkäufe. Keine Brokerverbindung, kein Hintergrundhandel. Prüfung beim neuen Tageskurs in der geöffneten App. Mehrere vorgemerkte Testkäufe werden einzeln und nacheinander geprüft; Kapital wird nicht vorab reserviert.</p>'+
+    '<p class="tiny muted">Nur fiktive Käufe und Verkäufe; keine Brokerverbindung oder Hintergrundausführung. Je Aktie einen festen Eurobetrag wählen. Mehrere Aufträge werden bei neuen Tageskursen einzeln geprüft; Kapital wird nicht vorab reserviert. Verkaufsbeträge füllen das automatische Kaufbudget nicht wieder auf.</p>'+
     '<div class="home-auto-totals">'+
       '<div><small>Vorgemerkte Aufträge</small><b>'+orders.length+'</b></div>'+
       '<div><small>Automatisch für Testkäufe eingesetzt</small><b>'+depotMoney(buy)+'</b></div>'+
       '<div><small>Automatische Testverkaufserlöse</small><b>'+depotMoney(sell)+'</b></div>'+
       '<div><small>Freies Testkapital</small><b>'+(capital?.configured?depotMoney(capital.free):'Noch nicht festgelegt')+'</b></div>'+
       '</div>';
-  if(!orders.length)h+='<p class="tiny muted">Keine Aufträge aktiv. Aktie öffnen und dort zwischen technischem Testkauf (ab 2 %) und strenger UNITY-Freigabe wählen.</p>';
+  const budgetStamp=budget.updatedAt&&Number.isFinite(Date.parse(budget.updatedAt))?
+    ' · gespeichert '+new Date(budget.updatedAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  h+='<div class="home-auto-budget"><h3>Gesamtbudget für automatische Testkäufe</h3>'+
+    '<div class="home-auto-budget-metrics"><span><small>Budgetgrenze</small><b>'+
+    (budget.configured?depotMoney(budget.limit):'Noch nicht festgelegt')+'</b></span>'+
+    '<span><small>Bereits automatisch gekauft</small><b>'+depotMoney(budget.spent)+'</b></span>'+
+    '<span><small>Verfügbarer Budgetrest</small><b>'+(budget.configured?depotMoney(budget.remaining):'–')+'</b></span></div>'+
+    '<div class="actions"><label class="tiny">Gesamtlimit in EUR<input id="auto-total-budget" inputmode="decimal" type="number" min="1" max="1000000000" step="0.01" value="'+
+    (budget.configured?Number(budget.limit).toFixed(2):'')+'" placeholder="z. B. 2000"></label>'+
+    '<button type="button" class="primary" data-home-auto-budget-save>Budget speichern</button></div>'+
+    '<small class="home-auto-budget-state" role="status" aria-live="polite">'+
+    esc(budget.configured?'✓ Budget gespeichert'+budgetStamp+'. Neue Testkäufe dürfen die Grenze nicht überschreiten.':
+      'Für neue automatische Euro-Aufträge zuerst das Gesamtbudget festlegen. Bestehende Prozentaufträge bleiben unverändert.')+
+    '</small></div>';
+  if(!orders.length)h+='<p class="tiny muted">Keine Aufträge aktiv. Aktie öffnen und dort zwischen technischem und strengem UNITY-Testkauf wählen.</p>';
   for(const order of orders){
     const stock=(cache.instruments||[]).find(s=>s.id===order.instrumentId);
     const kind=order.kind==='auto-test-buy'?'Kauf':'Verkauf';
-    const label=order.kind==='auto-test-buy'?unityAutoBuyModeLabel(order.mode||'strict')+' · '+unityAutoBuyPercent(order)+' %':'Technische Verkaufszone · gesamter Testbestand';
+    const euro=unityAutoEurAmount(order);
+    const label=order.kind==='auto-test-buy'?unityAutoBuyModeLabel(order.mode||'strict')+' · '+
+      (Number.isFinite(euro)&&euro>0?depotMoney(euro):unityAutoBuyPercent(order)+' % · Altauftrag'):
+      'Technische Verkaufszone · gesamter Testbestand';
     const signal=stock&&order.kind==='auto-test-buy'?unityAutoBuyEntry(stock,order.mode||'strict'):null;
     const status=!stock||stock.watchArchivedAt?'Aktie archiviert · Auftrag beenden':
+      order.kind==='auto-test-buy'&&budget.configured&&budget.remaining<
+        (Number.isFinite(euro)?euro:0.01)?'Budgetrest reicht nicht aus · Budget oder Betrag ändern':
       order.kind==='auto-test-buy'&&signal?.ready?'Kriterium erreicht · auf neuen Tageskurs nach Aktivierung prüfen':
       order.kind==='auto-test-buy'?'Wartet auf berechnete Kaufbedingung':'Wartet auf Verkaufsbedingung';
     h+='<div class="home-auto-task"><div><strong>'+esc(stock?.name||order.instrumentId)+' · '+kind+'</strong>'+
       '<small>'+esc(label)+'</small><small>'+esc(status)+'</small></div>'+
       '<span class="actions">'+
-      (kind==='Kauf'&&stock?'<button type="button" class="primary" data-home-auto-edit="'+esc(order.instrumentId)+'">Anteil ändern</button>':'')+
+      (kind==='Kauf'&&stock?'<button type="button" class="primary" data-home-auto-edit="'+esc(order.instrumentId)+'">Betrag ändern</button>':'')+
       '<button type="button" class="secondary" data-home-'+(kind==='Kauf'?'auto-buy':'auto-sell')+'="'+esc(order.instrumentId)+'">Auftrag stoppen</button></span></div>';
   }
   if(trades.length){

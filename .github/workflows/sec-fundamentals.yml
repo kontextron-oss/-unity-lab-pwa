@@ -5,6 +5,9 @@ on:
     paths:
       - scripts/refresh_sec_fundamentals.py
       - tests/test_sec_fundamentals.py
+      - scripts/refresh_foresight_outcomes.py
+      - tests/test_foresight_outcomes.py
+      - data/foresight-checkpoints.json
       - .github/workflows/sec-fundamentals.yml
   schedule:
     - cron: '22 8 * * 1-5'
@@ -27,15 +30,19 @@ jobs:
           python-version: '3.12'
       - name: Validate SEC issuer registry, facts and non-destructive fallback
         run: python -m unittest discover -s tests -p 'test_sec_fundamentals.py'
+      - name: Validate source-locked foresight audit and non-destructive revisions
+        run: python -m unittest discover -s tests -p 'test_foresight_outcomes.py' -v
       - name: Fetch issuer-bound SEC XBRL facts
         run: python scripts/refresh_sec_fundamentals.py
+      - name: Audit published FY2026 management forecasts against new annual SEC facts
+        run: python scripts/refresh_foresight_outcomes.py
       - name: Publish complete source snapshot
         run: |
           git config user.name "unity-lab-data-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/sec-fundamentals.json
+          git add data/sec-fundamentals.json data/foresight-outcomes.json
           if git diff --cached --quiet; then
-            echo "No SEC fundamentals changes"
+            echo "No SEC fundamentals or foresight audit changes"
           else
             git commit -m "data: refresh SEC fundamentals snapshot [skip ci]"
             for attempt in 1 2 3; do

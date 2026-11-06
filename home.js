@@ -467,45 +467,82 @@ function unityAutoStockPanel(s){
     '<p class="tiny muted">Prüfung nur mit gültigen Schlusskursen, frühestens ab dem nächsten Handelstag nach Aktivierung. Keine Echtzeitorder und keine garantierte Ausführung zum angezeigten Preis.</p></section>';
 }
 let unityAutoTestRunBusy=false;
+/* Every confirmed trigger is recorded BEFORE any modeled fill. A signal on
+   close D must never be booked at D's already observed price. Filled orders
+   require a later independently observed EOD and a transaction-safe writer. */
 async function unityRunAutoTestBuys(){
-  if(unityAutoTestRunBusy||typeof cache==='undefined'||!cache.settings||typeof depotCapital!=='function')return;
+  if(unityAutoTestRunBusy||typeof cache==='undefined'||!Array.isArray(cache.settings)||
+     typeof unityPaperAtomicFill!=='function'||typeof depotCapital!=='function')return;
   unityAutoTestRunBusy=true;
   try{
-  for(const s of stocks()){
-    const order=unityAutoBuy(s);if(!order)continue;
-    const mode=order.mode||'strict',entry=unityAutoBuyEntry(s,mode);
-    const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,mode):null;
-    if(!entry.ready||approval?.action!=='BUY'||approval.testActionEligible!==true)continue;
-    const signal=unityPullbackAlert(s);if(signal.kind!=='reached'||Number(signal.close)>entry.price||!signal.date||signal.date<=String(order.createdAt||'').slice(0,10))continue;
-    const capital=depotCapital();if(!capital.configured||!(capital.free>0))continue;
-    const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN);
-    const price=Number(signal.close),fixed=unityAutoEurAmount(order),budget=unityAutoBudgetStatus();
-    if(!budget.configured||!(fixed>=1))continue;
-    const cents=Math.round(fixed*100),freeCents=Math.floor(capital.free*100+1e-7),
-      budgetCents=Math.floor(budget.remaining*100+1e-7);
-    if(!(price>0&&rate>0&&cents>=100&&freeCents>=cents&&budgetCents>=cents))continue;
-    const amount=cents/100,quantity=amount/(price*rate);
-    const at=new Date().toISOString(),modeLabel=unityAutoBuyModeLabel(mode),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: '+modeLabel+' · '+depotMoney(amount)+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf · '+modeLabel,buy:'Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:mode==='technical'?'Technische Kaufzone erreicht; kleiner simulierter Testkauf. Keine reale Order.':'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.',unityDecision:{version:approval.version,action:approval.action,mode:approval.mode,reasonCode:approval.reasonCode,signalAt:approval.signalAt,priceRef:approval.priceRef,veto:approval.veto,sourceRefs:approval.sourceRefs}}};
-    if(typeof unityDecisionLedgerCapture==='function')await unityDecisionLedgerCapture(s,mode,approval);
-    await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_BUY',trade.id,s.ticker+' · '+number(quantity,4)+' Stück');
-    await refresh();
-  }
-  for(const s of stocks()){
-    const order=unityAutoSell(s);if(!order)continue;
-    const exit=unityAutoExitZone(s),quote=unityHomeQuote(s),position=depotPosition(s);
-    const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,'technical'):null;
-    if(approval?.action!=='SELL'||approval.testActionEligible!==true)continue;
-    if(!quote.x||!quote.quality?.canCompare||!quote.technical||quote.x.dynamicExperimental||
-      quote.x.currency!==s.currency||!quote.x.date||quote.x.date<=String(order.createdAt||'').slice(0,10)||
-      !(position.qty>0&&(approval.reasonCode==='verified-exit'||(exit>0&&Number(quote.x.price)<=exit))))continue;
-    const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN),price=Number(quote.x.price);
-    if(!(price>0&&rate>0))continue;
-    const at=new Date().toISOString(),sellReason=approval.reasonCode==='verified-exit'?
-      'Quellengebundene fundamentale Verschlechterung der bestehenden Position':
-      'Technische Verkaufszone unterschritten',trade={id:id(),instrumentId:s.id,type:'SELL',quantity:position.qty,price,fx:rate,amount:position.qty*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testverkauf: '+sellReason+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testverkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testverkauf',sell:sellReason,quoteDate:quote.x.date,quotePrice:price,reason:'Prüfbarer UNITY-Schutzgrund im Simulationsdepot. Keine reale Order.',unityDecision:{version:approval.version,action:approval.action,mode:approval.mode,reasonCode:approval.reasonCode,signalAt:approval.signalAt,priceRef:approval.priceRef,veto:approval.veto,sourceRefs:approval.sourceRefs}}};
-    if(typeof unityDecisionLedgerCapture==='function')await unityDecisionLedgerCapture(s,'technical',approval);
-    await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_SELL',trade.id,s.ticker+' · '+number(position.qty,4)+' Stück');await refresh();
-  }
+    for(const s of stocks()){
+      const order=unityAutoBuy(s);if(!order)continue;
+      const mode=order.mode||'strict',quote=unityHomeQuote(s);
+      const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+      if(!unityPaperQuoteValid(s,quote,fx))continue;
+      const date=String(quote.x.date||'');
+      if(order.triggerQuoteDate){
+        if(!(date>order.triggerQuoteDate))continue;
+        // The next observed bar is an estimated market-on-close fill, NOT a
+        // real fill or a look-ahead purchase at the triggering day's close.
+        const current=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,mode):null;
+        if(!current||current.reasonCode==='missing-data'||current.reasonCode==='risk-veto'||
+           current.reasonCode==='event-veto'||current.action==='BLOCKED')continue;
+        const result=await unityPaperAtomicFill(order,s,'BUY',quote,fx,current);
+        if(result.status==='limit-exceeded'){
+          await unityPaperClearTrigger(order,result.reason);
+          await refresh();
+          continue;
+        }
+        if(result.status==='filled'){
+          await refresh();
+          if(typeof unityDecisionLedgerCapture==='function')try{
+            await unityDecisionLedgerCapture(s,mode,current)
+          }catch(e){console.warn('UNITY Decision Ledger:',e)}
+        }
+        continue;
+      }
+      const entry=unityAutoBuyEntry(s,mode);
+      const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,mode):null;
+      if(!entry.ready||approval?.action!=='BUY'||approval.testActionEligible!==true)continue;
+      const signal=unityPullbackAlert(s);
+      if(signal.kind!=='reached'||Number(signal.close)>entry.price||!signal.date||
+         signal.date<=String(order.createdAt||'').slice(0,10))continue;
+      const capital=depotCapital(),budget=unityAutoBudgetStatus(),euros=unityAutoEurAmount(order),
+        fee=unityPaperPolicy().feeEur;
+      if(!capital.configured||!budget.configured||!(euros>=1)||!(euros>fee)||
+         !(capital.free>=euros&&budget.remaining>=euros))continue;
+      const result=await unityPaperArmOrder(order,{quoteDate:signal.date,
+        limit:entry.price,price:Number(signal.close)});
+      if(result.status==='triggered')await refresh();
+    }
+    for(const s of stocks()){
+      const order=unityAutoSell(s);if(!order)continue;
+      const quote=unityHomeQuote(s),fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
+      if(!unityPaperQuoteValid(s,quote,fx))continue;
+      const date=String(quote.x.date||'');
+      if(order.triggerQuoteDate){
+        if(!(date>order.triggerQuoteDate))continue;
+        const current=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,'technical'):null;
+        if(!current||current.reasonCode==='missing-data'||current.action==='BLOCKED')continue;
+        const result=await unityPaperAtomicFill(order,s,'SELL',quote,fx,current);
+        if(result.status==='filled'){
+          await refresh();
+          if(typeof unityDecisionLedgerCapture==='function')try{
+            await unityDecisionLedgerCapture(s,'technical',current)
+          }catch(e){console.warn('UNITY Decision Ledger:',e)}
+        }
+        continue;
+      }
+      const exit=unityAutoExitZone(s),position=depotPosition(s);
+      const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,'technical'):null;
+      if(approval?.action!=='SELL'||approval.testActionEligible!==true||!(position.qty>0)||
+         !(approval.reasonCode==='verified-exit'||(exit>0&&Number(quote.x.price)<=exit))||
+         date<=String(order.createdAt||'').slice(0,10))continue;
+      const result=await unityPaperArmOrder(order,{quoteDate:date,
+        limit:exit||null,price:Number(quote.x.price)});
+      if(result.status==='triggered')await refresh();
+    }
   }finally{unityAutoTestRunBusy=false;}
 }
 

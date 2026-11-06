@@ -174,6 +174,10 @@ def build_issuer(ticker, issuer, now):
     # Old logic maximised the number of rows, which incorrectly promoted 2009
     # Adobe / 2018 Microsoft / 2022 Quanta as 'latest'.
     candidate_ends = {r["periodEnd"] for key in REQUIRED_CORE for r in series.get(key, ())}
+    if not candidate_ends:
+        # Keep a supplemental-only source visible for review, but never
+        # classify it as complete without the five required core facts.
+        candidate_ends = {r["periodEnd"] for rows in series.values() for r in rows}
     now_day = dt.datetime.fromisoformat(now.replace("Z", "+00:00")).date()
     valid_ends = [end for end in candidate_ends if dt.date.fromisoformat(end) <= now_day]
     end = max(valid_ends, default="")

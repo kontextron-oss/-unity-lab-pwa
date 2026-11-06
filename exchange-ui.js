@@ -1,6 +1,6 @@
 'use strict';
 /*
- * UNITY 0.15.3.2 – manual, explicit private export of read-only test orders.
+ * UNITY 0.15.3.3 – encrypted manual, explicit read-only test-order export.
  * This never connects to a remote server or writes imported records.
  * The existing incremental/full pCloud backup flow remains untouched.
  */
@@ -56,7 +56,12 @@ async function unityExchangePrepare(){
   unityExchangePending=null;
   const oldShare=document.getElementById('unity-exchange-share');
   if(oldShare)oldShare.hidden=true;
-  unityExchangeStatus('Prüfe aktuelle Testaufträge und erstelle neue SHA-256-Prüfsumme …');
+  const passInput=document.getElementById('unity-exchange-password'),
+    confirmInput=document.getElementById('unity-exchange-password-confirm');
+  const passphrase=passInput?.value,confirmation=confirmInput?.value;
+  UNITY_EXCHANGE_CRYPTO.validPassword(passphrase);
+  if(passphrase!==confirmation)throw Error('Die beiden Austausch-Passwörter stimmen nicht überein.');
+  unityExchangeStatus('Prüfe Testaufträge und verschlüssele den neuen Austauschstand lokal …');
   const payload=unityExchangeCurrentPayload(),prior=(cache.settings||[]).find(x=>x.id===UNITY_EXCHANGE_META_ID);
   const originId=prior?.originId&&/^[a-f0-9-]{36}$/i.test(prior.originId)?
     prior.originId:crypto.randomUUID(),revision=(Number.isSafeInteger(prior?.revision)?prior.revision:0)+1,
@@ -67,7 +72,20 @@ async function unityExchangePrepare(){
     authority:'local-iphone',purpose:'review-only',executionPermission:false,payload
   },unityExchangeHash);
   await UNITY_EXCHANGE_PROTOCOL.verify(envelope,unityExchangeHash);
-  // Metadata only. No orders, trades or budget are changed.
+  let encrypted;
+  try{
+    encrypted=await UNITY_EXCHANGE_CRYPTO.encrypt(envelope,passphrase,crypto,
+      UNITY_EXCHANGE_PROTOCOL,unityExchangeHash);
+    // A complete authenticated test round-trip before any export metadata write.
+    const checked=await UNITY_EXCHANGE_CRYPTO.decrypt(encrypted,passphrase,crypto,
+      UNITY_EXCHANGE_PROTOCOL,unityExchangeHash);
+    if(checked.verified.sha256!==envelope.sha256)
+      throw Error('Verschlüsselter Austauschstand konnte nicht überprüft werden.');
+  }finally{
+    if(passInput)passInput.value='';
+    if(confirmInput)confirmInput.value='';
+  }
+  // Local metadata only. No passwords, orders, trades or budget are changed.
   await put('settings',{id:UNITY_EXCHANGE_META_ID,originId,revision,
     lastExportedAt:exportedAt,lastSha256:envelope.sha256});
   if(Array.isArray(cache.settings)){
@@ -76,15 +94,18 @@ async function unityExchangePrepare(){
       lastSha256:envelope.sha256};
     if(idx<0)cache.settings.push(meta);else cache.settings[idx]=meta;
   }
-  const file=new File([JSON.stringify(envelope,null,2)],
-    'UNITY-AUSTAUSCH-NUR-PRUEFUNG_'+exportedAt.replace(/[:.]/g,'-')+'.json',
+  const file=new File([JSON.stringify(encrypted)],
+    'UNITY-AUSTAUSCH-VERSCHLUESSELT_'+exportedAt.replace(/[:.]/g,'-')+'.json',
     {type:'application/json'});
-  unityExchangePending={file,envelope};
+  // Keep only encrypted bytes in the pending file; never persist a passphrase
+  // or a plaintext exchange payload in the UI's pending-export state.
+  unityExchangePending={file};
   const share=document.getElementById('unity-exchange-share');
   if(share)share.hidden=false;
-  unityExchangeStatus('✓ Datei vorbereitet · '+payload.instruments.length+' Aktien · '+
-    payload.orders.length+' offene Aufträge · '+payload.trades.length+' Testbuchungen. '+
-    'Noch NICHT nach pCloud übertragen. Über „Datei teilen“ selbst speichern.');
+  unityExchangeStatus('✓ Verschlüsselte Datei geprüft und vorbereitet · '+
+    payload.instruments.length+' Aktien · '+payload.orders.length+' offene Aufträge · '+
+    payload.trades.length+' Testbuchungen. Noch NICHT nach pCloud übertragen. '+
+    'Passwort sicher getrennt aufbewahren; beim PC-Einlesen wieder eingeben.');
   return unityExchangePending;
 }
 function unityExchangeShare(){
@@ -93,7 +114,7 @@ function unityExchangeShare(){
   const file=pending.file;
   // Invoke iOS Share Sheet from a direct tap; no asynchronous preparatory read.
   if(navigator.canShare?.({files:[file]})&&navigator.share){
-    const task=navigator.share({files:[file],title:'UNITY – Nur Prüfung, keine Orderfreigabe'});
+    const task=navigator.share({files:[file],title:'UNITY – Verschlüsselter Austausch · nur Prüfung'});
     Promise.resolve(task).then(()=>unityExchangeStatus(
       'Datei an iOS-Dateifreigabe übergeben. Bitte Ablage in pCloud selbst kontrollieren.'))
     .catch(e=>unityExchangeStatus(e?.name==='AbortError'?'Teilen abgebrochen – Datei weiterhin vorbereitet.':
@@ -110,12 +131,29 @@ async function unityExchangeInspectSelected(){
   if(!file)throw Error('Bitte zunächst eine UNITY-Austauschdatei auswählen');
   if(file.size>UNITY_EXCHANGE_PROTOCOL.MAX_BYTES*1.8)throw Error('Datei zu groß – nicht eingelesen');
   unityExchangeStatus('Prüfe ausgewählte Datei und lese Unterschiede …');
-  const packet=JSON.parse(await file.text());
-  const report=await UNITY_EXCHANGE_PROTOCOL.verify(packet,unityExchangeHash);
+  const selected=JSON.parse(await file.text()),passwordInput=
+    document.getElementById('unity-exchange-inspect-password');
+  let packet,report,protectedFile=false;
+  try{
+    if(UNITY_EXCHANGE_CRYPTO.isEncrypted(selected)){
+      protectedFile=true;
+      const result=await UNITY_EXCHANGE_CRYPTO.decrypt(selected,passwordInput?.value,crypto,
+        UNITY_EXCHANGE_PROTOCOL,unityExchangeHash);
+      packet=result.packet;report=result.verified;
+    }else{
+      // Read-only legacy packets remain inspectable, never accepted as authority.
+      packet=selected;
+      report=await UNITY_EXCHANGE_PROTOCOL.verify(packet,unityExchangeHash);
+    }
+  }finally{
+    if(passwordInput)passwordInput.value='';
+  }
   const diff=UNITY_EXCHANGE_PROTOCOL.compare(unityExchangeCurrentPayload(),packet.payload);
   const conflicts=diff.reduce((n,r)=>n+r.conflicts,0),missing=diff.reduce((n,r)=>n+r.onlyRemote,0);
-  unityExchangeStatus('✓ Prüfsumme gültig · '+report.orders+' offene Aufträge · '+
-    report.trades+' automatische Testbuchungen · Unterschiede zum aktuellen iPhone: '+
+  unityExchangeStatus('✓ '+(protectedFile?'Verschlüsselung und Prüfsumme gültig':
+    'ALTE UNVERSCHLÜSSELTE DATEI · nur Integrität geprüft')+' · '+
+    report.orders+' offene Aufträge · '+report.trades+
+    ' automatische Testbuchungen · Unterschiede zum aktuellen iPhone: '+
     missing+' zusätzliche Datensätze, '+conflicts+' Konflikte. '+
     'NUR LESEN: Kein Auftrag importiert, keine Buchung ausgeführt, nichts überschrieben.');
 }

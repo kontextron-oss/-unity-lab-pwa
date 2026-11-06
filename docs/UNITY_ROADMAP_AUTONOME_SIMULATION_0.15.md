@@ -102,9 +102,13 @@ UNITY soll auf nachvollziehbaren, zeitgestempelten Kurs-, Unternehmens- und Erei
 ## 6. Fortschrittsprotokoll
 | Datum | Schritt | Status | Beleg | Nächste Aktion |
 |---|---|---|---|---|
-| 06.11.2026 | 0: Prüfung und Planung | **abgeschlossen** | Kritische Analyse, 0.14.2, dieser Arbeitsplan | Schritt 1 starten |
-| 06.11.2026 | 1: Daten- und Freigabe-Diagnose | **offen** | – | Datenstatusschema und Pilottests in Feature-Branch |
-| – | 2–7 | **offen** | – | Nur nach Abnahme des jeweiligen Vorgängers |
+| 06.11.2026 | 0: Prüfung und Planung | **abgeschlossen** | Kritische Analyse, 0.14.2, dieser Arbeitsplan | Schritt 1 umsetzen |
+| 06.11.2026 | 1: Daten- und Freigabe-Diagnose · **0.15.0** | **Code und CI abgeschlossen; iPhone-Praxistest offen** | [PR #43](https://github.com/kontextron-oss/-unity-lab-pwa/pull/43), [Issue #42](https://github.com/kontextron-oss/-unity-lab-pwa/issues/42), GitHub Actions und Pages erfolgreich | Auf dem iPhone 0.15.0 laden, Datenstatus der vier Piloten prüfen |
+| – | 2: Deterministische Entscheidungs-Engine · 0.15.1 | **offen** | – | Nach iPhone-Kontrolle Schritt 2 beginnen |
+| – | 3–7 | **offen** | – | Erst nach Abnahme der vorherigen Schritte |
 
 ## 7. Wiederaufnahme in ChatGPT Work
 Arbeiten im GitHub-Repository `kontextron-oss/-unity-lab-pwa`; neueste `main` als Quelle der Wahrheit, insbesondere dieser Plan und die kritische Analyse. Keine erneute Grundsatzbestätigung notwendig; bestehende UI und lokale Testdaten unbeschädigt lassen. Je Sitzung genau den ersten offenen Teilpunkt mit Code, Tests, PR und aktualisierter Fortschrittszeile umsetzen. Ein Bericht über erfolgreiche Tests ersetzt nicht den praktischen iPhone-Test.
+
+### Umsetzungsnotiz 06.11.2026 – Version 0.15.0
+Die schreibfreie Diagnose `readiness-audit.js` wurde mit Tests in `main` übernommen. Sie zeigt die Datenstatus-Zahlen über die Aktien-Masterliste, eine aufklappbare Pilotübersicht (ABB, Schneider Electric, Siemens Energy, Infineon) und je Aktie konkrete Lücken nach Kurs, Historie, FX, Berichten, Earnings, Bewertungsangaben, Guidance, These und Risiken. Technische Negativsignale (Trend/RSI), kritische Sicherheitsmargen, Chance/Risiko unter 2:1 und nahe Earnings werden ausdrücklich **getrennt** von fehlenden Daten ausgewiesen. Die Diagnose gibt selbst **keine Orders frei** und schreibt keine Depotdaten. **Praktischer iPhone-Test ist noch ausstehend.**

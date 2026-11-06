@@ -19,8 +19,12 @@ try{
  assert.throws(()=>runtime.privateDir(path.join(__dirname,'..','worker','test-local-state')),
    /OUTSIDE the public/,'Never store private state inside a public repo');
  assert.equal(runtime.currentStatus(sandbox).initialized,false);
- const created=runtime.init(sandbox,'2026-11-03T10:00:00Z');
+ const createdCli=command('init','--date','2026-11-03');
+ const created=runtime.readState(sandbox);
+ assert.equal(createdCli.revision,1);
  assert.equal(created.revision,1);
+ assert.equal(created.state.orders[0].activatedAt,'2026-11-03T10:00:00Z',
+   'CLI --date reproducibly sets synthetic activation, not a real order');
  assert.equal(created.state.enabled,false,'Default is explicit opt-out');
  assert.throws(()=>runtime.init(sandbox),/already exists/,'Never reinitialize and overwrite a ledger');
  assert.equal(command('status').initialized,true);

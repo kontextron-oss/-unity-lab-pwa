@@ -22,7 +22,8 @@ function unityPaperPolicyValidate(input){
   const spreadBps=Number(input?.spreadBps),slippageBps=Number(input?.slippageBps),feeEur=Number(input?.feeEur);
   if(!Number.isFinite(spreadBps)||spreadBps<0||spreadBps>200||
      !Number.isFinite(slippageBps)||slippageBps<0||slippageBps>200||
-     !Number.isFinite(feeEur)||feeEur<0||feeEur>100||Math.round(feeEur*100)!==feeEur*100)
+     !Number.isFinite(feeEur)||feeEur<0||feeEur>100||
+     Math.abs(Math.round(feeEur*100)-feeEur*100)>0.000001)
     throw Error('Spread und Slippage müssen zwischen 0 und 200 Basispunkten liegen, Gebühr zwischen 0 und 100 €.');
   return {spreadBps,slippageBps,feeEur};
 }
@@ -111,7 +112,8 @@ async function unityPaperArmOrder(order,trigger){
         triggerRefPrice:Number(trigger.price)||null,triggerMode:current.mode||'strict',
         state:'triggered'};
       os.put(next);
-      logs.put({id:'paper-signal:'+unityPaperFillId(order),at,type:'PAPER_ORDER_TRIGGER',
+      logs.put({id:'paper-signal:'+unityPaperFillId(order)+':'+encodeURIComponent(trigger.quoteDate),
+        at,type:'PAPER_ORDER_TRIGGER',
         ref:order.id,detail:'Signal '+trigger.quoteDate+' · nächster beobachteter Tageskurs wird als Modell-Fill verwendet'});
       result={status:'triggered',order:next};
     };
@@ -145,8 +147,10 @@ async function unityPaperClearTrigger(order,reason){
    serialize in IndexedDB; an abort leaves none of the three records committed. */
 async function unityPaperAtomicFill(order,s,side,quote,fx,approval){
   if(typeof db==='undefined'||!db)return {status:'blocked',reason:'Keine lokale Datenbank'};
-  if(!order?.triggerQuoteDate||!order.createdAt||!unityPaperQuoteValid(s,quote,fx))
-    return {status:'blocked',reason:'Kurs, Wechselkurs oder Auslöser nicht überprüfbar'};
+  if(!order?.triggerQuoteDate||!order.createdAt||!unityPaperQuoteValid(s,quote,fx)||
+     (side==='BUY'&&order.kind!=='auto-test-buy')||
+     (side==='SELL'&&order.kind!=='auto-test-sell'))
+    return {status:'blocked',reason:'Kurs, Wechselkurs oder Auftragsart nicht überprüfbar'};
   const quoteDate=quote.x.date;
   if(!(quoteDate>order.triggerQuoteDate))
     return {status:'waiting',reason:'Nächster Tageskurs nach dem Signal noch nicht vorhanden'};
@@ -162,6 +166,7 @@ async function unityPaperAtomicFill(order,s,side,quote,fx,approval){
       if(!settingsRows||!tradeRows)return;
       const current=settingsRows.find(x=>x.id===order.id);
       if(!current||current.active!==true||current.executedAt||
+         current.kind!==order.kind||current.instrumentId!==s.id||
          current.createdAt!==order.createdAt||current.triggerQuoteDate!==order.triggerQuoteDate){
         result={status:'already-settled',reason:'Auftrag nicht mehr unverändert aktiv'};return;
       }

@@ -6,6 +6,7 @@
  * the user's existing local Testdepot or a live market execution. */
 const crypto=require('node:crypto');
 const validDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&
+  Number.isFinite(Date.parse(x+'T00:00:00Z'))&&
   new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x;
 const cents=x=>Math.round(Number(x)*100);
 const sum=a=>a.reduce((n,x)=>n+x,0);

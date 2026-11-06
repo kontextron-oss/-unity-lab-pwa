@@ -79,9 +79,9 @@ def group_lines(words, y_tolerance=2.6):
         row["terms"].sort(key=lambda v: v[0])
     return rows
 
-def year_columns(rows, width, height, year, table_index):
+def year_columns(rows, width, height, year, table_index, min_header_fraction=0.0):
     """Use the actual printed year header, not hard-coded PDF pixel positions."""
-    values = sorted((x, y) for row in rows if row["y"] < height*0.42
+    values = sorted((x, y) for row in rows if height*min_header_fraction < row["y"] < height*0.42
                     for x, word in row["terms"] if word == str(year)
                     and width*0.16 < x < width*0.94
                     for y in [row["y"]])
@@ -94,9 +94,9 @@ def year_columns(rows, width, height, year, table_index):
         raise ValueError("FY header not identified in designated statement column")
     return xs[table_index]
 
-def parse_statement_row(words, width, height, year, column, label, max_y_fraction=1.0):
+def parse_statement_row(words, width, height, year, column, label, max_y_fraction=1.0, min_header_fraction=0.0):
     rows = group_lines(words)
-    year_x = year_columns(rows, width, height, year, column)
+    year_x = year_columns(rows, width, height, year, column, min_header_fraction)
     found = []
     for row in rows:
         if row["y"] > height*max_y_fraction:
@@ -167,7 +167,8 @@ def parse_issuer_pdf(spec, pdf_bytes):
             words = page.get_text("words", sort=True)
             try:
                 value = parse_statement_row(words, page.rect.width, page.rect.height,
-                                            spec["year"], table, label, max_y_fraction)
+                                            spec["year"], table, label, max_y_fraction,
+                                            0.08 if spec["name"] == "ABB" else 0.0)
             except ValueError:
                 if spec["name"] == "ABB":
                     rows = group_lines(words)

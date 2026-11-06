@@ -17,12 +17,12 @@ function syntheticFeed(date,generatedAt){
       date,price,points,source:'SYNTHETIC UNIT-TEST FIXTURE'}
   }};
 }
-function syntheticState(){
+function syntheticState(activatedAt='2026-11-03T10:00:00Z'){
   const s=sampleState();
   s.enabled=true;s.budgetEur=150;s.openingCashEur=1000;s.instruments=[{...INSTRUMENT}];
   s.orders=[{id:'sandbox-buy-1',instrumentId:INSTRUMENT.id,side:'BUY',
     mode:'technical-demo',sandboxApproved:true,active:true,state:'waiting',
-    amountEur:100,activatedAt:'2026-11-03T10:00:00Z'}];
+    amountEur:100,activatedAt}];
   return s;
 }
 module.exports={syntheticFeed,syntheticState,INSTRUMENT};

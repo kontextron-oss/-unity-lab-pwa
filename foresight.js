@@ -4,6 +4,7 @@
  * No guessed earnings calendar, no stock-price prediction, no order approval.
  * Public reference-only dataset; the user's personal financial data stay local. */
 let unityForesightData=null,unityForesightError='',unityForesightLoading=false;
+let unityForesightOutcomes=null,unityForesightAuditError='';
 const UNITY_FORESIGHT_METRICS={
  revenue:{label:'Konzernumsatz',unit:'USD',concept:'RevenueFromContractWithCustomerExcludingAssessedTax'},
  epsDiluted:{label:'Verwässerter GAAP-Gewinn je Aktie',unit:'USD/shares',concept:'EarningsPerShareDiluted'}
@@ -50,6 +51,19 @@ async function unityForesightLoad(){
     throw Error('Vorausschau-Protokoll: ungültige oder widersprüchliche Quelldaten');
   unityForesightData=o;
   unityForesightError='';
+  try{
+   const res=await fetch('./data/foresight-outcomes.json',{cache:'default',credentials:'omit'});
+   if(!res.ok)throw Error('HTTP '+res.status);
+   const audit=await res.json();
+   if(audit?.schemaVersion!==1||!audit.entries||
+      typeof audit.entries!=='object'||Array.isArray(audit.entries))
+     throw Error('Ungültiges SEC-Prüfprotokoll');
+   unityForesightOutcomes=audit;
+   unityForesightAuditError='';
+  }catch(e){
+   unityForesightAuditError=String(e?.message||e);
+   unityForesightOutcomes=null;
+  }
  }catch(e){unityForesightError=String(e?.message||e)}
  finally{
   unityForesightLoading=false;
@@ -88,6 +102,71 @@ function unityForesightCompare(stock,checkpoint,report){
    value:actual.value,sourceUrl:actual.sourceUrl,filedAt:actual.filedAt,
    errorPercent:error,rangeKind:f.kind,recordedAt:checkpoint.recordedAt};
 }
+function unityForesight2025Baseline(report,metric){
+ if(!report)return null;
+ if(report.latestFiling?.periodEnd==='2025-12-31')
+  return unityForesightFiledMetric(report,metric,'2025-12-31');
+ // Keep the old FY2025 base after FY2026 becomes the latest audited filing.
+ // Do not accidentally compare FY2026 guidance against FY2026 actual.
+ if(report.priorFiling?.periodEnd!=='2025-12-31')return null;
+ const prior={...report,
+  latestFiling:{...report.latestFiling,periodEnd:'2025-12-31'},
+  metrics:report.priorMetrics||{}};
+ return unityForesightFiledMetric(prior,metric,'2025-12-31');
+}
+function unityForesightAuditedResult(checkpoint,doc=unityForesightOutcomes){
+ const entry=doc?.entries?.[checkpoint?.id];
+ if(!entry||entry.id!==checkpoint.id||entry.isin!==checkpoint.isin||
+   entry.metric!==checkpoint.metric||entry.periodEnd!==checkpoint.periodEnd||
+   entry.recordedAt!==checkpoint.recordedAt||
+   entry.guidanceSourceUrl!==checkpoint.sourceUrl||
+   JSON.stringify(entry.forecast)!==JSON.stringify(checkpoint.forecast)||
+   !['verified','verified-previous-source-unavailable','revision-review'].includes(entry.status))
+  return null;
+ const verified=entry.verified;
+ if(!verified||verified.unit!==checkpoint.unit||
+   verified.periodEnd!==checkpoint.periodEnd||
+   verified.concept!=='us-gaap:'+UNITY_FORESIGHT_METRICS[checkpoint.metric].concept||
+   !/^https:\/\/data\.sec\.gov\/api\/xbrl\/companyfacts\/CIK\d{10}\.json$/.test(String(verified.sourceUrl||''))||
+   !unityForesightFinite(verified.value)||verified.value<=0||
+   !unityForesightValidDateAfter(verified.filedAt,checkpoint.recordedAt)||
+   verified.filedAt<checkpoint.periodEnd)return null;
+ return {status:verified.category,value:verified.value,
+   sourceUrl:verified.sourceUrl,filedAt:verified.filedAt,
+   errorPercent:verified.errorPercent,rangeKind:checkpoint.forecast.kind,
+   recordedAt:checkpoint.recordedAt,
+   auditStatus:entry.status,observedCandidate:entry.observedCandidate};
+}
+function unityForesightPriority(snapshot){
+ const reviews=snapshot.checkpoints.filter(c=>c.measurement?.auditStatus==='revision-review');
+ if(reviews.length)return {rank:0,key:'review',label:'Abweichung prüfen',
+   reason:'Eine spätere SEC-Korrektur widerspricht einem bereits festgehaltenen Istwert. Keine automatische Ersetzung.',
+   trigger:'Jahreswert und SEC-Änderungsmitteilung abgleichen',sourceUrl:reviews[0].measurement.sourceUrl};
+ if(snapshot.calendar?.confirmed&&snapshot.calendar.daysUntil<=14)
+  return {rank:1,key:'earnings',label:'Ereignis bevorstehend',
+   reason:'Offiziell bestätigter Ergebnisbericht in '+snapshot.calendar.daysUntil+' Tagen.',
+   trigger:'Am '+snapshot.calendar.date+' neue Guidance und Ergebnisrisiko prüfen',
+   sourceUrl:snapshot.calendar.sourceUrl};
+ if(snapshot.checkpoints.some(c=>c.measurement?.auditStatus==='verified'))
+  return {rank:2,key:'audit',label:'Ergebnisabgleich verfügbar',
+   reason:'Ein vorab protokolliertes Prognoseziel ist anhand neuer Konzernzahlen überprüft.',
+   trigger:'Prognoseabweichungen und Quellen prüfen',
+   sourceUrl:snapshot.checkpoints.find(c=>c.measurement?.auditStatus==='verified')?.measurement?.sourceUrl};
+ if(snapshot.expectations.impliedFiveYearFcfGrowthAt10Pct!==null&&
+    snapshot.expectations.impliedFiveYearFcfGrowthAt10Pct>=25)
+  return {rank:3,key:'expectations',label:'Markterwartung prüfen',
+   reason:'Der aktuelle Kurs unterstellt in einem offengelegten Modell mindestens 25 % jährlichen FCF-Zuwachs.',
+   trigger:'Auftragsentwicklung, Guidance und Bewertung erneut abgleichen',
+   sourceUrl:snapshot.guidanceSource};
+ if(snapshot.checkpoints.length)
+  return {rank:4,key:'monitor',label:'Prognose im Blick',
+   reason:'Quellengebundene Unternehmensprognose wurde vor dem Jahresergebnis festgehalten.',
+   trigger:snapshot.nextCheck,sourceUrl:snapshot.guidanceSource};
+ return {rank:5,key:'sources',label:'Quellen fehlen',
+   reason:'Keine vergleichbare quantitative Unternehmensprognose protokolliert.',
+   trigger:'Nächste offizielle Guidance oder bestätigten Earnings-Termin prüfen',
+   sourceUrl:snapshot.guidanceSource};
+}
 function unityForesightCalendar(stock){
  const item=typeof unityIssuerCalendarItem==='function'?unityIssuerCalendarItem(stock):null;
  const fresh=typeof unityIssuerCalendarFresh==='function'&&unityIssuerCalendarFresh();
@@ -109,9 +188,10 @@ function unityForesightSnapshot(stock,options={}){
  const calendar=options.calendar===undefined?unityForesightCalendar(stock):options.calendar;
  const reverse=options.reverse===undefined?
    (typeof unityReverseValuation==='function'?unityReverseValuation(stock):null):options.reverse;
- const baseline=report?.latestFiling?.periodEnd==='2025-12-31'?report:null;
+ // 2025 is a historical baseline even after a genuine FY2026 filing arrives.
  const evaluations=related.map(c=>{
-  const current=baseline&&unityForesightFiledMetric(baseline,c.metric,'2025-12-31');
+  const current=unityForesight2025Baseline(report,c.metric);
+  const archived=unityForesightAuditedResult(c);
   const forecast=c.forecast;
   return {id:c.id,metric:c.metric,periodEnd:c.periodEnd,recordedAt:c.recordedAt,
    sourcePublishedAt:c.sourcePublishedAt,sourceUrl:c.sourceUrl,unit:c.unit,forecast,
@@ -119,7 +199,7 @@ function unityForesightSnapshot(stock,options={}){
     {low:unityForesightPercent(forecast.low,current.value),
      high:unityForesightPercent(forecast.high,current.value)}:
     current?{point:unityForesightPercent(forecast.value,current.value)}:null,
-   measurement:unityForesightCompare(stock,c,report)};
+   measurement:archived||unityForesightCompare(stock,c,report)};
  });
  // Unconfirmed calendar dates are NOT guessed from previous cycles.
  const sensitivity=reverse?.status==='diagnostic'&&Array.isArray(reverse.impliedAnnualFcfGrowth)?
@@ -139,7 +219,8 @@ function unityForesightSnapshot(stock,options={}){
   nextCheck:calendar?.confirmed?'Offizieller Ergebnisbericht '+calendar.date:
     related.length?'FY2026-Konzernabschluss und neue offizielle Guidance prüfen':
     'Nächste belegte Guidance und offiziellen Ergebnistermin prüfen',
-  confidence:'Quellenabdeckung, keine Erfolgswahrscheinlichkeit'};
+  confidence:'Quellenabdeckung, keine Erfolgswahrscheinlichkeit',
+  auditCheckedAt:unityForesightOutcomes?.generatedAt||null};
 }
 function unityForesightMaster(list,options={}){
  const all=(Array.isArray(list)?list:typeof stocks==='function'?stocks():[])
@@ -166,13 +247,15 @@ function unityForesightHtmlCheckpoint(c){
  const growth=delta?.point!==undefined?' · gegenüber 2025 rechnerisch '+delta.point+' %':
    delta?.low!==undefined?' · gegenüber 2025 rechnerisch '+delta.low+' bis '+delta.high+' %':'';
  const result=c.measurement,measured=result?.value!==null&&result?.value!==undefined;
+ const revisionWarning=result?.auditStatus==='revision-review'?
+   ' · SEC-Nachmeldung weicht vom gespeicherten Istwert ab – Quellenprüfung erforderlich':'';
  const published=measured?
    ' · Tatsächlich: '+unityForesightFormat(result.value,c.unit)+
    ' · '+(result.status==='within-guidance'?'innerhalb der Prognosespanne':
          result.status==='above-guidance'?'oberhalb der Prognosespanne':
          result.status==='below-guidance'?'unterhalb der Prognosespanne':
          'Abweichung vom prognostizierten Mittelpunkt')+
-   ' ('+result.errorPercent+' % gegenüber Referenz)':
+   ' ('+result.errorPercent+' % gegenüber Referenz)'+revisionWarning:
    ' · Ergebnis aus dem geprüften FY2026-Konzernabschluss noch offen';
  return '<div class="unity-issuer-event"><span><strong>'+esc(metric.label+' FY2026 · '+band)+'</strong>'+
    '<small>Prognose am '+esc(c.recordedAt)+' unveränderlich protokolliert'+esc(growth+published)+'</small></span>'+
@@ -197,16 +280,21 @@ function unityForesightPanel(stock){
    s.expectations.impliedFiveYearFcfGrowthAt10Pct+' % p. a. unter einer 10-%-Diskontannahme. '+
    (s.expectations.status==='demanding-under-assumption'?'Anspruchsvoll unter dieser Modellannahme. ':'')+
    'Dies ist keine eigene Unternehmenswachstumsprognose.</p>';
- h+='<p class="tiny muted"><b>Als Nächstes prüfen:</b> '+esc(s.nextCheck)+
-   '. Ein Unternehmenssignal allein setzt keine UNITY-Kaufregel außer Kraft.</p></section>';
+ const priority=unityForesightPriority(s);
+ h+='<p class="tiny muted"><b>Prüfpriorität · '+esc(priority.label)+':</b> '+
+   esc(priority.reason)+' <b>Nächster Schritt:</b> '+esc(priority.trigger)+'.</p>';
+ if(s.auditCheckedAt)h+='<p class="tiny muted">Automatischer Jahresergebnis-Abgleich: '+
+   esc(s.auditCheckedAt.slice(0,10))+' · '+esc(unityForesightOutcomes?.source||'SEC')+'</p>';
+ else h+='<p class="tiny muted">Automatischer Jahresergebnis-Abgleich noch nicht initialisiert'+
+   (unityForesightAuditError?' · Quelle derzeit nicht geladen':'')+'.</p>';
+ h+='<p class="tiny muted">Ein Unternehmenssignal allein setzt keine UNITY-Kaufregel außer Kraft.</p></section>';
  return h;
 }
 function unityForesightOverview(list){
  const r=unityForesightMaster(list);
  const entries=r.snapshots.filter(s=>s.status!=='insufficient-data').sort((a,b)=>{
-  const aUrgent=a.calendar?.confirmed?a.calendar.daysUntil:9999;
-  const bUrgent=b.calendar?.confirmed?b.calendar.daysUntil:9999;
-  return aUrgent-bUrgent||b.checkpoints.length-a.checkpoints.length||a.name.localeCompare(b.name);
+  const pa=unityForesightPriority(a),pb=unityForesightPriority(b);
+  return pa.rank-pb.rank||b.checkpoints.length-a.checkpoints.length||a.name.localeCompare(b.name);
  });
  let h='<section class="panel unity-foresight"><h2>Vorausschau-Radar · Erwartungen vor den Ergebnissen</h2>'+
   '<p class="tiny muted">Unternehmen und Frühindikatoren werden anhand festgehaltener Primärquellen beobachtet. '+'Zahlen ohne vergleichbares späteres Ergebnis bleiben ausdrücklich offen; es gibt keine erfundene Trefferquote.</p>'+
@@ -217,10 +305,10 @@ function unityForesightOverview(list){
  }else{
   h+='<div class="unity-issuer-events">';
   for(const item of entries.slice(0,6)){
-   h+='<div class="unity-issuer-event"><span><strong>'+esc(item.name)+'</strong>'+
-    '<small>'+item.checkpoints.length+' protokollierte Werte · '+esc(item.nextCheck)+
-    (item.expectations.status==='demanding-under-assumption'?' · hohe implizite Modellanforderung':'')+
-    '</small></span></div>';
+   const priority=unityForesightPriority(item);
+   h+='<div class="unity-issuer-event"><span><strong>'+esc(item.name)+' · '+esc(priority.label)+'</strong>'+
+    '<small>'+esc(priority.reason)+' · '+esc(priority.trigger)+
+    ' · '+item.checkpoints.length+' protokollierte Prognosewerte</small></span></div>';
   }
   h+='</div>';
  }

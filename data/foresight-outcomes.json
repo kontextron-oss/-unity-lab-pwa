@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": null,
+  "source": "Automated SEC annual source audit; populated by the recurring SEC refresh",
+  "secGeneratedAt": null,
+  "scope": "No verified outcomes until a future audited FY2026 report; no personal data or trading permissions.",
+  "counts": {
+    "awaiting-audited-FY2026": 3,
+    "verified": 0,
+    "verified-previous-source-unavailable": 0,
+    "revision-review": 0
+  },
+  "entries": {}
+}

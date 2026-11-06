@@ -36,6 +36,7 @@ jobs:
           node --check home.js
           node --check readiness-audit.js
           node --check decision-engine.js
+          node --check paper-order-engine.js
           node --check crypto-sources.js
           node --check crypto-policy.js
           node --check incremental.js
@@ -83,6 +84,8 @@ jobs:
         run: node tests/home.cjs
       - name: Test unified deterministic BUY/HOLD/SELL/BLOCKED and immutable local ledger
         run: node tests/decision-engine.cjs
+      - name: Test staged paper-order fills, atomic crash rollback and idempotent ledger
+        run: node tests/paper-order-engine.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

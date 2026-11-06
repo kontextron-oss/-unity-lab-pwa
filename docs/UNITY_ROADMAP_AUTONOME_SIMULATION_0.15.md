@@ -104,8 +104,9 @@ UNITY soll auf nachvollziehbaren, zeitgestempelten Kurs-, Unternehmens- und Erei
 |---|---|---|---|---|
 | 06.11.2026 | 0: Prüfung und Planung | **abgeschlossen** | Kritische Analyse, 0.14.2, dieser Arbeitsplan | Schritt 1 umsetzen |
 | 06.11.2026 | 1: Daten- und Freigabe-Diagnose · **0.15.0** | **Code und CI abgeschlossen; iPhone-Praxistest offen** | [PR #43](https://github.com/kontextron-oss/-unity-lab-pwa/pull/43), [Issue #42](https://github.com/kontextron-oss/-unity-lab-pwa/issues/42), GitHub Actions und Pages erfolgreich | Auf dem iPhone 0.15.0 laden, Datenstatus der vier Piloten prüfen |
-| – | 2: Deterministische Entscheidungs-Engine · 0.15.1 | **offen** | – | Nach iPhone-Kontrolle Schritt 2 beginnen |
-| – | 3–7 | **offen** | – | Erst nach Abnahme der vorherigen Schritte |
+| 06.11.2026 | 2: Deterministische Entscheidungs-Engine · **0.15.1** | **Code und CI abgeschlossen; iPhone-Praxistest offen** | [PR #45](https://github.com/kontextron-oss/-unity-lab-pwa/pull/45), GitHub-Actions-Validierung bestanden | Auf iPhone Entscheidungsanzeige und automatisches Protokoll prüfen; danach Schritt 3 |
+| – | 3: Simulations-Auftragsverwaltung · 0.15.2 | **offen** | – | Orders/Transaktionen atomar und idempotent buchen |
+| – | 4–7 | **offen** | – | Erst nach Abnahme der vorherigen Schritte |
 
 **Bedienungs-Update 06.11.2026:** UNITY **0.15.0.1** ergänzt in der Aktienübersicht eine sichtbare Schaltfläche **„Eigene Reihenfolge“**. Damit können Aktien bewusst per Ziehgriff oder Pfeilen sortiert werden; die Sortierauswahl bleibt als lokale Einstellung beim Neustart bestehen. Vorhandenes Hinzufügen, Archivieren/Wiederherstellen und Zurücksetzen einzelner Testdepotpositionen bleibt unverändert. [PR #44](https://github.com/kontextron-oss/-unity-lab-pwa/pull/44), CI und GitHub Pages erfolgreich. Dies ist eine kleine Bedienkorrektur, **kein** Beginn oder Abschluss der Entscheidungs-Engine 0.15.1. iPhone-Praxistest noch offen.
 
@@ -114,3 +115,13 @@ Arbeiten im GitHub-Repository `kontextron-oss/-unity-lab-pwa`; neueste `main` al
 
 ### Umsetzungsnotiz 06.11.2026 – Version 0.15.0
 Die schreibfreie Diagnose `readiness-audit.js` wurde mit Tests in `main` übernommen. Sie zeigt die Datenstatus-Zahlen über die Aktien-Masterliste, eine aufklappbare Pilotübersicht (ABB, Schneider Electric, Siemens Energy, Infineon) und je Aktie konkrete Lücken nach Kurs, Historie, FX, Berichten, Earnings, Bewertungsangaben, Guidance, These und Risiken. Technische Negativsignale (Trend/RSI), kritische Sicherheitsmargen, Chance/Risiko unter 2:1 und nahe Earnings werden ausdrücklich **getrennt** von fehlenden Daten ausgewiesen. Die Diagnose gibt selbst **keine Orders frei** und schreibt keine Depotdaten. **Praktischer iPhone-Test ist noch ausstehend.**
+
+### Umsetzungsnotiz 06.11.2026 – Version 0.15.1
+- Neuer schreibfreier Entscheidungskern `decision-engine.js`: deterministische Ergebnisstruktur mit `action` BUY/HOLD/SELL/BLOCKED, Modus, Quellenstand, Scoreband, Konfidenz, Vetos, Quelle/Börsenplatz/Kurs/Währung, Trigger, Invalidierung, Kapitaleinsatz und Begründung.
+- Stufenhierarchie: **frischer plausibler Kurs und EUR-FX** vor simulierten Aktionen; Near-Earnings- und Chance-Risiko-/Sicherheitsmargen-Veto vor neuen Käufen; vollständige fundamentale Freigabe nur aus `unityDeepDecision().investmentReady`, Technikmodus separat und deutlich als Test gekennzeichnet.
+- Eine bestehende Position erhält **keine Verkaufsentscheidung allein deshalb, weil heute ein neuer Einstieg unattraktiv ist**. Verkaufsgründe sind ein gültiger technischer Schutzschwellenbruch oder eine belegte relevante fundamentale Verschlechterung.
+- Bestehende automatische Kauf-/Verkaufssimulation verarbeitet nur noch **vom zentralen Kern freigegebene** BUY-/SELL-Aktionen. Keine Echtgeldausführung, keine eigenständige Hintergrundautomatik.
+- Entscheidungs-Snapshots werden beim Aufruf einer Aktie bzw. Ausführen einer automatischen Simulation **lokal** und mit deduplizierten eindeutigen Schlüsseln in `analyses` protokolliert. Frühere Einträge bleiben unverändert; Protokoll ist kein empirischer Lernerfolg.
+- In Aktien-Detail und vollständiger UNITY-Analyse erscheint eine eindeutige Hauptentscheidung. Technischer Testmodus und vertiefte Kennzahlen werden separat angezeigt.
+- Neue Tests für vier Aktionen, fehlende Kurse/FX, Ereignisrisiko, harte Vetos, Bestand und Quellenbelege. **Alle automatisierten Prüfungen auf dem Entwicklungs-PR erfolgreich**; endgültiger iPhone-Praxistest noch offen.
+- **Schritt 3 bleibt offen:** getrennte Schreiboperationen von Simulationsorder und Transaktionsbuchung sind noch nicht atomar; auch Schlusskurs-Fills, Slippage und Gebühren werden erst in 0.15.2 realistisch modelliert.

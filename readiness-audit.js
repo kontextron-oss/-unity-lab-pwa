@@ -111,6 +111,53 @@ function unityReadinessEvidence(s){
     // A complete source checklist is NOT itself a BUY approval.
     tradeApproved:false};
 }
+/* Platform-neutral, read-only coverage contract for EVERY equity in the user's
+   masterlist. It contains source states, never an inferred score or trade signal.
+   PC/pCloud adapters can consume this JSON without app-specific object references. */
+function unityStandardizeReadiness(r){
+  const s=r.s||{};
+  const fields={};
+  for(const [key,f] of Object.entries(r.fields||{})){
+    fields[key]={status:f.status,label:f.label,detail:f.detail,source:f.source,stamp:f.stamp};
+  }
+  const statuses=Object.values(fields).map(f=>f.status);
+  const dataStatus=statuses.includes('conflict')?'conflict':
+    statuses.includes('failed')?'source-failed':
+    statuses.includes('stale')?'stale':
+    statuses.includes('missing')?'incomplete':'ready';
+  return {
+    schemaVersion:1,
+    kind:'equity-data-readiness',
+    instrument:{
+      id:String(s.id||''),isin:String(s.isin||''),ticker:String(s.ticker||''),
+      name:String(s.name||''),exchange:String(s.exchange||''),currency:String(s.currency||'')
+    },
+    dataStatus,
+    technicalReady:r.technicalReady===true,
+    sourceComplete:r.sourceComplete===true,
+    missingKeys:r.missing.map(f=>f.key),
+    adverseSignals:r.adverse.slice(),
+    fields,
+    // A complete checklist does NOT grant a buy, paper order, or broker access.
+    tradeApproved:false
+  };
+}
+function unityReadinessStandardDataset(list){
+  const selected=Array.isArray(list)?list:typeof stocks==='function'?stocks():[];
+  const equities=selected.filter(s=>!(typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s)));
+  const records=equities.map(s=>unityStandardizeReadiness(unityReadinessEvidence(s)));
+  return {
+    schemaVersion:1,kind:'unity-equity-readiness-dataset',
+    total:records.length,
+    counts:{
+      technicalReady:records.filter(r=>r.technicalReady).length,
+      sourceComplete:records.filter(r=>r.sourceComplete).length,
+      incomplete:records.filter(r=>r.dataStatus!=='ready').length,
+      adverse:records.filter(r=>r.adverseSignals.length>0).length
+    },
+    records
+  };
+}
 function unityReadinessOverview(list){
   const selected=Array.isArray(list)?list:typeof stocks==='function'?stocks():[];
   // Crypto has a separate 24/7 data and risk model, not issuer-filing readiness.
@@ -139,6 +186,18 @@ function unityReadinessOverview(list){
     h+='<div class="unity-readiness-pilot"><b>'+esc(p.name)+'</b><span>'+
       (!r?'Nicht geprüft':r.missing.length?'Daten fehlen':r.adverse.length?'Negatives Signal':'Quellen belegt')+
       '</span><small>'+esc(note)+'</small></div>';
+  }
+  h+='</div></details><details class="unity-readiness-pilots"><summary>Datenstatus aller '+records.length+' Aktien der Masterliste</summary><div class="unity-readiness-pilot-list">';
+  for(const r of records){
+    const entry=unityStandardizeReadiness(r);
+    const labels={ready:'Daten belegt',incomplete:'Daten fehlen',stale:'Daten veraltet',
+      conflict:'Datenkonflikt','source-failed':'Quellenfehler'};
+    const gaps=entry.missingKeys.slice(0,2).map(k=>UNITY_READINESS_LABELS[k]||k);
+    const note=(gaps.join(' · ')||'Alle Pflichtfelder belegt')+
+      (entry.missingKeys.length>2?' · weitere offen':'')+
+      (entry.adverseSignals.length?' · zusätzlich Risikosignal':'');
+    h+='<div class="unity-readiness-pilot"><b>'+esc(entry.instrument.name||entry.instrument.ticker||entry.instrument.isin)+'</b>'+
+      '<span>'+esc(labels[entry.dataStatus]||entry.dataStatus)+'</span><small>'+esc(note)+'</small></div>';
   }
   return h+'</div></details></section>';
 }

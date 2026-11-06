@@ -34,7 +34,13 @@ function unityFinancialFact(report,key,prior=false){
  const fact=(prior?report?.priorMetrics:report?.metrics)?.[key];
  const currency=String(report?.reportCurrency||'').toUpperCase();
  const value=unityFinancialNumber(fact?.value);
- if(!period||!fact||fact.periodEnd!==period||fact.currency!==currency||!currency||value===null)return null;
+ // SEC balance-sheet shares use the 'shares' unit, not a currency unit.
+ // Weighted-average diluted share counts remain a separate field.
+ const sharesUnit=['sharesOutstanding','sharesDiluted'].includes(key)&&fact?.unit==='shares';
+ const unitsOk=sharesUnit?
+   (!fact.currency||fact.currency===currency):
+   fact?.currency===currency;
+ if(!period||!fact||fact.periodEnd!==period||!unitsOk||!currency||value===null)return null;
  const kind=unityFinancialSourceKind(report);
  const issuerSource=String(fact.sourceUrl||'');
  const reportSource=String(report?.latestFiling?.reportUrl||'');
@@ -122,8 +128,14 @@ function unityFinancialStockSnapshot(s,options={}){
    Math.round(100*converted/(fields.equity/shares))/100:null;
  const capex=value('capitalExpenditure');
  const fcf=coreComplete&&capex!==null&&capex>=0?fields.operatingCashFlow-capex:null;
- const fcfYield=converted!==null&&sharesOk&&fcf!==null?
+ const fcfYield=converted!==null&&sharesOk&&fcf!==null&&converted>0?
    Math.round(10000*fcf/(converted*shares))/100:null;
+ const cash=value('cashAndEquivalents'),longDebt=value('debtLongTermIncludingCurrent')??value('debtLongTermNoncurrent');
+ const shortBorrowings=value('shortTermBorrowings');
+ // These SEC balance-sheet fields can be different debt components.
+ // They are NEVER summed to an authoritative gross debt or net debt.
+ const debtCoverage=longDebt!==null||shortBorrowings!==null?'partial':'unavailable';
+ const marketCapitalization=converted!==null&&sharesOk?converted*shares:null;
  const missing=[];
  if(!coreComplete)missing.push('Fünf geprüfte Konzernkennzahlen');
  if(coreComplete&&!comparable)missing.push('Vergleichbare Vorjahreszahlen (2024/2025)');
@@ -132,6 +144,8 @@ function unityFinancialStockSnapshot(s,options={}){
  if(!epsOk)missing.push('Verwässerter Gewinn je Aktie aus Konzernbericht');
  if(!sharesOk)missing.push('Stichtagsbezogene ausstehende Aktienzahl');
  if(fcf===null)missing.push('Investitionsausgaben für Free Cashflow');
+ if(cash===null)missing.push('Kassenbestand aus Bilanz');
+ missing.push('Vollständige, belegte Nettoverschuldung und Prognosen für inneren Wert');
  return {schemaVersion:1,kind:'unity-company-fundamentals',
    instrument:issuer,sourceKind:kind,sourceUrl:String(report?.latestFiling?.reportUrl||''),
    period,priorPeriod,reportCurrency:currency,coreComplete,
@@ -139,7 +153,12 @@ function unityFinancialStockSnapshot(s,options={}){
    ratios:metrics,quoteCurrency:issuer.currency,
    priceRef:quoteValid?{price:Number(q.price),date:String(q.date||''),exchange:String(q.exchange)}:null,
    quoteInReportCurrency:converted,fx:exchange,
-   valuation:{pe,pb,freeCashFlow:fcf,freeCashFlowYield:fcfYield},
+   valuation:{
+     pe,pb,freeCashFlow:fcf,freeCashFlowYield:fcfYield,sharesOutstanding:sharesOk?shares:null,
+     cashAndEquivalents:cash,marketCapitalization,capitalExpenditure:capex,
+     debtLongTermReported:longDebt,shortTermBorrowings,debtCoverage,
+     netDebt:null,forwardGuidanceVerified:false
+   },
    missing,tradeApproved:false};
 }
 function unityFinancialMasterDataset(list){
@@ -186,6 +205,17 @@ function unityFinancialSnapshotPanel(s){
       (value===null?'Nicht berechenbar':new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(value)+suffix)+
       '</b></div>';
  }
+ h+='<h4>Weitere Bilanz- und Bewertungsgrundlagen</h4>';
+ const numbers=[
+   ['Aktien am Bilanzstichtag',m.valuation.sharesOutstanding,'Stück'],
+   ['Investitionen (Capex)',m.valuation.capitalExpenditure,m.reportCurrency],
+   ['Liquidität',m.valuation.cashAndEquivalents,m.reportCurrency],
+   ['Langfristige Schulden (ausgewiesener Teil)',m.valuation.debtLongTermReported,m.reportCurrency],
+   ['Kurzfristige Kreditaufnahme (ggf. Teil)',m.valuation.shortTermBorrowings,m.reportCurrency]
+ ];
+ for(const [label,n,unit] of numbers)h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+
+   (n===null?'Nicht geprüft verfügbar':new Intl.NumberFormat('de-DE',{maximumFractionDigits:0}).format(n)+' '+esc(unit))+'</b></div>';
+ h+='<p class="tiny muted">Schuldenposten sind keine vollständige Nettoverschuldung. Unternehmensprognosen werden nicht aus historischen Werten geschätzt.</p>';
  h+='<p class="tiny muted">Fehlende Nachweise: '+esc(m.missing.join(' · ')||'Keine in diesem Kennzahlensatz')+
    '. Fairer Unternehmenswert, Sicherheitsmarge und Kaufzone sind hier nicht geschätzt; keine Handelsfreigabe.</p>';
  return h;

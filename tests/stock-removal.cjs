@@ -66,13 +66,13 @@ const fn=(expression)=>vm.runInContext(expression,box);
  assert.match(home,/cache\.instruments\|\|\[\]/); // archived pilot item is not re-added
  assert.match(html,/data-watch-remove/);
  assert.match(html,/data-watch-restore/);
- assert.match(html,/unityArchivedPanel\(\)\+unityCatalogPanel/);
+ assert.match(html,/watchlistCards\(\)\+unityArchivedPanel\(\)/);
  assert.match(html,/if\(b\.dataset\.watchRemove\)await unityRemoveStock/);
  assert.match(html,/function catalogRecord\(s\)/);
  assert.match(html,/if\(known\?\.watchArchivedAt\)return unityRestoreStock/);
  const depot=fs.readFileSync('depot.js','utf8');
  assert.equal(depot.split("const realized=(cache.instruments||[]).reduce").length-1,2);
  assert.match(html,/0\.13\.\d+/);
- assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.13\.\d+/);
+ assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.(13|14)\.\d+/);
  console.log('Watchlist remove/restore: soft archive, open position lock, closed trades preserved, restore ID, main buttons and no startup re-add passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

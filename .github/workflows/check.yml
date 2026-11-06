@@ -155,6 +155,9 @@ jobs:
       - name: Test saved stock order and local simulated trades
         run: node tests/home-actions.cjs
 
+      - name: Verify simulated automation orders, capital ledger and safe sell signals
+        run: node tests/auto-simulation.cjs
+
       - name: Test pilot quote timestamp, validation and EOD fallback
         run: node tests/intraday.cjs
 

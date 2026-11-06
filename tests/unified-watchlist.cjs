@@ -5,7 +5,7 @@ const first=html.indexOf('function watchlistCards(){'),second=html.indexOf('func
 assert.ok(first>0&&second>first);
 const block=html.slice(first,second);
 assert.doesNotMatch(html.slice(second,second+180),/unityHomeManagePanel/);
-assert.match(html.slice(second,second+90),/watchlistCards\(\)/);
+assert.match(html.slice(second,second+200),/watchlistCards\(\)/);
 const items=[
  {id:'a',name:'ABB',ticker:'ABBN',isin:'CH0012221716',exchange:'SIX',currency:'CHF'},
  {id:'b',name:'Hubbell',ticker:'HUBB',isin:'US4435106079',exchange:'NYSE',currency:'USD'},

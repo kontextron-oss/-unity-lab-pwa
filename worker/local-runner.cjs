@@ -189,8 +189,9 @@ function argumentsOf(argv){
 async function main(argv=process.argv.slice(2)){
   const args=argumentsOf(argv),print=x=>process.stdout.write(JSON.stringify(x,null,2)+'\n');
   switch(args.command){
-    case 'init':return print({mode:'synthetic-demo',revision:init(args.dir).revision,
-      message:'Demo was initialized PAUSED. Run resume explicitly.'});
+    case 'init':return print({mode:'synthetic-demo',
+      revision:init(args.dir,args.date+'T10:00:00Z').revision,
+      message:'Synthetic demo initialized PAUSED (activation date '+args.date+'). Run resume explicitly.'});
     case 'resume':return print({enabled:changeEnabled(args.dir,true).state.enabled});
     case 'pause':return print({enabled:changeEnabled(args.dir,false).state.enabled});
     case 'status':return print(currentStatus(args.dir));

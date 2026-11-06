@@ -1,0 +1,15 @@
+# Private UNITY portfolio, pCloud credentials, and local worker state.
+# Public GitHub contains ONLY source code, synthetic samples and documentation.
+.env
+.env.*
+!.env.example
+worker/private-state*
+worker/*-private.json
+worker/*-secret.json
+worker/*-credentials.json
+worker/demo-status.json
+worker/local-data/
+worker/pcloud/
+**/*.pem
+**/*.key
+*.log

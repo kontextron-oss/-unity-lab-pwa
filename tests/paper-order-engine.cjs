@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const {createPaperDB}=require('./fake-paper-indexeddb.cjs');
 const qDate='2026-11-09',nextDate='2026-11-10';
 const stock={id:'a',ticker:'ABBN',name:'ABB',currency:'EUR',exchange:'Xetra'};
-const order={id:'auto-test-buy:a',kind:'auto-test-buy',instrumentId:'a',mode:'technical',
+let order={id:'auto-test-buy:a',kind:'auto-test-buy',instrumentId:'a',mode:'technical',
   active:true,allocationEur:100,createdAt:'2026-11-06T10:00:00Z'};
 const cash={id:'portfolio-capital',amount:1000};
 const cap={id:'auto-test-buy-total-budget',limitEur:200};

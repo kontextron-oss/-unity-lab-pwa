@@ -1,14 +1,74 @@
 {
   "schemaVersion": 1,
-  "generatedAt": null,
-  "source": "Automated SEC annual source audit; populated by the recurring SEC refresh",
-  "secGeneratedAt": null,
-  "scope": "No verified outcomes until a future audited FY2026 report; no personal data or trading permissions.",
+  "generatedAt": "2026-11-06T23:48:00Z",
+  "source": "Source-checked annual SEC companyfacts with original pre-committed issuer guidance",
+  "secGeneratedAt": "2026-11-06T23:47:57Z",
+  "scope": "Public precommitted management guidance outcomes only; no price forecast, model tuning or trade orders.",
   "counts": {
     "awaiting-audited-FY2026": 3,
     "verified": 0,
     "verified-previous-source-unavailable": 0,
     "revision-review": 0
   },
-  "entries": {}
+  "entries": {
+    "ETN-FY2026-epsDiluted-20261107": {
+      "id": "ETN-FY2026-epsDiluted-20261107",
+      "isin": "IE00B8KQN827",
+      "ticker": "ETN",
+      "metric": "epsDiluted",
+      "periodEnd": "2026-12-31",
+      "sourcePublishedAt": "2026-11-03",
+      "recordedAt": "2026-11-07",
+      "guidanceSourceUrl": "https://www.eaton.com/us/en-us/company/news-insights/news-releases/2026/eaton-reports-record-third-quarter-2026-results.html",
+      "forecast": {
+        "kind": "range",
+        "low": 10.39,
+        "high": 10.49
+      },
+      "forecastFingerprint": "a3c1d5b24fe35b45aef3c3d252faf233a655fac63a711db816f6f49201e6177c",
+      "lastCheckedAt": "2026-11-06T23:48:00Z",
+      "status": "awaiting-audited-FY2026",
+      "verified": null,
+      "observedCandidate": null
+    },
+    "VRT-FY2026-revenue-20261107": {
+      "id": "VRT-FY2026-revenue-20261107",
+      "isin": "US92537N1081",
+      "ticker": "VRT",
+      "metric": "revenue",
+      "periodEnd": "2026-12-31",
+      "sourcePublishedAt": "2026-10-28",
+      "recordedAt": "2026-11-07",
+      "guidanceSourceUrl": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-Third-Quarter-2026-with-Net-Sales-Growth-of-61-Organic-Orders-Growth-over-100-and-Diluted-EPS-Growth-of-91-Adjusted-Diluted-EPS-Growth-of-78-Raises-Full-Year-2026-Guidance-Across-All-Key-Metrics/default.aspx",
+      "forecast": {
+        "kind": "range",
+        "low": 14450000000,
+        "high": 14850000000
+      },
+      "forecastFingerprint": "3192ba510ce63f92fa0e85a770c9081b6a27addb4c148d7a9c6cb52a6f54926c",
+      "lastCheckedAt": "2026-11-06T23:48:00Z",
+      "status": "awaiting-audited-FY2026",
+      "verified": null,
+      "observedCandidate": null
+    },
+    "VRT-FY2026-epsDiluted-20261107": {
+      "id": "VRT-FY2026-epsDiluted-20261107",
+      "isin": "US92537N1081",
+      "ticker": "VRT",
+      "metric": "epsDiluted",
+      "periodEnd": "2026-12-31",
+      "sourcePublishedAt": "2026-10-28",
+      "recordedAt": "2026-11-07",
+      "guidanceSourceUrl": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-Third-Quarter-2026-with-Net-Sales-Growth-of-61-Organic-Orders-Growth-over-100-and-Diluted-EPS-Growth-of-91-Adjusted-Diluted-EPS-Growth-of-78-Raises-Full-Year-2026-Guidance-Across-All-Key-Metrics/default.aspx",
+      "forecast": {
+        "kind": "point",
+        "value": 6.29
+      },
+      "forecastFingerprint": "6e5291f23f4b9962fc81cd4aa3817db71fee6e0b10c52038ac44a1b510ec3a7e",
+      "lastCheckedAt": "2026-11-06T23:48:00Z",
+      "status": "awaiting-audited-FY2026",
+      "verified": null,
+      "observedCandidate": null
+    }
+  }
 }

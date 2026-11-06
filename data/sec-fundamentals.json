@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T22:41:39Z",
+  "generatedAt": "2026-11-06T23:47:57Z",
   "source": "SEC EDGAR Company Facts · XBRL",
   "scope": "US/SEC issuer universe; annual XBRL facts only, no estimated valuation",
   "items": {
@@ -305,7 +305,7 @@
       "priorFiling": {
         "periodEnd": "2018-03-31"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -592,7 +592,7 @@
       "priorFiling": {
         "periodEnd": "2025-09-27"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -879,7 +879,7 @@
       "priorFiling": {
         "periodEnd": "2009-08-28"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -1184,7 +1184,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-28"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -1498,7 +1498,7 @@
       "priorFiling": {
         "periodEnd": "2021-12-31"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -1739,7 +1739,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -2026,7 +2026,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     },
@@ -2340,7 +2340,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-06T22:41:39Z",
+      "checkedAt": "2026-11-06T23:47:57Z",
       "source": "SEC EDGAR Company Facts · XBRL",
       "errors": []
     }

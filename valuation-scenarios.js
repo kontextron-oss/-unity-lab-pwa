@@ -34,7 +34,9 @@ function unityValuationUrlValid(value,host){
 }
 function unityGuidanceEvidence(s,registry){
  const g=(registry===undefined?unityIssuerGuidance?.items:registry)?.[s?.isin];
- if(!g||g.isin!==s?.isin||!g.ticker||!!s?.ticker&&g.ticker!==s.ticker||
+ // ISIN identifies the exact security across exchange-specific ticker aliases
+ // (e.g. ABBN on SIX and ABBN.SW in the delayed quote provider).
+ if(!g||!s?.isin||g.isin!==s.isin||!g.ticker||
    !g.sourceUrl||!g.sourceHost)return null;
  const pubAge=unityValuationDateAge(g.publishedAt);
  const reviewAge=unityValuationDateAge(g.reviewedAt);

@@ -1,6 +1,6 @@
 # UNITY – eigenständige Hintergrundlaufzeit (0.15.3, Grundgerüst)
 
-**Aktueller Entwicklungsstatus: öffentlicher, vollständig synthetischer Test – kein privates Depot angeschlossen.** Die iPhone-PWA enthält inzwischen den **verschlüsselten** manuellen, rein prüfenden Austausch in **0.15.3.3**; sie führt jedoch weiterhin keine persönlichen Hintergrund-Testkäufe aus. Dieser Ordner ist keine freigegebene autonome Handelsfunktion.
+**Aktueller Entwicklungsstatus: öffentlicher, vollständig synthetischer Test – kein privates Depot angeschlossen.** Die iPhone-PWA enthält inzwischen den **verschlüsselten** manuellen, rein prüfenden Austausch in **0.15.3.4**; sie führt jedoch weiterhin keine persönlichen Hintergrund-Testkäufe aus. Dieser Ordner ist keine freigegebene autonome Handelsfunktion.
 
 ## Warum eine separate Laufzeit?
 
@@ -26,7 +26,7 @@ node worker/run-demo.cjs
 
 ## Neu: privater lokaler PC-Testprozess – dauerhafte Protokolldatei (0.15.3.1)
 
-**Der Testprozess funktioniert ausschließlich mit synthetischen Beispieldaten.** Er ist ein technischer Meilenstein für die spätere PC-Version und den privaten Hintergrundrunner, **noch keine Verbindung** zum realen iPhone-Testdepot. Der synthetische PC-Testprozess bleibt unabhängig von der PWA 0.15.3.3; es erfolgt keine automatische Verbindung zum iPhone.
+**Der Testprozess funktioniert ausschließlich mit synthetischen Beispieldaten.** Er ist ein technischer Meilenstein für die spätere PC-Version und den privaten Hintergrundrunner, **noch keine Verbindung** zum realen iPhone-Testdepot. Der synthetische PC-Testprozess bleibt unabhängig von der PWA 0.15.3.4; es erfolgt keine automatische Verbindung zum iPhone.
 
 `worker/local-runner.cjs` kann auf einem PC mit Node.js 22+ betrieben werden. Er speichert einen synthetischen Testdepotstand in einem **privaten lokalen Verzeichnis außerhalb des öffentlichen GitHub-Repositorys**, zunächst deaktiviert. Durch das Starten eines separaten Prozesses, einen Neustart oder wiederholte Kursprüfungen gehen frühere Testereignisse nicht verloren und dieselbe Demobuchung wird nicht erneut angelegt. Die Daten sind lokal **nicht verschlüsselt**; daher niemals echte Depot- oder Zugangsdaten in diese Demo übernehmen.
 
@@ -55,6 +55,18 @@ Das Standardverzeichnis ist `~/UNITY-LAB-PRIVATE-WORKER/`; mit `--dir <absoluter
 - Der neue systemübergreifende Test `tests/worker-local.cjs` prüft mehrfache PC-Prozessstarts, einmaligen simulierten Kauf, Pausieren, Schreibsperre, Wiederanlauf nach Lock-Abbruch und Reaktion auf beschädigte Daten.
 
 **Nicht verwechseln:** Die bereits vorhandene manuelle pCloud-Sicherung vom iPhone transportiert lokale Backup-Dateien. Dieser neue Demo-Runner greift nicht auf diese Sicherungen zu und kann **keine** Nutzerdaten von pCloud herunterladen oder zurückschreiben. Vor späterem automatischem Abgleich brauchen wir getrennte private Authentifizierung, einen einzigen autoritativen Auftrags-Schreiber, Abgleich-/Konfliktregeln und Testmigration des bisherigen iPhone-Depots.
+
+## Neu: UNITY 0.15.3.4 – Apple Passwörter mit Face ID-Autofill
+
+Für die **verschlüsselten Austauschdateien** unterstützt die iPhone-PWA jetzt Apples **Password AutoFill** über reguläre HTML-Passwortfelder. Das ist keine native Face-ID-Authentifizierung und keine Apple-ID-Anmeldung; die Freigabe des gespeicherten Passworts läuft allein über iOS, sofern es angeboten wird.
+
+Einmalige Einrichtung: App **Passwörter** auf dem iPhone öffnen, unter **Alle → Neues Passwort** einen Eintrag für die **Webseite der UNITY-PWA** anlegen (die Adresse wird in der neuen Hilfe in der App angezeigt). Als Benutzername **`unity-austausch`** und als Passwort **ein eigenes, ausreichend starkes Austauschpasswort** eintragen; dieses Passwort später am PC zum Entschlüsseln benötigen und nicht mit dem pCloud-/Apple-Kontopasswort gleichsetzen.
+
+Im Bereich **Datensicherung → 03 · Austausch** auf das Passwortfeld tippen und den passenden Eintrag aus **Apple Passwörter** wählen. Je nach Safari-/iOS-Einstellungen wird die Freigabe mit Face ID, Touch ID oder Gerätecode durchgeführt. Auf dem iPhone muss der praktische AutoFill-Vorschlag noch überprüft werden. Beim Import/Prüfen einer verschlüsselten Datei steht dasselbe AutoFill bereit. Die Wiederholung des Passworts beim Export ist bei automatischem Ausfüllen **optional**; bei manueller Neuanlage bleibt sie empfohlen.
+
+Die App speichert das Passwort **nicht** in ihrer IndexedDB oder in GitHub, sendet es nicht an einen Server und besitzt keinen direkten Zugriff auf Apples Schlüsselbund. Die beibehaltene manuelle pCloud-Voll-/Änderungssicherung ist davon getrennt. Bei PC-Nutzung benötigt man dasselbe Austauschpasswort und kann es alternativ über die Apple Passwörter-App abrufen.
+
+**Dieser UX-Schritt aktiviert keine automatische pCloud-Synchronisierung und keine persönlichen Hintergrundkäufe.** Mit [PR #54](https://github.com/kontextron-oss/-unity-lab-pwa/pull/54) sind die Browser-Kennzeichnungen und lokalen Verschlüsselungstests eingeführt; ein echter Test auf dem iPhone ist noch erforderlich.
 
 ## Neu: UNITY 0.15.3.3 – verschlüsselter manueller Austausch
 

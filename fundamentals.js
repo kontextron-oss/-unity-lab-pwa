@@ -79,10 +79,17 @@ function unityFundPilotPanel(s){
    'filing-no-validated-metrics':'Ein Bericht wurde gefunden, aber keine Kennzahlen erfüllen die strengen Prüfregeln.',
    'metrics-partial':'Einzelne Berichtskennzahlen konnten eindeutig zugeordnet werden.',
    'metrics-complete':'Fünf zentrale Jahreskennzahlen wurden direkt aus einer geprüften Berichtsquelle zugeordnet.',
+   'issuer-pdf-metrics-complete':'Fünf Konzernkennzahlen aus dem offiziellen Geschäftsbericht 2025 PDF-geprüft. Keine ESEF- oder automatische Handelsfreigabe.',
    'source-unavailable':'Die Quelle war beim letzten automatischen Abruf nicht erreichbar.',
    'stale-previous':'Die Quelle ist derzeit nicht erreichbar. Der zuletzt gespeicherte Bericht kann veraltet sein.'
   };
   h+='<p><b>Datenstatus:</b> '+esc(status[item.status]||'Datenlage noch offen')+'</p>';
+  if(item.annualReport?.coreMetricsValidated===true &&
+     item.annualReport?.extractionStatus==='checked-pdf-fy2025'){
+   h+='<p class="tiny muted"><b>Offizieller geprüfter Konzernabschluss:</b> '+esc(item.annualReport.accountingStandard||'')+
+     ' · Geschäftsjahr '+esc(item.annualReport.fiscalYear||'2025')+
+     ' · PDF-Quellenwerte automatisch geprüft. Die strenge UNITY-Anlagefreigabe erfordert weitere Daten und bleibt separat.</p>';
+  }
   if(item.latestFiling){
    const report=item.latestFiling;
    h+='<p class="tiny muted">Geschäftsjahresende: '+esc(report.periodEnd||'unbekannt')+

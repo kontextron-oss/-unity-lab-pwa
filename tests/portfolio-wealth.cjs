@@ -63,8 +63,12 @@ assert.equal(p.complete,false);
 assert.equal(p.missingCount,1);
 assert.ok(Number.isNaN(p.total));
 home=vm.runInContext('unityHome()',box);
-assert.match(home,/Gesamtvermögen nicht berechenbar/);
-assert.match(home,/Freies Kapital wird nicht als Gesamtvermögen ausgegeben/);
+assert.equal(p.displayTotal,5264.48);
+assert.match(home,/Gesamtvermögen vorläufig · Testdepot/);
+assert.match(home,/Vorläufiger Gesamtwert/);
+assert.match(home,/Der oben gezeigte Gesamtwert ist vorläufig/);
+assert.match(home,/5264.48 €/);
+assert.match(home,/ABB/);
 assert.doesNotMatch(home,/class="home-big-number"[^>]*>844.48/);
 assert.match(home,/Bewertung offen/);
 // Recovered FX restores total and quote visibility without any data migration.

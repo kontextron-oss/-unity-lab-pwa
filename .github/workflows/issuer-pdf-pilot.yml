@@ -24,3 +24,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_issuer_pdf.py' -v
       - name: Read only - verify official FY2025 financial statements
         run: python scripts/verify_issuer_pdf.py --probe
+      - name: Read only - verify matching FY2024 comparative statements
+        run: python scripts/verify_issuer_pdf.py --probe-prior

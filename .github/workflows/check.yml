@@ -41,6 +41,9 @@ jobs:
           node --check worker/demo-fixture.cjs
           node --check worker/run-demo.cjs
           node --check worker/local-runner.cjs
+          node --check exchange-protocol.js
+          node --check exchange-ui.js
+          node --check worker/inspect-exchange.cjs
           node --check crypto-sources.js
           node --check crypto-policy.js
           node --check incremental.js
@@ -94,6 +97,10 @@ jobs:
         run: node tests/worker-demo.cjs
       - name: Test private local synthetic worker across process restart, pause and crash recovery
         run: node tests/worker-local.cjs
+      - name: Test versioned read-only iPhone-to-PC exchange, SHA-256 and no-write comparison
+        run: node tests/exchange-protocol.cjs
+      - name: Test iPhone exchange Share Sheet and truly read-only incoming-file preview
+        run: node tests/exchange-ui.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

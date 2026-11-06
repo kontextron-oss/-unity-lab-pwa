@@ -295,6 +295,8 @@ def attach_source_checked_pdf(row, previous, isin, extractor=None):
                     or not isinstance(fact.get("value"), (float, int))
                     or fact["value"] <= 0):
                 raise ValueError("Unverifiable PDF financial fact: " + key)
+        for key in metrics:
+            metrics[key]["concept"] = "issuer-consolidated-pdf:" + key
         row["metrics"] = metrics
         row["status"] = "issuer-pdf-metrics-complete"
         row["source"] = "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft"

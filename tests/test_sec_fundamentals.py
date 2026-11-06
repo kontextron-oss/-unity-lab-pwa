@@ -1,5 +1,7 @@
 import importlib.util
 import pathlib
+import json
+import tempfile
 import unittest
 from unittest import mock
 
@@ -9,6 +11,42 @@ mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
 class SecValuationInputsTests(unittest.TestCase):
+    def test_ge_vernova_and_vertiv_identity_registry(self):
+        expected = {
+            "GEV": ("0001996810", "US36828A1016", "GE Vernova"),
+            "VRT": ("0001674101", "US92537N1081", "Vertiv"),
+        }
+        for ticker, (cik, isin, name) in expected.items():
+            record = mod.ISSUERS[ticker]
+            self.assertEqual(record["cik"], cik)
+            self.assertEqual(record["isin"], isin)
+            self.assertEqual(record["name"], name)
+            self.assertTrue(record["ir"].startswith("https://"))
+
+    def test_failed_sec_download_keeps_last_good_values_but_marks_stale(self):
+        sample = {
+            "name": "GE Vernova", "ticker": "GEV", "isin": "US36828A1016",
+            "cik": "0001996810", "reportCurrency": "USD",
+            "status": "metrics-complete", "checkedAt": "2026-11-05T12:00:00Z",
+            "metrics": {"revenue": {"value": 38068000000}},
+            "latestFiling": {"periodEnd": "2025-12-31", "reportUrl": "https://data.sec.gov/ok"}
+        }
+        bad = {**sample, "ticker": "VRT", "isin": "US92537N1081", "cik": "bad-cik"}
+        with tempfile.TemporaryDirectory() as tmp:
+            output = pathlib.Path(tmp) / "test.json"
+            output.write_text(json.dumps({"items": {"GEV": sample, "VRT": bad}}), encoding="utf-8")
+            with mock.patch.object(mod, "OUTPUT", output), mock.patch.object(
+                    mod, "get_json", side_effect=RuntimeError("temporary SEC outage")):
+                mod.main()
+            data = json.loads(output.read_text(encoding="utf-8"))
+        gev = data["items"]["GEV"]
+        vrt = data["items"]["VRT"]
+        self.assertEqual(gev["status"], "stale-previous")
+        self.assertEqual(gev["metrics"], sample["metrics"])
+        self.assertEqual(gev["lastVerifiedAt"], sample["checkedAt"])
+        self.assertEqual(vrt["status"], "source-unavailable")
+        self.assertEqual(vrt["metrics"], {})
+
     def test_annual_valuation_inputs_keep_exact_units_and_same_period(self):
         end="2025-12-31"
         def row(value,unit="USD"):

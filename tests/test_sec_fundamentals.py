@@ -11,6 +11,14 @@ mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
 class SecValuationInputsTests(unittest.TestCase):
+    def test_eaton_original_edgar_filer_is_linked_to_correct_isin(self):
+        etn=mod.ISSUERS["ETN"]
+        self.assertEqual(etn["cik"], "0001551182")
+        self.assertEqual(etn["isin"], "IE00B8KQN827")
+        self.assertEqual(etn["name"], "Eaton")
+        self.assertEqual(mod.BASE+"/CIK"+etn["cik"]+".json",
+                         "https://data.sec.gov/api/xbrl/companyfacts/CIK0001551182.json")
+
     def test_ge_vernova_and_vertiv_identity_registry(self):
         expected = {
             "GEV": ("0001996810", "US36828A1016", "GE Vernova"),

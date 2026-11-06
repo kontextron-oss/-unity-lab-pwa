@@ -104,6 +104,8 @@ jobs:
         run: node tests/exchange-ui.cjs
       - name: Test AES-256-GCM encrypted iPhone-to-PC exchange, password and tamper rejection
         run: node tests/exchange-crypto.cjs
+      - name: Test Safari Apple Passwords Face ID-mediated AutoFill without direct biometric access
+        run: node tests/apple-passwords-autofill.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

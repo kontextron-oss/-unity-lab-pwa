@@ -90,8 +90,10 @@ const run=js=>vm.runInContext(js,sandbox);
  assert.equal(JSON.stringify(cache),before);
  // On order change, repeated prepare creates a NEW protected file.
  cache.settings.find(x=>x.id==='auto-test-buy:abb').allocationEur=200;
+ // Face ID / Apple Passwords can fill one current-password field. The
+ // optional confirmation stays empty and must not prevent protected export.
  controls['unity-exchange-password'].value=pass;
- controls['unity-exchange-password-confirm'].value=pass;
+ controls['unity-exchange-password-confirm'].value='';
  const newer=await run('unityExchangePrepare()');
  const newerOuter=JSON.parse(await newer.file.text());
  const {packet:next}=await safe.decrypt(newerOuter,pass,webcrypto,protocol,digest);
@@ -114,5 +116,5 @@ const run=js=>vm.runInContext(js,sandbox);
  controls['unity-exchange-password-confirm'].value=pass;
  await assert.rejects(run('unityExchangePrepare()'),/Kryptowährungen/);
  assert.equal(writes,2);
- console.log('Encrypted UNITY iPhone: fresh private ciphertext, no password persistence, Share Sheet, inspect no-write, tamper/wrong password and crypto veto passed.');
+ console.log('Encrypted UNITY iPhone: Apple AutoFill primary password without confirmation, fresh private ciphertext, no persistence, Share Sheet, no-write inspection and tamper veto passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

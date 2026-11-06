@@ -13,7 +13,8 @@ const source='https://www.eaton.com/us/en-us/company/investor-relations.html';
 const assumptions={isin:s.isin,periodEnd:finance.period,currency:'USD',reviewed:true,
  reviewedBy:'verified-research-reviewer',analystReviewedAt:today,
  guidanceSourceUrl:official,
- debtRiskReview:{status:'reviewed',asOf:today,sourceUrl:source,sourceHost:'www.eaton.com',outcome:'acceptable'},
+ debtRiskReview:{status:'reviewed',isin:s.isin,periodEnd:finance.period,currency:'USD',
+ grossDebt:300,cashAndEquivalents:120,asOf:today,sourceUrl:source,sourceHost:'www.eaton.com',outcome:'acceptable'},
  years:5,marginOfSafetyPct:25,
  scenarios:{
   bear:{growthPct:-5,discountPct:16,terminalGrowthPct:0,rationale:'Prolonged cyclical slowdown'},
@@ -50,6 +51,10 @@ assert.equal(output({assumptions:{...assumptions,
  debtRiskReview:{...assumptions.debtRiskReview,outcome:'veto'}}}).status,'blocked');
 assert.equal(output({assumptions:{...assumptions,
  guidanceSourceUrl:'https://unverified.example/'}}).status,'blocked');
+assert.equal(output({assumptions:{...assumptions,
+ debtRiskReview:{...assumptions.debtRiskReview,isin:'US9999999999'}}}).status,'blocked');
+assert.equal(output({assumptions:{...assumptions,
+ debtRiskReview:{...assumptions.debtRiskReview,grossDebt:null}}}).status,'blocked');
 assert.equal(output({assumptions:{...assumptions,
  scenarios:{...assumptions.scenarios,base:{...assumptions.scenarios.base,discountPct:1}}}}).status,'blocked');
 assert.equal(output({assumptions:{...assumptions,

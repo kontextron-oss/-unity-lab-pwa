@@ -1,6 +1,6 @@
 # UNITY – eigenständige Hintergrundlaufzeit (0.15.3, Grundgerüst)
 
-**Aktueller Entwicklungsstatus: öffentlicher, vollständig synthetischer Test – kein privates Depot angeschlossen.** Die iPhone-PWA enthält inzwischen den manuellen, rein prüfenden Austausch in **0.15.3.2**; sie führt jedoch weiterhin keine persönlichen Hintergrund-Testkäufe aus. Dieser Ordner ist keine freigegebene autonome Handelsfunktion.
+**Aktueller Entwicklungsstatus: öffentlicher, vollständig synthetischer Test – kein privates Depot angeschlossen.** Die iPhone-PWA enthält inzwischen den **verschlüsselten** manuellen, rein prüfenden Austausch in **0.15.3.3**; sie führt jedoch weiterhin keine persönlichen Hintergrund-Testkäufe aus. Dieser Ordner ist keine freigegebene autonome Handelsfunktion.
 
 ## Warum eine separate Laufzeit?
 
@@ -26,7 +26,7 @@ node worker/run-demo.cjs
 
 ## Neu: privater lokaler PC-Testprozess – dauerhafte Protokolldatei (0.15.3.1)
 
-**Der Testprozess funktioniert ausschließlich mit synthetischen Beispieldaten.** Er ist ein technischer Meilenstein für die spätere PC-Version und den privaten Hintergrundrunner, **noch keine Verbindung** zum realen iPhone-Testdepot. Der synthetische PC-Testprozess bleibt unabhängig von der PWA 0.15.3.2; es erfolgt keine automatische Verbindung zum iPhone.
+**Der Testprozess funktioniert ausschließlich mit synthetischen Beispieldaten.** Er ist ein technischer Meilenstein für die spätere PC-Version und den privaten Hintergrundrunner, **noch keine Verbindung** zum realen iPhone-Testdepot. Der synthetische PC-Testprozess bleibt unabhängig von der PWA 0.15.3.3; es erfolgt keine automatische Verbindung zum iPhone.
 
 `worker/local-runner.cjs` kann auf einem PC mit Node.js 22+ betrieben werden. Er speichert einen synthetischen Testdepotstand in einem **privaten lokalen Verzeichnis außerhalb des öffentlichen GitHub-Repositorys**, zunächst deaktiviert. Durch das Starten eines separaten Prozesses, einen Neustart oder wiederholte Kursprüfungen gehen frühere Testereignisse nicht verloren und dieselbe Demobuchung wird nicht erneut angelegt. Die Daten sind lokal **nicht verschlüsselt**; daher niemals echte Depot- oder Zugangsdaten in diese Demo übernehmen.
 
@@ -56,6 +56,21 @@ Das Standardverzeichnis ist `~/UNITY-LAB-PRIVATE-WORKER/`; mit `--dir <absoluter
 
 **Nicht verwechseln:** Die bereits vorhandene manuelle pCloud-Sicherung vom iPhone transportiert lokale Backup-Dateien. Dieser neue Demo-Runner greift nicht auf diese Sicherungen zu und kann **keine** Nutzerdaten von pCloud herunterladen oder zurückschreiben. Vor späterem automatischem Abgleich brauchen wir getrennte private Authentifizierung, einen einzigen autoritativen Auftrags-Schreiber, Abgleich-/Konfliktregeln und Testmigration des bisherigen iPhone-Depots.
 
+## Neu: UNITY 0.15.3.3 – verschlüsselter manueller Austausch
+
+**Seit iPhone-PWA 0.15.3.3 werden neue Dateien aus Bereich „03 · Austausch für PC / Hintergrundprozess“ ausschließlich verschlüsselt erstellt.** Die zugrunde liegenden Testaufträge und automatischen Buchungen sind nicht mehr als Klartext in der Austauschdatei sichtbar.
+
+- Im iPhone unter **Datensicherung → 03 · Austausch** ein **eigenes Passwort mit mindestens 12 Zeichen** eingeben und bestätigen. Das Passwort ist **nicht das pCloud-Kontopasswort** und wird in UNITY weder dauerhaft gespeichert noch an einen Server geschickt.
+- **„Austauschdatei vorbereiten“:** UNITY erstellt und prüft lokal eine mit **AES-256-GCM** verschlüsselte Datei; Schlüsselableitung über **PBKDF2-HMAC-SHA256 mit 310.000 Iterationen**, pro Datei frische zufällige 16-Byte-Salt und 12-Byte-IV, Authentifizierung aller Metadaten als Additional Authenticated Data. AES-GCM prüft die Unversehrtheit; das weiterhin enthaltene Original-SHA-256 und das schreibgeschützte Austauschschema werden nach Entschlüsselung kontrolliert.
+- **„Datei teilen“:** weiter ausdrücklich per iOS-Dateifreigabe, z. B. in den vorhandenen privaten pCloud-Ordner `UNITY-LAB/03-AUSTAUSCH/`. Die Verschlüsselung ersetzt **nicht** die bereits bestehende manuelle BASIS-/ÄNDERUNGS-Sicherung; diese Sicherungen wurden hier **nicht** verändert.
+- **„Entschlüsseln und prüfen · nur lesen“:** Passwort erneut eingeben. Die Funktion kontrolliert das Austauschpaket und zählt Unterschiede; keine Aktualisierung des Depots und kein Kauf/Verkauf. Falsche Passwörter oder beschädigte Dateien werden abgewiesen.
+- **Später am PC:** `node worker/inspect-exchange.cjs <lokal heruntergeladene Datei.json>` fragt das Passwort verdeckt im interaktiven Terminal ab. Keine Klartextkennwörter als Kommandozeilenargument verwenden. Zwei Dateien lassen sich nach jeweils eigener Passwortfreigabe vergleichen. Der PC speichert keine persönlichen Testaufträge aus dem Prüfvorgang.
+- **Verlust des Passworts:** Die verschlüsselte Austauschdatei kann nicht wiederhergestellt werden. Das Original-Testdepot auf dem iPhone und die separat angefertigten bisherigen Sicherungen bleiben erhalten; stattdessen kann eine **neue** Austauschdatei mit einem neuen Passwort erstellt werden.
+- **Alte Austauschdateien aus 0.15.3.2 bleiben beim Prüfen als unverschlüsselter Legacy-Stand erkennbar**, werden aber niemals ausführbare Remote-Aufträge.
+- **Abgrenzung:** Passwortgeschützter manueller Datentransport ist noch **keine authentifizierte automatische Verbindung** zum Hintergrundprozess und kein automatischer pCloud-Sync. Ein privat betriebener Dienst, geeignete TLS-/Zugriffsfreigaben, eine einzige autoritative Transaktionsinstanz, Konfliktregeln und mehrtägige Betriebsprüfungen sind weiterhin erforderlich.
+
+Der Datenschutz verbessert sich dadurch gegenüber dem früheren reinen JSON-Austausch, aber die Sicherheitsstärke hängt auch von einem ausreichend zufälligen, geheim gehaltenen Passwort und einem vertrauenswürdigen iPhone ab. Der Export erhält keine Broker- oder Transaktionsausführungserlaubnis.
+
 ## Neu: UNITY 0.15.3.2 – manuelles iPhone/PC-Austauschformat (nur Prüfung)
 
 **Jetzt tatsächlich in der iPhone-PWA integriert:** Im Tab **Datensicherung**, Abschnitt **03 · Austausch für PC / Hintergrundprozess**, kann das iPhone eine getrennte Austauschdatei vorbereiten und anschließend über die **iOS-Dateifreigabe** bewusst in den privaten pCloud-Ordner `UNITY-LAB/03-AUSTAUSCH/` teilen. Eine vorhandene Austauschdatei lässt sich auf dem iPhone vor der Übernahme in irgendein anderes System auf SHA-256- und Schema-Konsistenz prüfen. Bei widersprüchlichen gleichen IDs werden Konfliktzahlen angezeigt, aber **niemals Daten überschrieben oder Testaufträge verbucht**.
@@ -71,7 +86,7 @@ node worker/inspect-exchange.cjs /pfad/zu/stand-A.json /pfad/zu/stand-B.json
 
 Der erste Befehl validiert Format, Prüfsumme, Summen und Revision, der zweite meldet bei gleichen IDs gleiche, abweichende und nur in einer Version vorhandene Einträge. Der Befehl speichert die eingelesenen persönlichen Daten **nicht** in den Worker oder in das GitHub-Repository und erteilt keine Orderfreigabe. Ein korrupter oder unzulässiger Datensatz wird abgelehnt.
 
-**Datenschutz:** Die ausgetauschte JSON-Datei ist **nicht verschlüsselt**. Sie enthält persönliche simulierte Aufträge und gehört ausschließlich in das private pCloud-Konto oder andere geschützte Speichermedien. Der einfache SHA-256-Prüfwert erkennt versehentliche/unerkannte Änderungen und Konsistenzfehler, stellt aber **keine** kryptographische Herkunfts-/Authentizitätsgarantie gegen jemanden dar, der die Prüfsumme selbst neu berechnen kann. Für späteren automatischen Datentransport müssen private Authentifizierung, Integritätsschutz über authentifizierte Kanäle, Berechtigungen, konfliktfreie Migration und **eine** autoritative Order-Ausführungsinstanz hinzukommen.
+**Historische Sicherheitswarnung für Dateien aus Version 0.15.3.2:** Die damalige JSON-Austauschdatei war **nicht verschlüsselt**. Neue Exporte seit 0.15.3.3 werden verschlüsselt. Sie enthält persönliche simulierte Aufträge und gehört ausschließlich in das private pCloud-Konto oder andere geschützte Speichermedien. Der einfache SHA-256-Prüfwert erkennt versehentliche/unerkannte Änderungen und Konsistenzfehler, stellt aber **keine** kryptographische Herkunfts-/Authentizitätsgarantie gegen jemanden dar, der die Prüfsumme selbst neu berechnen kann. Für späteren automatischen Datentransport müssen private Authentifizierung, Integritätsschutz über authentifizierte Kanäle, Berechtigungen, konfliktfreie Migration und **eine** autoritative Order-Ausführungsinstanz hinzukommen.
 
 **Die vorhandene manuelle BASIS-/ÄNDERUNGSSICHERUNG nach pCloud bleibt unabhängig bestehen.** Die Austauschdatei ist kein Ersatz für ein vollständiges Backup. Der eigenständige Node-Worker handelt auch nach diesem Entwicklungsschritt weiterhin **nur synthetische Daten**; seine persönliche iPhone-Verbindung und automatische pCloud-Synchronisierung sind ausdrücklich noch **nicht** eingerichtet.
 

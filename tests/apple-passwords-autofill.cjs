@@ -12,7 +12,12 @@ const main=html.slice(html.indexOf('03 · Austausch für PC / Hintergrundprozess
 assert.ok(main.length>800,'Backup panel must include exchange form');
 assert.match(main,/Apple Passwörter mit Face ID verwenden/);
 assert.match(main,/Austauschkennung für Apple Passwörter/);
-assert.match(main,/value="unity-austausch" readonly/);
+assert.match(main,/id="unity-exchange-focus-password"/);
+assert.match(main,/<details class="unity-exchange-inspect-detail">/);
+assert.match(main,/<details class="unity-exchange-confirm-detail">/);
+assert.match(html,/if\(b\.id==='unity-exchange-focus-password'\)document\.getElementById\('unity-exchange-password'\)\?\.focus\(\);/);
+
+assert.match(main,/value="unity-austausch" autocapitalize="none"/);
 assert.match(main,/id="unity-exchange-create-form"[^>]*autocomplete="on"/);
 assert.match(main,/id="unity-exchange-inspect-form"[^>]*autocomplete="on"/);
 assert.equal((main.match(/name="username" autocomplete="username"/g)||[]).length,2,
@@ -20,9 +25,9 @@ assert.equal((main.match(/name="username" autocomplete="username"/g)||[]).length
 assert.match(main,/id="unity-exchange-password" type="password" name="password" autocomplete="current-password"/);
 assert.match(main,/id="unity-exchange-inspect-password" type="password" name="password" autocomplete="current-password"/);
 assert.match(main,/id="unity-exchange-password-confirm" type="password" name="password-confirm" autocomplete="off"/);
-assert.match(main,/erstmaliger Eingabe empfohlen/);
-assert.match(main,/kein direktes Face-ID-Login/);
-assert.match(main,/kein.*Apple-ID/);
+assert.match(main,/Passwort bei erster manueller Eingabe wiederholen/);
+assert.match(main,/Das Feld selbst startet Face ID nicht/);
+assert.match(main,/keine Verbindung zu deiner Apple-ID/);
 assert.match(html,/if\(e\.target\.id==='unity-exchange-create-form'\|\|e\.target\.id==='unity-exchange-inspect-form'\)return;/,
   'Form submission must be prevented before reading FormData');
 assert.match(ui,/if\(confirmation&&passphrase!==confirmation\)/,
@@ -32,6 +37,6 @@ assert.match(ui,/if\(confirmInput\)confirmInput\.value='';/);
 assert.match(ui,/if\(passwordInput\)passwordInput\.value='';/);
 assert.doesNotMatch(ui,/localStorage\.setItem\([^)]*(password|passphrase)/i);
 assert.doesNotMatch(ui,/put\('settings',\{[^}]*passphrase/);
-assert.match(sw,/unity-lab-v0\.15\.3\.4/);
-assert.match(html,/exchange-ui\.js\?v=0\.15\.3\.4/);
+assert.match(sw,/unity-lab-v0\.15\.3\.5/);
+assert.match(html,/exchange-ui\.js\?v=0\.15\.3\.5/);
 console.log('Safari Apple Passwords AutoFill: two semantic login forms, credential alias, safe no-submit, optional confirmation, no secret persistence and offline version passed.');

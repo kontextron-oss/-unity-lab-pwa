@@ -97,6 +97,8 @@ UNITY soll auf nachvollziehbaren, zeitgestempelten Kurs-, Unternehmens- und Erei
 - **Investment-Qualitätsmeilenstein:** Schritte 5–6: messbarer Nutzen und validierte Regelverbesserung.
 - **Erst danach:** Schritt 7 KI, falls Quelle/Kosten/Mehrwert stimmen. Zusätzliche Kapitalflussquellen gemäß Issue #21 ergänzen, sobald Basisdaten belastbar sind.
 
+**GitHub-Umsetzung:** [Master-Tracker #40](https://github.com/kontextron-oss/-unity-lab-pwa/issues/40) · [Schritt 1 / 0.15.0: Datenfreigabe #42](https://github.com/kontextron-oss/-unity-lab-pwa/issues/42).
+
 ## 6. Fortschrittsprotokoll
 | Datum | Schritt | Status | Beleg | Nächste Aktion |
 |---|---|---|---|---|

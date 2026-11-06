@@ -58,7 +58,8 @@ function unityModelDiscountedEquityCashFlow(fcfPerShare,growthPct,discountPct,te
 function unityScenarioValuation(s,options={}){
  const financial=options.financial===undefined?
    (typeof unityFinancialStockSnapshot==='function'?unityFinancialStockSnapshot(s):null):options.financial;
- const guidance=options.guidance===undefined?unityGuidanceEvidence(s):options.guidance;
+ const rawGuidance=options.guidance===undefined?unityGuidanceEvidence(s):options.guidance;
+ const guidance=rawGuidance?unityGuidanceEvidence(s,{[s?.isin]:rawGuidance}):null;
  const assumptions=options.assumptions===undefined?
    unityValuationAssumptions?.items?.[s?.isin]:options.assumptions;
  const missing=[];
@@ -82,9 +83,14 @@ function unityScenarioValuation(s,options={}){
  if(missing.length)return result;
  const review=assumptions.debtRiskReview||{};
  const reviewAge=unityValuationDateAge(review.asOf);
- if(review.status!=='reviewed'||reviewAge===null||reviewAge < -1||reviewAge>550||
-   !unityValuationUrlValid(review.sourceUrl,review.sourceHost)||review.outcome==='veto'){
-   missing.push('Vollständig geprüfte Bilanz- und Verschuldungsrisiken ohne Veto');
+ const debtComplete=review.status==='reviewed'&&review.isin===s?.isin&&
+   review.periodEnd===financial.period&&review.currency===financial.reportCurrency&&
+   unityScenarioNumber(review.grossDebt)!==null&&review.grossDebt>=0&&
+   unityScenarioNumber(review.cashAndEquivalents)!==null&&review.cashAndEquivalents>=0&&
+   ['acceptable','elevated'].includes(review.outcome);
+ if(!debtComplete||reviewAge===null||reviewAge < -1||reviewAge>550||
+   !unityValuationUrlValid(review.sourceUrl,review.sourceHost)){
+   missing.push('Vollständig geprüfte und identitätsgleiche Gesamtverschuldung, Liquidität und Risikobewertung');
  }
  const analystAge=unityValuationDateAge(assumptions.analystReviewedAt);
  if(!assumptions.reviewed||!assumptions.reviewedBy||analystAge===null||

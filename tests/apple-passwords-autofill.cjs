@@ -37,6 +37,6 @@ assert.match(ui,/if\(confirmInput\)confirmInput\.value='';/);
 assert.match(ui,/if\(passwordInput\)passwordInput\.value='';/);
 assert.doesNotMatch(ui,/localStorage\.setItem\([^)]*(password|passphrase)/i);
 assert.doesNotMatch(ui,/put\('settings',\{[^}]*passphrase/);
-assert.match(sw,/unity-lab-v0\.16\.0/);
-assert.match(html,/exchange-ui\.js\?v=0\.16\.0/);
+assert.match(sw,/unity-lab-v0\.16\.1/);
+assert.match(html,/exchange-ui\.js\?v=0\.16\.1/);
 console.log('Safari Apple Passwords AutoFill: two semantic login forms, credential alias, safe no-submit, optional confirmation, no secret persistence and offline version passed.');

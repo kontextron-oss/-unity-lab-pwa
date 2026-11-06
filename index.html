@@ -503,6 +503,22 @@ button[hidden]{display:none!important}
 .home-auto-allocation .home-auto-save-state{display:block;font-size:12px;font-weight:600;color:#23643d}
 .home-auto-allocation button:disabled{opacity:.65;cursor:wait}
 @media(max-width:480px){.home-auto-allocation{align-items:stretch;width:100%}.home-auto-allocation .actions{justify-content:flex-start}}
+
+/* Fixed EUR amount per automatic test buy + shared ceiling (version 0.15.1.2). */
+.home-auto-budget{padding:12px;margin:12px 0;border:1px solid #cddfd4;border-radius:10px;background:#f8fbf9}
+.home-auto-budget h3{font-size:15px;margin:0 0 10px;color:#234b34}
+.home-auto-budget-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.home-auto-budget-metrics span{display:flex;flex-direction:column;gap:3px;min-width:0;border-radius:8px;background:#eef5f1;padding:9px}
+.home-auto-budget-metrics small{font-size:11px;color:#4f6a5b}
+.home-auto-budget-metrics b{font-size:14px;overflow-wrap:anywhere}
+.home-auto-budget>.actions{display:flex;align-items:end;justify-content:flex-start;gap:10px;margin-top:10px;flex-wrap:wrap}
+.home-auto-budget>.actions label{min-width:150px;max-width:190px}
+.home-auto-budget input,.home-auto-allocation input{font-size:16px;max-width:160px;width:100%;padding:7px}
+.home-auto-budget-state{display:block;margin-top:8px;font-size:12px;font-weight:650;color:#286944}
+.home-auto-allocation .actions label{min-width:136px;max-width:170px}
+@media(max-width:480px){.home-auto-budget-metrics{grid-template-columns:1fr 1fr}
+.home-auto-budget-metrics span:last-child{grid-column:1/-1}
+.home-auto-budget>.actions label{max-width:100%}}
 </style></head><body><header><div><h1>UNITY LAB <span style="font-size:12px;font-weight:400">0.13.97</span></h1><small>Aktien · Kursverläufe · UNITY-Analyse</small></div><span class="status" id="db-status">Lokale Datenbank wird geöffnet …</span></header><main><nav id="nav"><button data-tab="overview" class="active">Mein Depot</button><button data-tab="stocks">Aktien & Kurse</button><button data-tab="radar">Kapitalradar</button><button data-tab="analysis">UNITY-Analyse</button><button data-tab="trades">Simulationsdepot</button><button data-tab="backup">Datensicherung</button></nav><div id="app" aria-live="polite"></div><p class="footer">Unity Lab 0.13.97 · Vergleichs-Beta · Alle Transaktionen sind hypothetisch. Verzögerte Referenzkurse sind verfügbar; kein Echtzeitkursfeed. Keine Anlageberatung oder Orderausführung.</p></main><script>
 'use strict';
 const STORES=['instruments','quotes','transactions','strategies','audit','fundamentals','histories','analyses','settings'];let db,activeTab='overview';let cache={};const keys=['valuation','quality','rr','flows','timing','alternatives'];const labels=['Bewertung / Sicherheitsmarge','Unternehmensqualität','Chance-Risiko / Rendite','Kapitalflüsse','Timing / Katalysatoren','Alternativenvergleich'];const defaults={valuation:30,quality:20,rr:20,flows:15,timing:10,alternatives:5};

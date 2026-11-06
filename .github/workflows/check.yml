@@ -40,6 +40,7 @@ jobs:
           node --check worker/core.cjs
           node --check worker/demo-fixture.cjs
           node --check worker/run-demo.cjs
+          node --check worker/local-runner.cjs
           node --check crypto-sources.js
           node --check crypto-policy.js
           node --check incremental.js
@@ -91,6 +92,8 @@ jobs:
         run: node tests/paper-order-engine.cjs
       - name: Test platform-neutral synthetic runner, pause, quote veto and no duplicate trade
         run: node tests/worker-demo.cjs
+      - name: Test private local synthetic worker across process restart, pause and crash recovery
+        run: node tests/worker-local.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

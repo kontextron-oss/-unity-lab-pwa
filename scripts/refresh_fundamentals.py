@@ -298,6 +298,8 @@ def attach_source_checked_pdf(row, previous, isin, extractor=None):
         for key in metrics:
             metrics[key]["concept"] = "issuer-consolidated-pdf:" + key
         row["metrics"] = metrics
+        row.setdefault("priorMetrics", {})
+        row.setdefault("priorFiling", None)
         previous_metrics = result.get("priorMetrics") or {}
         previous_period = result.get("priorPeriodEnd")
         expected_prior = str(int(result["periodEnd"][:4])-1)+result["periodEnd"][4:]

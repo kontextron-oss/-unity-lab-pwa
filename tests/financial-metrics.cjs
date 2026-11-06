@@ -94,6 +94,24 @@ assert.equal(r.valuation.pe,20);
 assert.equal(r.valuation.pb,null,'Diluted weighted shares are not year-end outstanding shares');
 assert.equal(r.valuation.freeCashFlowYield,null);
 assert.equal(r.tradeApproved,false);
+// Year-end shares, cash and SEC debt COMPONENTS now keep their exact units.
+secReport.metrics.sharesOutstanding={...secFact(100e6,'CommonStockSharesOutstanding','shares'),currency:null};
+secReport.metrics.capitalExpenditure=secFact(50e6,'PaymentsToAcquirePropertyPlantAndEquipment');
+secReport.metrics.cashAndEquivalents=secFact(120e6,'CashAndCashEquivalentsAtCarryingValue');
+secReport.metrics.debtLongTermNoncurrent=secFact(300e6,'LongTermDebtNoncurrent');
+secReport.metrics.shortTermBorrowings=secFact(10e6,'ShortTermBorrowings');
+r=view(secStock,{report:secReport,quote:{x:{price:200,currency:'USD',date:day,exchange:'NYSE'},valid:true,quality:{canCompare:true}},fxLookup});
+assert.equal(r.valuation.sharesOutstanding,100e6);
+assert.equal(r.valuation.pb,40);
+assert.equal(r.valuation.freeCashFlow,130e6);
+assert.equal(r.valuation.freeCashFlowYield,0.65);
+assert.equal(r.valuation.cashAndEquivalents,120e6);
+assert.equal(r.valuation.debtLongTermReported,300e6);
+assert.equal(r.valuation.shortTermBorrowings,10e6);
+assert.equal(r.valuation.netDebt,null,'Partial debt disclosures may not imply net debt');
+assert.equal(r.valuation.debtCoverage,'partial');
+assert.equal(r.tradeApproved,false);
+
 // No cross-company data reuse, added equities receive an explicit missing status.
 const ds=vm.runInContext('unityFinancialMasterDataset(stocks())',s);
 assert.equal(ds.total,2);assert.equal(ds.counts.coreComplete,1);
@@ -109,7 +127,7 @@ assert.match(panel,/EZB/);
 assert.match(panel,/keine Handelsfreigabe/);
 assert.match(panel,/14,52/);
 const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
-assert.match(index,/financial-metrics\.js\?v=0\.15\.3\.8/);
-assert.match(sw,/financial-metrics\.js\?v=0\.15\.3\.8/);
-assert.match(sw,/unity-lab-v0\.15\.3\.8/);
+assert.match(index,/financial-metrics\.js\?v=0\.15\.3\.9/);
+assert.match(sw,/financial-metrics\.js\?v=0\.15\.3\.9/);
+assert.match(sw,/unity-lab-v0\.15\.3\.9/);
 console.log('UNITY standardized issuer facts, USD/CHF FX, same-period ratios, no fake P/E, and full watchlist no-trade checks passed.');

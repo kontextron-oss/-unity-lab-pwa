@@ -16,7 +16,7 @@ const sandbox={Date,Math,JSON,Number,Array,Object,Set,cache,db:fake,
  audit:async()=>{},refresh:async()=>{},depotMoney:n=>Number(n).toFixed(2)+' €',esc:x=>String(x??'')};
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync('paper-order-engine.js','utf8'),sandbox);
-const invoke=(expression)=>vm.runInContext(expression,Object.assign(sandbox,{stock,quote,fx,order}));
+const invoke=(expression)=>vm.runInContext(expression,Object.assign(sandbox,{stock,quote,fx,order,qDate,nextDate}));
 let quote={x:{date:qDate,exchange:'Xetra',currency:'EUR',price:100,dynamicExperimental:false},
   valid:true,technical:true,quality:{canCompare:true}};
 let fx={rate:1,date:qDate,source:'EUR'};

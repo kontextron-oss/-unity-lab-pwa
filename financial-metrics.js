@@ -156,7 +156,7 @@ function unityFinancialStockSnapshot(s,options={}){
    valuation:{
      pe,pb,freeCashFlow:fcf,freeCashFlowYield:fcfYield,sharesOutstanding:sharesOk?shares:null,
      cashAndEquivalents:cash,marketCapitalization,capitalExpenditure:capex,
-     debtLongTermReported:longDebt,shortTermBorrowings,debtCoverage,
+     debtLongTermReported:longDebt,shortTermBorrowings:shortBorrowings,debtCoverage,
      netDebt:null,forwardGuidanceVerified:false
    },
    missing,tradeApproved:false};

@@ -19,6 +19,7 @@ jobs:
         run: |
           node --check discovery.js
           node --check fundamentals.js
+          node --check financial-metrics.js
           node --check research.js
           node --check capital-radar.js
           node --check analysis.js
@@ -211,3 +212,5 @@ jobs:
 
       - name: Test financial source coverage and UI veto
         run: node tests/fundamentals.cjs
+      - name: Test standardized financial quality and ABB USD/CHF cross-FX for the entire masterlist
+        run: node tests/financial-metrics.cjs

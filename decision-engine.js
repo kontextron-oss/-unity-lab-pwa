@@ -21,7 +21,9 @@ function unityDecisionResolve(input){
       date:String(ref.date),source:String(ref.source||'Tageskursreferenz')} : null,
     trigger:'',invalidation:'Bei neuer, verifizierter Datenlage erneut prüfen',
     capitalPct:[2,5,10,15,20,25,50].includes(Number(input?.capitalPct))?Number(input.capitalPct):2,
-    why:[],reasonCode:'missing-data',positionQty:position,investmentReady:!!deep?.investmentReady,
+    why:[],reasonCode:'missing-data',sourceRefs:Array.isArray(input?.sourceRefs)?input.sourceRefs.map(e=>({
+      key:String(e.key||''),status:String(e.status||''),stamp:String(e.stamp||''),source:String(e.source||'')})):[],
+    positionQty:position,investmentReady:!!deep?.investmentReady,
     technicalEligible:false,realOrderApproved:false,testActionEligible:false};
   const score=unityDecisionSafeNum(deep?.investmentScore);
   if(Number.isFinite(score)&&score>=0&&score<=100){
@@ -159,6 +161,8 @@ function unityDecisionForStock(s,mode='strict'){
     entryLimit:chosen==='technical'?technicalLimit:strictLimitOk?strictLimit:NaN,
     deep,nearEarnings,verifiedFundamentalExit:fundamentalExit,exitReason:issuerRisk?.label||'',
     capitalPct:pct,missing:unityDecisionCleanList(missing),hardVeto:blockers,
+    sourceRefs:Object.values(readiness?.fields||{}).map(f=>({key:f.key,status:f.status,
+      stamp:f.stamp,source:f.source})),
     signalAt:x?.date||'',dataStatus:!valid?(quality?.level||'missing'):
       chosen==='strict'&&missing.length?'incomplete':'ready'};
   return unityDecisionResolve(input);
@@ -167,7 +171,7 @@ function unityDecisionLedgerKey(s,d){
   // Stable fingerprint of ACTUAL decision inputs: duplicate views do not create
   // a stream of redundant records or overwrite the first immutable snapshot.
   const state=JSON.stringify([s.id,d.mode,d.action,d.reasonCode,d.dataStatus,d.signalAt,
-    d.priceRef,d.scoreBand,d.veto,d.trigger,d.invalidation,d.why,d.positionQty,d.capitalPct]);
+    d.priceRef,d.scoreBand,d.veto,d.trigger,d.invalidation,d.why,d.positionQty,d.capitalPct,d.sourceRefs]);
   let hash=2166136261;
   for(let i=0;i<state.length;i++){hash^=state.charCodeAt(i);hash=Math.imul(hash,16777619)}
   return 'unity-decision-0151-'+String(s.id)+'-'+(hash>>>0).toString(16);

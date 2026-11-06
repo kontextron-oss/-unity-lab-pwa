@@ -4,7 +4,9 @@
 let unityIssuerGuidance=null,unityValuationAssumptions=null,unityGuidanceFetchError='';
 async function unityLoadValuationEvidence(){
  const load=async url=>{
-  const r=await fetch(url+'?t='+Date.now(),{cache:'no-store',credentials:'omit'});
+  let r;
+  try{r=await fetch(url+'?t='+Date.now(),{cache:'no-store',credentials:'omit'})}
+  catch(_){r=await fetch(url,{cache:'default',credentials:'omit'})}
   if(!r.ok)throw Error('HTTP '+r.status);
   const v=await r.json();
   if(v.schemaVersion!==1||!v.items||typeof v.items!=='object'||Array.isArray(v.items))
@@ -142,7 +144,7 @@ function unityScenarioValuationPanel(s){
  let h='<h4>Zukunftserwartungen und Szenariobewertung · UNITY</h4>';
  if(g){
   h+='<p class="tiny muted"><b>Unternehmensprognose '+g.fiscalYear+':</b> Quelle vom '+esc(g.publishedAt)+
-    ' · nur die konkret angegebenen Prognosegrößen, keine 5-Jahres-Schätzung.</p>';
+    ', geprüft '+esc(g.reviewedAt)+' · nur die konkret angegebenen Prognosegrößen, keine 5-Jahres-Schätzung.</p>';
   for(const line of g.guidance){
    let range=typeof line.text==='string'?line.text:
     line.lower!==undefined&&line.upper!==undefined?
@@ -158,10 +160,12 @@ function unityScenarioValuationPanel(s){
   h+='<p><a href="'+esc(g.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Offizielle Prognosequelle lesen</a></p>';
  }else h+='<p class="tiny muted">Keine ausreichend aktuelle und geprüfte Unternehmensprognose hinterlegt.</p>';
  if(m.status==='scenario-only'){
+  const reportCurrency=typeof unityFinancialStockSnapshot==='function'?
+   unityFinancialStockSnapshot(s)?.reportCurrency||'':'';
   h+='<p><b>Bewertungsband (nur Szenariomodell):</b> '+
     new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(m.modelValues.bear.valueReportCurrency)+
     ' – '+new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(m.modelValues.bull.valueReportCurrency)+
-    ' '+esc(s?.reportCurrency||'je Aktie in Berichtswährung')+'</p>';
+    ' '+esc(reportCurrency)+' je Aktie</p>';
   if(m.indicativeEntryZone){
    h+='<p class="tiny muted">Rechnerische Preiszone nach Sicherheitsmarge: '+
     new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(m.indicativeEntryZone.low)+

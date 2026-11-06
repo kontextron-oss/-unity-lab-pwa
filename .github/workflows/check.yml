@@ -22,6 +22,7 @@ jobs:
           node --check financial-metrics.js
           node --check valuation-scenarios.js
           node --check reverse-valuation.js
+          node --check foresight.js
           node --check research.js
           node --check capital-radar.js
           node --check analysis.js
@@ -220,3 +221,5 @@ jobs:
         run: node tests/valuation-scenarios.cjs
       - name: Test UNITY 0.16 Eaton and Vertiv reverse-DCF diagnostics and no-trade veto
         run: node tests/reverse-valuation.cjs
+      - name: Test pre-registered guidance, next filings and prospective learning checkpoints
+        run: node tests/foresight.cjs

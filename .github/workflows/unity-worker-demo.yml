@@ -1,0 +1,44 @@
+name: UNITY synthetic background runner – no private data
+on:
+  schedule:
+    # Best-effort GitHub cron; UTC, not an execution-time guarantee.
+    - cron: '17 8,19 * * 1-5'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: unity-synthetic-worker
+  cancel-in-progress: false
+jobs:
+  synthetic-liveness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout public test code only
+        uses: actions/checkout@v4
+      - name: Prepare Node runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm private data are never provided to this job
+        run: |
+          test -f worker/demo-fixture.cjs
+          test -f worker/run-demo.cjs
+          test ! -e worker/private-state.json
+          test ! -e worker/pcloud-credentials.json
+      - name: Run ONLY synthetic no-broker no-pCloud sample
+        run: |
+          node tests/worker-demo.cjs
+          node worker/run-demo.cjs --write-status
+      - name: Publish synthetic liveness artifact only
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-synthetic-demo-status
+          path: worker/demo-status.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Visible provenance
+        run: |
+          echo '### UNITY independent runner – synthetic demo ONLY' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No private iPhone positions, no pCloud credentials, no live market orders.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'GitHub cron is best-effort. Every invocation runs its own synthetic two-step fixture; cross-run persistent portfolio is NOT yet connected.' >> "$GITHUB_STEP_SUMMARY"

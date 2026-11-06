@@ -20,6 +20,7 @@ jobs:
           node --check discovery.js
           node --check fundamentals.js
           node --check financial-metrics.js
+          node --check valuation-scenarios.js
           node --check research.js
           node --check capital-radar.js
           node --check analysis.js
@@ -214,3 +215,5 @@ jobs:
         run: node tests/fundamentals.cjs
       - name: Test standardized financial quality and ABB USD/CHF cross-FX for the entire masterlist
         run: node tests/financial-metrics.cjs
+      - name: Test official 2026 guidance and fail-closed scenario valuations
+        run: node tests/valuation-scenarios.cjs

@@ -206,36 +206,78 @@ function unityTechnicalTestEntry(s){
 function unityAutoBuyEntry(s,mode){return mode==='technical'?unityTechnicalTestEntry(s):unityCalculatedEntry(s)}
 function unityAutoBuyModeLabel(mode){return mode==='technical'?'Technischer Testkauf':'Strenge UNITY-Freigabe'}
 function unityAutoBuyPercent(order){const value=Number(order?.allocationPct);return [2,5,10,15,20,25,50].includes(value)?value:2}
-const UNITY_AUTO_BUY_ALLOCATIONS=[2,5,10,15,20,25,50];
+/* Legacy percentage orders remain valid until the user changes them. New
+   automatic test buys use a FIXED EUR amount and require a spending cap. */
+const UNITY_AUTO_BUDGET_KEY='auto-test-buy-total-budget';
+const UNITY_AUTO_FIXED_DEFAULT=100;
+function unityAutoEurAmount(order){
+  const value=order?.allocationEur;
+  return value===null||value===undefined||value===''?NaN:Number(value);
+}
+function unityAutoValidateEur(value){
+  const amount=Number(value);
+  if(!(Number.isFinite(amount)&&amount>=1&&amount<=1000000000&&Math.round(amount*100)/100===amount))
+    throw Error('Bitte einen festen Betrag von mindestens 1,00 € mit höchstens zwei Nachkommastellen eingeben.');
+  return amount;
+}
+function unityAutoBudgetSetting(){return (cache?.settings||[]).find(x=>x.id===UNITY_AUTO_BUDGET_KEY)||null}
+function unityAutoBudgetSpent(){
+  // Count only active-run auto buys. Test sales do NOT replenish a spending cap.
+  return Math.round((cache?.transactions||[]).filter(t=>!t.voidedAt&&t.type==='BUY'&&
+    t.source==='UNITY Lab · Auto-Testkauf').reduce((n,t)=>n+(Number(t.amount)||0)*(Number(t.fx)||0)+
+      (Number(t.fee)||0),0)*100)/100;
+}
+function unityAutoBudgetStatus(){
+  const setting=unityAutoBudgetSetting(),limit=Number(setting?.limitEur);
+  const configured=!!setting&&Number.isFinite(limit)&&limit>0;
+  const spent=unityAutoBudgetSpent();
+  return {configured,limit:configured?limit:NaN,spent,
+    remaining:configured?Math.max(0,Math.round((limit-spent)*100)/100):NaN,
+    updatedAt:setting?.updatedAt||''};
+}
+async function unityAutoSetBudget(value){
+  const limit=unityAutoValidateEur(value),old=unityAutoBudgetSetting();
+  if(old&&Number(old.limitEur)===limit)return false;
+  await put('settings',{id:UNITY_AUTO_BUDGET_KEY,kind:'auto-test-budget',
+    limitEur:limit,updatedAt:new Date().toISOString()});
+  await audit('AUTO_TEST_BUDGET_CHANGED',UNITY_AUTO_BUDGET_KEY,
+    'Grenze '+(old?.limitEur?depotMoney(Number(old.limitEur)):'nicht festgelegt')+
+    ' → '+depotMoney(limit)+'; bisher eingesetzt '+depotMoney(unityAutoBudgetSpent()));
+  await refresh();return true;
+}
 async function unityAutoBuyChangeAllocation(s,allocation){
   if(!s)throw Error('Aktie nicht gefunden.');
-  const pct=Number(allocation),existing=unityAutoBuy(s);
+  const existing=unityAutoBuy(s);
   if(!existing)throw Error('Kein offener automatischer Testkauf vorhanden. Bitte zuerst einen Auftrag aktivieren.');
-  if(!UNITY_AUTO_BUY_ALLOCATIONS.includes(pct))throw Error('Bitte 2, 5, 10, 15, 20, 25 oder 50 Prozent wählen.');
-  const old=unityAutoBuyPercent(existing);
-  if(pct===old)return false;
-  // Same active order, initial activation timestamp and trading mode. Never
-  // touch any existing transactions or reset a previously recorded trade.
-  await put('settings',{...existing,allocationPct:pct,updatedAt:new Date().toISOString()});
-  await audit('AUTO_TEST_BUY_ALLOCATION_CHANGED',s.id,old+' % → '+pct+' % · '+unityAutoBuyModeLabel(existing.mode));
+  if(!unityAutoBudgetStatus().configured)throw Error('Bitte zunächst das Gesamtbudget für automatische Testkäufe festlegen.');
+  const amount=unityAutoValidateEur(allocation),old=unityAutoEurAmount(existing);
+  if(Number.isFinite(old)&&old===amount)return false;
+  const updated={...existing,allocationEur:amount,updatedAt:new Date().toISOString()};
+  delete updated.allocationPct; // deliberate user-initiated conversion from old percentage order
+  // Preserve order identity, mode, and activation date; never change transactions.
+  await put('settings',updated);
+  await audit('AUTO_TEST_BUY_AMOUNT_CHANGED',s.id,
+    (Number.isFinite(old)?depotMoney(old):unityAutoBuyPercent(existing)+' % (Altauftrag)')+
+    ' → '+depotMoney(amount)+' · '+unityAutoBuyModeLabel(existing.mode));
   await refresh();return true;
 }
 function unityAutoBuyControls(s,queued,mode){
-  const selected=queued?unityAutoBuyPercent(queued):2;
-  const select='<label class="tiny">Anteil am freien Testkapital<select id="auto-buy-percent-'+esc(s.id)+'">'+
-    UNITY_AUTO_BUY_ALLOCATIONS.map(pct=>'<option value="'+pct+'"'+(pct===selected?' selected':'')+'>'+pct+' %</option>').join('')+
-    '</select></label>';
+  const fixed=unityAutoEurAmount(queued),amount=Number.isFinite(fixed)&&fixed>0?fixed:UNITY_AUTO_FIXED_DEFAULT;
+  const input='<label class="tiny">Fester Betrag je Testkauf (€)<input id="auto-buy-amount-'+esc(s.id)+'" type="number" inputmode="decimal" min="1" max="1000000000" step="0.01" value="'+amount.toFixed(2)+'"></label>';
   if(queued){
     const stamp=queued.updatedAt&&Number.isFinite(Date.parse(queued.updatedAt))?
       ' · '+new Date(queued.updatedAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
-    const saved=queued.updatedAt?'✓ Anteil gespeichert: '+selected+' %'+stamp:
-      'Aktiver Auftrag · '+selected+' % des freien Testkapitals';
-    return '<div class="home-auto-allocation"><span class="actions">'+select+
-      '<button type="button" class="primary" data-home-auto-buy-save="'+esc(s.id)+'">Anteil speichern</button>'+
+    const legacy=!Number.isFinite(fixed);
+    const saved=legacy?'Bisheriger Prozentauftrag: '+unityAutoBuyPercent(queued)+
+      ' %. Durch Speichern ausdrücklich auf einen festen Eurobetrag umstellen.':
+      queued.updatedAt?'✓ Betrag gespeichert: '+depotMoney(fixed)+stamp:
+      'Aktiver Auftrag · fester Betrag '+depotMoney(fixed);
+    return '<div class="home-auto-allocation"><span class="actions">'+input+
+      '<button type="button" class="primary" data-home-auto-buy-save="'+esc(s.id)+'">Betrag speichern</button>'+
       '<button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'">Auto-Testkauf ausschalten</button></span>'+
       '<small class="home-auto-save-state" role="status" aria-live="polite">'+esc(saved)+'</small></div>';
   }
-  return '<span class="actions">'+select+
+  return '<span class="actions">'+input+
     '<button type="button" class="primary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="technical">Technisch aktivieren</button>'+
     '<button type="button" class="secondary" data-home-auto-buy="'+esc(s.id)+'" data-auto-mode="strict">Streng aktivieren</button></span>';
 }

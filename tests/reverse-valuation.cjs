@@ -46,6 +46,9 @@ for(const sample of cases){
  assert.ok(r.impliedAnnualFcfGrowth[1].impliedGrowthPct<
            r.impliedAnnualFcfGrowth[2].impliedGrowthPct);
  assert.equal(r.assumptions.nature,'unreviewed sensitivity – NOT a company forecast');
+ const expected10=sample.stock.ticker==='ETN'?29.57:29.29;
+ assert.ok(Math.abs(r.impliedAnnualFcfGrowth[1].impliedGrowthPct-expected10)<0.2,
+   'Reverse DCF should stay stable for audited FY2025 FCF and sourced closing price');
  assert.equal(r.decision.startsWith('Beobachten'),true);
  assert.ok(r.fcfPerShare>0);
 }

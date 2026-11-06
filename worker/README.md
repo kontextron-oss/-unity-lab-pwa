@@ -24,6 +24,36 @@ node worker/run-demo.cjs
 
 `--write-status` erstellt ausschließlich eine lokale synthetische JSON-Datei zur Upload-Prüfung. Das Ergebnis darf öffentlich sein und enthält **keine** persönlichen Positionen.
 
+## Neu: privater lokaler PC-Testprozess – dauerhafte Protokolldatei (0.15.3.1)
+
+**Der Testprozess funktioniert ausschließlich mit synthetischen Beispieldaten.** Er ist ein technischer Meilenstein für die spätere PC-Version und den privaten Hintergrundrunner, **noch keine Verbindung** zum realen iPhone-Testdepot. Die PWA-Version bleibt 0.15.2.
+
+`worker/local-runner.cjs` kann auf einem PC mit Node.js 22+ betrieben werden. Er speichert einen synthetischen Testdepotstand in einem **privaten lokalen Verzeichnis außerhalb des öffentlichen GitHub-Repositorys**, zunächst deaktiviert. Durch das Starten eines separaten Prozesses, einen Neustart oder wiederholte Kursprüfungen gehen frühere Testereignisse nicht verloren und dieselbe Demobuchung wird nicht erneut angelegt. Die Daten sind lokal **nicht verschlüsselt**; daher niemals echte Depot- oder Zugangsdaten in diese Demo übernehmen.
+
+**Beispielbefehle für eine spätere lokale PC-Testumgebung:**
+
+```bash
+node worker/local-runner.cjs init
+node worker/local-runner.cjs status
+node worker/local-runner.cjs resume
+node worker/local-runner.cjs tick --date 2026-11-05
+node worker/local-runner.cjs tick --date 2026-11-06
+node worker/local-runner.cjs status
+node worker/local-runner.cjs pause
+```
+
+Das Standardverzeichnis ist `~/UNITY-LAB-PRIVATE-WORKER/`; mit `--dir <absoluter Pfad>` kann ein anderer privater Speicherort gewählt werden, solange er **außerhalb** des Repos liegt. `serve --interval-seconds 3600` wiederholt die synthetische Prüfung, **solange der PC-Prozess tatsächlich läuft**. Es handelt sich ausdrücklich um keine Installation eines Startdienstes: Bei ausgeschaltetem PC bleibt die Demo stehen.
+
+**Sicherungs- und Ausführungsregeln des lokalen Prototyps:**
+
+- Eine exklusive lokale Schreibsperre verhindert konkurrierende Prozesse. Ein nachweislich verwaister Lock kann nach Ablauf zurückgesetzt werden.
+- Status, auslösender Kurs, modellierte Fills und Ereignisse befinden sich **in einem zusammengehörigen versionierten JSON-Checkpoint**, der über eine temporäre Datei und Dateisystem-Rename geschrieben wird. Der vorherige Prüfstand wird separat als `state.previous.json` erhalten.
+- Ein SHA-256-Inhaltsprüfwert erkennt beschädigte oder veränderte Checkpoints. Bei Inkonsistenz erfolgt **keine automatische Rücksetzung auf einen alten Stand**, sondern ein erklärter Abbruch zur manuellen Prüfung.
+- `pause`, `resume` und `status` sind bereits als CLI verfügbar, aber **noch nicht in der iPhone-App**.
+- Der neue systemübergreifende Test `tests/worker-local.cjs` prüft mehrfache PC-Prozessstarts, einmaligen simulierten Kauf, Pausieren, Schreibsperre, Wiederanlauf nach Lock-Abbruch und Reaktion auf beschädigte Daten.
+
+**Nicht verwechseln:** Die bereits vorhandene manuelle pCloud-Sicherung vom iPhone transportiert lokale Backup-Dateien. Dieser neue Demo-Runner greift nicht auf diese Sicherungen zu und kann **keine** Nutzerdaten von pCloud herunterladen oder zurückschreiben. Vor späterem automatischem Abgleich brauchen wir getrennte private Authentifizierung, einen einzigen autoritativen Auftrags-Schreiber, Abgleich-/Konfliktregeln und Testmigration des bisherigen iPhone-Depots.
+
 ## Bereits nutzbar: manuelle pCloud-Sicherung vom iPhone
 
 **Der UNITY-iPhone-Backupworkflow ist bereits in der PWA vorhanden.** UNITY erstellt eine BASIS- oder inkrementelle ÄNDERUNG-Datei und reicht diese über die iOS-Dateifreigabe an pCloud weiter. Dort wählt der Nutzer den Zielordner selbst aus, kontrolliert die tatsächliche Ablage und bestätigt anschließend die Sicherung in UNITY. Das ist **funktionierender manueller Datentransport**, nicht automatischer Synchronisationsbetrieb. Er bleibt als sichere Rückfallebene erhalten.

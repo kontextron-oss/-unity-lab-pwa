@@ -21,7 +21,8 @@ function unityFundPilotItem(s){
  if(european&&european.isin===s?.isin)return european;
  const symbol=String(s?.providerSymbol||s?.ticker||'').toUpperCase();
  const sec=unitySecFundamentals?.items?.[symbol];
- if(sec&&String(sec.ticker||'').toUpperCase()===symbol)return sec;
+ if(sec&&String(sec.ticker||'').toUpperCase()===symbol&&
+   !!s?.isin&&sec.isin===s.isin)return sec;
  return null;
 }
 // Source-bound annual-report multiples. These are descriptive valuation
@@ -121,6 +122,9 @@ function unityFundPilotPanel(s){
    }
    h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+esc(value)+'</b><small>'+esc(help)+'</small></div>';
   }
+  if(typeof unityFinancialSnapshotPanel==='function'){
+   h+=unityFinancialSnapshotPanel(s);
+  }else{
   const growth=item.derived?.revenueGrowth?.value,earnings=item.derived?.netIncomeGrowth?.value;
   if(Number.isFinite(growth)&&Number.isFinite(earnings)&&item.derived?.revenueGrowth?.periodEnd===item.latestFiling?.periodEnd){
     const revenueText=growth>0?'Umsatz gestiegen':growth<0?'Umsatz gesunken':'Umsatz unverändert';
@@ -149,6 +153,7 @@ function unityFundPilotPanel(s){
    }
    h+='<p class="tiny muted">Multiplikatoren beschreiben die aktuelle Kombination aus Abschluss und Kurs. Sie bestimmen keinen inneren Wert und sind keine Kaufempfehlung.</p>';
   }else h+='<p class="tiny muted">Bewertung noch offen: '+esc(valuation.missing.join(', '))+'. Fehlende Werte werden nicht geschätzt.</p>';
+  }
   h+='<p class="tiny muted">Letzte Quellenprüfung: '+esc(item.checkedAt||'unbekannt')+' · '+esc(item.source||'ESEF')+'</p>';
   const decisionEvidence=item.decisionEvidence;
   if(decisionEvidence){

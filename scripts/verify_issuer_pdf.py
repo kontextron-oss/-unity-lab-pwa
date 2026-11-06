@@ -151,7 +151,13 @@ def parse_issuer_pdf(spec, pdf_bytes):
     try:
         if not doc.is_pdf or doc.page_count <= max(p[0] for p in spec["facts"].values()):
             raise ValueError("Annual report is incomplete")
-        if normalized(spec["name"]) not in normalized(doc[0].get_text()):
+        # ABB's front cover uses a vector logo that may not extract as text.
+        # Confirm ABB Ltd on the consolidated statements themselves instead.
+        if spec["name"] == "ABB":
+            identity = normalized(doc[54].get_text() + " " + doc[56].get_text())
+            if "abb ltd consolidated" not in identity or "2025" not in identity:
+                raise ValueError("Annual report issuer identity mismatch")
+        elif normalized(spec["name"]) not in normalized(doc[0].get_text()):
             raise ValueError("Annual report issuer identity mismatch")
         fields = {}
         for field, settings in spec["facts"].items():

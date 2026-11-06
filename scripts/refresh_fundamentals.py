@@ -178,6 +178,8 @@ OFFICIAL_SOURCES={
   "issuer":"Siemens Energy","year":"2025","currency":"EUR",
   "facts":{
    "revenue":{"pattern":r"revenue\s+came\s+in\s+at\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "orders":{"pattern":r"orders\s+reached\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Auftragseingang"},
+   "orderBacklog":{"pattern":r"order\s+backlog\s+reached\s+another\s+new\s+record\s+of\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Auftragsbestand"},
    "netIncome":{"pattern":r"Net\s+income\s+at\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Jahresüberschuss"},
    "freeCashFlowPreTax":{"pattern":r"Free\s+cash\s+flow\s+pre\s+tax\s+rose\s+sharply\s+to\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Free Cashflow vor Steuern"}
   }},
@@ -186,9 +188,33 @@ OFFICIAL_SOURCES={
   "issuer":"Infineon","year":"2025","currency":"EUR",
   "facts":{
    "revenue":{"pattern":r"(?<!Q4 )FY\s*2025\s*:\s*Revenue\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Umsatz"},
+   "segmentResult":{"pattern":r"FY\s*2025\s*:\s*Revenue\s*€\s*[\d.]+\s*billion.{0,170}?Segment\s+Result\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Segmentergebnis (bereinigt)"},
    "adjustedFreeCashFlow":{"pattern":r"positive\s+Adjusted\s+Free\s+Cash\s+Flow\s+of\s*€\s*(\d+(?:\.\d+)?)\s*billion","scale":1_000_000_000,"label":"Bereinigter Free Cashflow"}
   }}
 }
+# Official FY2025 annual reporting portals and audited group-report links.
+# A link alone does not validate any of the five machine-readable core metrics.
+ANNUAL_REPORT_REFERENCES={
+ "CH0012221716":{
+  "sourceUrl":"https://www.abb.com/global/en/company/annual-reporting-suite",
+  "fiscalYear":"2025","periodEnd":"2025-12-31",
+  "accountingStandard":"US-GAAP","format":"issuer-annual-report-portal"},
+ "DE000ENER6Y0":{
+  "sourceUrl":"https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
+  "fiscalYear":"2025","periodEnd":"2025-09-30",
+  "accountingStandard":"IFRS","format":"issuer-consolidated-annual-pdf"},
+ "DE0006231004":{
+  "sourceUrl":"https://www.infineon.com/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+  "fiscalYear":"2025","periodEnd":"2025-09-30",
+  "accountingStandard":"IFRS","format":"issuer-consolidated-annual-pdf"},
+}
+def annual_report_reference(isin):
+ ref=ANNUAL_REPORT_REFERENCES.get(isin)
+ if not ref:return None
+ return {**ref,"sourceType":"issuer-official-annual-report",
+         "extractionStatus":"not-machine-extracted",
+         "coreMetricsValidated":False}
+
 class VisibleText(HTMLParser):
  def __init__(self):
   super().__init__();self.parts=[];self.hidden=0
@@ -246,7 +272,9 @@ def build():
         row={"name":stock["name"],"isin":isin,"lei":stock["lei"],
              "reportCurrency":stock["currency"],"investorRelations":stock["investor"],
              "note":stock["note"],"status":"not-covered","metrics":{},"priorMetrics":{},"derived":{},
-             "latestFiling":None,"priorFiling":None,"officialHighlights":None,"checkedAt":now,"source":"filings.xbrl.org ESEF (XBRL International)",
+             "latestFiling":None,"priorFiling":None,"officialHighlights":None,
+             "annualReport":annual_report_reference(isin),
+             "checkedAt":now,"source":"filings.xbrl.org ESEF (XBRL International)",
              "errors":[]}
         if not stock["lei"]:
             row["status"]="no-esef-route"

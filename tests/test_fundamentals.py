@@ -61,6 +61,48 @@ class FundamentalsTests(unittest.TestCase):
             mod.parse_official_highlights("<p>Another firm FY 2025 Revenues $33.2 billion</p>",source)
         x=mod.parse_official_highlights("<p>ABB FY 2025 Revenues $33.2 billion; FY 2025 Revenues $42.1 billion</p>",source)
         self.assertNotIn("revenue",x)
+    def test_official_annual_reports_are_reference_only(self):
+        expected = {
+            "CH0012221716": ("US-GAAP", "2025-12-31"),
+            "DE000ENER6Y0": ("IFRS", "2025-09-30"),
+            "DE0006231004": ("IFRS", "2025-09-30"),
+        }
+        for isin, (standard, end) in expected.items():
+            ref = mod.annual_report_reference(isin)
+            self.assertEqual(ref["accountingStandard"], standard)
+            self.assertEqual(ref["periodEnd"], end)
+            self.assertEqual(ref["extractionStatus"], "not-machine-extracted")
+            self.assertFalse(ref["coreMetricsValidated"])
+            self.assertTrue(ref["sourceUrl"].startswith("https://"))
+        self.assertIsNone(mod.annual_report_reference("US9999999999"))
+
+    def test_siemens_official_backlog_and_orders_are_separate_from_core_metrics(self):
+        source = mod.OFFICIAL_SOURCES["DE000ENER6Y0"]
+        html = """<html><body>Siemens Energy fiscal year 2025.
+        Driven by strong growth, orders reached €58.9 billion,
+        revenue came in at €39.1 billion.
+        With order intake of €58.9 billion, order backlog reached another
+        new record of €138 billion.
+        Net income at €1.685 billion.</body></html>"""
+        facts = mod.parse_official_highlights(html, source)
+        self.assertEqual(facts["orders"]["value"], 58_900_000_000)
+        self.assertEqual(facts["orderBacklog"]["value"], 138_000_000_000)
+        self.assertEqual(facts["revenue"]["value"], 39_100_000_000)
+        self.assertEqual(facts["orderBacklog"]["kind"], "issuer-release")
+        self.assertNotIn("operatingCashFlow", facts)
+
+    def test_infineon_segment_result_not_net_income(self):
+        source = mod.OFFICIAL_SOURCES["DE0006231004"]
+        html = """<html><body>Infineon 2025:
+        FY 2025: Revenue €14.662 billion, down 2 percent on the prior year;
+        Segment Result €2.560 billion; Segment Result Margin 17.5 percent;
+        positive Adjusted Free Cash Flow of €1.803 billion.</body></html>"""
+        facts = mod.parse_official_highlights(html, source)
+        self.assertEqual(facts["segmentResult"]["value"], 2_560_000_000)
+        self.assertEqual(facts["adjustedFreeCashFlow"]["value"], 1_803_000_000)
+        self.assertNotIn("netIncome", facts)
+        self.assertNotIn("operatingCashFlow", facts)
+
     def test_annual_period_not_quarterly(self):
         report={"facts":{"f1":{"dimensions":{"concept":"ifrs-full:Revenue","unit":"iso4217:EUR","period":"2025-10-01/2026-01-01"},"value":123}}}
         self.assertNotIn("revenue",mod.extract_metrics(report,"2025-12-31","EUR","https://filings.xbrl.org/a.json"))

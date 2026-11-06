@@ -55,6 +55,54 @@ class SecValuationInputsTests(unittest.TestCase):
         self.assertEqual(vrt["status"], "source-unavailable")
         self.assertEqual(vrt["metrics"], {})
 
+    def test_balance_sheet_shares_cash_and_debt_are_not_confused_with_annual_average(self):
+        end = "2025-12-31"
+        def row(value, unit="USD"):
+            return {"form":"10-K","fp":"FY","val":value,"end":end,
+                    "filed":"2026-02-03","accn":"0001234567"}
+        data = {"us-gaap": {
+            "RevenueFromContractWithCustomerExcludingAssessedTax":{"units":{"USD":[row(1000)]}},
+            "NetIncomeLoss":{"units":{"USD":[row(100)]}},
+            "Assets":{"units":{"USD":[row(2000)]}},
+            "StockholdersEquity":{"units":{"USD":[row(500)]}},
+            "NetCashProvidedByUsedInOperatingActivities":{"units":{"USD":[row(180)]}},
+            "EarningsPerShareDiluted":{"units":{"USD/shares":[row(5,"USD/shares")]}},
+            "WeightedAverageNumberOfDilutedSharesOutstanding":{"units":{"shares":[row(22,"shares")]}},
+            "CommonStockSharesOutstanding":{"units":{"shares":[row(20,"shares")]}},
+            "PaymentsToAcquirePropertyPlantAndEquipment":{"units":{"USD":[row(30)]}},
+            "CashAndCashEquivalentsAtCarryingValue":{"units":{"USD":[row(120)]}},
+            "LongTermDebtNoncurrent":{"units":{"USD":[row(300)]}},
+            "ShortTermBorrowings":{"units":{"USD":[row(20)]}},
+        }}
+        issuer={"name":"Example","isin":"US0000000001","cik":"0000000001","ir":"https://example.com"}
+        with mock.patch.object(mod,"get_json",return_value={"facts":data}):
+            item=mod.build_issuer("EX",issuer,"2026-02-04T00:00:00Z")
+        self.assertEqual(item["status"],"metrics-complete")
+        self.assertEqual(item["metrics"]["sharesOutstanding"]["value"],20)
+        self.assertEqual(item["metrics"]["sharesOutstanding"]["unit"],"shares")
+        self.assertEqual(item["metrics"]["sharesDiluted"]["value"],22)
+        self.assertEqual(item["metrics"]["cashAndEquivalents"]["value"],120)
+        self.assertEqual(item["metrics"]["debtLongTermNoncurrent"]["value"],300)
+        self.assertEqual(item["metrics"]["shortTermBorrowings"]["value"],20)
+        self.assertFalse(item["valuationInputs"]["completeDebtKnown"])
+        self.assertFalse(item["valuationInputs"]["forwardGuidanceVerified"])
+        self.assertNotIn("netDebt",item["metrics"])
+
+    def test_never_fill_missing_shares_outstanding_from_diluted_average(self):
+        end="2025-12-31"
+        eps = {"form":"10-K","fp":"FY","val":3.0,"end":end,"filed":"2026-02-03"}
+        shares={"form":"10-K","fp":"FY","val":1000,"end":end,"filed":"2026-02-03"}
+        payload={"facts":{"us-gaap":{
+            "EarningsPerShareDiluted":{"units":{"USD/shares":[eps]}},
+            "WeightedAverageNumberOfDilutedSharesOutstanding":{"units":{"shares":[shares]}}
+        }}}
+        issuer={"name":"Test","isin":"US0000000001","cik":"0000000001","ir":"https://example.com"}
+        with mock.patch.object(mod,"get_json",return_value=payload):
+            item=mod.build_issuer("EX",issuer,"2026-02-04T00:00:00Z")
+        self.assertNotIn("sharesOutstanding",item["metrics"])
+        self.assertIn("sharesDiluted",item["metrics"])
+        self.assertFalse(item["valuationInputs"]["completeDebtKnown"])
+
     def test_annual_valuation_inputs_keep_exact_units_and_same_period(self):
         end="2025-12-31"
         def row(value,unit="USD"):

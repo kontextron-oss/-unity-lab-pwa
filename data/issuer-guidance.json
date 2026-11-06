@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-06T22:45:00Z",
+  "sourceType": "manually-verified-official-issuer-guidance",
+  "scope": "Public 2026 outlook from original issuer releases. NOT independent forecasts or 5-year discount-rate assumptions.",
+  "items": {
+    "CH0012221716": {
+      "isin": "CH0012221716",
+      "name": "ABB",
+      "ticker": "ABBN",
+      "fiscalYear": 2026,
+      "publishedAt": "2026-10-20",
+      "reviewedAt": "2026-11-06",
+      "sourceUrl": "https://www.abb.com/global/en/news/139696/q3-2026-results",
+      "sourceHost": "www.abb.com",
+      "guidance": [
+        {
+          "metric": "comparableRevenueGrowth",
+          "horizon": "FY2026",
+          "unit": "qualitative",
+          "text": "low teens",
+          "label": "Vergleichbares Umsatzwachstum: niedriger zweistelliger Prozentbereich"
+        },
+        {
+          "metric": "reportedOperationalEbitMarginChange",
+          "horizon": "FY2026",
+          "unit": "basis-points",
+          "lower": 270,
+          "upper": null,
+          "label": "Berichtete operative EBITA-Marge: Anstieg um mindestens 270 Basispunkte"
+        }
+      ],
+      "notes": "ABB-Prognose ohne präzises numerisches 5-Jahres-Wachstum. Keine automatische DCF-Wachstumsannahme."
+    },
+    "US92537N1081": {
+      "isin": "US92537N1081",
+      "name": "Vertiv",
+      "ticker": "VRT",
+      "fiscalYear": 2026,
+      "publishedAt": "2026-10-28",
+      "reviewedAt": "2026-11-06",
+      "sourceUrl": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-Third-Quarter-2026-with-Net-Sales-Growth-of-61-Organic-Orders-Growth-over-100-and-Diluted-EPS-Growth-of-91-Adjusted-Diluted-EPS-Growth-of-78-Raises-Full-Year-2026-Guidance-Across-All-Key-Metrics/default.aspx",
+      "sourceHost": "investors.vertiv.com",
+      "guidance": [
+        {
+          "metric": "revenue",
+          "horizon": "FY2026",
+          "unit": "USD",
+          "lower": 14450000000,
+          "upper": 14850000000,
+          "label": "Umsatzprognose (Gesamtumsatz)"
+        },
+        {
+          "metric": "dilutedEPS",
+          "horizon": "FY2026",
+          "unit": "USD/shares",
+          "mid": 6.29,
+          "label": "Verwässerter Gewinn je Aktie (GAAP), erwarteter Mittelpunkt"
+        },
+        {
+          "metric": "adjustedEPS",
+          "horizon": "FY2026",
+          "unit": "USD/shares",
+          "lower": 7.1,
+          "upper": 7.2,
+          "nonGAAP": true,
+          "label": "Bereinigter Gewinn je Aktie (Non-GAAP)"
+        },
+        {
+          "metric": "adjustedFCF",
+          "horizon": "FY2026",
+          "unit": "USD",
+          "lower": 2600000000,
+          "upper": 2800000000,
+          "nonGAAP": true,
+          "label": "Bereinigter Free Cashflow (Non-GAAP)"
+        }
+      ],
+      "notes": "Non-GAAP adjusted FCF darf nicht als OCF minus Capex aus dem US-GAAP-Konzernabschluss eingeordnet werden."
+    },
+    "IE00B8KQN827": {
+      "isin": "IE00B8KQN827",
+      "name": "Eaton",
+      "ticker": "ETN",
+      "fiscalYear": 2026,
+      "publishedAt": "2026-11-03",
+      "reviewedAt": "2026-11-06",
+      "sourceUrl": "https://www.eaton.com/us/en-us/company/news-insights/news-releases/2026/eaton-reports-record-third-quarter-2026-results.html",
+      "sourceHost": "www.eaton.com",
+      "guidance": [
+        {
+          "metric": "organicGrowth",
+          "horizon": "FY2026",
+          "unit": "percent",
+          "lower": 13,
+          "upper": 15,
+          "label": "Organisches Wachstum, nicht identisch mit ausgewiesenem Umsatzwachstum"
+        },
+        {
+          "metric": "dilutedEPS",
+          "horizon": "FY2026",
+          "unit": "USD/shares",
+          "lower": 10.39,
+          "upper": 10.49,
+          "label": "Verwässerter Gewinn je Aktie (GAAP)"
+        },
+        {
+          "metric": "adjustedEPS",
+          "horizon": "FY2026",
+          "unit": "USD/shares",
+          "lower": 13.7,
+          "upper": 13.8,
+          "nonGAAP": true,
+          "label": "Bereinigter Gewinn je Aktie (Non-GAAP)"
+        }
+      ],
+      "notes": "Unternehmensprognose, keine unabhängig verifizierte Renditeannahme und keine automatische Kaufentscheidung."
+    }
+  }
+}

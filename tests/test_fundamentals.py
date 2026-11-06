@@ -103,6 +103,70 @@ class FundamentalsTests(unittest.TestCase):
         self.assertNotIn("netIncome", facts)
         self.assertNotIn("operatingCashFlow", facts)
 
+    def test_pdf_core_is_attached_only_after_five_provenanced_facts(self):
+        isin = "DE000ENER6Y0"
+        spec = mod.ANNUAL_REPORT_REFERENCES[isin]
+        url, period = spec["sourceUrl"], spec["periodEnd"]
+        def full_reader(given):
+            self.assertEqual(given, isin)
+            return {
+                "isin": given, "currency": "EUR", "periodEnd": period,
+                "sourceUrl": url, "sourceType": "issuer-audited-annual-report",
+                "metrics": {
+                    k: {"value": i*1_000_000, "periodEnd": period, "currency": "EUR",
+                        "sourceUrl": url, "sourceType": "issuer-audited-annual-report",
+                        "page": 150} for i, k in enumerate(sorted(mod.REQUIRED_METRICS), 1)
+                }
+            }
+        row = {"name": "Siemens Energy", "status": "issuer-release-only",
+               "metrics": {}, "annualReport": mod.annual_report_reference(isin),
+               "errors": [], "latestFiling": None}
+        result = mod.attach_source_checked_pdf(row, {}, isin, extractor=full_reader)
+        self.assertEqual(result["status"], "issuer-pdf-metrics-complete")
+        self.assertEqual(set(result["metrics"]), mod.REQUIRED_METRICS)
+        self.assertTrue(result["annualReport"]["coreMetricsValidated"])
+        self.assertEqual(result["latestFiling"]["sourceType"], "issuer-audited-annual-report")
+        self.assertNotIn("derived", result, "No unsupported ratios generated")
+
+    def test_pdf_core_rejected_if_missing_and_old_data_preserved_stale(self):
+        isin = "DE0006231004"
+        spec = mod.ANNUAL_REPORT_REFERENCES[isin]
+        def missing_reader(_):
+            return {"isin": isin, "sourceUrl": spec["sourceUrl"],
+                    "periodEnd": "2025-09-30", "currency": "EUR",
+                    "sourceType": "issuer-audited-annual-report",
+                    "metrics": {"revenue": {"value": 14_662_000_000}}}
+        first = {"name": "Infineon", "status": "issuer-release-only", "metrics": {},
+                 "latestFiling": None, "annualReport": mod.annual_report_reference(isin),
+                 "errors": []}
+        result = mod.attach_source_checked_pdf(first, {}, isin, extractor=missing_reader)
+        self.assertEqual(result["status"], "issuer-release-only")
+        self.assertEqual(result["metrics"], {})
+        self.assertFalse(result["annualReport"]["coreMetricsValidated"])
+        old_metrics = {k: {"value": 100} for k in mod.REQUIRED_METRICS}
+        previous = {"status": "issuer-pdf-metrics-complete", "metrics": old_metrics,
+                    "latestFiling": {"reportUrl": spec["sourceUrl"],
+                                     "sourceType": "issuer-audited-annual-report"},
+                    "checkedAt": "2026-11-06T10:00:00Z"}
+        second = {"name": "Infineon", "status": "issuer-release-only", "metrics": {},
+                  "latestFiling": None, "annualReport": mod.annual_report_reference(isin),
+                  "errors": []}
+        result = mod.attach_source_checked_pdf(second, previous, isin,
+            extractor=lambda _: (_ for _ in ()).throw(ValueError("temporary network outage")))
+        self.assertEqual(result["status"], "stale-previous")
+        self.assertEqual(result["metrics"], old_metrics)
+        self.assertTrue(result["annualReport"]["stale"])
+        self.assertFalse(result["annualReport"]["coreMetricsValidated"])
+        self.assertEqual(result["previousCheckedAt"], previous["checkedAt"])
+
+    def test_complete_esef_and_other_issuers_are_unchanged(self):
+        for isin in ["FR0000121972", "CH0012221716"]:
+            row = {"status": "metrics-complete", "metrics": {"revenue": {"value": 1}}}
+            self.assertEqual(mod.attach_source_checked_pdf(row, {}, isin), row)
+        isin = "DE000ENER6Y0"
+        row = {"status": "metrics-complete", "metrics": {"revenue": {"value": 1}}}
+        self.assertEqual(mod.attach_source_checked_pdf(row, {}, isin), row)
+
     def test_annual_period_not_quarterly(self):
         report={"facts":{"f1":{"dimensions":{"concept":"ifrs-full:Revenue","unit":"iso4217:EUR","period":"2025-10-01/2026-01-01"},"value":123}}}
         self.assertNotIn("revenue",mod.extract_metrics(report,"2025-12-31","EUR","https://filings.xbrl.org/a.json"))

@@ -52,8 +52,8 @@ assert.match(vm.runInContext('unityAutoStockBadge(buyStock)',Object.assign(sandb
  await vm.runInContext('unityRunAutoTestBuys()',sandbox);
  assert.equal(cache.transactions.length,2,'No duplicate fills on repeat refresh');
  const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
- assert.match(index,/home\.js\?v=0\.14\.2/);
- assert.match(sw,/home\.js\?v=0\.14\.2/);
- assert.match(sw,/unity-lab-v0\.14\.2/);
+ assert.match(index,/home\.js\?v=0\.15\.0/);
+ assert.match(sw,/home\.js\?v=0\.15\.0/);
+ assert.match(sw,/unity-lab-v0\.15\.0/);
  console.log('Auto simulation: visible orders, EUR totals, 2% sizing, fresh closes, technical sell, no double-fill, cache version passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -3,8 +3,8 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.14.2';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.14.2');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.0';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.0');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
@@ -490,6 +490,7 @@ function unityHome(){
     '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p><details class="home-status-fold"><summary>Kursdaten & Analysefortschritt anzeigen</summary>'+unityHomeAnalysisStatus(selected)+'</details>'+
     (capital?'<details class="home-capital-fold"><summary>'+(capital.configured?'Startkapital ändern':'Startkapital festlegen')+'</summary><form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form><small>Ändert nur das fiktive Startkapital, nicht deine bisherigen Käufe und Verkäufe.</small></details>':'')+'</section>';
   h+=unityAutoOrdersSummary();
+  if(typeof unityReadinessOverview==='function')h+=unityReadinessOverview(typeof stocks==='function'?stocks():selected);
   if(typeof unityResearchLifecyclePanel==='function')h+=unityResearchLifecyclePanel();
   if(pos.length){
     h+='<section class="home-holdings" aria-label="Gekaufte Aktien im Testdepot"><div class="home-holdings-head"><h2>Gekaufte Aktien <span>'+pos.length+'</span></h2><small>Deine simulierten Positionen · Gewinn/Verlust seit Kauf</small></div>';
@@ -571,6 +572,7 @@ function unityHomeDetail(sid){
   }
   h+='<section class="home-research-detail home-research-'+research.kind+'"><strong>Recherche-Indikator: '+esc(research.label)+'</strong><p>'+esc(research.detail)+'</p><small>Technische Vorauswahl, keine Kauf- oder Verkaufsfreigabe.</small></section>';
   if(typeof unityDecisionReadinessPanel==='function')h+=unityDecisionReadinessPanel(s);
+  if(typeof unityReadinessDetail==='function')h+=unityReadinessDetail(s);
   h+=unityZonePlanPanel(s);
   h+=unityAutoStockPanel(s);
   if(typeof unityPositionMonitorPanel==='function')h+=unityPositionMonitorPanel(s);

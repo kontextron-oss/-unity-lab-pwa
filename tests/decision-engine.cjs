@@ -115,9 +115,9 @@ const assertContract=x=>{
  assert.equal(evaluate(),null,'Crypto uses its separate decision system');
  assert.equal(await vm.runInContext("unityDecisionLedgerCapture(stock,'strict')",sandbox),false);
  const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),home=fs.readFileSync('home.js','utf8');
- assert.match(html,/decision-engine\.js\?v=0\.15\.1\.1/);
- assert.match(sw,/decision-engine\.js\?v=0\.15\.1\.1/);
- assert.match(sw,/unity-lab-v0\.15\.1\.1/);
+ assert.match(html,/decision-engine\.js\?v=0\.15\.1\.2/);
+ assert.match(sw,/decision-engine\.js\?v=0\.15\.1\.2/);
+ assert.match(sw,/unity-lab-v0\.15\.1\.2/);
  assert.match(home,/unityDecisionPanel\(s\)/);
  assert.match(home,/approval\.testActionEligible/);
  assert.match(home,/unityDecisionLedgerCapture/);

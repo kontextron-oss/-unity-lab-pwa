@@ -39,6 +39,17 @@ VALUATION_CONCEPTS = {
  "epsDiluted": (("EarningsPerShareDiluted",), ("USD/shares",)),
  "sharesDiluted": (("WeightedAverageNumberOfDilutedSharesOutstanding",), ("shares",)),
  "capitalExpenditure": (("PaymentsToAcquirePropertyPlantAndEquipment",), ("USD",)),
+ # Balance-sheet shares are as of the fiscal date. Never use diluted weighted
+ # annual-average shares as a substitute for end-of-period share count.
+ "sharesOutstanding": (("CommonStockSharesOutstanding",), ("shares",)),
+ "cashAndEquivalents": (("CashAndCashEquivalentsAtCarryingValue",), ("USD",)),
+ # These are debt COMPONENTS, not a complete total-debt guarantee.
+ "debtLongTermNoncurrent": (("LongTermDebtNoncurrent",), ("USD",)),
+ "debtLongTermIncludingCurrent": (
+      ("LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+       "LongTermDebtAndFinanceLeaseObligationsIncludingCurrentMaturities"), ("USD",)),
+ "shortTermBorrowings": (("ShortTermBorrowings",), ("USD",)),
+
 }
 
 def get_json(url):
@@ -152,6 +163,12 @@ def build_issuer(ticker, issuer, now):
       "name": issuer["name"], "ticker": ticker, "isin": issuer["isin"], "cik": issuer["cik"],
       "reportCurrency": "USD", "investorRelations": issuer["ir"], "status": status,
       "metrics": current, "priorMetrics": prior, "derived": derived(current, prior, end, previous_end),
+      "valuationInputs": {
+         "sourceType": "sec-us-gaap-concepts",
+         "note": "Instant shares / cash / debt components are not interchangeable with annual weighted average shares or total debt.",
+         "completeDebtKnown": False, "forwardGuidanceVerified": False,
+         "securities": "Common-stock only; issuer-level valuation may need share-class or ADS adjustment."
+      },
       "latestFiling": latest_filing if end else None,
       "priorFiling": {"periodEnd": previous_end} if previous_end else None,
       "checkedAt": now, "source": "SEC EDGAR Company Facts · XBRL", "errors": []

@@ -393,14 +393,16 @@ function unityZonePlanPanel(s){
 function unityAutoStockPanel(s){
   const buy=unityAutoBuy(s),sell=unityAutoSell(s),position=depotPosition(s);
   const entry=unityAutoBuyEntry(s,buy?.mode||'technical'),exit=unityAutoExitZone(s),signal=unityPullbackAlert(s);
-  const status=buy?(unityAutoBuyModeLabel(buy.mode||'strict')+' · '+unityAutoBuyPercent(buy)+' % aktiv · '+
+  const buyEur=unityAutoEurAmount(buy);
+  const status=buy?(unityAutoBuyModeLabel(buy.mode||'strict')+' · '+
+    (Number.isFinite(buyEur)&&buyEur>0?depotMoney(buyEur):unityAutoBuyPercent(buy)+' % (Altauftrag)')+' aktiv · '+
     (buy.mode==='technical'?(signal.kind==='reached'?'Technische Zone erreicht · neuer Schlusskurs nötig':'Technische Zone wird beobachtet'):
     entry.ready?'UNITY-Kauflimit berechnet · neuer Schlusskurs nötig':'Strenge Freigabe noch offen')):'Kein automatischer Testkauf aktiv';
   const maySell=position.qty>0&&Number.isFinite(exit)&&exit>0;
   const fmt=n=>Number.isFinite(n)&&n>0?number(n,2)+' '+s.currency:'–';
   return '<section class="panel home-auto-stock" aria-label="Automatik für diese Aktie">'+
     '<h3>Automatik einstellen · nur Testdepot</h3>'+
-    '<p class="tiny muted">Wähle den technischen Testkauf oder die strenge UNITY-Freigabe. Bei einem aktiven Auftrag kannst du den Prozentanteil direkt ändern und speichern, ohne ihn auszuschalten. Die Änderung gilt nur für zukünftige Testkäufe.</p>'+
+    '<p class="tiny muted">Wähle einen festen Eurobetrag je Aktie und den technischen oder strengen UNITY-Testkauf. Bei aktivem Auftrag lässt sich der Betrag ohne Abbruch ändern. Das gemeinsame Budget ist in „Automatik · Testdepot“ einstellbar. Bereits ausgeführte Käufe bleiben unverändert.</p>'+
     '<div class="home-auto-task"><div><b>Automatischer Testkauf</b><small>'+esc(status)+'</small></div>'+unityAutoBuyControls(s,buy,buy?.mode||'technical')+'</div>'+
     '<div class="home-auto-task"><div><b>Automatischer Testverkauf</b><small>'+
       (sell?'Aktiv · Abbruch jederzeit möglich':maySell?'Verkaufsgrenze: unter '+esc(fmt(exit)):'Erst bei Testbestand und gültigen technischen Kursdaten verfügbar')+
@@ -421,9 +423,17 @@ async function unityRunAutoTestBuys(){
     const signal=unityPullbackAlert(s);if(signal.kind!=='reached'||Number(signal.close)>entry.price||!signal.date||signal.date<=String(order.createdAt||'').slice(0,10))continue;
     const capital=depotCapital();if(!capital.configured||!(capital.free>0))continue;
     const fx=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null,rate=Number(fx?.rate)||(s.currency==='EUR'?1:NaN);
-    const price=Number(signal.close),allocation=unityAutoBuyPercent(order)/100,amount=Math.min(capital.free*allocation,capital.free),quantity=amount/(price*rate);
-    if(!(price>0&&rate>0&&quantity>0))continue;
-    const at=new Date().toISOString(),modeLabel=unityAutoBuyModeLabel(mode),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: '+modeLabel+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf · '+modeLabel,buy:'Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:mode==='technical'?'Technische Kaufzone erreicht; kleiner simulierter Testkauf. Keine reale Order.':'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.',unityDecision:{version:approval.version,action:approval.action,mode:approval.mode,reasonCode:approval.reasonCode,signalAt:approval.signalAt,priceRef:approval.priceRef,veto:approval.veto,sourceRefs:approval.sourceRefs}}};
+    const price=Number(signal.close),fixed=unityAutoEurAmount(order),budget=unityAutoBudgetStatus();
+    // Existing percentage orders are preserved; a newly created EUR order
+    // needs a configured global cap. All buys obey that cap once configured.
+    if(Number.isFinite(fixed)&&fixed>0&&!budget.configured)continue;
+    const wanted=Number.isFinite(fixed)&&fixed>0?fixed:
+      Math.round(capital.free*unityAutoBuyPercent(order))/100;
+    const cents=Math.round(wanted*100),freeCents=Math.floor(capital.free*100+1e-7),
+      budgetCents=budget.configured?Math.floor(budget.remaining*100+1e-7):Infinity;
+    if(!(price>0&&rate>0&&cents>=100&&freeCents>=cents&&budgetCents>=cents))continue;
+    const amount=cents/100,quantity=amount/(price*rate);
+    const at=new Date().toISOString(),modeLabel=unityAutoBuyModeLabel(mode),trade={id:id(),instrumentId:s.id,type:'BUY',quantity,price,fx:rate,amount:quantity*price,fee:0,decidedAt:at,executedAt:at,note:'Automatischer UNITY-Testkauf: '+modeLabel+' · '+depotMoney(amount)+'.',priceSource:'UNITY Tages-Schlusskurs',fxSource:fx?.source||'EUR = 1',source:'UNITY Lab · Auto-Testkauf',createdAt:at,decisionSnapshot:{action:'Automatischer Testkauf · '+modeLabel,buy:'Einstiegspreis erreicht: '+number(entry.price,2)+' '+s.currency,quoteDate:signal.date,quotePrice:price,reason:mode==='technical'?'Technische Kaufzone erreicht; kleiner simulierter Testkauf. Keine reale Order.':'Positive UNITY-Empfehlung, Sicherheitsmarge und technische Kaufzone erfüllt. Keine reale Order.',unityDecision:{version:approval.version,action:approval.action,mode:approval.mode,reasonCode:approval.reasonCode,signalAt:approval.signalAt,priceRef:approval.priceRef,veto:approval.veto,sourceRefs:approval.sourceRefs}}};
     if(typeof unityDecisionLedgerCapture==='function')await unityDecisionLedgerCapture(s,mode,approval);
     await put('transactions',trade);await put('settings',{...order,active:false,executedAt:at,executionTradeId:trade.id});await audit('AUTO_TEST_BUY',trade.id,s.ticker+' · '+number(quantity,4)+' Stück');
     await refresh();
@@ -807,37 +817,61 @@ document.addEventListener('click',e=>{
     document.querySelector('.home-auto-stock')?.scrollIntoView({block:'start',behavior:'smooth'});
     return;
   }
+  if(b.hasAttribute('data-home-auto-budget-save')){
+    if(b.disabled)return;
+    const budgetValue=document.getElementById('auto-total-budget')?.value;
+    const status=b.closest('.home-auto-budget')?.querySelector('.home-auto-budget-state');
+    b.disabled=true;b.textContent='Speichere …';
+    if(status)status.textContent='Speichere Gesamtbudget …';
+    (async()=>{try{
+      const changed=await unityAutoSetBudget(budgetValue);
+      if(!changed){
+        b.disabled=false;b.textContent='Budget speichern';
+        if(status)status.textContent='✓ Budget '+depotMoney(unityAutoBudgetStatus().limit)+' bereits gespeichert';
+      }
+    }catch(err){
+      b.disabled=false;b.textContent='Budget speichern';
+      if(status)status.textContent='Speichern fehlgeschlagen · bitte erneut versuchen';
+      alert(err.message||String(err));
+    }})();
+    return;
+  }
   if(b.dataset.homeAutoBuySave){
     const s=(cache.instruments||[]).find(x=>x.id===b.dataset.homeAutoBuySave);
     if(!s||b.disabled)return;
-    const pct=document.getElementById('auto-buy-percent-'+s.id)?.value;
+    const euros=document.getElementById('auto-buy-amount-'+s.id)?.value;
     const status=b.closest('.home-auto-allocation')?.querySelector('.home-auto-save-state');
     b.disabled=true;b.textContent='Speichere …';
-    if(status)status.textContent='Speichere '+String(pct||'')+' % …';
-    (async()=>{
-      try{
-        const changed=await unityAutoBuyChangeAllocation(s,pct);
-        // On change, refresh() rebuilds this panel with the persisted amount
-        // and its actual save timestamp. An unchanged order also gets feedback.
-        if(!changed){
-          b.disabled=false;b.textContent='Anteil speichern';
-          if(status)status.textContent='✓ '+unityAutoBuyPercent(unityAutoBuy(s))+' % bereits gespeichert';
-        }
-      }catch(err){
-        b.disabled=false;b.textContent='Anteil speichern';
-        if(status)status.textContent='Speichern fehlgeschlagen · bitte erneut versuchen';
-        alert(err.message||String(err));
+    if(status)status.textContent='Speichere '+String(euros||'')+' € …';
+    (async()=>{try{
+      const changed=await unityAutoBuyChangeAllocation(s,euros);
+      if(!changed){
+        b.disabled=false;b.textContent='Betrag speichern';
+        if(status)status.textContent='✓ '+depotMoney(unityAutoEurAmount(unityAutoBuy(s)))+' bereits gespeichert';
       }
-    })();
+    }catch(err){
+      b.disabled=false;b.textContent='Betrag speichern';
+      if(status)status.textContent='Speichern fehlgeschlagen · bitte erneut versuchen';
+      alert(err.message||String(err));
+    }})();
     return;
   }
   if(b.dataset.homeAutoBuy){
     const s=(cache.instruments||[]).find(x=>x.id===b.dataset.homeAutoBuy);if(!s)return;const prior=unityAutoBuy(s);
     if(prior){put('settings',{...prior,active:false,cancelledAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_OFF',s.id,s.ticker)).then(refresh).catch(err=>alert(err.message||String(err)));return}
-    const mode=b.dataset.autoMode==='technical'?'technical':'strict',label=unityAutoBuyModeLabel(mode),input=document.getElementById('auto-buy-percent-'+s.id),allocation=Number(input?.value);
-    if(!UNITY_AUTO_BUY_ALLOCATIONS.includes(allocation)){alert('Bitte einen gültigen Anteil des Testkapitals wählen.');return}
-    const text=mode==='technical'?'UNITY kauft im Testdepot mit '+allocation+' % des freien Testkapitals, wenn die bestätigte technische Kaufzone erreicht wird. Earnings-Risiko oder eine gebrochene Zone blockieren den Kauf. Keine echte Brokerorder.':'UNITY wartet auf vollständige positive UNITY-Freigabe und den berechneten Einstiegspreis. Erst dann kauft es im Testdepot mit '+allocation+' % des freien Kapitals. Keine echte Brokerorder.';
-    if(confirm(label+' aktivieren?\n\n'+text))put('settings',{id:unityAutoBuyId(s),kind:'auto-test-buy',instrumentId:s.id,mode,allocationPct:allocation,active:true,createdAt:new Date().toISOString()}).then(()=>audit('AUTO_TEST_BUY_ON',s.id,label+' · '+allocation+' %')).then(refresh).catch(err=>alert(err.message||String(err)));return;
+    const mode=b.dataset.autoMode==='technical'?'technical':'strict',label=unityAutoBuyModeLabel(mode);
+    const input=document.getElementById('auto-buy-amount-'+s.id),budget=unityAutoBudgetStatus();
+    if(!budget.configured){alert('Bitte zuerst unter „Automatik · Testdepot“ ein Gesamtbudget für Testkäufe festlegen.');return}
+    let amount;try{amount=unityAutoValidateEur(input?.value)}catch(err){alert(err.message||String(err));return}
+    if(amount>budget.limit){alert('Der feste Kaufbetrag darf nicht über dem gesamten Testkaufbudget liegen.');return}
+    const info=mode==='technical'?'technische Kaufzone erreicht und geprüft':
+      'strenge UNITY-Freigabe vollständig positiv';
+    const message=label+' aktivieren?\n\nFester Testkaufbetrag: '+depotMoney(amount)+
+      '\nGesamtbudget für automatische Käufe: '+depotMoney(budget.limit)+
+      '\nKauf nur, wenn die '+info+' ist, genügend freies Testkapital und Budget vorhanden sind. Keine Brokerorder.';
+    if(confirm(message))put('settings',{id:unityAutoBuyId(s),kind:'auto-test-buy',instrumentId:s.id,
+      mode,allocationEur:amount,active:true,createdAt:new Date().toISOString()})
+      .then(()=>audit('AUTO_TEST_BUY_ON',s.id,label+' · '+depotMoney(amount))).then(refresh).catch(err=>alert(err.message||String(err)));return;
   }
   if(b.dataset.homeAutoSell){
     const s=(cache.instruments||[]).find(x=>x.id===b.dataset.homeAutoSell);if(!s)return;const prior=unityAutoSell(s);

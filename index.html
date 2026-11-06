@@ -864,7 +864,14 @@ function all(store){return new Promise((res,rej)=>{const r=db.transaction(store)
 function put(store,obj){return new Promise((res,rej)=>{const r=db.transaction(store,'readwrite').objectStore(store).put(obj);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
 function bulkInsert(data,replacements={}){return new Promise((res,rej)=>{const tx=db.transaction(STORES,'readwrite');for(const store of STORES){const os=tx.objectStore(store);for(const item of data[store]||[])os.add(item);for(const item of replacements[store]||[])os.put(item)}tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
 async function audit(type,ref,detail){await put('audit',{id:id(),at:new Date().toISOString(),type,ref,detail})}
-async function refresh(){for(const n of STORES)cache[n]=await all(n);render()}
+async function refresh(){
+  for(const n of STORES)cache[n]=await all(n);
+  // Before showing any pending orders or running their new-EOD checks, migrate
+  // all outstanding legacy percentage instructions in one atomic transaction.
+  if(typeof unityAutoMigrateLegacy==='function'&&await unityAutoMigrateLegacy())
+    cache.settings=await all('settings');
+  render();
+}
 function stockRecords(){return [...(cache.instruments||[])].sort((a,b)=>a.name.localeCompare(b.name))}
 function stocks(){return stockRecords().filter(s=>!s.watchArchivedAt)}
 function archivedStocks(){return stockRecords().filter(s=>!!s.watchArchivedAt)}

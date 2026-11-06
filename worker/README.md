@@ -1,6 +1,6 @@
 # UNITY – eigenständige Hintergrundlaufzeit (0.15.3, Grundgerüst)
 
-**Aktueller Entwicklungsstatus: öffentlicher, vollständig synthetischer Test – kein privates Depot angeschlossen.** Die iPhone-PWA bleibt zunächst auf **0.15.2**. Dieser Ordner ist keine freigegebene autonome Handelsfunktion.
+**Aktueller Entwicklungsstatus: öffentlicher, vollständig synthetischer Test – kein privates Depot angeschlossen.** Die iPhone-PWA enthält inzwischen den manuellen, rein prüfenden Austausch in **0.15.3.2**; sie führt jedoch weiterhin keine persönlichen Hintergrund-Testkäufe aus. Dieser Ordner ist keine freigegebene autonome Handelsfunktion.
 
 ## Warum eine separate Laufzeit?
 
@@ -26,7 +26,7 @@ node worker/run-demo.cjs
 
 ## Neu: privater lokaler PC-Testprozess – dauerhafte Protokolldatei (0.15.3.1)
 
-**Der Testprozess funktioniert ausschließlich mit synthetischen Beispieldaten.** Er ist ein technischer Meilenstein für die spätere PC-Version und den privaten Hintergrundrunner, **noch keine Verbindung** zum realen iPhone-Testdepot. Die PWA-Version bleibt 0.15.2.
+**Der Testprozess funktioniert ausschließlich mit synthetischen Beispieldaten.** Er ist ein technischer Meilenstein für die spätere PC-Version und den privaten Hintergrundrunner, **noch keine Verbindung** zum realen iPhone-Testdepot. Der synthetische PC-Testprozess bleibt unabhängig von der PWA 0.15.3.2; es erfolgt keine automatische Verbindung zum iPhone.
 
 `worker/local-runner.cjs` kann auf einem PC mit Node.js 22+ betrieben werden. Er speichert einen synthetischen Testdepotstand in einem **privaten lokalen Verzeichnis außerhalb des öffentlichen GitHub-Repositorys**, zunächst deaktiviert. Durch das Starten eines separaten Prozesses, einen Neustart oder wiederholte Kursprüfungen gehen frühere Testereignisse nicht verloren und dieselbe Demobuchung wird nicht erneut angelegt. Die Daten sind lokal **nicht verschlüsselt**; daher niemals echte Depot- oder Zugangsdaten in diese Demo übernehmen.
 

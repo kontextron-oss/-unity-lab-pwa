@@ -24,7 +24,7 @@ function unityReadinessEvidence(s){
   const q=typeof unityHomeQuote==='function'?unityHomeQuote(s):null;
   const x=q?.x||null,m=q?.m||null,quality=q?.quality||null;
   const quoteOk=!!x&&!!q?.valid&&Number(x.price)>0&&
-    x.currency===s.currency&&!!String(x.exchange||s.exchange||'').trim();
+    x.currency===s.currency&&!!String(x.exchange||'').trim();
   const quoteStatus=quality?.level==='stale'?'stale':quality?.level==='invalid'?'conflict':
     quality?.level==='warning'?'failed':'missing';
   set('quote',quoteOk,quoteOk?'Schlusskurs '+x.date+' · '+x.price+' '+x.currency:
@@ -91,7 +91,8 @@ function unityReadinessEvidence(s){
   // from absent sources. Missing data is NEVER interpreted as a sell signal.
   if(quoteOk&&historyOk&&m){
     if(m.trend==='Abwärtstrend')adverse.push('Aktueller technischer Abwärtstrend');
-    if(Number.isFinite(Number(m.rsi))&&(Number(m.rsi)<40||Number(m.rsi)>68))
+    if(m.rsi!==null&&m.rsi!==undefined&&m.rsi!==''&&Number.isFinite(Number(m.rsi))&&
+      (Number(m.rsi)<40||Number(m.rsi)>68))
       adverse.push('RSI außerhalb des technischen Einstiegskorridors 40–68');
   }
   if(quoteOk&&hasNum('fairValue')&&Number(manual.fairValue)>0){
@@ -112,7 +113,9 @@ function unityReadinessEvidence(s){
 }
 function unityReadinessOverview(list){
   const selected=Array.isArray(list)?list:typeof stocks==='function'?stocks():[];
-  const records=selected.map(unityReadinessEvidence);
+  // Crypto has a separate 24/7 data and risk model, not issuer-filing readiness.
+  const equities=selected.filter(s=>!(typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s)));
+  const records=equities.map(unityReadinessEvidence);
   const count=key=>records.filter(x=>x[key]).length;
   const missing=records.filter(x=>x.missing.length).length;
   const adverse=records.filter(x=>x.adverse.length).length;
@@ -123,10 +126,10 @@ function unityReadinessOverview(list){
   let h='<section class="panel unity-readiness-overview" aria-label="Datenfreigabe und Entscheidungsreife">'+
     '<h3>UNITY · Datenfreigabe</h3><div class="unity-readiness-metrics">'+
     '<span><b>'+count('technicalReady')+'/'+records.length+'</b><small>technisch auswertbar</small></span>'+
-    '<span><b>'+count('sourceComplete')+'</b><small>Quellenbasis vollständig</small></span>'+
+    '<span><b>'+count('sourceComplete')+'</b><small>Prüffelder belegt</small></span>'+
     '<span><b>'+missing+'</b><small>Daten unvollständig</small></span>'+
     '<span><b>'+adverse+'</b><small>zusätzlich negative Signale</small></span></div>'+
-    '<p class="tiny muted">Datenmangel ist keine negative Aktienbewertung. Kategorien können sich überschneiden. Eine vollständige Quellenbasis ist noch keine Kauf-Freigabe.</p>'+
+    '<p class="tiny muted">Datenmangel ist keine negative Aktienbewertung. Kategorien können sich überschneiden. Hinterlegte Prüffelder und Quellenvermerke sind noch keine unabhängige Verifizierung und keine Kauf-Freigabe.</p>'+
     '<details class="unity-readiness-pilots"><summary>Datenprüfung der vier Pilotaktien ansehen</summary><div class="unity-readiness-pilot-list">';
   for(const p of pilots){
     const r=p.found;

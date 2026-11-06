@@ -15,6 +15,18 @@ import urllib.request
 
 MAX_PDF_BYTES = 24_000_000
 SOURCES = {
+    "CH0012221716": {
+        "name": "ABB", "url": "https://library.e.abb.com/public/b32991481e8b4418a5c5261c5ff25440/ABB%20Financial%20Report%202025.pdf",
+        "host": "library.e.abb.com", "year": 2025, "periodEnd": "2025-12-31",
+        "currency": "USD", "unitScale": 1_000_000, "standard": "US-GAAP",
+        "facts": {
+            "revenue": (54, 0, "Total revenues", 33220),
+            "netIncome": (54, 0, "Net income", 4823, 0.58),
+            "assets": (56, 0, "Total assets", 44885),
+            "equity": (56, 0, "Total stockholders’ equity", 16646),
+            "operatingCashFlow": (57, 0, "Net cash provided by operating activities", 5469),
+        },
+    },
     "DE000ENER6Y0": {
         "name": "Siemens Energy", "url": "https://assets.siemens-energy.com/dam/32b27e9a-af91-4915-8b51-b3af012d0d98/A-Siemens_Energy_Annual_Report_2025-pdf_Original%20file.pdf",
         "host": "assets.siemens-energy.com", "year": 2025, "periodEnd": "2025-09-30",
@@ -67,9 +79,9 @@ def group_lines(words, y_tolerance=2.6):
         row["terms"].sort(key=lambda v: v[0])
     return rows
 
-def year_columns(rows, width, height, year, table_index):
+def year_columns(rows, width, height, year, table_index, min_header_fraction=0.0):
     """Use the actual printed year header, not hard-coded PDF pixel positions."""
-    values = sorted((x, y) for row in rows if row["y"] < height*0.42
+    values = sorted((x, y) for row in rows if height*min_header_fraction < row["y"] < height*0.42
                     for x, word in row["terms"] if word == str(year)
                     and width*0.16 < x < width*0.94
                     for y in [row["y"]])
@@ -82,11 +94,13 @@ def year_columns(rows, width, height, year, table_index):
         raise ValueError("FY header not identified in designated statement column")
     return xs[table_index]
 
-def parse_statement_row(words, width, height, year, column, label):
+def parse_statement_row(words, width, height, year, column, label, max_y_fraction=1.0, min_header_fraction=0.0):
     rows = group_lines(words)
-    year_x = year_columns(rows, width, height, year, column)
+    year_x = year_columns(rows, width, height, year, column, min_header_fraction)
     found = []
     for row in rows:
+        if row["y"] > height*max_y_fraction:
+            continue
         left_floor = year_x - width*.32 if column else 0
         left = [word for x, word in row["terms"]
                 if left_floor < x < year_x - width*.045]
@@ -137,14 +151,23 @@ def parse_issuer_pdf(spec, pdf_bytes):
     try:
         if not doc.is_pdf or doc.page_count <= max(p[0] for p in spec["facts"].values()):
             raise ValueError("Annual report is incomplete")
-        if normalized(spec["name"]) not in normalized(doc[0].get_text()):
+        # ABB's front cover uses a vector logo that may not extract as text.
+        # Confirm ABB Ltd on the consolidated statements themselves instead.
+        if spec["name"] == "ABB":
+            identity = normalized(doc[54].get_text() + " " + doc[56].get_text())
+            if "abb ltd consolidated" not in identity or "2025" not in identity:
+                raise ValueError("Annual report issuer identity mismatch")
+        elif normalized(spec["name"]) not in normalized(doc[0].get_text()):
             raise ValueError("Annual report issuer identity mismatch")
         fields = {}
-        for field, (page_idx, table, label, reference) in spec["facts"].items():
+        for field, settings in spec["facts"].items():
+            page_idx, table, label, reference = settings[:4]
+            max_y_fraction = settings[4] if len(settings) > 4 else 1.0
             page = doc[page_idx]
-            value = parse_statement_row(page.get_text("words", sort=True),
-                                        page.rect.width, page.rect.height,
-                                        spec["year"], table, label)
+            words = page.get_text("words", sort=True)
+            value = parse_statement_row(words, page.rect.width, page.rect.height,
+                                        spec["year"], table, label, max_y_fraction,
+                                        0.08 if spec["name"] == "ABB" else 0.0)
             if value != reference:
                 raise ValueError("Annual report fact conflicts with reviewed FY2025 benchmark: " + field)
             fields[field] = {

@@ -22,6 +22,8 @@ ISSUERS = {
  "ADBE": {"cik": "0000796343", "name": "Adobe", "isin": "US00724F1012", "ir": "https://www.adobe.com/investor-relations.html"},
  "AMD": {"cik": "0000002488", "name": "AMD", "isin": "US0079031078", "ir": "https://ir.amd.com/"},
  "PWR": {"cik": "0001050915", "name": "Quanta Services", "isin": "US74762E1029", "ir": "https://investors.quantaservices.com/"},
+ "GEV": {"cik": "0001996810", "name": "GE Vernova", "isin": "US36828A1016", "ir": "https://www.gevernova.com/investors"},
+ "VRT": {"cik": "0001674101", "name": "Vertiv", "isin": "US92537N1081", "ir": "https://investors.vertiv.com/"},
  "ETN": {"cik": "0001558370", "name": "Eaton", "isin": "IE00B8KQN827", "ir": "https://www.eaton.com/us/en-us/company/investor-relations.html"},
 }
 CONCEPTS = {
@@ -157,13 +159,27 @@ def build_issuer(ticker, issuer, now):
 
 def main():
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    previous = {}
+    if OUTPUT.exists():
+        try:
+            previous = json.loads(OUTPUT.read_text(encoding="utf-8")).get("items", {})
+        except (OSError, ValueError):
+            pass
     items = {}
     for ticker, issuer in ISSUERS.items():
         try:
             items[ticker] = build_issuer(ticker, issuer, now)
             print(ticker, items[ticker]["status"], list(items[ticker]["metrics"]), flush=True)
         except RuntimeError as exc:
-            items[ticker] = {"name": issuer["name"], "ticker": ticker, "isin": issuer["isin"], "cik": issuer["cik"], "status": "source-unavailable", "metrics": {}, "priorMetrics": {}, "derived": {}, "latestFiling": None, "priorFiling": None, "checkedAt": now, "source": "SEC EDGAR Company Facts · XBRL", "errors": [str(exc)[:180]], "investorRelations": issuer["ir"], "reportCurrency": "USD"}
+            old = previous.get(ticker) or {}
+            identity_ok = all(old.get(k) == v for k, v in (
+                ("ticker", ticker), ("isin", issuer["isin"]), ("cik", issuer["cik"])))
+            if identity_ok and old.get("status") in {"metrics-complete", "metrics-partial", "stale-previous"} and old.get("latestFiling"):
+                items[ticker] = {**old, "status": "stale-previous", "checkedAt": now,
+                                 "lastVerifiedAt": old.get("lastVerifiedAt") or old.get("checkedAt"),
+                                 "errors": ["SEC source unavailable: " + str(exc)[:160]]}
+            else:
+                items[ticker] = {"name": issuer["name"], "ticker": ticker, "isin": issuer["isin"], "cik": issuer["cik"], "status": "source-unavailable", "metrics": {}, "priorMetrics": {}, "derived": {}, "latestFiling": None, "priorFiling": None, "checkedAt": now, "source": "SEC EDGAR Company Facts · XBRL", "errors": [str(exc)[:180]], "investorRelations": issuer["ir"], "reportCurrency": "USD"}
     snapshot = {"schemaVersion": 1, "generatedAt": now, "source": "SEC EDGAR Company Facts · XBRL", "scope": "US/SEC issuer universe; annual XBRL facts only, no estimated valuation", "items": items}
     OUTPUT.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
 

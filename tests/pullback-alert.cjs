@@ -70,7 +70,7 @@ assert.match(source,/data-home-sort="sell"/);
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/unityPullbackLabel\(s,pullback\)/);
 assert.match(html,/0\.13\.\d+/);
-assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.(13|14|15)\.\d+/);
+assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.(13|14|15|16)\.\d+/);
 // Deep analysis must apply the same *lower* SMA50 boundary.
 const analyse=fs.readFileSync('analysis.js','utf8');
 const ac={Date,Math,Number,Array,JSON,Intl,document:{addEventListener(){}},cache:{fundamentals:[],histories:[],strategies:[]},

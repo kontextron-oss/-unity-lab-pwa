@@ -3,8 +3,8 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.14.1';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.14.1');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.14.2';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.14.2');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
@@ -460,16 +460,16 @@ function unityHome(){
   let h='<section class="home-hero" id="unity-home"><div class="home-hero-title"><span class="home-hero-mark" aria-hidden="true">↗</span><div><h2>Mein Depot</h2><small>UNITY Lab · persönliche Aktienübersicht</small></div><button type="button" class="home-hero-menu" data-home-add title="Aktien auswählen">＋</button></div>'+
     '<div class="home-periods" aria-label="Kurszeitraum">'+unityHomePeriods.map(([r,label])=>'<button type="button" data-home-range="'+r+'" class="'+(r===unityHomeRange?'active':'')+'">'+label+'</button>').join('')+'</div>';
   if(capital?.configured){
-    const complete=Number.isFinite(capital.total),shownTotal=complete?capital.total:NaN;
-    h+='<p class="home-wealth-kicker">Gesamtvermögen · Testdepot</p>'+
-      '<div class="home-big-number" aria-label="Fiktives Gesamtvermögen">'+euro(shownTotal)+'</div>'+
-      '<p class="home-value-label">'+(complete?(capital.indicative?'Indikativer Depotstand · nicht börslich verifizierte Kurse':'Freies Kapital + aktueller Depotwert · Simulation'):'Vorläufiger Depotstand · fehlender Kurs zum Einstand angesetzt')+'</p>';
+    const complete=Number.isFinite(capital.total),shownTotal=complete?capital.total:capital.displayTotal;
+    h+='<p class="home-wealth-kicker">'+(complete?'Gesamtvermögen · Testdepot':'Gesamtvermögen vorläufig · Testdepot')+'</p>'+
+      '<div class="home-big-number" aria-label="'+(complete?'Fiktives Gesamtvermögen':'Vorläufiges fiktives Gesamtvermögen')+'">'+depotMoney(shownTotal)+'</div>'+
+      '<p class="home-value-label">'+(complete?(capital.indicative?'Indikativer Depotstand · nicht börslich verifizierte Kurse':'Freies Kapital + aktueller Depotwert · Simulation'):'Vorläufiger Gesamtwert · fehlende Kurse zum Einstand bewertet')+'</p>';
     if(complete){
       h+='<div class="home-wealth-profit '+gainClass+'"><b>Gewinn / Verlust gesamt: '+depotSignedMoney(capital.gain)+'</b>'+
         '<span>'+depotSignedPct(capital.gainPct)+' auf Nettoeinzahlungen</span></div>';
     }else{
       h+='<p class="home-wealth-warning">Für '+capital.missingCount+' gekaufte Position'+(capital.missingCount===1?'':'en')+
-        ' fehlen verwendbare aktuelle Kursdaten oder EUR-Wechselkurse. <b>Gesamtvermögen nicht berechenbar.</b> Freies Kapital wird nicht als Gesamtvermögen ausgegeben. Der Einstand wird nur in der getrennten vorläufigen Depotwert-Anzeige verwendet.</p>';
+        ' ('+esc(capital.missingNames.join(', '))+') fehlen verwendbare aktuelle Kursdaten oder EUR-Wechselkurse. <b>Der oben gezeigte Gesamtwert ist vorläufig.</b> Für nicht bewertbare Positionen wird nur ihr erfasster Einstand angesetzt. Ein aktueller Marktwert oder eine belastbare Gesamtrendite ist so nicht bestimmbar.</p>';
     }
     h+='<div class="home-wealth-grid">'+
       '<div><small>Einzahlungen netto</small><b>'+depotMoney(capital.funded)+'</b></div>'+

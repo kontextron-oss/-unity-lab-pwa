@@ -42,6 +42,7 @@ jobs:
           node --check worker/run-demo.cjs
           node --check worker/local-runner.cjs
           node --check exchange-protocol.js
+          node --check exchange-crypto.js
           node --check exchange-ui.js
           node --check worker/inspect-exchange.cjs
           node --check crypto-sources.js
@@ -101,6 +102,8 @@ jobs:
         run: node tests/exchange-protocol.cjs
       - name: Test iPhone exchange Share Sheet and truly read-only incoming-file preview
         run: node tests/exchange-ui.cjs
+      - name: Test AES-256-GCM encrypted iPhone-to-PC exchange, password and tamper rejection
+        run: node tests/exchange-crypto.cjs
 
       - name: Verify per-stock sources, FX, issuer pilots and real negative signals
         run: node tests/readiness-audit.cjs

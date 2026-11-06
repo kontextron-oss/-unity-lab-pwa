@@ -51,11 +51,12 @@ function unityExchangeStatus(text){
   if(el)el.textContent=text;
 }
 async function unityExchangePrepare(){
-  if(unityExchangePending){
-    unityExchangeStatus('Eine Austauschdatei liegt bereit. Bitte zuerst teilen oder erneut öffnen.');
-    return unityExchangePending;
-  }
-  unityExchangeStatus('Prüfe lokale Testaufträge und erstelle SHA-256-Prüfsumme …');
+  // Repeated explicit preparation creates a NEW snapshot; never silently reuse
+  // a stale file after the user edits an order or increases the budget.
+  unityExchangePending=null;
+  const oldShare=document.getElementById('unity-exchange-share');
+  if(oldShare)oldShare.hidden=true;
+  unityExchangeStatus('Prüfe aktuelle Testaufträge und erstelle neue SHA-256-Prüfsumme …');
   const payload=unityExchangeCurrentPayload(),prior=(cache.settings||[]).find(x=>x.id===UNITY_EXCHANGE_META_ID);
   const originId=prior?.originId&&/^[a-f0-9-]{36}$/i.test(prior.originId)?
     prior.originId:crypto.randomUUID(),revision=(Number.isSafeInteger(prior?.revision)?prior.revision:0)+1,

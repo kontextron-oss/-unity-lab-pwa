@@ -62,8 +62,8 @@
     for(const t of p.trades){
       assert(plain(t)&&Object.keys(t).sort().join(',')==='executedAt,fee,fx,id,instrumentId,price,quantity,side,source',
         'Buchungsfelder unbekannt');
-      assert(idOk(t.id)&&instIds.has(t.instrumentId)&&['BUY','SELL'].includes(t.side)&&
-        t.source==='UNITY Lab · Auto-Testkauf'||false,'Buchung ungültig');
+      assert(idOk(t.id)&&instIds.has(t.instrumentId)&&['BUY','SELL'].includes(t.side),
+        'Buchung ungültig');
       assert((t.source==='UNITY Lab · Auto-Testkauf'&&t.side==='BUY'||
         t.source==='UNITY Lab · Auto-Testverkauf'&&t.side==='SELL')&&
         RFC_DATE.test(t.executedAt)&&t.quantity>0&&Number.isFinite(t.quantity)&&

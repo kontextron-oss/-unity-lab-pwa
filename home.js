@@ -3,11 +3,26 @@
    This is not a live broker account, nor a real-time trading signal. */
 function unitySetReleaseLabel(){
   if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.0';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.0');
+  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.15.0.1';
+  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.15.0.1');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
+let unityHomeSortLoaded=false;
+const UNITY_HOME_SORT_SETTING='watchlist-sort-preference';
+function unityHomeRestoreSort(){
+  if(unityHomeSortLoaded||typeof cache==='undefined'||!Array.isArray(cache.settings))return;
+  const record=cache.settings.find(x=>x.id===UNITY_HOME_SORT_SETTING);
+  if(['manual','entry','observe','sell'].includes(record?.mode))unityHomeSort=record.mode;
+  unityHomeSortLoaded=true;
+}
+async function unityHomeSelectSort(mode,rerender=true){
+  if(!['manual','entry','observe','sell'].includes(mode))return false;
+  unityHomeSort=mode;unityHomeSortLoaded=true;
+  await put('settings',{id:UNITY_HOME_SORT_SETTING,mode,updatedAt:new Date().toISOString()});
+  if(rerender)await refresh();
+  return true;
+}
 const UNITY_FIRST_TWENTY=['ABBN','SU','ETN','ENR','VRT','NDX1','PRY','LR','SIE','BEAN','GEV','NVT','HUBB','PWR','NEX','IFX','JEN','AMD','DWS','TKA'];
 const unityPilotStocks=()=>stocks().filter(s=>UNITY_FIRST_TWENTY.includes(String(s.ticker||'').toUpperCase())).sort((a,b)=>UNITY_FIRST_TWENTY.indexOf(String(a.ticker||'').toUpperCase())-UNITY_FIRST_TWENTY.indexOf(String(b.ticker||'').toUpperCase()));
 async function unityEnsurePilotTwenty(){
@@ -451,6 +466,7 @@ function unityHomeDisplayedStocks(){
 }
 
 function unityHome(){
+  unityHomeRestoreSort();
   const selected=unityHomeDisplayedStocks(),pos=typeof depotPositions==='function'?depotPositions():[],capital=typeof depotCapital==='function'?depotCapital():null;
   const allValid=pos.length>0&&pos.every(p=>Number.isFinite(p.value));
   const value=allValid?pos.reduce((n,p)=>n+p.value,0):NaN;
@@ -519,8 +535,8 @@ function unityHome(){
       '<small>Zuletzt verfügbare Tages-Schlusskurse, keine Echtzeit-Meldung und keine Kaufempfehlung. Betroffene Aktie antippen und Tiefenanalyse neu prüfen.</small></section>';
   }
 h+='<section class="home-list"><div class="home-list-head"><h2>Meine Aktien</h2><button type="button" class="secondary" data-home-add>＋ Aktie hinzufügen</button></div>'+
-    '<div class="home-sort-controls"><button type="button" data-home-sort="entry" class="'+(unityHomeSort==='entry'?'active':'')+'">Einstieg</button><button type="button" data-home-sort="observe" class="'+(unityHomeSort==='observe'?'active':'')+'">Beobachten</button><button type="button" data-home-sort="sell" class="'+(unityHomeSort==='sell'?'active':'')+'">Verkauf prüfen</button></div>'+
-    '<p class="home-sort-hint">Der gewählte Bereich steht oben. Aktie antippen: Kurs, Kaufzone, Risiko und Testkauf liegen zusammen auf einer Seite.</p>';
+    '<div class="home-sort-controls"><button type="button" data-home-sort="manual" class="'+(unityHomeSort==='manual'?'active':'')+'">Eigene Reihenfolge</button><button type="button" data-home-sort="entry" class="'+(unityHomeSort==='entry'?'active':'')+'">Einstieg</button><button type="button" data-home-sort="observe" class="'+(unityHomeSort==='observe'?'active':'')+'">Beobachten</button><button type="button" data-home-sort="sell" class="'+(unityHomeSort==='sell'?'active':'')+'">Verkauf prüfen</button></div>'+
+    '<p class="home-sort-hint">'+(unityHomeSort==='manual'?'Mit ☰ ziehen oder ↑ ↓ verschieben. Deine Reihenfolge wird beim nächsten Öffnen wiederhergestellt.':'Einstieg, Beobachten oder Verkauf prüfen stehen vorn. Für dauerhaft eigene Anordnung „Eigene Reihenfolge“ wählen.')+'</p>';
   if(!selected.length)h+='<div class="home-empty"><p>Du hast noch keine Aktien ausgewählt. Wähle deine Werte aus dem vorhandenen UNITY-Katalog. Die App zeigt sie danach automatisch beim Öffnen an.</p><button type="button" class="primary" data-home-add>Aktien auswählen</button></div>';
   for(const [i,s] of selected.entries()){
     const {x}=unityHomeQuote(s);
@@ -672,7 +688,7 @@ document.addEventListener('click',e=>{
   if(b.dataset.homeResetPosition){if(typeof depotResetPosition!=='function'){alert('Die Reset-Funktion wird noch geladen. Bitte kurz erneut versuchen.');return}depotResetPosition(b.dataset.homeResetPosition).catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.homeResetAll){if(typeof depotResetAll!=='function'){alert('Die Reset-Funktion wird noch geladen. Bitte kurz erneut versuchen.');return}depotResetAll().catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.homeToggle){const stock=stocks().find(s=>s.id===b.dataset.homeToggle);if(stock){put('instruments',{...stock,watchHidden:!stock.watchHidden}).then(()=>audit('WATCHLIST_TOGGLE',stock.id,!stock.watchHidden?'hidden':'shown')).then(refresh).catch(err=>alert(err.message||String(err)))}return}
-  if(b.dataset.homeShift){unityHomeSort='manual';unityHomeShift(b.dataset.homeShift,Number(b.dataset.direction)).catch(err=>alert(err.message||String(err)));return}
+  if(b.dataset.homeShift){(async()=>{await unityHomeSelectSort('manual',false);await unityHomeShift(b.dataset.homeShift,Number(b.dataset.direction))})().catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.policyTestbuy){
     const selected=stocks().find(x=>x.id===b.dataset.policyTestbuy);
     if(!selected)return;
@@ -701,7 +717,7 @@ document.addEventListener('click',e=>{
     return;
   }
   if(b.hasAttribute('data-home-trade-cancel')){unityHomeTradeMode='';render();return}
-  if(b.dataset.homeSort){unityHomeSort=['entry','observe','sell'].includes(b.dataset.homeSort)?b.dataset.homeSort:'manual';render();return}
+  if(b.dataset.homeSort){unityHomeSelectSort(b.dataset.homeSort).catch(err=>alert(err.message||String(err)));return}
   if(b.dataset.homeRange){unityHomeRange=b.dataset.homeRange;render();return}
   if(b.dataset.analyze){unityHomeSelected=b.dataset.analyze;unityHomeTradeMode='';activeTab='overview';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);if(stock&&typeof unityLoadNews==='function')unityLoadNews(stock);return}
   if(b.dataset.homeOpen){unityHomeSelected=b.dataset.homeOpen;unityHomeTradeMode='';render();document.getElementById('home-stock-detail')?.scrollIntoView({behavior:'smooth',block:'start'});const stock=stocks().find(x=>x.id===unityHomeSelected);if(stock&&typeof unityLoadDynamicStock==='function')unityLoadDynamicStock(stock);if(stock&&typeof unityLoadNews==='function')unityLoadNews(stock);return}

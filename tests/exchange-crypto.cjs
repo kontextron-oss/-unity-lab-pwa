@@ -63,14 +63,19 @@ const encryptedObj=x=>JSON.parse(JSON.stringify(x));
   const ctx={globalThis:window,TextEncoder,TextDecoder,Uint8Array,
     btoa:buf=>Buffer.from(buf,'binary').toString('base64'),
     atob:base64=>Buffer.from(base64,'base64').toString('binary')};
-  vm.runInNewContext(fs.readFileSync('exchange-crypto.js','utf8'),ctx);
+  vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync('exchange-protocol.js','utf8'),ctx);
+  vm.runInContext(fs.readFileSync('exchange-crypto.js','utf8'),ctx);
   assert.equal(window.UNITY_EXCHANGE_CRYPTO.FORMAT,safe.FORMAT);
-  const inBrowser=await window.UNITY_EXCHANGE_CRYPTO.encrypt(sealed,pass,
-    nodeCrypto.webcrypto,protocol,digest);
+  // Both modules and parsed data must share a Safari-like JS realm.
+  const browserPacket=vm.runInContext('JSON.parse(packetJson)',Object.assign(ctx,{
+    packetJson:JSON.stringify(sealed)}));
+  const inBrowser=await window.UNITY_EXCHANGE_CRYPTO.encrypt(browserPacket,pass,
+    nodeCrypto.webcrypto,window.UNITY_EXCHANGE_PROTOCOL,digest);
   const opened=await safe.decrypt(inBrowser,pass,nodeCrypto.webcrypto,protocol,digest);
   assert.equal(opened.verified.revision,1);
   const openedBrowser=await window.UNITY_EXCHANGE_CRYPTO.decrypt(outer,pass,
-    nodeCrypto.webcrypto,protocol,digest);
+    nodeCrypto.webcrypto,window.UNITY_EXCHANGE_PROTOCOL,digest);
   assert.equal(openedBrowser.verified.orders,1);
   const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'unity-encrypted-'));
   try{

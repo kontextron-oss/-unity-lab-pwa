@@ -24,6 +24,12 @@ node worker/run-demo.cjs
 
 `--write-status` erstellt ausschließlich eine lokale synthetische JSON-Datei zur Upload-Prüfung. Das Ergebnis darf öffentlich sein und enthält **keine** persönlichen Positionen.
 
+## Bereits nutzbar: manuelle pCloud-Sicherung vom iPhone
+
+**Der UNITY-iPhone-Backupworkflow ist bereits in der PWA vorhanden.** UNITY erstellt eine BASIS- oder inkrementelle ÄNDERUNG-Datei und reicht diese über die iOS-Dateifreigabe an pCloud weiter. Dort wählt der Nutzer den Zielordner selbst aus, kontrolliert die tatsächliche Ablage und bestätigt anschließend die Sicherung in UNITY. Das ist **funktionierender manueller Datentransport**, nicht automatischer Synchronisationsbetrieb. Er bleibt als sichere Rückfallebene erhalten.
+
+Wichtig: `pcloud-direct.js` enthält zwar einen technisch vorgesehenen direkten pCloud-Gatewayclient, aber `UNITY_PCLOUD_GATEWAY` ist derzeit absichtlich leer/deaktiviert. Es wäre falsch, aus dem bestehenden manuellen pCloud-Backup auf bereits bestehende serverseitige OAuth-Synchronisierung oder einen vom Worker nutzbaren Depotzugang zu schließen.
+
 ## Verbindliche spätere Zielarchitektur: PC + iPhone + pCloud
 
 | Schicht | iPhone (PWA) | PC-Version (später) | Privater Runner (später) |
@@ -31,7 +37,7 @@ node worker/run-demo.cjs
 | Bedienung | Kompakt, manuelle Auswahl/Änderung | Recherche, Detailansichten, Archiv/Export | Keine öffentliche Verwaltungsoberfläche |
 | Analyse | Gemeinsamer versionierter Entscheidungskern | Derselbe Kern/Regelstand | Derselbe Kern mit prüfbaren EOD-Referenzen |
 | Private Daten | IndexedDB, offline nutzbar | Lokale DB mit Export/Import | Eigenes geschütztes persistentes Protokoll |
-| Synchronisation | Später private pCloud OAuth-API | Später pCloud Drive Sync als Option | Später über abgesicherte private Schnittstelle |
+| Sicherung/Sync | **Bereits manuelles Backup über iOS-Dateifreigabe nach pCloud**, automatische Synchronisation später | Später pCloud Drive Sync als Option | Später über abgesicherte private Schnittstelle, keine direkten öffentlichen Zugangsdaten |
 | Aufträge | Aktivieren, Pausieren, Status sehen | Dieselben Freigaben und Konfliktansicht | **Genau ein autoritativer Schreiber** pro Ordergeneration |
 | Risiko | Kein stilles Überschreiben | Nicht-destruktive Migration/Backup | Serverseitige Atomicity, idempotente Schlüssel und Audit |
 

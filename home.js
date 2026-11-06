@@ -758,7 +758,7 @@ document.addEventListener('click',e=>{
         // On change, refresh() rebuilds this panel with the persisted amount
         // and its actual save timestamp. An unchanged order also gets feedback.
         if(!changed){
-          b.textContent='✓ Bereits gespeichert';
+          b.disabled=false;b.textContent='Anteil speichern';
           if(status)status.textContent='✓ '+unityAutoBuyPercent(unityAutoBuy(s))+' % bereits gespeichert';
         }
       }catch(err){

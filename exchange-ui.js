@@ -1,6 +1,6 @@
 'use strict';
 /*
- * UNITY 0.15.3.3 – encrypted manual, explicit read-only test-order export.
+ * UNITY 0.15.3.4 – encrypted manual, explicit read-only test-order export.
  * This never connects to a remote server or writes imported records.
  * The existing incremental/full pCloud backup flow remains untouched.
  */
@@ -60,7 +60,12 @@ async function unityExchangePrepare(){
     confirmInput=document.getElementById('unity-exchange-password-confirm');
   const passphrase=passInput?.value,confirmation=confirmInput?.value;
   UNITY_EXCHANGE_CRYPTO.validPassword(passphrase);
-  if(passphrase!==confirmation)throw Error('Die beiden Austausch-Passwörter stimmen nicht überein.');
+  // Safari Password AutoFill may populate only the primary password field.
+  // Confirmation is recommended for first manual creation, but optional when
+  // filling an already stored credential with Face ID. Never identify Face ID
+  // from web JS or cache the secret in the app.
+  if(confirmation&&passphrase!==confirmation)
+    throw Error('Die beiden Austausch-Passwörter stimmen nicht überein.');
   unityExchangeStatus('Prüfe Testaufträge und verschlüssele den neuen Austauschstand lokal …');
   const payload=unityExchangeCurrentPayload(),prior=(cache.settings||[]).find(x=>x.id===UNITY_EXCHANGE_META_ID);
   const originId=prior?.originId&&/^[a-f0-9-]{36}$/i.test(prior.originId)?

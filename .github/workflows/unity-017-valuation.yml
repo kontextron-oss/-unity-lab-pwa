@@ -30,6 +30,9 @@ on:
       - vercel.json
       - sync-plan.js
       - tests/sync-plan.cjs
+      - sync-transfer.js
+      - sync-crypto.js
+      - tests/sync-transfer.cjs
       - .github/workflows/unity-017-valuation.yml
   pull_request:
     paths:
@@ -54,6 +57,9 @@ on:
       - vercel.json
       - sync-plan.js
       - tests/sync-plan.cjs
+      - sync-transfer.js
+      - sync-crypto.js
+      - tests/sync-transfer.cjs
       - .github/workflows/unity-017-valuation.yml
   workflow_dispatch:
 permissions:
@@ -91,5 +97,8 @@ jobs:
         run: |
           node --check sync-plan.js
           node tests/sync-plan.cjs
+          node --check sync-transfer.js
+          node --check sync-crypto.js
+          node tests/sync-transfer.cjs
       - name: Build isolated staging static assets and check public allowlist
         run: node tests/rc17-staging-bundle.cjs

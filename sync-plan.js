@@ -15,7 +15,7 @@
  const STORES=Object.freeze(['instruments','quotes','transactions','strategies',
   'audit','fundamentals','histories','analyses','settings']);
  const LOCAL_ONLY_SETTINGS=Object.freeze(['unity-lab-incremental-checkpoint-v1',
-  'unity-exchange-export-meta-v1']);
+  'unity-exchange-export-meta-v1','unity-sync-export-v1']);
  const RFC_DATE=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
  const HEX=/^[a-f0-9]{64}$/;
  const MAX_RECORDS=25000,MAX_CANONICAL_BYTES=16*1024*1024;

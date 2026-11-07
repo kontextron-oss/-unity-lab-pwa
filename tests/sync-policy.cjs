@@ -8,8 +8,9 @@ const BASE={enabled:true,appOpen:true,offline:false,
  deviceAuthorized:true,encryptionReady:true,manifestReadFresh:true,
  remoteVersionChecked:true,conflictCount:0,deletionCount:0,
  validatedMergePlan:true,recordSchemaChecked:true,
- localChanges:true,remoteChanges:false,providerSupportsCAS:true,
- remoteVersionCASChecked:true,verifiedEncryptedPayload:true,backoffActive:false};
+ localChanges:true,remoteChanges:false,writeMode:'immutable-log',
+ noOverwriteUploadVerified:true,remoteLogScanned:true,uniqueContentAddressedName:true,
+ verifiedEncryptedPayload:true,backoffActive:false};
 const out=(edit={})=>policy.evaluate({...BASE,...edit});
 const verifyBlock=(edit,action)=>{const r=out(edit);
  assert.equal(r.action,action);assert.equal(r.canTransfer,false);
@@ -32,14 +33,16 @@ verifyBlock({conflictCount:null},'review-conflicts');
 verifyBlock({deletionCount:1},'review-conflicts');
 verifyBlock({validatedMergePlan:false},'plan-verified-merge');
 verifyBlock({recordSchemaChecked:false},'plan-verified-merge');
-verifyBlock({providerSupportsCAS:false},'plan-verified-merge');
-verifyBlock({remoteVersionCASChecked:false},'plan-verified-merge');
+verifyBlock({writeMode:'mutable-index'},'plan-verified-merge');
+verifyBlock({noOverwriteUploadVerified:false},'plan-verified-merge');
+verifyBlock({remoteLogScanned:false},'plan-verified-merge');
+verifyBlock({uniqueContentAddressedName:false},'plan-verified-merge');
 verifyBlock({verifiedEncryptedPayload:false},'plan-verified-merge');
 verifyBlock({backoffActive:true},'retry-after-backoff');
 verifyBlock({remoteChanges:true},'plan-verified-merge');
 verifyBlock({localChanges:false,remoteChanges:false},'up-to-date');
 const proceed=out();
-assert.equal(proceed.action,'prepare-upload-after-cas');
+assert.equal(proceed.action,'prepare-immutable-upload');
 assert.equal(proceed.canTransfer,true);
 assert.equal(proceed.canOverwriteWithoutReview,false);
 assert.equal(proceed.hasCalledPcloud,false);
@@ -52,4 +55,4 @@ vm.runInNewContext(x,{globalThis:b});
 assert.equal(b.UNITY_SYNC_POLICY.evaluate(BASE).action,proceed.action);
 const current=fs.readFileSync('pcloud-direct.js','utf8');
 assert.match(current,/UNITY_PCLOUD_GATEWAY = ''/,'no activation of token-unsafe legacy PWA endpoint');
-console.log('Future UNITY automatic sync: OAuth/active PWA/encryption/CAS conflicts, offline/no background, zero silent overwrite/delete/broker execution passed.');
+console.log('Future UNITY automatic sync: OAuth/active PWA/encryption/immutable append-only pCloud, offline/conflict/no background and zero broker execution passed.');

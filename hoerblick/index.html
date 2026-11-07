@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#101b2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HÖRBLICK">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>HÖRBLICK · Leselupe</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:#fff;background:#07111d;font-size:18px;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}*{box-sizing:border-box}body{margin:0;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible{outline:4px solid #ffd970;outline-offset:3px}.hidden{display:none!important}.screen{position:fixed;inset:0;overflow:hidden}.camera{background:#05090c}.camera video{position:absolute;width:100%;height:100%;object-fit:cover;inset:0}.shade{position:absolute;inset:0;background:linear-gradient(#000a 0%,transparent 23%,transparent 75%,#000b 100%);pointer-events:none}.header{position:absolute;left:0;right:0;top:0;z-index:15;display:flex;gap:7px;justify-content:space-between;align-items:center;padding:calc(var(--safe-top) + 10px) 12px 8px;background:linear-gradient(#000b,transparent)}.name{font-weight:900;letter-spacing:.04em;font-size:20px}.minor{font-size:16px;font-weight:800;color:#fff;border:1px solid #ffffff75;background:#111c2add;padding:12px 13px;border-radius:16px;min-height:48px}.header-actions{display:flex;gap:8px}.guide{position:absolute;z-index:3;inset:15% 8% 20%;border:3px solid #74e5a7;border-radius:18px;pointer-events:none;box-shadow:0 0 0 100vmax #00000012 inset}.guide::before{content:'Dokument hier einrahmen';position:absolute;left:50%;top:12px;transform:translateX(-50%);white-space:nowrap;font-size:14px;letter-spacing:.01em;background:#081621dc;padding:6px 10px;border-radius:20px}.capture-zone{position:absolute;inset:15% 0 15%;z-index:4;border:0;background:transparent;color:transparent;width:100%;touch-action:manipulation}.hint{position:absolute;z-index:10;left:12px;right:12px;bottom:calc(22px + var(--safe-bottom));padding:15px 14px;border-radius:18px;background:#07111deb;font-size:clamp(19px,5vw,26px);font-weight:800;text-align:center;line-height:1.3}.camera-fallback{position:absolute;z-index:20;left:16px;right:16px;top:40%;display:grid;gap:12px;text-align:center;padding:18px;background:#0b1827;border:2px solid #ffffff65;border-radius:19px}.camera-fallback button,.primary{border:0;border-radius:16px;background:#fbd36a;color:#161b26;min-height:60px;font-size:22px;font-weight:900}.read{background:#f5f2e8;color:#111b2c;display:flex;flex-direction:column}.readbar{flex:0 0 auto;padding:calc(var(--safe-top) + 10px) 12px 10px;display:flex;justify-content:space-between;gap:7px;align-items:center;background:#15243b;color:white;min-height:74px}.readbar button{border:0;background:#34445e;color:white;border-radius:13px;padding:12px 10px;font-size:16px;font-weight:850;min-height:50px}.readbar .back{background:#ffe07b;color:#172033}.photo-stage{position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#353b43;touch-action:none}.photo-inner{position:relative;flex:0 0 auto;transform-origin:center center;will-change:transform;user-select:none;-webkit-user-select:none}.photo-inner img{width:100%;height:100%;display:block;pointer-events:none}.line-target{position:absolute;border:1px solid rgba(255,215,56,.15);background:rgba(255,235,123,.05);border-radius:2px;padding:0;touch-action:none;cursor:pointer}.line-target.current{background:rgba(255,210,40,.49);border:2px solid #e49d00}.line-target:focus-visible{outline:4px solid #f9ac09}.reader-text{flex:1;overflow:auto;background:#fffdf8;color:#162335;padding:22px 20px 28px;overscroll-behavior:contain;touch-action:pan-y}.reader-text .textline{display:block;padding:8px 4px;margin:0 0 4px;line-height:1.5;border:0;background:transparent;color:inherit;font-size:1em;text-align:left;width:100%;border-radius:7px;overflow-wrap:anywhere}.reader-text .textline.current{background:#ffe082}.reader-text .spoken-word{background:#f5a623;color:#161616;border-radius:3px}.readfoot{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#14243c;padding:10px 12px calc(12px + var(--safe-bottom))}.readfoot button{font-size:20px;min-height:64px;font-weight:900;border:0;border-radius:16px}.readfoot .play{background:#ffe082;color:#172033}.readfoot .alt{background:#d6e5fc;color:#172033}.notice{position:absolute;z-index:20;bottom:calc(93px + var(--safe-bottom));left:12px;right:12px;border-radius:14px;padding:9px 13px;font-size:16px;text-align:center;background:#13243be8;color:white;pointer-events:none}.voice-pill{position:fixed;z-index:35;bottom:calc(100px + var(--safe-bottom));right:14px;max-width:54%;border-radius:13px;padding:9px 13px;background:#172841ed;color:#f9e4a8;border:1px solid #f9e4a855;font-weight:750;font-size:14px}.help{position:fixed;z-index:70;inset:0;background:#07111de8;display:flex;align-items:center;justify-content:center;padding:20px}.help-panel{background:#f8f7f3;color:#172035;border-radius:22px;padding:25px 20px;width:min(440px,100%);max-height:88dvh;overflow:auto}.help-panel h2{font-size:34px;margin:0 0 10px}.help-panel p{font-size:21px;line-height:1.4;margin:0 0 15px}.help-panel button{width:100%;border:0;border-radius:14px;background:#12253e;color:#fff;padding:14px;font-size:22px;font-weight:850;margin-top:6px}.help-panel .help-line{border-bottom:1px solid #ccc;padding:8px 0;font-size:18px;line-height:1.35}.help-panel .help-line strong{display:block}.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<main id="camera" class="screen camera" aria-label="Kamera">
+<video id="video" autoplay playsinline muted aria-label="Kamera zeigt das Dokument"></video>
+<div class="shade"></div><div class="guide" aria-hidden="true"></div>
+<header class="header"><span class="name">HÖRBLICK</span><div class="header-actions"><button id="flashBtn" class="minor" type="button" aria-label="Taschenlampe umschalten">Licht aus</button><button id="helpBtn" class="minor" type="button">Hilfe</button></div></header>
+<button id="captureBtn" class="capture-zone" aria-label="Foto aufnehmen durch Berühren" type="button">Foto aufnehmen</button>
+<div id="cameraHint" class="hint" role="status" aria-live="polite">Dokument einrahmen. Bildschirm berühren oder „Foto“ sagen.</div>
+<div id="cameraFallback" class="camera-fallback hidden"><p id="cameraError">Kamera nicht verfügbar.</p><button id="retryBtn" type="button">Kamera starten</button><button id="fileBtn" type="button">Foto auswählen</button></div>
+</main>
+<section id="read" class="screen read hidden" aria-label="Dokument lesen">
+<header class="readbar"><button id="backBtn" class="back" type="button">Kamera</button><button id="viewBtn" type="button">Textansicht</button><button id="helpReadBtn" type="button">Hilfe</button></header>
+<div id="photoStage" class="photo-stage"><div id="photoInner" class="photo-inner"><img id="photo" alt="Fotografiertes Dokument"><div id="lineLayer"></div></div></div>
+<div id="readerText" class="reader-text hidden" aria-label="Erkannter Text"></div>
+<div id="readNotice" class="notice" role="status" aria-live="polite">Text wird erkannt …</div>
+<footer class="readfoot"><button id="readBtn" type="button" class="play">Vorlesen</button><button id="modeBtn" type="button" class="alt">Still</button></footer>
+</section>
+<button id="voicePill" type="button" class="voice-pill hidden" aria-label="Sprachsteuerung aktivieren">Sprache aktivieren</button>
+<div id="help" class="help hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="help-panel"><h2 id="helpTitle">Hilfe</h2><p>Zum Fotografieren das Kamerabild berühren. Zum Lesen auf eine Textstelle tippen. Mit zwei Fingern vergrößern.</p><div class="help-line"><strong>Foto</strong>Dokument aufnehmen</div><div class="help-line"><strong>Vorlesen · Stopp · Weiter</strong>Wiedergabe steuern</div><div class="help-line"><strong>Größer · Kleiner</strong>Ansicht vergrößern</div><div class="help-line"><strong>Still · Laut</strong>Sprachausgabe ausschalten oder einschalten</div><div class="help-line"><strong>Licht an · Licht aus</strong>Taschenlampe</div><div class="help-line"><strong>Kamera</strong>Neues Dokument</div><button id="closeHelpBtn" type="button">Schließen</button></div></div>
+<input type="file" id="fileInput" accept="image/*" class="hidden">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js" defer></script>
+<script defer>
+(function(){'use strict';
+var $=function(id){return document.getElementById(id);};
+var state={page:'camera',stream:null,track:null,torch:false,canTorch:false,busy:false,voice:null,voiceWanted:true,voiceActive:false,voiceFatal:false,audioEnabled:true,mode:'original',photoURL:null,width:1,height:1,ocrWidth:1,ocrHeight:1,lines:[],current:-1,word:-1,speaking:false,speechToken:0,zoom:1,tx:0,ty:0,font:27,worker:null,readingStart:0,saved:false};
+try{state.audioEnabled=localStorage.getItem('hb2-audio')!=='false';}catch(e){}
+var R=window.SpeechRecognition||window.webkitSpeechRecognition;
+function status(msg){if(state.page==='camera')$('cameraHint').textContent=msg;else $('readNotice').textContent=msg;}
+function visible(el,yes){el.classList.toggle('hidden',!yes);}
+function saveAudio(){try{localStorage.setItem('hb2-audio',String(state.audioEnabled));}catch(e){}}
+function updateAudio(){saveAudio();$('modeBtn').textContent=state.audioEnabled?'Still':'Laut';}
+function voiceInfo(msg){$('voicePill').textContent=msg;visible($('voicePill'),true);}
+function handleError(err){status('Ein Fehler ist aufgetreten. Bitte erneut versuchen.');console.error(err);}
+async function startCamera(){
+ if(state.busy)return;
+ stopSpeech();state.page='camera';visible($('camera'),true);visible($('read'),false);visible($('help'),false);state.mode='original';
+ if(state.stream){state.stream.getTracks().forEach(function(t){t.stop();});state.stream=null;state.track=null;}
+ state.torch=false;state.canTorch=false;$('flashBtn').textContent='Licht aus';
+ visible($('cameraFallback'),false);status('Kamera wird gestartet …');
+ try{
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw Error('Diese Umgebung erlaubt keinen Kamerazugriff.');
+  var stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:2560}}});
+  if(state.page!=='camera'){stream.getTracks().forEach(function(t){t.stop();});return;}
+  state.stream=stream;state.track=stream.getVideoTracks()[0];
+  $('video').srcObject=stream;await $('video').play().catch(function(){});
+  var caps=state.track.getCapabilities?state.track.getCapabilities():{};
+  state.canTorch=!!caps.torch;
+  if(state.canTorch)await setTorch(false,true);
+  $('flashBtn').textContent=state.canTorch?'Licht aus':'Licht –';
+  $('flashBtn').disabled=!state.canTorch;
+  status('Dokument einrahmen. Bildschirm berühren oder „Foto“ sagen.');
+ }catch(e){$('cameraError').textContent='Kamerazugriff nicht möglich. Du kannst ihn erneut erlauben oder ein Foto auswählen.';visible($('cameraFallback'),true);status('Kamera konnte nicht gestartet werden.');}
+ startVoice();
+}
+async function setTorch(on,silent){if(!state.track||!state.canTorch){if(!silent)status('Die Taschenlampe ist hier nicht steuerbar.');return;}
+ try{await state.track.applyConstraints({advanced:[{torch:!!on}]});state.torch=!!on;$('flashBtn').textContent=on?'Licht an':'Licht aus';}
+ catch(e){state.torch=false;state.canTorch=false;$('flashBtn').disabled=true;$('flashBtn').textContent='Licht –';if(!silent)status('Taschenlampe in Safari nicht verfügbar.');}}
+function releaseCamera(){if(state.stream){state.stream.getTracks().forEach(function(t){t.stop();});state.stream=null;state.track=null;}state.torch=false;}
+function createPhotoCanvas(){var v=$('video'),w=v.videoWidth,h=v.videoHeight;if(!w||!h)throw Error('Kamerabild noch nicht bereit.');var factor=Math.min(1,2200/Math.max(w,h));var c=document.createElement('canvas');c.width=Math.max(1,Math.floor(w*factor));c.height=Math.max(1,Math.floor(h*factor));c.getContext('2d',{willReadFrequently:true}).drawImage(v,0,0,c.width,c.height);return c;}
+function canvasBlob(c){return new Promise(function(resolve,reject){c.toBlob(function(b){if(b)resolve(b);else reject(Error('Kein Foto'));},'image/jpeg',.9);});}
+async function capture(){if(state.busy||state.page!=='camera')return;state.busy=true;try{var c=createPhotoCanvas();var blob=await canvasBlob(c);await showPhoto(blob);}
+ catch(e){handleError(e);}finally{state.busy=false;}}
+async function showPhoto(blob,remember){stopSpeech();releaseCamera();state.page='read';state.lines=[];state.current=-1;state.word=-1;state.zoom=1;state.tx=0;state.ty=0;state.mode='original';state.saved=false;
+ visible($('camera'),false);visible($('read'),true);visible($('photoStage'),true);visible($('readerText'),false);$('viewBtn').textContent='Textansicht';
+ if(state.photoURL)URL.revokeObjectURL(state.photoURL);state.photoURL=URL.createObjectURL(blob);$('photo').src=state.photoURL;
+ await new Promise(function(resolve,reject){if($('photo').complete&&$('photo').naturalWidth)return resolve();$('photo').onload=resolve;$('photo').onerror=reject;});
+ state.width=$('photo').naturalWidth;state.height=$('photo').naturalHeight;state.blob=blob;layoutPhoto();$('lineLayer').innerHTML='';$('readerText').innerHTML='';
+ $('readBtn').textContent='Vorlesen';status('Text wird erkannt …');
+ await analyzePhoto(blob);
+}
+async function analyzePhoto(blob){
+ try{
+  if(!window.Tesseract){throw Error('Texterkennung muss beim ersten Start über Internet geladen werden.');}
+  if(!state.worker){status('Texterkennung wird vorbereitet …');state.worker=await Tesseract.createWorker('deu+eng',1,{logger:function(m){if(m&&m.status==='recognizing text'&&m.progress){status('Text wird erkannt: '+Math.round(m.progress*100)+' %');}}});}
+  var c=document.createElement('canvas'),f=Math.min(1,1800/Math.max(state.width,state.height));c.width=Math.floor(state.width*f);c.height=Math.floor(state.height*f);c.getContext('2d').drawImage($('photo'),0,0,c.width,c.height);
+  state.ocrWidth=c.width;state.ocrHeight=c.height;
+  var result=await state.worker.recognize(c,{}, {blocks:true});
+  var lines=[];var bs=(result.data&&result.data.blocks)||[];
+  bs.forEach(function(block){(block.paragraphs||[]).forEach(function(p){(p.lines||[]).forEach(function(ln){var text=String(ln.text||((ln.words||[]).map(function(w){return w.text;}).join(' '))||'').trim();if(!text)return;var words=(ln.words||[]).map(function(w){return{text:String(w.text||''),bbox:w.bbox||null};});lines.push({text:text,bbox:ln.bbox||null,words:words});});});});
+  if(!lines.length){lines=String((result.data&&result.data.text)||'').split(/\n+/).map(function(t){return{text:t.trim(),bbox:null,words:[]};}).filter(function(x){return x.text;});}
+  state.lines=lines;state.readingStart=findReadingStart(lines);renderLines();
+  if(!lines.length){status('Kein Text sicher erkannt. Ein anderes Foto versuchen.');$('readBtn').textContent='Kamera';return;}
+  status(lines.length+' Textzeilen erkannt. Text antippen oder „Vorlesen“ sagen.');
+  if(state.audioEnabled){speakFrom(state.readingStart,true);}
+  await saveDocument(blob,lines);
+ }catch(e){status(e.message&&e.message.includes('Internet')?e.message:'Texterkennung nicht möglich. Bitte erneut versuchen.');console.error(e);}
+}
+function findReadingStart(lines){
+ var hello=/^(sehr geehrte|guten tag|hallo|liebe[rsn]?\b)/i;
+ var idx=lines.findIndex(function(l){return hello.test(l.text);});if(idx>=0)return idx;
+ idx=lines.findIndex(function(l){return l.text.split(/\s+/).length>=7&&!/(aktenzeichen|vorgangsnummer|telefon|telefax|iban|kundennummer|postfach|www\.|@)/i.test(l.text);});return idx>=0?idx:0;
+}
+function renderLines(){var layer=$('lineLayer'),area=$('readerText');layer.innerHTML='';area.innerHTML='';
+ state.lines.forEach(function(line,i){
+  if(line.bbox){var b=line.bbox,el=document.createElement('button');el.className='line-target';el.setAttribute('aria-label','Ab Zeile lesen: '+line.text);el.style.left=(b.x0/state.ocrWidth*100)+'%';el.style.top=(b.y0/state.ocrHeight*100)+'%';el.style.width=(Math.max(1,b.x1-b.x0)/state.ocrWidth*100)+'%';el.style.height=(Math.max(12,b.y1-b.y0)/state.ocrHeight*100)+'%';el.dataset.i=i;el.addEventListener('click',function(ev){ev.stopPropagation();speakFrom(i,false);});layer.appendChild(el);}
+  var item=document.createElement('button');item.className='textline';item.type='button';item.dataset.i=i;item.textContent=line.text;item.addEventListener('click',function(){speakFrom(i,false);});area.appendChild(item);
+ });updateHighlight();}
+function updateHighlight(){document.querySelectorAll('.line-target,.textline').forEach(function(el){var active=+el.dataset.i===state.current;el.classList.toggle('current',active);if(active&&el.classList.contains('textline')){markWord(el);}else if(el.classList.contains('textline'))el.textContent=state.lines[+el.dataset.i]?.text||'';});
+ var activeText=$('readerText').querySelector('.textline.current');if(activeText&&state.mode==='text'&&state.speaking)activeText.scrollIntoView({block:'center',behavior:'smooth'});
+}
+function markWord(el){var line=state.lines[+el.dataset.i];if(!line)return;var txt=line.text;el.textContent='';if(state.word<0){el.textContent=txt;return;}var a=Math.min(state.word,txt.length),b=a;while(b<txt.length&&!/\s/.test(txt[b]))b++;if(b<=a){el.textContent=txt;return;}el.append(document.createTextNode(txt.slice(0,a)));var span=document.createElement('span');span.className='spoken-word';span.textContent=txt.slice(a,b);el.append(span,document.createTextNode(txt.slice(b)));}
+function stopSpeech(){state.speechToken++;window.speechSynthesis&&speechSynthesis.cancel();state.speaking=false;state.word=-1;updatePlay();}
+function updatePlay(){$('readBtn').textContent=state.speaking?'Stopp':'Vorlesen';}
+function speakFrom(index,auto){if(!state.lines.length)return;
+ if(!state.audioEnabled){state.current=index;state.word=-1;updateHighlight();status('Stiller Modus. Zum Vorlesen „Laut“ sagen oder Laut antippen.');return;}
+ stopSpeech();var token=++state.speechToken;state.speaking=true;state.current=Math.max(0,Math.min(index,state.lines.length-1));updatePlay();
+ function next(i){if(token!==state.speechToken)return;if(i>=state.lines.length){state.speaking=false;updatePlay();status('Ende des Dokuments.');return;}
+  state.current=i;state.word=-1;updateHighlight();var u=new SpeechSynthesisUtterance(state.lines[i].text);u.lang='de-DE';u.rate=.88;u.pitch=1;
+  u.onstart=function(){if(token!==state.speechToken)return;state.speaking=true;updatePlay();status('Lese Zeile '+(i+1)+' von '+state.lines.length);};
+  u.onboundary=function(e){if(token!==state.speechToken)return;if(Number.isFinite(e.charIndex)){state.word=e.charIndex;updateHighlight();}};
+  u.onerror=function(e){if(token!==state.speechToken)return;state.speaking=false;updatePlay();status('Vorlesen nicht möglich. Bitte auf Vorlesen tippen.');};
+  u.onend=function(){if(token===state.speechToken)next(i+1);};
+  speechSynthesis.speak(u);
+ }
+ if(window.speechSynthesis)next(state.current);else{state.speaking=false;status('Sprachausgabe nicht verfügbar.');}
+ if(auto)status('Text erkannt. Das Vorlesen beginnt.');
+}
+function toggleRead(){if(!state.lines.length){startCamera();return;}if(state.speaking){stopSpeech();status('Vorlesen gestoppt.');}else{state.audioEnabled=true;updateAudio();speakFrom(state.current>=0?state.current:state.readingStart,false);}}
+function setSilent(silent){state.audioEnabled=!silent;updateAudio();if(silent){stopSpeech();status('Still. Berühren und zoomen bleibt möglich.');}else{status('Sprachausgabe eingeschaltet.');}}
+function changeView(to){state.mode=to==='text'?'text':'original';visible($('photoStage'),state.mode==='original');visible($('readerText'),state.mode==='text');$('viewBtn').textContent=state.mode==='original'?'Textansicht':'Original';if(state.mode==='text'){$('readerText').style.fontSize=state.font+'px';}else layoutPhoto();updateHighlight();}
+function layoutPhoto(){var p=$('photoInner'),st=$('photoStage');if(!state.width||!state.height)return;var w=st.clientWidth||window.innerWidth,h=st.clientHeight||window.innerHeight;var fit=Math.min(w/state.width,h/state.height)*.98;p.style.width=state.width+'px';p.style.height=state.height+'px';p.style.transform='translate('+state.tx+'px,'+state.ty+'px) scale('+(fit*state.zoom)+')';}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+function zoomBy(f){if(state.mode==='text'){state.font=clamp(Math.round(state.font*f),20,62);$('readerText').style.fontSize=state.font+'px';}else{state.zoom=clamp(state.zoom*f,1,5);if(state.zoom===1){state.tx=0;state.ty=0;}layoutPhoto();}}
+function installPinch(el,forText){var points=new Map(),startDist=0,startZoom=1,startFont=27,panStart=null;
+ el.addEventListener('pointerdown',function(e){points.set(e.pointerId,{x:e.clientX,y:e.clientY});if(!forText){try{el.setPointerCapture(e.pointerId);}catch(x){}}if(points.size===1){panStart={x:e.clientX,y:e.clientY,tx:state.tx,ty:state.ty};}if(points.size===2){var ps=Array.from(points.values());startDist=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y);startZoom=state.zoom;startFont=state.font;}});
+ el.addEventListener('pointermove',function(e){if(!points.has(e.pointerId))return;points.set(e.pointerId,{x:e.clientX,y:e.clientY});if(points.size===2&&startDist>0){e.preventDefault();var ps=Array.from(points.values()),f=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y)/startDist;if(forText){state.font=clamp(Math.round(startFont*f),20,62);$('readerText').style.fontSize=state.font+'px';}else{state.zoom=clamp(startZoom*f,1,5);layoutPhoto();}}else if(points.size===1&&!forText&&state.zoom>1.01&&panStart){state.tx=panStart.tx+e.clientX-panStart.x;state.ty=panStart.ty+e.clientY-panStart.y;layoutPhoto();}});
+ ['pointerup','pointercancel','lostpointercapture'].forEach(function(ev){el.addEventListener(ev,function(e){points.delete(e.pointerId);if(points.size<2)startDist=0;if(!points.size)panStart=null;});});
+}
+async function saveDocument(blob,lines){try{var db=await openDB(),tx=db.transaction('docs','readwrite'),obj={id:Date.now()+'-'+Math.random().toString(36).slice(2),createdAt:Date.now(),blob:blob,lines:lines};tx.objectStore('docs').put(obj);tx.oncomplete=function(){db.close();};state.saved=true;}catch(e){console.warn('Lokales Speichern nicht möglich',e);}}
+function openDB(){return new Promise(function(resolve,reject){var req=indexedDB.open('hoerblick-v2-local',1);req.onupgradeneeded=function(){if(!req.result.objectStoreNames.contains('docs'))req.result.createObjectStore('docs',{keyPath:'id'});};req.onsuccess=function(){resolve(req.result);};req.onerror=function(){reject(req.error);};});}
+function showHelp(){visible($('help'),true);$('closeHelpBtn').focus();}
+function closeHelp(){visible($('help'),false);}
+function sayHelp(){showHelp();if(!state.audioEnabled)return;stopSpeech();var u=new SpeechSynthesisUtterance('Hilfe. Zum Fotografieren den Bildschirm berühren oder Foto sagen. Textstellen antippen zum Vorlesen. Mit zwei Fingern vergrößern. Stopp beendet das Vorlesen. Kamera nimmt ein neues Dokument auf.');u.lang='de-DE';u.rate=.85;speechSynthesis.speak(u);}
+function command(raw){var s=String(raw||'').toLocaleLowerCase('de-DE').replace(/[.!?,]/g,' ').trim();if(!s)return;
+ if(/^(hilfe|hilf mir)$/.test(s)){sayHelp();return;}
+ if(/^(schließen|hilfe schließen)$/.test(s)){closeHelp();return;}
+ if(/^(foto|fotografieren|aufnahme|aufnehmen)$/.test(s)){if(state.page==='camera')capture();return;}
+ if(/^(stopp|stop|pause|anhalten)$/.test(s)){stopSpeech();status('Gestoppt.');return;}
+ if(/^(kamera|neues foto|neues dokument)$/.test(s)){startCamera();return;}
+ if(/^(licht an|taschenlampe an)$/.test(s)){setTorch(true,false);return;}
+ if(/^(licht aus|taschenlampe aus)$/.test(s)){setTorch(false,false);return;}
+ if(/^(still|leise|ton aus|sprache aus)$/.test(s)){setSilent(true);return;}
+ if(/^(laut|ton an|sprache an)$/.test(s)){setSilent(false);return;}
+ if(/^(vorlesen|lesen|weiter|weiterlesen)$/.test(s)){if(state.page==='read'){state.audioEnabled=true;updateAudio();speakFrom(Math.max(0,state.current),false);}return;}
+ if(/^(nochmal|wiederholen)$/.test(s)){if(state.page==='read')speakFrom(Math.max(0,state.current-1),false);return;}
+ if(/^(größer|vergrößern)$/.test(s)){zoomBy(1.35);return;}
+ if(/^(kleiner|verkleinern)$/.test(s)){zoomBy(1/1.35);return;}
+ if(/^(text|textansicht)$/.test(s)){if(state.page==='read')changeView('text');return;}
+ if(/^(original|originalansicht)$/.test(s)){if(state.page==='read')changeView('original');return;}
+}
+function startVoice(){if(!state.voiceWanted||state.voiceFatal)return;
+ if(!R){voiceInfo('Sprachbefehle hier nicht verfügbar');return;}
+ if(!state.voice){try{var rec=new R();rec.lang='de-DE';rec.continuous=true;rec.interimResults=false;rec.maxAlternatives=1;rec.onresult=function(ev){for(var i=ev.resultIndex;i<ev.results.length;i++){if(ev.results[i].isFinal)command(ev.results[i][0].transcript);}};rec.onstart=function(){state.voiceActive=true;visible($('voicePill'),false);};rec.onerror=function(ev){state.voiceActive=false;if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){state.voiceFatal=true;voiceInfo('Sprache erlauben');}else if(ev.error==='audio-capture'){voiceInfo('Mikrofon nicht verfügbar');}};rec.onend=function(){state.voiceActive=false;if(state.voiceWanted&&!state.voiceFatal)setTimeout(startVoice,1000);};state.voice=rec;}catch(e){state.voiceFatal=true;voiceInfo('Sprachsteuerung nicht verfügbar');return;}}
+ try{if(!state.voiceActive)state.voice.start();}catch(e){if(e.name!=='InvalidStateError')voiceInfo('Tippen: Sprache aktivieren');}
+}
+function setup(){updateAudio();$('captureBtn').onclick=capture;$('flashBtn').onclick=function(){setTorch(!state.torch,false);};$('helpBtn').onclick=showHelp;$('helpReadBtn').onclick=showHelp;$('closeHelpBtn').onclick=closeHelp;$('backBtn').onclick=startCamera;$('readBtn').onclick=toggleRead;$('modeBtn').onclick=function(){setSilent(state.audioEnabled);};$('viewBtn').onclick=function(){changeView(state.mode==='original'?'text':'original');};$('retryBtn').onclick=startCamera;$('fileBtn').onclick=function(){$('fileInput').click();};$('fileInput').onchange=function(){var f=this.files&&this.files[0];this.value='';if(f)showPhoto(f).catch(handleError);};$('voicePill').onclick=function(){state.voiceFatal=false;state.voiceWanted=true;startVoice();};
+ $('photoStage').addEventListener('click',function(e){if(e.target.closest('.line-target'))return;if(state.speaking)stopSpeech();else if(state.lines.length)speakFrom(Math.max(0,state.current),false);});
+ installPinch($('photoStage'),false);installPinch($('readerText'),true);window.addEventListener('resize',layoutPhoto);
+ document.addEventListener('visibilitychange',function(){if(document.hidden){stopSpeech();releaseCamera();if(state.voice){try{state.voice.stop();}catch(e){}}}else if(state.page==='camera')startCamera();});
+ if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
+ startCamera();
+}
+setup();
+})();
+</script>
+</body></html>

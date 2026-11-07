@@ -79,7 +79,7 @@ Das **WERK-ARCHIV** hat eine eigenständige pCloud-App-/OAuth-Einrichtung, und d
 
 - Bei **Appstart**, nach Rückkehr aus dem Offline-Modus sowie während aktiver Nutzung bei Änderungen: Synchronisationsbedarf erkennen und, sofern das Gerät zuvor sicher freigegeben ist, automatisch private pCloud-Manifeste lesen.
 - Bei **gleichem Datensatz und bestätigter Revision**: nichts tun. Bei **eindeutig neuem, plausibel validiertem Datensatz**: kontrolliert übernehmen. Bei **Konflikten, unklarer Löschung oder paralleler Bearbeitung**: vollständige Auto-Übernahme stoppen und ein übersichtliches Entscheidungsfeld anbieten. Keine „neuester Zeitstempel gewinnt“-Logik.
-- Vor Upload: **lokale Transaktion und Verschlüsselung**, bestätigte Geräte-/Benutzerberechtigung, atomare Versionsprüfung bzw. optimistische Sperre (CAS) und Upload-Quittung. Erst nach tatsächlicher Remote-Bestätigung einen lokalen Checkpoint fortschreiben. Bei Netzfehlern: nicht den Datenstand als synchronisiert markieren, spätere Wiederholung ohne Dubletten.
+- Vor Upload: **lokale Transaktion und Verschlüsselung**, bestätigte Geräte-/Benutzerberechtigung, ein unveränderliches, content-adressiertes Änderungspaket mit `renameifexists=1` und `nopartial=1`, erneute Datei- und SHA-256-Prüfung sowie Upload-Quittung (pCloud selbst garantiert dabei kein CAS). Erst nach tatsächlicher Remote-Bestätigung einen lokalen Checkpoint fortschreiben. Bei Netzfehlern: nicht den Datenstand als synchronisiert markieren, spätere Wiederholung ohne Dubletten.
 - iPhone-PWA: Synchronisation grundsätzlich bei aktiver/erneut geöffneter App; **nicht als zuverlässig rund um die Uhr laufender Hintergrundprozess behaupten**. Safari/iOS unterstützt die gängigen Background-Sync-APIs nicht durchgängig; die PC-Version kann je nach gewählter Technik kontinuierlicher arbeiten.
 - Die **bestehende manuelle Vollsicherung in pCloud** bleibt als unabhängige Rückfallebene erhalten, auch wenn der spätere Sync automatisch wird.
 
@@ -91,3 +91,28 @@ Das **WERK-ARCHIV** hat eine eigenständige pCloud-App-/OAuth-Einrichtung, und d
 - \`sync-policy.js\`: **rein deklarative**, inaktiver Prüf- und Ablaufkern für den späteren Automatikbetrieb. Die Freigabe erfordert: pCloud-OAuth und Konto, autorisiertes Gerät, verfügbare Verschlüsselung, frische Remote-Revision, nachgewiesene Datenintegrität, konfliktfreien Plan und Schutz gegen gleichzeitiges Schreiben. Er enthält **keine** echte pCloud-Verbindung oder automatischen Ausführungen.
 
 **Vollständige Synchronisation aller neun Datenbereiche ist noch nicht implementiert.** Die Erweiterung muss insbesondere Konto-/Budgetdaten, Kauforders, Simulationsbuchungen, große Kursdatenreihen und später das PC-Datenmodell separat und nicht-destruktiv behandeln. Eine Finanz- oder Brokerorder darf nie aus einem Cloud-Import ausgelöst werden.
+
+## Reuse-Check gegen den tatsächlich vorhandenen WERK-ARCHIV-Quellstand
+
+Im privaten GitHub-Repository `kontextron-oss/-werk-archiv-privat` sind folgende **bereits implementierte** Komponenten vorhanden (keine Zugangsdaten übernommen):
+
+- `desktop/core/pcloud-api.js`: `createOAuthRequest`, `parseOAuthCallback`, `listFolder`, `downloadFile` und `uploadFile`. Der Code prüft den OAuth-State, EU-/US-API-Host und den Rücksprungpfad. Bei `uploadfile` verwendet er explizit **`renameifexists=1` und `nopartial=1`**.
+- `desktop/main.js`: Windows-/Electron-Anbindung mit `safeStorage.encryptString` und `safeStorage.decryptString` für die lokale, verschlüsselte Speicherung der privaten Sitzung. Das ist ein brauchbares **PC-Sicherheitsmuster**, kein Zugriffstoken für UNITY.
+- `mobile/public/pcloud-callback.html` und `mobile/public/pcloud-callback.js`: Vorhandener iPhone-OAuth-Rücksprung; er gibt die Autorisierungsantwort nur an das Fenster **derselben Origin** weiter. Der Handler darf nicht einfach unverändert an eine andere UNITY-Website delegieren.
+- Diese Referenzen bestätigen **vorhandenen funktionsbezogenen Programmcode**, jedoch nicht, dass die laufende UNITY-PWA bereits authentifiziert oder ein geteilter Server-Gateway vorhanden wäre.
+
+### Gefährliche Standardannahme über pCloud korrigiert
+
+Die offizielle pCloud-Methode [uploadfile](https://docs.pcloud.com/methods/file/uploadfile.html) überschreibt gleichnamige Dateien **standardmäßig** und führt die frühere Datei lediglich als Revision weiter. Ein für unsere Zwecke geeignetes atomar bedingtes Überschreiben (Compare-and-Swap) ist in dieser Methode **nicht dokumentiert**. Bei `renameifexists=1` wird ein Konflikt stattdessen umbenannt. Daher:
+
+1. **Kein ständig überschriebenes `latest.json`** und kein gemeinsamer Cloud-Datenbankdateipfad.
+2. Ausschließlich neue, unveränderliche, eindeutig hash-benannte AES-256-GCM-Pakete in `UNITY-LAB/03-AUSTAUSCH/immutable-v1`; der WERK-ARCHIV-Bereich bleibt eigenständig.
+3. `sync-pcloud-log.js` erzeugt einen Dateinamen aus Geräte-ID, Revision und **SHA-256 des verschlüsselten Inhalts**. Der übergebene, bereits authentifizierte Anbieteradapter muss `renameifexists=1` und `nopartial=1` erzwingen. Eine unerwartete Umbenennung ist ein **Fehler**, kein bestätigter Upload.
+4. Erst **erneute Ordnerprüfung und Download derselben Datei plus Vergleich der echten SHA-256-Prüfsumme** erlaubt einen lokalen Checkpoint. pCloud liefert eigene Dateimetadaten-Hashes, die **nicht** als SHA-256 interpretiert werden dürfen. Wiederholte Übertragungen derselben Datei werden nur nach Byteprüfung als bereits vorhanden akzeptiert.
+5. Später gleichzeitig eintreffende Dateien von iPhone und PC müssen **beide** erhalten bleiben. Beim Einlesen werden Unterschiede anhand der gemeinsamen Revision geprüft; Konflikte lösen niemals eine automatische Löschung oder stille Überschreibung aus.
+
+Wichtiger iPhone-Unterschied: Die offiziellen pCloud-Methoden [getfilelink](https://docs.pcloud.com/methods/streaming/getfilelink.html) und [gettextfile](https://docs.pcloud.com/methods/streaming/gettextfile.html) sind laut Dokumentation nicht für gewöhnliche Webanwendungen freigegeben. Die vorhandene Windows-Version kann ihren API-Zugriff im geschützten Electron-Prozess erledigen. Für die iPhone-PWA müssen wir den **tatsächlich nutzbaren, autorisierten Lese- und Schreibweg** aus WERK-ARCHIV verifizieren, statt die Desktop-Implementierung blind zu kopieren.
+
+### Verbindlicher Stand
+
+`sync-pcloud-log.js` und `sync-policy.js` definieren nun das sichere Append-only-Prinzip. `tests/sync-pcloud-log.cjs` prüft Offline-/Freigabesperren, Kollisionen, idempotente Wiederholungen, Cloud-Quittungen, Hash-/Byte-Nachkontrolle und die Isolation der pCloud-Ordner. **Der produktive pCloud-OAuth-Adapter ist noch nicht mit UNITY verbunden.** Die bisherige manuelle Sicherung und alle veröffentlichten Versionen bleiben unverändert. Die zusätzliche Vercel-Anbindung wurde entfernt; nur GitHub und pCloud werden genutzt.

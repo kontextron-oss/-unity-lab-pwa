@@ -71,3 +71,22 @@ Die Kennzahlen bleiben historische, nicht normalisierte Istwerte. Die Wirkung vo
 Der historische TTM-Wert wird **nicht** stillschweigend als Cashflow-Prognose in die drei Sensitivitäten übernommen und gibt weder einen fairen Wert noch eine Kaufzone frei. Die bereits bestehenden hypothetischen Rechenparameter bleiben getrennt. Die neue Funktion heißt `unityPilotTrailingCashFlow` und ist über `unityPilotTrailingCashFlowPanel` mit prüfbaren Berichtsbausteinen sichtbar. Neue Regressionstests: `tests/pilot-ttm-cashflow.cjs`.
 
 [SEC Eaton Q3 2026 mit Vergleichszahlen](https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm) · [SEC Vertiv Q3 2026 mit Vergleichszahlen](https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm).
+
+## Quellengebundene Normalisierungs-Prüfung: noch kein normalisierter FCF
+
+Das neue Modul `unityPilotNormalizationReview` prüft zusätzliche **9M2026/9M2025**-Informationen direkt gegen die identische SEC-10-Q-Quelle; es trennt Cashflow-Gattungen und verhindert rechnerisch unbelegte FCF-„Verbesserungen“.
+
+| Gemeldete Größe (Mio. USD) | Eaton 9M2026 | Eaton 9M2025 | Vertiv 9M2026 | Vertiv 9M2025 | Einordnung |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Working-Capital-Effekt | −1.050 | −1.313 | +540,5 | −166,7 | Eaton: gesamte Working-Capital-Veränderung; Vertiv: **Trade Working Capital** aus Managementdiskussion, also nicht zwischen Unternehmen direkt vergleichbar |
+| Nettozahlung für Unternehmenskäufe | 11.079 | 1.504 | 278,1 | 195,7 | **Investitions-Cashflow**: nicht vom operativen Cashflow abziehen und nicht als „OCF-Sondereffekt“ wieder hinzuaddieren |
+| Erhaltene Kreditmittel (nicht Nettoschuldenstand) | 9.871 | 1.058 | nicht in diesem Pilot verglichen | nicht in diesem Pilot verglichen | **Finanzierungs-Cashflow**, keine operative Einnahme |
+| Gesondert aktivierte Software | nicht als Vergleich hier erfasst | – | 5,3 | 4,7 | Vertiv: separat von Sachinvestitionen ausgewiesen; zusätzlicher Reinvestitionsaspekt, nicht automatisch in altem FY2025-CapEx-Proxy enthalten |
+
+Die Eaton-Unternehmensmeldung nennt außerdem einen ungefähren **FY2026-Sachinvestitions-Ausblick von 1.150 Mio. USD**. Dies ist keine geprüfte Istzahl und **wird nicht** zur Berechnung von TTM oder Fair Value benutzt.
+
+**Zwingende Konsequenz:** Insbesondere der positive Trade-Working-Capital-Effekt bei Vertiv darf nicht als für alle künftigen Jahre garantiert gelten. Ebenso ist Eatons hohe Akquisitionsausgabe **kein** Beweis, dass derselbe Betrag vom wiederkehrenden FCF abzuziehen sei. Beide Effekte werden als belegte Risiko-/Prüfhinweise angezeigt, nicht als mechanischer Bereinigungssatz.
+
+Fünf Beleglücken werden vor einer tatsächlichen normalisierten Mehrjahresbewertung angezeigt: (1) eigenständiger zukünftiger Cashflow der übernommenen Unternehmen, (2) nachhaltig vs. temporär beeinflusstes Working Capital, (3) Erhaltungs- und Wachstumscapex, (4) zukünftige Zins-/Steuer-/Refinanzierungseffekte, (5) Aktienzahl, Verwässerung und mehrjähriger FCF. Ohne deren eigenständige Verifikation bleibt **`normalizedTTMFcf=null`**, **`fairValue=null`**, **`entryZone=null`** und **`tradeApproved=false`**.
+
+Neue Datei: `data/normalization-evidence.json`; neue Tests: `tests/pilot-normalization-audit.cjs`. SEC-Originalquellen für Zahlen und Definitionen: [Eaton 10-Q](https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm) und [Vertiv 10-Q](https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm).

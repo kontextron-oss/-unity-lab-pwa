@@ -357,17 +357,19 @@ function unityPilotScenarioSensitivity(s,options={}){
   fairValue:null,entryZone:null,tradeApproved:false,
   verdict:'Nur Sensitivitätsrechnung; keine Marktwert- oder Kaufempfehlung.',
   missing};
+ const expectedCik=isin==='IE00B8KQN827'?'0001551182':'0001674101';
  if(!financial||financial.instrument?.isin!==isin||financial.coreComplete!==true||
-    !['sec','issuer-pdf','esef'].includes(financial.sourceKind)||
+    financial.sourceKind!=='sec'||financial.reportCurrency!=='USD'||
     financial.period!=='2025-12-31'||
-    !/^https:\/\//.test(String(financial.sourceUrl||'')))
+    financial.sourceUrl!=='https://data.sec.gov/api/xbrl/companyfacts/CIK'+expectedCik+'.json')
   missing.push('Identischer, geprüfter FY2025-Konzernabschluss fehlt');
  const fcf=financial?.valuation?.freeCashFlow,shares=financial?.valuation?.sharesOutstanding;
  if(!(typeof fcf==='number'&&Number.isFinite(fcf)&&fcf>0&&
       typeof shares==='number'&&Number.isFinite(shares)&&shares>0))
   missing.push('Belegter FY2025-Cashflow nach Capex und echte Stichtags-Aktienzahl fehlen');
  if(!(debt&&debt.kind==='unity-unaudited-10q-debt-evidence-v1'&&debt.isin===isin&&
-      debt.periodEnd==='2026-09-30'&&debt.audited===false&&debt.tradeApproved===false&&
+      debt.periodEnd==='2026-09-30'&&debt.currency==='USD'&&
+      debt.audited===false&&debt.tradeApproved===false&&
       debt.reviewGateSatisfied===false&&
       typeof debt.grossFinancialDebt==='number'&&debt.grossFinancialDebt>0&&
       typeof debt.cashAndEquivalents==='number'&&debt.cashAndEquivalents>0&&
@@ -402,7 +404,9 @@ function unityPilotScenarioSensitivity(s,options={}){
  const price=financial?.quoteInReportCurrency,quote=financial?.priceRef;
  const age=unityValuationDateAge(quote?.date);
  const priceOk=typeof price==='number'&&Number.isFinite(price)&&price>0&&
-   quote&&age!==null&&age>=-1&&age<=5.5;
+   quote&&typeof quote.exchange==='string'&&quote.exchange.trim()&&
+   typeof financial.fx?.value==='number'&&Number.isFinite(financial.fx.value)&&
+   financial.fx.value>0&&age!==null&&age>=-1&&age<=5.5;
  if(priceOk){
   result.referencePrice=price;
   result.referenceDate=quote.date;

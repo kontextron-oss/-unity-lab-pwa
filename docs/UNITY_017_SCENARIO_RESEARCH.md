@@ -90,3 +90,29 @@ Die Eaton-Unternehmensmeldung nennt außerdem einen ungefähren **FY2026-Sachinv
 Fünf Beleglücken werden vor einer tatsächlichen normalisierten Mehrjahresbewertung angezeigt: (1) eigenständiger zukünftiger Cashflow der übernommenen Unternehmen, (2) nachhaltig vs. temporär beeinflusstes Working Capital, (3) Erhaltungs- und Wachstumscapex, (4) zukünftige Zins-/Steuer-/Refinanzierungseffekte, (5) Aktienzahl, Verwässerung und mehrjähriger FCF. Ohne deren eigenständige Verifikation bleibt **`normalizedTTMFcf=null`**, **`fairValue=null`**, **`entryZone=null`** und **`tradeApproved=false`**.
 
 Neue Datei: `data/normalization-evidence.json`; neue Tests: `tests/pilot-normalization-audit.cjs`. SEC-Originalquellen für Zahlen und Definitionen: [Eaton 10-Q](https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm) und [Vertiv 10-Q](https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm).
+
+## Tatsächliche Nettozinslast und hypothetische Zinssensitivität (November 2026)
+
+Die separate Datei `data/financing-stress-evidence.json` erfasst die **historischen SEC-Nettozinsaufwände** für die 9M- und Q3-Zeiträume. Diese Größe ist **nicht** gleich bar gezahlten Zinsen: Sie umfasst auch verrechnete Zinserträge und nicht zwangsläufig die tatsächliche Refinanzierungsrate.
+
+| Istkennzahl (Mio. USD) | Eaton 2026 | Eaton 2025 | Vertiv 2026 | Vertiv 2025 |
+| --- | ---: | ---: | ---: | ---: |
+| Nettozinsaufwand Q3 | 198 | 67 | 6,4 | 22,8 |
+| Nettozinsaufwand 9M | 505 | 171 | 19,4 | 69,4 |
+
+Die 9M-Nettozinslast hat bei **Eaton um 334 Mio. USD zugenommen**, bei **Vertiv um 50 Mio. USD abgenommen**. Gleichzeitig beträgt die **ausgewiesene bilanzielle Finanzschuld** am 30. September 2026 etwa 20.106 Mio. USD (Eaton) bzw. 2.928,5 Mio. USD (Vertiv). Aus dem **Saldo Bilanzschulden minus Cash** ergibt sich bei Vertiv ein negativer Wert (mehr Cash als diese abgegrenzten Schulden). Es handelt sich nicht um eine vollständige, auf Leasing und alle Verbindlichkeiten ausgeweitete Nettoverschuldung.
+
+**Nur als Extremannahme** rechnet `unityPilotFinancingStress` ein sofortiges vollständiges Neuverzinsen sämtlicher bilanziell erfassten Finanzschulden bei **+100 bzw. +200 Basispunkten**. Das soll die mögliche Zinssensitivität transparent machen, nicht die tatsächliche oder erwartete Refinanzierung abbilden.
+
+| Modellstress: Zusatz-Zinslast vor Steuern, USD Mio./Jahr | Eaton | Vertiv |
+| --- | ---: | ---: |
+| +100 Basispunkte auf gesamte ausgewiesene Finanzschulden | 201,06 | 29,29 |
+| +200 Basispunkte auf gesamte ausgewiesene Finanzschulden | 402,12 | 58,57 |
+
+**Nicht enthalten:** Fälligkeitsprofil, bestehende Zinsbindung, Hedgekontrakte, künftige Rückzahlungen und Neuaufnahmen, Zinserträge, Steuerwirkung, Übernahmesynergien und vollständiger Cashflow-Zinsabgleich. Schon deshalb sind die Werte ausdrücklich **keine 2027er Zinsprognose**, sondern lediglich ein kontrafaktisches Stressmodell.
+
+Das US-GAAP-OCF-basierte historische TTM-FCF-Konzept berücksichtigt die bereits verbuchten Finanzierungskosten über Unternehmensgewinn/operativen Cashflow. Die Stressbeiträge werden daher **nicht automatisch noch einmal vom TTM-FCF abgezogen**, um Doppelzählung und falsche scheinpräzise Kursziele zu verhindern.
+
+Belege: [Eaton SEC 10-Q 2026-Q3](https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm), [Vertiv SEC 10-Q 2026-Q3](https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm). Testdatei: `tests/pilot-financing-stress.cjs`.
+
+**Ein wichtiger noch offener Engpass:** Aus dem EBIT, den gemeldeten Zinsen und den Akquisitionsausgaben folgt noch keine belastbare eigenständige Cashflow-Prognose des übernommenen Geschäfts. Diese benötigt eine überprüfbare pro-forma-Überleitung von Umsätzen, operativen Cashflows, erforderlichem CapEx und Finanzierung sowie die Prüfung der zeitlichen Integration.

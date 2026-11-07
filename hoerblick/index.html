@@ -42,7 +42,7 @@
 <script defer>
 (function(){'use strict';
 var $=function(id){return document.getElementById(id);};
-var state={page:'camera',stream:null,track:null,torch:false,canTorch:false,busy:false,voice:null,voiceWanted:true,voiceActive:false,voiceFatal:false,audioEnabled:true,mode:'original',photoURL:null,width:1,height:1,ocrWidth:1,ocrHeight:1,lines:[],current:-1,word:-1,speaking:false,speechToken:0,zoom:1,tx:0,ty:0,font:27,worker:null,readingStart:0,saved:false};
+var state={page:'camera',stream:null,track:null,torch:false,canTorch:false,busy:false,voice:null,voiceWanted:true,voiceActive:false,voiceFatal:false,voicePausedForSpeech:false,audioEnabled:true,mode:'original',photoURL:null,width:1,height:1,ocrWidth:1,ocrHeight:1,lines:[],current:-1,word:-1,speaking:false,speechToken:0,zoom:1,tx:0,ty:0,font:27,worker:null,readingStart:0,saved:false};
 try{state.audioEnabled=localStorage.getItem('hb2-audio')!=='false';}catch(e){}
 var R=window.SpeechRecognition||window.webkitSpeechRecognition;
 function status(msg){if(state.page==='camera')$('cameraHint').textContent=msg;else $('readNotice').textContent=msg;}
@@ -53,7 +53,7 @@ function voiceInfo(msg){$('voicePill').textContent=msg;visible($('voicePill'),tr
 function handleError(err){status('Ein Fehler ist aufgetreten. Bitte erneut versuchen.');console.error(err);}
 async function startCamera(){
  if(state.busy)return;
- stopSpeech();state.page='camera';visible($('camera'),true);visible($('read'),false);visible($('help'),false);state.mode='original';
+ stopSpeech();state.voicePausedForSpeech=false;state.page='camera';visible($('camera'),true);visible($('read'),false);visible($('help'),false);state.mode='original';
  if(state.stream){state.stream.getTracks().forEach(function(t){t.stop();});state.stream=null;state.track=null;}
  state.torch=false;state.canTorch=false;$('flashBtn').textContent='Licht aus';
  visible($('cameraFallback'),false);status('Kamera wird gestartet …');
@@ -144,7 +144,7 @@ var shutterContext=null;
   status('Foto aufgenommen. Text wird erkannt …');
  }
  function canvasBlob(c){return new Promise(function(resolve,reject){c.toBlob(function(b){if(b)resolve(b);else reject(Error('Kein Foto'));},'image/jpeg',.9);});}
-async function capture(){if(state.busy||state.page!=='camera')return;state.busy=true;primeSpeech();try{photoConfirmation();var blob=await captureHighResolution();await showPhoto(blob);}
+async function capture(){if(state.busy||state.page!=='camera')return;state.busy=true;pauseVoiceForSpeech();primeSpeech();try{photoConfirmation();var blob=await captureHighResolution();await showPhoto(blob);}
  catch(e){handleError(e);}finally{state.busy=false;}}
 async function showPhoto(blob,remember){stopSpeech();releaseCamera();state.page='read';state.lines=[];state.current=-1;state.word=-1;state.zoom=1;state.tx=0;state.ty=0;state.mode='original';state.saved=false;
  visible($('camera'),false);visible($('read'),true);visible($('photoStage'),true);visible($('readerText'),false);$('viewBtn').textContent='Textansicht';
@@ -211,11 +211,11 @@ async function analyzePhoto(blob){
    return{text:t.trim(),bbox:null,words:[]};
   }).filter(function(x){return x.text;});}
   state.lines=lines;state.readingStart=findReadingStart(lines);renderLines();
-  if(!lines.length){status('Kein Text sicher erkannt. Ein anderes Foto versuchen.');$('readBtn').textContent='Kamera';return;}
+  if(!lines.length){status('Kein Text sicher erkannt. Ein anderes Foto versuchen.');$('readBtn').textContent='Kamera';resumeVoiceAfterSpeech();return;}
   status(confidence<45?'Texterkennung unsicher. Für besseres Ergebnis näher fotografieren.':lines.length+' Zeilen erkannt. Text antippen oder Vorlesen.');
-  if(state.audioEnabled){speakFrom(state.readingStart,true);}
+  if(state.audioEnabled){speakFrom(state.readingStart,true);}else{status('Still. Text erkannt. Zum Vorlesen auf Vorlesen tippen.');resumeVoiceAfterSpeech();}
   await saveDocument(blob,lines);
- }catch(e){status(e.message&&e.message.includes('Internet')?e.message:'Texterkennung nicht möglich. Bitte erneut versuchen.');console.error(e);}
+ }catch(e){status(e.message&&e.message.includes('Internet')?e.message:'Texterkennung fehlgeschlagen. Erneut fotografieren.');resumeVoiceAfterSpeech();console.error(e);}
 }
 function findReadingStart(lines){
  var hello=/^(sehr geehrte|guten tag|hallo|liebe[rsn]?\b)/i;
@@ -233,22 +233,70 @@ function updateHighlight(){document.querySelectorAll('.line-target,.textline').f
 function markWord(el){var line=state.lines[+el.dataset.i];if(!line)return;var txt=line.text;el.textContent='';if(state.word<0){el.textContent=txt;return;}var a=Math.min(state.word,txt.length),b=a;while(b<txt.length&&!/\s/.test(txt[b]))b++;if(b<=a){el.textContent=txt;return;}el.append(document.createTextNode(txt.slice(0,a)));var span=document.createElement('span');span.className='spoken-word';span.textContent=txt.slice(a,b);el.append(span,document.createTextNode(txt.slice(b)));}
 function stopSpeech(){state.speechToken++;window.speechSynthesis&&speechSynthesis.cancel();state.speaking=false;state.word=-1;updatePlay();}
 function updatePlay(){$('readBtn').textContent=state.speaking?'Stopp':'Vorlesen';}
-function speakFrom(index,auto){if(!state.lines.length)return;
- if(!state.audioEnabled){state.current=index;state.word=-1;updateHighlight();status('Stiller Modus. Zum Vorlesen „Laut“ sagen oder Laut antippen.');return;}
- stopSpeech();var token=++state.speechToken;state.speaking=true;state.current=Math.max(0,Math.min(index,state.lines.length-1));updatePlay();
- function next(i){if(token!==state.speechToken)return;if(i>=state.lines.length){state.speaking=false;updatePlay();status('Ende des Dokuments.');return;}
-  state.current=i;state.word=-1;updateHighlight();var u=new SpeechSynthesisUtterance(state.lines[i].text);u.lang='de-DE';u.rate=.88;u.pitch=1;
-  u.onstart=function(){if(token!==state.speechToken)return;state.speaking=true;updatePlay();status('Lese Zeile '+(i+1)+' von '+state.lines.length);};
-  u.onboundary=function(e){if(token!==state.speechToken)return;if(Number.isFinite(e.charIndex)){state.word=e.charIndex;updateHighlight();}};
-  u.onerror=function(e){if(token!==state.speechToken)return;state.speaking=false;updatePlay();status('Vorlesen nicht möglich. Bitte auf Vorlesen tippen.');};
-  u.onend=function(){if(token===state.speechToken)next(i+1);};
-  speechSynthesis.speak(u);
- }
- if(window.speechSynthesis)next(state.current);else{state.speaking=false;status('Sprachausgabe nicht verfügbar.');}
- if(auto)status('Text erkannt. Das Vorlesen beginnt.');
+function pauseVoiceForSpeech(){
+ state.voicePausedForSpeech=true;
+ if(state.voice){try{state.voice.abort();}catch(e){}
+  state.voice=null;state.voiceActive=false;}
 }
-function toggleRead(){if(!state.lines.length){startCamera();return;}if(state.speaking){stopSpeech();status('Vorlesen gestoppt.');}else{state.audioEnabled=true;updateAudio();speakFrom(state.current>=0?state.current:state.readingStart,false);}}
-function setSilent(silent){state.audioEnabled=!silent;updateAudio();if(silent){stopSpeech();status('Still. Berühren und zoomen bleibt möglich.');}else{status('Sprachausgabe eingeschaltet.');}}
+function resumeVoiceAfterSpeech(){
+ state.voicePausedForSpeech=false;
+ if(state.voiceWanted&&!state.voiceFatal)window.setTimeout(function(){
+  if(!state.voicePausedForSpeech&&!state.speaking)startVoice();
+ },350);
+}
+function speakFrom(index,auto){
+ if(!state.lines.length)return;
+ if(!state.audioEnabled){
+  state.current=index;state.word=-1;updateHighlight();
+  status('Still. Bitte auf Vorlesen tippen.');resumeVoiceAfterSpeech();return;
+ }
+ stopSpeech();pauseVoiceForSpeech();
+ var token=++state.speechToken,first=Math.max(0,Math.min(index,state.lines.length-1));
+ state.current=first;state.speaking=false;updatePlay();
+ function finish(message){
+  if(token!==state.speechToken)return;
+  state.speaking=false;state.word=-1;updatePlay();
+  status(message);resumeVoiceAfterSpeech();
+ }
+ function next(i){
+  if(token!==state.speechToken)return;
+  if(i>=state.lines.length){finish('Ende des Dokuments.');return;}
+  state.current=i;state.word=-1;updateHighlight();
+  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){finish('Sprachausgabe nicht verfügbar.');return;}
+  var utterance=new SpeechSynthesisUtterance(state.lines[i].text);
+  utterance.lang='de-DE';utterance.rate=.88;utterance.pitch=1;
+  try{
+   var voices=speechSynthesis.getVoices().filter(function(v){return /^de[-_]/i.test(v.lang||'');});
+   var local=voices.find(function(v){return v.localService;});
+   if(local||voices[0])utterance.voice=local||voices[0];
+  }catch(e){}
+  var started=false;
+  utterance.onstart=function(){
+   if(token!==state.speechToken)return;
+   started=true;state.speaking=true;updatePlay();
+   status('Lese Zeile '+(i+1)+' von '+state.lines.length+'.');
+  };
+  utterance.onboundary=function(e){
+   if(token!==state.speechToken)return;
+   if(Number.isFinite(e.charIndex)){state.word=e.charIndex;updateHighlight();}
+  };
+  utterance.onerror=function(){
+   if(token===state.speechToken)finish('Vorlesen nicht möglich. Bitte erneut Vorlesen antippen.');
+  };
+  utterance.onend=function(){if(token===state.speechToken)next(i+1);};
+  try{speechSynthesis.speak(utterance);}
+  catch(e){finish('Sprachausgabe nicht gestartet. Bitte Vorlesen antippen.');return;}
+  // Safari may silently suppress speech after asynchronous OCR. Never leave the UI stuck on STOPP.
+  if(i===first)window.setTimeout(function(){
+   if(token!==state.speechToken||started)return;
+   try{speechSynthesis.cancel();}catch(e){}
+   finish(auto?'Text erkannt. Zum Vorlesen bitte Vorlesen antippen.':'Ton nicht gestartet. Bitte erneut Vorlesen antippen.');
+  },4000);
+ }
+ next(first);
+}
+function toggleRead(){if(!state.lines.length){startCamera();return;}if(state.speaking){stopSpeech();resumeVoiceAfterSpeech();status('Vorlesen gestoppt.');}else{state.audioEnabled=true;updateAudio();speakFrom(state.current>=0?state.current:state.readingStart,false);}}
+function setSilent(silent){state.audioEnabled=!silent;updateAudio();if(silent){stopSpeech();resumeVoiceAfterSpeech();status('Still. Berühren und zoomen bleibt möglich.');}else{status('Sprachausgabe eingeschaltet.');}}
 function changeView(to){state.mode=to==='text'?'text':'original';visible($('photoStage'),state.mode==='original');visible($('readerText'),state.mode==='text');$('viewBtn').textContent=state.mode==='original'?'Textansicht':'Original';if(state.mode==='text'){$('readerText').style.fontSize=state.font+'px';}else layoutPhoto();updateHighlight();}
 function layoutPhoto(){var p=$('photoInner'),st=$('photoStage');if(!state.width||!state.height)return;var w=st.clientWidth||window.innerWidth,h=st.clientHeight||window.innerHeight;var fit=Math.min(w/state.width,h/state.height)*.98;p.style.width=state.width+'px';p.style.height=state.height+'px';p.style.transform='translate('+state.tx+'px,'+state.ty+'px) scale('+(fit*state.zoom)+')';}
 function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
@@ -262,12 +310,12 @@ async function saveDocument(blob,lines){try{var db=await openDB(),tx=db.transact
 function openDB(){return new Promise(function(resolve,reject){var req=indexedDB.open('hoerblick-v2-local',1);req.onupgradeneeded=function(){if(!req.result.objectStoreNames.contains('docs'))req.result.createObjectStore('docs',{keyPath:'id'});};req.onsuccess=function(){resolve(req.result);};req.onerror=function(){reject(req.error);};});}
 function showHelp(){visible($('help'),true);$('closeHelpBtn').focus();}
 function closeHelp(){visible($('help'),false);}
-function sayHelp(){showHelp();stopSpeech();var u=new SpeechSynthesisUtterance('Hilfe. Zum Fotografieren den Bildschirm berühren oder Foto sagen. Textstellen antippen zum Vorlesen. Mit zwei Fingern vergrößern. Stopp beendet das Vorlesen. Kamera nimmt ein neues Dokument auf.');u.lang='de-DE';u.rate=.85;speechSynthesis.speak(u);}
+function sayHelp(){showHelp();stopSpeech();pauseVoiceForSpeech();var u=new SpeechSynthesisUtterance('Hilfe. Zum Fotografieren den Bildschirm berühren oder Foto sagen. Textstellen antippen zum Vorlesen. Mit zwei Fingern vergrößern. Stopp beendet das Vorlesen. Kamera nimmt ein neues Dokument auf.');u.lang='de-DE';u.rate=.85;u.onend=resumeVoiceAfterSpeech;u.onerror=resumeVoiceAfterSpeech;speechSynthesis.speak(u);}
 function command(raw){var s=String(raw||'').toLocaleLowerCase('de-DE').replace(/[.!?,]/g,' ').trim();if(!s)return;
  if(/^(hilfe|hilf mir)$/.test(s)){sayHelp();return;}
  if(/^(schließen|hilfe schließen)$/.test(s)){closeHelp();return;}
  if(/^(foto|fotografieren|aufnahme|aufnehmen)$/.test(s)){if(state.page==='camera')capture();return;}
- if(/^(stopp|stop|pause|anhalten)$/.test(s)){stopSpeech();status('Gestoppt.');return;}
+ if(/^(stopp|stop|pause|anhalten)$/.test(s)){stopSpeech();resumeVoiceAfterSpeech();status('Gestoppt.');return;}
  if(/^(kamera|neues foto|neues dokument)$/.test(s)){startCamera();return;}
  if(/^(licht an|taschenlampe an)$/.test(s)){setTorch(true,false);return;}
  if(/^(licht aus|taschenlampe aus)$/.test(s)){setTorch(false,false);return;}
@@ -280,9 +328,9 @@ function command(raw){var s=String(raw||'').toLocaleLowerCase('de-DE').replace(/
  if(/^(text|textansicht)$/.test(s)){if(state.page==='read')changeView('text');return;}
  if(/^(original|originalansicht)$/.test(s)){if(state.page==='read')changeView('original');return;}
 }
-function startVoice(){if(!state.voiceWanted||state.voiceFatal)return;
+function startVoice(){if(!state.voiceWanted||state.voiceFatal||state.voicePausedForSpeech)return;
  if(!R){voiceInfo('Sprachbefehle hier nicht verfügbar');return;}
- if(!state.voice){try{var rec=new R();rec.lang='de-DE';rec.continuous=true;rec.interimResults=false;rec.maxAlternatives=1;rec.onresult=function(ev){for(var i=ev.resultIndex;i<ev.results.length;i++){if(ev.results[i].isFinal)command(ev.results[i][0].transcript);}};rec.onstart=function(){state.voiceActive=true;visible($('voicePill'),false);};rec.onerror=function(ev){state.voiceActive=false;if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){state.voiceFatal=true;voiceInfo('Sprache erlauben');}else if(ev.error==='audio-capture'){voiceInfo('Mikrofon nicht verfügbar');}};rec.onend=function(){state.voiceActive=false;if(state.voiceWanted&&!state.voiceFatal)setTimeout(startVoice,1000);};state.voice=rec;}catch(e){state.voiceFatal=true;voiceInfo('Sprachsteuerung nicht verfügbar');return;}}
+ if(!state.voice){try{var rec=new R();rec.lang='de-DE';rec.continuous=true;rec.interimResults=false;rec.maxAlternatives=1;rec.onresult=function(ev){for(var i=ev.resultIndex;i<ev.results.length;i++){if(ev.results[i].isFinal)command(ev.results[i][0].transcript);}};rec.onstart=function(){state.voiceActive=true;visible($('voicePill'),false);};rec.onerror=function(ev){state.voiceActive=false;if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){state.voiceFatal=true;voiceInfo('Sprache erlauben');}else if(ev.error==='audio-capture'){voiceInfo('Mikrofon nicht verfügbar');}};rec.onend=function(){state.voiceActive=false;if(state.voiceWanted&&!state.voiceFatal&&!state.voicePausedForSpeech)setTimeout(startVoice,1000);};state.voice=rec;}catch(e){state.voiceFatal=true;voiceInfo('Sprachsteuerung nicht verfügbar');return;}}
  try{if(!state.voiceActive)state.voice.start();}catch(e){if(e.name!=='InvalidStateError')voiceInfo('Tippen: Sprache aktivieren');}
 }
 function setup(){updateAudio();$('captureBtn').onclick=capture;$('flashBtn').onclick=function(){setTorch(!state.torch,false);};$('helpBtn').onclick=showHelp;$('helpReadBtn').onclick=showHelp;$('closeHelpBtn').onclick=closeHelp;$('backBtn').onclick=startCamera;$('readBtn').onclick=toggleRead;$('modeBtn').onclick=function(){setSilent(state.audioEnabled);};$('viewBtn').onclick=function(){changeView(state.mode==='original'?'text':'original');};$('retryBtn').onclick=startCamera;$('fileBtn').onclick=function(){$('fileInput').click();};$('fileInput').onchange=function(){var f=this.files&&this.files[0];this.value='';if(f)showPhoto(f).catch(handleError);};$('voicePill').onclick=function(){state.voiceFatal=false;state.voiceWanted=true;startVoice();};

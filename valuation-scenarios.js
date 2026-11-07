@@ -1,7 +1,7 @@
 'use strict';
 /* UNITY 0.15.3.9 – research-only, source-checked forecast and value scenarios.
    No private holdings, real orders, simulated orders, or trading permissions. */
-let unityIssuerGuidance=null,unityValuationAssumptions=null,unityQuarterDebtPilot=null,unityNormalizationPilot=null,unityGuidanceFetchError='';
+let unityIssuerGuidance=null,unityValuationAssumptions=null,unityQuarterDebtPilot=null,unityNormalizationPilot=null,unityFinancingStressPilot=null,unityGuidanceFetchError='';
 async function unityLoadValuationEvidence(){
  const load=async url=>{
   let r;
@@ -13,17 +13,19 @@ async function unityLoadValuationEvidence(){
    throw Error('Ungültige öffentliche Prognosedatei');
   return v;
  };
- const [guide,assumptions,debtQuarter,normalization]=await Promise.allSettled([
+ const [guide,assumptions,debtQuarter,normalization,financing]=await Promise.allSettled([
   load('./data/issuer-guidance.json'),
   load('./data/valuation-assumptions.json'),
   load('./data/debt-pilot-evidence.json'),
-  load('./data/normalization-evidence.json')
+  load('./data/normalization-evidence.json'),
+  load('./data/financing-stress-evidence.json')
  ]);
  unityIssuerGuidance=guide.status==='fulfilled'?guide.value:null;
  unityValuationAssumptions=assumptions.status==='fulfilled'?assumptions.value:null;
  unityQuarterDebtPilot=debtQuarter.status==='fulfilled'?debtQuarter.value:null;
  unityNormalizationPilot=normalization.status==='fulfilled'?normalization.value:null;
- unityGuidanceFetchError=[guide,assumptions,debtQuarter,normalization].filter(x=>x.status==='rejected').map(x=>String(x.reason)).join(' · ');
+ unityFinancingStressPilot=financing.status==='fulfilled'?financing.value:null;
+ unityGuidanceFetchError=[guide,assumptions,debtQuarter,normalization,financing].filter(x=>x.status==='rejected').map(x=>String(x.reason)).join(' · ');
  if(typeof render==='function'&&typeof db!=='undefined'&&db)render();
 }
 function unityValuationDateAge(date){
@@ -547,6 +549,123 @@ function unityPilotNormalizationReviewPanel(s,options={}){
  return h;
 }
 
+/* UNITY 0.17 – official net interest expense history + deliberately
+ * counterfactual financing stress. +100/+200 bp assumes a parallel repricing of
+ * the entire reported financial debt ONLY as a sensitivity bound. Actual
+ * fixed/floating mix, maturity ladder, hedges, income and taxes are unknown.
+ * Never subtract this result from US-GAAP OCF/FCF as though historical interest
+ * had not already been recognized. No normalized FCF, FCFE or buy signal. */
+function unityPilotFinancingStress(s,options={}){
+ const isin=String(s?.isin||'');
+ const expectedCik=isin==='IE00B8KQN827'?'0001551182':
+   isin==='US92537N1081'?'0001674101':null;
+ if(!expectedCik)return null;
+ const evidence=options.evidence===undefined?unityFinancingStressPilot?.items?.[isin]:options.evidence;
+ const q=options.quarter===undefined?unityQuarterDebtEvidence(s):options.quarter;
+ const ttm=options.ttm===undefined?unityPilotTrailingCashFlow(s,{debt:q}):options.ttm;
+ const missing=[];
+ const result={kind:'unity-financing-stress-audit-v1',isin,status:'blocked',
+  currency:'USD',unit:'USD millions',asOf:'2026-09-30',
+  netInterest:null,debt:null,modelStress:null,reportedTTMFcfProxy:null,
+  normalizedFcf:null,fairValue:null,entryZone:null,tradeApproved:false,
+  sourceRefs:[],missing,
+  text:'Keine zukunftsgerichtete Zinsprognose oder Anlagefreigabe'};
+ const valid=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0;
+ if(!evidence||evidence.isin!==isin||evidence.cik!==expectedCik||
+   evidence.reportPeriodEnd!=='2026-09-30'||evidence.audited!==false||
+   evidence.currency!=='USD'||evidence.unit!=='USD millions'||
+   evidence.sourceUrl!=='https://www.sec.gov/Archives/edgar/data/'+
+     Number(expectedCik)+'/'+(isin==='IE00B8KQN827'?
+       '000155118226000040/etn-20260930.htm':
+       '000162828026067893/vrt-20260930.htm')||
+   evidence.filedAt!==q?.filedAt||evidence.sourceUrl!==q?.sourceUrl)
+    missing.push('Exakte SEC-Zinsquelle mit Unternehmens- und Quartalsidentität fehlt');
+ const i=evidence?.netInterestExpense;
+ if(!i||!['q3_2026','q3_2025','nineMonths2026','nineMonths2025']
+   .every(key=>valid(i[key])))
+    missing.push('Belegte Nettozinsaufwände Q3/9M 2025 und 2026 fehlen');
+ if(q?.kind!=='unity-unaudited-10q-debt-evidence-v1'||
+    q.isin!==isin||q.currency!=='USD'||q.audited!==false||
+    q.reviewGateSatisfied!==false||q.tradeApproved!==false||
+    !valid(q.grossFinancialDebt)||!valid(q.debtLessCash))
+    missing.push('Konsistente Q3-2026-Finanzschulden und Cash fehlen');
+ if(!valid(evidence?.priorGrossFinancialDebt)||
+    Math.abs(q?.grossFinancialDebt/(1+q?.debtChangePct/100)-evidence.priorGrossFinancialDebt)>2)
+    missing.push('Zum Vorjahres-Stichtag identisch abgegrenzte Finanzschulden fehlen');
+ if(ttm?.kind!=='unity-rolling-ttm-fcf-bridge-v1'||ttm.isin!==isin||
+    ttm.status!=='reported-ttm-only'||ttm.tradeApproved!==false||
+    ttm.normalised!==false||!valid(ttm.ttmFcfProxy)||
+    ttm.asOf!=='2026-09-30')
+    missing.push('Nicht normalisierte, quellengleiche historische TTM-Cashflow-Basis fehlt');
+ if(missing.length)return result;
+ const round2=n=>Math.round(n*100)/100;
+ const debtDelta=round2(q.grossFinancialDebt-evidence.priorGrossFinancialDebt);
+ const interestChange=round2(i.nineMonths2026-i.nineMonths2025);
+ result.status='reported-interest-and-counterfactual-stress';
+ result.netInterest={
+   q3_2026:i.q3_2026,q3_2025:i.q3_2025,
+   q3Change:round2(i.q3_2026-i.q3_2025),
+   nineMonths2026:i.nineMonths2026,nineMonths2025:i.nineMonths2025,
+   nineMonthsChange:interestChange,
+   metric:'Net interest expense (after interest income), not cash interest paid'
+ };
+ result.debt={
+   currentGross:q.grossFinancialDebt,priorGross:evidence.priorGrossFinancialDebt,
+   change:debtDelta,cash:q.cashAndEquivalents,
+   debtLessCash:q.debtLessCash,
+   debtLessCashToHistoricFcf:ttm.ttmFcfProxy>0?
+     round2(q.debtLessCash/ttm.ttmFcfProxy):null
+ };
+ result.reportedTTMFcfProxy=ttm.ttmFcfProxy;
+ result.modelStress=[100,200].map(bps=>{
+  const fullDebtAdditionalPreTax=round2(q.grossFinancialDebt*bps/10000);
+  const positiveIncrementalDebtAdditionalPreTax=round2(Math.max(debtDelta,0)*bps/10000);
+  return {shiftBps:bps,wholeGrossDebtAdditionalPreTax:fullDebtAdditionalPreTax,
+   positiveBalanceIncreaseAdditionalPreTax:positiveIncrementalDebtAdditionalPreTax,
+   wholeDebtStressVsReportedTtmFcfPct:ttm.ttmFcfProxy>0?
+    round2(100*fullDebtAdditionalPreTax/ttm.ttmFcfProxy):null,
+   assumption:'Assumes all disclosed gross debt immediately reprices; no amortization, tax shields, hedge or fixed-rate protection. NOT an actual interest forecast.',
+   preTax:true,isIssuerForecast:false,isCashFlowAdjustment:false,
+   tradeApproved:false};
+ });
+ result.sourceRefs=[{type:'Q3-2026-and-Q3-2025',url:evidence.sourceUrl},
+   ...(ttm.sourceRefs||[])];
+ return result;
+}
+function unityPilotFinancingStressPanel(s,options={}){
+ const v=unityPilotFinancingStress(s,options);
+ if(!v)return '';
+ let h='<details class="unity-secondary-check"><summary>UNITY 0.17 · Zinslast und Finanzierungsstress</summary>';
+ if(v.status==='blocked')return h+'<p class="tiny muted">Keine verlässliche Finanzierungsprüfung: '+
+  esc(v.missing.join(' · '))+'. Kein bereinigter Cashflow und keine Freigabe.</p></details>';
+ const fmt=n=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(n);
+ h+='<p class="tiny muted"><b>Offizielle Nettozinsaufwände</b> (inklusive Zinseinnahmen, kein Cash-Zinsnachweis):</p>';
+ for(const [label,value] of [
+  ['9M2026',v.netInterest.nineMonths2026],
+  ['9M2025',v.netInterest.nineMonths2025],
+  ['Veränderung 9M gegenüber Vorjahr',v.netInterest.nineMonthsChange],
+  ['Q3 2026',v.netInterest.q3_2026],
+  ['Q3 2025',v.netInterest.q3_2025],
+  ['Bilanz-Finanzschulden September 2026',v.debt.currentGross],
+  ['Veränderung der Finanzschulden seit Ende 2025',v.debt.change]
+ ])h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+
+   esc((value>0&&label.includes('Veränderung')?'+':'')+fmt(value))+' Mio. USD</b></div>';
+ h+='<p class="tiny muted"><b>Reines Rechenexperiment:</b> Falls sich die gesamte ausgewiesene '+
+  'Finanzschuld hypothetisch um einen zusätzlichen Zinspunkt bzw. zwei Zinspunkte verteuerte:</p>';
+ for(const x of v.modelStress)
+  h+='<div class="home-data-row"><span>+'+esc(String(x.shiftBps))+
+   ' Basispunkte auf gesamte Finanzschulden</span><b>'+
+   esc(fmt(x.wholeGrossDebtAdditionalPreTax))+' Mio. USD/Jahr vor Steuern</b></div>';
+ h+='<p class="tiny muted">Das ist <b>keine prognostizierte Zinszahlung</b> – Laufzeiten, Zinsbindung, '+
+  'Absicherung, Tilgungen und Zinseinnahmen sind nicht modelliert. Der historische TTM-Cashflow '+
+  'enthält bereits den bilanziellen Zins- und Steuerkontext; die Modellbeträge werden '+
+  '<b>nicht</b> noch einmal davon abgezogen. '+
+  'Keine künftige Renditeprognose, keine Kauf-Freigabe. '+
+  '<a href="'+esc(v.sourceRefs[0].url)+
+  '" target="_blank" rel="noopener noreferrer">SEC-Originalquelle</a></p></details>';
+ return h;
+}
+
 /* UNITY 0.17 – deliberately UNVALIDATED scenario sensitivity.
  * A constant-growth hypothetical owner-cashflow proxy is not a verified
  * future cash-flow forecast, intrinsic value, buy zone, or source-backed
@@ -682,6 +801,7 @@ function unityScenarioValuationPanel(s){
  h+=unityPilotScenarioSensitivityPanel(s);
  h+=unityPilotTrailingCashFlowPanel(s);
  h+=unityPilotNormalizationReviewPanel(s);
+ h+=unityPilotFinancingStressPanel(s);
  if(g){
   h+='<p class="tiny muted"><b>Unternehmensprognose '+g.fiscalYear+':</b> Quelle vom '+esc(g.publishedAt)+
     ', geprüft '+esc(g.reviewedAt)+' · nur die konkret angegebenen Prognosegrößen, keine 5-Jahres-Schätzung.</p>';

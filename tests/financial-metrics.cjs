@@ -130,5 +130,5 @@ assert.match(panel,/14,52/);
 const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
 assert.match(index,/financial-metrics\.js\?v=0\.16\.5/);
 assert.match(sw,/financial-metrics\.js\?v=0\.16\.5/);
-assert.match(sw,/unity-lab-v0\.16\.5/);
+assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
 console.log('UNITY standardized issuer facts, USD/CHF FX, same-period ratios, no fake P/E, and full watchlist no-trade checks passed.');

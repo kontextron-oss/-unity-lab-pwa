@@ -50,3 +50,24 @@ Die drei Szenarien dienen allein als **Sensitivity / Rechentest**, nicht als Pro
 **Implementiert:** `unityPilotScenarioSensitivity` mit drei getrennten, im Code offengelegten Rechenparametern, Quellen- und Periodenprüfungen, Ausgabe nur als `sensitivity-only`, `fairValue=null`, `entryZone=null`, `tradeApproved=false`. Keine erfundenen offiziellen Annahmen in `data/valuation-assumptions.json`.
 
 **Tests:** Die Szenarien werden in `tests/pilot-scenario-sensitivity.cjs` auf mathematische Ergebnisse, Quelle/ISIN, Stichtage, fehlende Angaben, veraltete Kursreferenzen, Quartals-/Jahresabgrenzung und Nichtausführbarkeit geprüft. Workflow `.github/workflows/unity-017-valuation.yml` prüft im GitHub-PR die bestehenden und neuen Testmodule. Eine **erfolgreiche GitHub-CI-Ausführung oder iPhone-Abnahme ist noch nicht bestätigt**.
+
+## Echter rollierender Cashflow: Oktober 2025 bis September 2026
+
+Für eine aktuellere historische Grundlage gibt UNITY ab UNITY 0.17 zusätzlich den **TTM-Cashflow** aus, der für die beiden Pilotunternehmen aus **drei klar datierten Berichtsblöcken** zusammengestellt wird:
+
+`TTM = FY2025 − 9M2025 + 9M2026`
+
+*Beträge in Mio. USD, operativer Cashflow (OCF), Sachinvestitionen (CapEx) und OCF − CapEx.*
+
+| Unternehmen | FY2025 OCF / CapEx | 9M2025 OCF / CapEx | 9M2026 OCF / CapEx | TTM OCF | TTM CapEx | TTM FCF-Proxy |
+|---|---:|---:|---:|---:|---:|---:|
+| Eaton | 4.472 / 919 | 2.507 / 527 | 2.943 / 721 | 4.908 | 1.113 | **3.795** |
+| Vertiv | 2.113,8 / 220 | 1.108,9 / 126,7 | 2.660,6 / 425 | 3.665,5 | 518,3 | **3.147,2** |
+
+Die Vergleichszahlen 9M2025 und 9M2026 stehen jeweils **im selben offiziellen SEC-10-Q** und sind damit dieselbe Art Cashflow-Periode. FY2025 stammt aus den SEC-Finanzberichten. Diese Überleitung ist **keine Hochrechnung**, sondern ersetzt den alten Oktober-Dezember-2025-Anteil durch die gemeldeten Januar-September-2026-Werte.
+
+Die Kennzahlen bleiben historische, nicht normalisierte Istwerte. Die Wirkung von 2026er Übernahmen, Finanzierung, Working Capital und künftigem CapEx ist **nicht unabhängig bereinigt**. Bei Vertiv sind in der CapEx-Zeile nur Sachinvestitionen enthalten; separat ausgewiesene aktivierte Softwareinvestitionen von 4,7 Mio. USD (9M2025) und 5,3 Mio. USD (9M2026) sind nicht hinzuaddiert, um die dargestellte Reihe konsistent mit der 2025er FY-CapEx-Quelle zu halten. Ein vollständig normalisierter künftiger FCFE folgt hieraus nicht.
+
+Der historische TTM-Wert wird **nicht** stillschweigend als Cashflow-Prognose in die drei Sensitivitäten übernommen und gibt weder einen fairen Wert noch eine Kaufzone frei. Die bereits bestehenden hypothetischen Rechenparameter bleiben getrennt. Die neue Funktion heißt `unityPilotTrailingCashFlow` und ist über `unityPilotTrailingCashFlowPanel` mit prüfbaren Berichtsbausteinen sichtbar. Neue Regressionstests: `tests/pilot-ttm-cashflow.cjs`.
+
+[SEC Eaton Q3 2026 mit Vergleichszahlen](https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm) · [SEC Vertiv Q3 2026 mit Vergleichszahlen](https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm).

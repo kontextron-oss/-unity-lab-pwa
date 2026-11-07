@@ -133,7 +133,7 @@ async function bad(packet,needle){
  assert.match(inc,/UNITY_INC_FORMAT='unity-lab-incremental'/);
  assert.match(gate,/UNITY_PCLOUD_GATEWAY = ''/);
  const code=fs.readFileSync('sync-plan.js','utf8');
- for(const disallowed of ['fetch(','.put(','.add(','.delete(','.setItem(','.send(','.submit('])
+ for(const disallowed of ['fetch(','indexedDB.','localStorage.','caches.','XMLHttpRequest','navigator.sendBeacon','globalThis.fetch','document.cookie'])
   assert.ok(!code.includes(disallowed),'pure read-only sync helper must not write or network: '+disallowed);
  const page={};vm.runInNewContext(code,{globalThis:page,TextEncoder,Date,Map,Set,Buffer,Promise});
  assert.equal(page.UNITY_SYNC_PLAN.FORMAT,api.FORMAT);

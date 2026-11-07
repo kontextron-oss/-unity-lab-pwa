@@ -32,8 +32,8 @@ const uploads=[],confirms=[],added=[],writes=[];
 let refreshes=0;
 const File=globalThis.File||require('node:buffer').File;
 const ctx={
- Date,Math,Number,String,Array,Object,Map,Set,Buffer,Promise,TextEncoder,TextDecoder,
- Uint8Array,JSON,File,crypto:nodeCrypto.webcrypto,STORES:stores,
+ Date,Math,Number,String,Map,Set,Buffer,Promise,TextEncoder,TextDecoder,
+ Uint8Array,File,crypto:nodeCrypto.webcrypto,STORES:stores,
  cache:{settings:[]},
  document:{getElementById:id=>elements[id]||null},
  navigator:{

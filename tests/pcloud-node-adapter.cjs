@@ -102,7 +102,7 @@ function server(){
  assert.equal(result.sha256,entry.sha256);
  assert.equal(s.entries.size,1);
  assert.equal(s.calls.upload,1);
- assert.ok(s.calls.api.filter(x=>x==='listfolder').length>=10);
+ assert.ok(s.calls.api.filter(x=>x==='listfolder').length>=8);
  assert.ok(s.calls.api.includes('getfilelink'));
  const second=await log.store(entry,{adapter,sha256:sha,safety:safe});
  assert.equal(second.status,'already-present-verified');

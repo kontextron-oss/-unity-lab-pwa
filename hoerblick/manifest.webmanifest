@@ -1,0 +1,1 @@
+{"name":"HÖRBLICK – Leselupe","short_name":"HÖRBLICK","description":"Einfaches Vorlesen und Vergrößern gedruckter Texte","start_url":"./","scope":"./","display":"standalone","background_color":"#07111d","theme_color":"#101b2a","lang":"de","icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

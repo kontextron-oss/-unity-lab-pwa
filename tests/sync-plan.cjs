@@ -101,7 +101,8 @@ async function bad(packet,needle){
  const next=await sealed(d1,localRecords,2,a.sha256);
  const seq=await api.plan(a,next,sha);
  assert.equal(seq.actions.length,0);
- await assert.rejects(api.plan(a,await sealed(d1,localRecords,1),sha),/Keine/).catch(()=>{});
+ const sameRevisionDifferent=cloned(localRecords);sameRevisionDifferent.instruments[0].name='ABB (modified)';
+ await assert.rejects(api.plan(a,await sealed(d1,sameRevisionDifferent,1),sha),/Gleiche Geräteversion/);
  const fork=await sealed(d1,localRecords,4,'f'.repeat(64));
  await assert.rejects(api.plan(a,fork,sha),/Divergierende Revisionen/);
  const duplicate=cloned(localRecords);duplicate.instruments.push(cloned(duplicate.instruments[0]));

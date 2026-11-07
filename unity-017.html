@@ -1,0 +1,1148 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#169a52"><meta name="description" content="Unity Lab – lokales Investment-Forschungslabor und Simulationsdepot"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Unity Lab"><title>Unity Lab 0.17.0 RC1 · Direktstart</title><style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#142638;background:#f3f5f7;font-size:15px}*{box-sizing:border-box}body{margin:0}header{background:#142c3e;color:#fff;padding:17px max(18px,calc((100vw - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:10px}header h1{margin:0;font-size:23px;letter-spacing:.2px}header small{color:#c5d8e4}main{max-width:1100px;margin:auto;padding:18px 16px 80px}nav{display:flex;gap:7px;overflow:auto;padding:0 0 16px}.catalog-results{display:grid;gap:8px;margin-top:12px}.catalog-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;border:1px solid #dce5eb;border-radius:9px}.catalog-item strong{display:block}.catalog-item small{display:block;color:#617483;margin-top:3px}.catalog-item button{flex-shrink:0}.catalog-search{font-size:16px}.catalog-meta{font-size:12px;color:#617483;margin-top:8px}nav button{white-space:nowrap;border:1px solid #d8e0e7;background:white;color:#314454;border-radius:9px;padding:11px 15px;font-weight:650;cursor:pointer}nav button.active{background:#183d58;color:white;border-color:#183d58}.panel{background:white;border:1px solid #dfe5eb;border-radius:13px;padding:17px;margin:0 0 16px;box-shadow:0 2px 6px #102b4210}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{background:#edf2f5;padding:15px;border-radius:10px}.metric small{display:block;color:#617483}.metric strong{display:block;font-size:21px;margin-top:6px;overflow-wrap:anywhere}h2{margin:0 0 12px;font-size:20px}h3{font-size:16px;margin:0 0 12px}.muted{color:#5b6e7b}.tiny{font-size:12px}.hint{background:#eef4f7;border-left:3px solid #63859b;padding:10px 13px;border-radius:6px;margin:12px 0}form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}label{font-size:13px;color:#455968;display:flex;flex-direction:column;gap:5px}input,select,textarea{width:100%;border:1px solid #bdcad4;border-radius:8px;padding:10px 11px;background:white;color:#142638;font:inherit}textarea{min-height:65px;resize:vertical}.full{grid-column:1/-1}.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}button.primary{background:#164d70;color:#fff;border:0;border-radius:8px;padding:11px 16px;font-weight:650;cursor:pointer}button.secondary{background:#edf2f5;color:#173c55;border:1px solid #cdd9e1;border-radius:8px;padding:10px 13px;cursor:pointer}button.danger{color:#9b2c28;background:#fff2f1;border:1px solid #e8bbb9;border-radius:8px;padding:7px 10px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:570px}th,td{text-align:left;border-bottom:1px solid #e6ebee;padding:11px 8px;vertical-align:top}th{font-size:12px;color:#647581}td.right,th.right{text-align:right}.positive{color:#127044}.negative{color:#aa332d}.pill{display:inline-block;border-radius:20px;background:#eaf0f4;color:#35536a;padding:4px 8px;font-size:12px}.alert{background:#fff3e5;color:#7d501a;padding:12px;border-radius:8px}.status{font-size:12px;color:#cbdce8}.empty{padding:16px;color:#617483;text-align:center}.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}.weight{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:10px;margin:8px 0}.weight input{text-align:right}.badge{background:#e2edf4;color:#225473;padding:4px 7px;border-radius:7px;font-size:12px}.footer{color:#5d7080;font-size:12px;margin-top:25px}@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}form{grid-template-columns:1fr}header{padding:14px 17px}.metric strong{font-size:18px}main{padding:13px 11px 80px}.panel{padding:14px}nav{gap:5px}nav button{padding:10px}}
+ .stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,245px),1fr));gap:12px;margin-top:14px}.stock-tile{display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:8px;padding:16px;background:#fff;border:1px solid #d4dfe8;border-radius:13px;cursor:pointer;color:#152b3d;min-height:170px;box-shadow:0 2px 8px rgba(20,44,62,.05)}.stock-tile:focus-visible{outline:3px solid #1c759e;outline-offset:2px}.stock-tile:active{background:#eaf4f8}.stock-tile-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:16px}.stock-arrow{font-size:24px;color:#1c759e}.stock-tile-price{font-size:18px;font-weight:700}.stock-tile-link{font-size:13px;font-weight:650;color:#146b91;margin-top:auto} .unity-mobile-list{display:none}.unity-mobile-row{width:100%;text-align:left;background:#fff;border:1px solid #d8e2e8;border-radius:10px;padding:13px;display:flex;flex-direction:column;gap:7px;color:#142638;cursor:pointer}.unity-mobile-head{display:flex;justify-content:space-between;gap:8px;font-size:15px}.unity-mobile-metrics{display:flex;gap:8px;flex-wrap:wrap;font-size:12px}.unity-mobile-metrics span{background:#edf2f5;border-radius:6px;padding:5px 7px}.unity-mobile-metrics b{margin-left:4px}@media(max-width:750px){.unity-mobile-list{display:grid;gap:9px;margin-top:12px}.unity-comparison-table{display:none}}.unity-sparkline{width:100%;height:65px;display:block;max-width:280px;overflow:visible}.unity-mobile-row .unity-sparkline{max-width:none;height:84px}.unity-comparison-table .unity-sparkline{max-width:150px;height:52px;margin-top:7px}.unity-chart-box{border:1px solid #dbe6ed;background:#fbfcfd;border-radius:12px;padding:13px;margin:16px 0}.unity-chart-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.unity-chart-heading>strong{font-size:19px}.unity-main-chart{width:100%;height:auto;display:block;margin:9px 0}.unity-range{display:flex;gap:6px;margin:12px 0}.unity-range button{background:#eef3f6;color:#274c65;border:1px solid #d1dfe7;border-radius:7px;padding:7px 14px;cursor:pointer}.unity-range button.active{background:#173f5b;color:#fff}.unity-chart-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px}.unity-ma-toggle{display:flex;flex-direction:row;align-items:center;gap:7px}.unity-ma-toggle input{width:17px;height:17px}.chart-empty{display:block;font-size:12px;color:#647581;padding:10px 0}@media(max-width:750px){.unity-main-chart{min-height:185px}.unity-chart-heading{align-items:flex-start}}.unity-quality-panel{border:1px solid #d4e1e9;border-radius:10px;padding:12px;margin:12px 0;background:#fafcfd}.unity-quality-panel summary{cursor:pointer;color:#1a455c}.unity-quality-panel .tablewrap{margin-top:10px}.unity-quality-note{border-left:3px solid #c17c29;padding:8px 10px;background:#f9f7f2;border-radius:4px}.depot-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.depot-sim{font-size:12px;background:#e7f4ec;color:#14683e;border-radius:18px;padding:6px 10px}.depot-totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.depot-totals>div{background:#eef5f1;padding:13px;border-radius:10px;min-width:0}.depot-totals small{display:block;color:#426655;font-size:12px}.depot-totals strong{display:block;font-size:21px;overflow-wrap:anywhere;margin-top:4px}.depot-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:10px;margin:14px 0}.depot-row{background:#fff;border:1px solid #d9e5df;border-radius:12px;padding:13px;text-align:left;display:flex;flex-direction:column;gap:6px;cursor:pointer;color:#1b2d23}.depot-row-top,.depot-row-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}.depot-row-top{font-size:16px}.depot-row-bottom{font-size:12px;color:#496052}.depot-row-chart{height:60px}.depot-row-chart .unity-sparkline{height:60px;max-width:none}.depot-warning{border-left:4px solid #c17c29;background:#fff6e9;padding:10px}.unity-chart-green{background:#1b9d54;color:#fff;border:0;padding:16px 12px;border-radius:14px}.unity-chart-green .muted,.unity-chart-green .tiny{color:#e5fff0}.unity-chart-green .positive,.unity-chart-green .negative{color:#fff}.unity-chart-green .unity-range{background:#188d4d;padding:5px;border-radius:30px;flex-wrap:wrap}.unity-chart-green .unity-range button{background:transparent;border:0;color:#fff;border-radius:30px;flex:1;min-width:45px;padding:9px 7px;font-weight:600}.unity-chart-green .unity-range button.active{background:#fff;color:#188d4d}.unity-chart-green .unity-ma-toggle{color:#fff}.depot-history{border-top:1px solid #d9e2dc}.depot-history-date{background:#edf0ee;color:#53605b;padding:9px 10px;font-size:13px;font-weight:700;margin-top:9px}.depot-history-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #e7ece9}.depot-history-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:22px;flex-shrink:0;color:#fff}.depot-history-icon.buy{background:#167b4b}.depot-history-icon.sell{background:#9b5c42}.depot-history-desc{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.depot-history-desc small{color:#64756d}.depot-history-amount{text-align:right;font-weight:700;white-space:nowrap}.depot-history-amount small{display:block;color:#a33}@media(max-width:750px){.depot-totals{grid-template-columns:repeat(2,minmax(0,1fr))}.depot-totals strong{font-size:18px}.unity-chart-green{padding:13px 8px}.unity-chart-green .unity-range button{font-size:13px}.depot-history-row{gap:8px}.depot-history-amount{font-size:13px}}.depot-range{display:flex;gap:4px;background:#1b9652;padding:5px;border-radius:30px;overflow-x:auto;margin:14px 0}.depot-range button{flex:1;min-width:62px;border:0;background:transparent;color:#fff;border-radius:26px;padding:10px 7px;font-weight:600;cursor:pointer;white-space:nowrap}.depot-range button.active{background:#fff;color:#188448;box-shadow:0 1px 5px #0002}@media(max-width:750px){.depot-range button{font-size:13px;min-width:58px;padding:9px 5px}}.depot-import-summary{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}.depot-import-summary>*{background:#eaf2ed;border-radius:8px;padding:8px 10px;font-size:13px}.depot-import-preview{max-height:420px;overflow:auto;border:1px solid #d9e5df;border-radius:8px;margin:12px 0}.depot-import-preview table{min-width:700px}.depot-import-preview th{position:sticky;top:0;background:#eef5f1}.depot-import-preview td{font-size:12px}
+/* Home-first, iPhone-readable design inspired by the user's reference layout. */
+header{background:#179a53;color:#fff}header small{color:#e7fff0}header .status{color:#e7fff0}nav button.active{background:#188d4c;border-color:#188d4c}nav{scrollbar-width:thin}
+.home-hero{background:#199e54;color:white;border-radius:16px;padding:18px 20px 20px;margin-bottom:14px;overflow:hidden}#unity-pull-status{position:fixed;top:8px;left:50%;z-index:50;transform:translate(-50%,-140%);opacity:0;background:#143d2a;color:#fff;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:650;box-shadow:0 3px 12px #0003;transition:transform .18s ease,opacity .18s ease;pointer-events:none;white-space:nowrap}#unity-pull-status.visible{transform:translate(-50%,0);opacity:1}
+.home-hero-title{display:flex;align-items:center;gap:12px}.home-hero-title>div{flex:1;min-width:0}.home-hero-title h2{font-size:25px;color:white;margin:0}.home-hero-title small{color:#e0ffeb;font-size:13px}.home-hero-mark{width:45px;height:45px;display:grid;place-items:center;border-radius:50%;background:#adf3c7;color:#137b41;font-size:27px;font-weight:800}.home-hero-menu{border:0;background:#aaf0c5;color:#0c6637;border-radius:50%;width:42px;height:42px;font-size:26px;cursor:pointer}
+.home-periods{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;background:#148c49;border-radius:32px;padding:5px;margin-top:20px}.home-periods button{flex:1;white-space:nowrap;min-width:58px;background:transparent;border:0;color:#fff;border-radius:28px;padding:10px 8px;font-weight:650;cursor:pointer}.home-periods button.active{background:#fff;color:#168e4c}
+.home-big-number{text-align:center;font-size:clamp(38px,7.5vw,72px);font-weight:350;letter-spacing:-.025em;line-height:1.15;margin:34px 0 4px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.home-big-number.home-count{font-size:clamp(65px,12vw,110px)}.home-value-label{text-align:center;margin:0;color:#e6fff0;font-size:14px}.home-hero-summary{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;font-size:14px;margin:25px 0 13px}.home-feed-note{text-align:center;color:#d6ffe5;font-size:12px;margin:0}.home-analysis-status{margin:14px 0 0;padding:10px 12px;border-radius:10px;background:#0f7f43;color:#fff;display:flex;flex-direction:column;gap:3px;font-size:13px}.home-analysis-status strong{font-size:13px}.home-analysis-live{font-weight:700;color:#e0ffeb}.home-analysis-status small{color:#d8f7e2;font-size:11px;line-height:1.35}.home-analysis-start{margin-top:4px;border:1px solid #d9ffe7;border-radius:8px;background:#fff;color:#0d713b;padding:9px 12px;font-weight:750;cursor:pointer}.home-analysis-start:disabled{opacity:.65;cursor:wait}.home-decision-summary{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 18px 2px;padding:10px 11px;border-radius:10px;background:#f1f6f3;color:#345346;font-size:12px}.home-decision-summary strong{width:100%;color:#213c2d}.home-decision-summary small{width:100%;color:#5e7065;line-height:1.35}.decision-interesting{color:#08753d;font-weight:700}.decision-watch{color:#875b18;font-weight:700}.decision-open{color:#8b3030;font-weight:700}.home-pilot-decision{font-weight:750!important}.home-pilot-decision.pilot-interesting{color:#08753d!important}.home-pilot-decision.pilot-watch{color:#875b18!important}.home-pilot-decision.pilot-waiting,.home-pilot-decision.pilot-loading,.home-pilot-decision.pilot-blocked{color:#9a4141!important}.home-pre-summary{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 18px 2px;padding:10px 11px;border-radius:10px;background:#eef3f7;color:#314c5e;font-size:12px}.home-pre-summary strong{width:100%;color:#1c3446}.home-pre-summary small{width:100%;color:#617485;line-height:1.35}.pre-research{color:#08753d;font-weight:700}.pre-improving{color:#1e6590;font-weight:700}.pre-observe{color:#875b18;font-weight:700}.pre-wait{color:#875b18;font-weight:700}.pre-weak{color:#9a4141;font-weight:700}.pre-data{color:#9a4141;font-weight:700}.home-pre-decision{font-weight:750!important}.home-pre-decision.pre-research{color:#08753d!important}.home-pre-decision.pre-improving{color:#1e6590!important}.home-pre-decision.pre-observe,.home-pre-decision.pre-wait{color:#875b18!important}.home-pre-decision.pre-weak,.home-pre-decision.pre-data{color:#9a4141!important}.home-next-actions{margin:12px 0;padding:17px 18px;border:1px solid #dce6df;border-radius:14px;background:#fff}.home-next-actions h2{margin:0 0 12px;font-size:20px;color:#1c3446}.next-action-group{margin:10px 0;padding:12px;border-radius:10px}.next-action-group h3{margin:0 0 5px;font-size:15px}.next-action-group p{margin:0;color:#596d61;font-size:13px;line-height:1.4}.next-positive{background:#e6f7ec}.next-positive h3{color:#08753d}.next-improving{background:#edf5fa}.next-improving h3{color:#1e6590}.next-neutral{background:#f8f3e8}.next-neutral h3{color:#76551f}.next-missing{background:#f9eeee}.next-missing h3{color:#913b3b}.next-action-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid rgba(20,70,40,.12)}.next-action-row:first-of-type{margin-top:8px}.next-action-row div{display:flex;flex-direction:column;gap:2px}.next-action-row small{color:#597060;font-size:12px}.next-action-row button{white-space:nowrap;font-size:12px;padding:8px 10px}@media(max-width:480px){.next-action-row{align-items:flex-start;flex-direction:column}.next-action-row button{width:100%}}
+.home-capital-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:16px;text-align:left}.home-capital-entry label{color:#e8fff0;font-size:12px;gap:5px}.home-capital-entry input{border:0;background:#fff;color:#173a27;padding:10px 11px;font-weight:650}.home-capital-entry button{border:0;border-radius:8px;background:#fff;color:#147b40;padding:10px 14px;font-weight:750;cursor:pointer}@media(max-width:480px){.home-capital-entry{grid-template-columns:1fr}.home-capital-entry button{width:100%}}.home-list{background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e1e8e4;margin-bottom:14px}.home-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px 18px 10px}.home-list-head h2{margin:0;font-size:20px}.home-list-head button{white-space:nowrap;font-size:12px}.home-stock-row{display:flex;width:100%;gap:14px;align-items:center;padding:16px 18px;background:#fff;border:0;border-bottom:1px solid #e3e8e5;text-align:left;color:#1c2a24;cursor:pointer;min-height:84px}.home-stock-row:hover,.home-stock-row:focus-visible{background:#f1f8f3}.home-stock-row:last-child{border-bottom:0}.home-trend-icon{display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;border-radius:50%;font-size:25px;font-weight:750;color:white}.home-trend-icon.home-up{background:#159c57}.home-trend-icon.home-down{background:#c33736}.home-trend-icon.home-flat{background:#88938b}.home-stock-main{display:flex;flex-direction:column;flex:1;min-width:0;gap:5px}.home-stock-main strong{font-size:17px;line-height:1.2}.home-stock-main small{color:#66766b;font-size:12px;line-height:1.3}.home-stock-right{display:flex;flex-direction:column;gap:5px;text-align:right;white-space:nowrap}.home-stock-right strong{font-size:21px;font-variant-numeric:tabular-nums}.home-stock-right small{color:#5d6e63;font-size:14px}.home-up{color:#13804a}.home-down{color:#c33736}.home-flat{color:#77847b}.home-chevron{color:#82948a;font-size:24px}.home-empty{padding:18px;color:#465e4e}.home-bottom-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.home-disclaimer{font-size:12px;color:#63776a;line-height:1.5}.home-detail{background:#fff;padding:18px;border:1px solid #dbe6df;border-radius:14px;margin:14px 0}.home-detail-title{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.home-detail-title h2{margin:3px 0;font-size:24px}.home-detail-title small,.home-detail-title p{color:#597361;margin:0}.home-detail .unity-chart-green{margin-top:18px}.home-price-time{font-size:13px;color:#47614e}.unity-readiness-panel{border:1px solid #d8e5dc;border-radius:13px;padding:15px;margin:15px 0;background:#fbfdfb}.unity-readiness-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.unity-readiness-head small{color:#647b6c;font-size:12px}.unity-readiness-head h3{margin:3px 0 0;color:#204333;font-size:18px}.unity-readiness-head>b{background:#e7f3eb;color:#176e42;border-radius:16px;padding:6px 9px;font-size:12px;white-space:nowrap}.unity-readiness-panel>p{font-size:13px;color:#5d7163;line-height:1.4}.unity-readiness-grid{display:grid;gap:7px;margin:12px 0}.unity-readiness-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 10px;border-radius:8px}.unity-readiness-row span{font-weight:700;color:#284438}.unity-readiness-row b{font-size:12px}.unity-readiness-row small{grid-column:1/-1;color:#637368;font-size:12px;line-height:1.35}.unity-readiness-row.ready{background:#e9f6ed}.unity-readiness-row.ready b{color:#177143}.unity-readiness-row.open{background:#faf4e8}.unity-readiness-row.open b{color:#875919}.unity-readiness-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px}.unity-readiness-meta>div{background:#f0f5f2;padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:3px}.unity-readiness-meta small{font-size:11px;color:#617366;line-height:1.3}.unity-readiness-meta b{font-size:13px;color:#274536}.unity-readiness-veto{display:flex;flex-direction:column;gap:3px;margin:11px 0 0;padding:10px;border-radius:8px;background:#fff0ee;color:#863c34;font-size:13px}.unity-readiness-veto b{font-size:12px}@media(max-width:520px){.unity-readiness-meta{grid-template-columns:1fr}.unity-readiness-head{flex-direction:column;gap:6px}}
+.unity-position-monitor{margin:15px 0;padding:15px;border:1px solid #d9e5de;border-radius:13px;background:#fbfdfb}.unity-position-monitor h3{margin:3px 0 7px;color:#244839;font-size:19px}.unity-position-monitor>p{margin:8px 0;color:#526b5c;line-height:1.45}.unity-position-monitor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.unity-position-monitor-grid>div{padding:10px;border-radius:8px;background:#f0f5f2;display:flex;flex-direction:column;gap:4px}.unity-position-monitor-grid small{font-size:11px;color:#617366;line-height:1.32}.unity-position-monitor-grid b{font-size:13px;color:#274536}.unity-position-hold{border-left:4px solid #1b8b54}.unity-position-review{border-left:4px solid #b88728;background:#fffdf7}.unity-position-exit{border-left:4px solid #b5473d;background:#fff8f7}.unity-position-data{border-left:4px solid #74857a}.home-position-monitor{display:inline-block;margin-left:7px;padding:3px 6px;border-radius:10px;font-size:10px;font-weight:700;vertical-align:middle}.home-position-hold{background:#e4f4e9;color:#177143}.home-position-review{background:#fff1d9;color:#895a17}.home-position-exit{background:#fde8e5;color:#9d3e35}.home-position-data{background:#edf0ee;color:#5d6e63}@media(max-width:520px){.unity-position-monitor-grid{grid-template-columns:1fr}.home-position-monitor{display:block;margin:5px 0 0;width:max-content}}
+.home-decision{border:1px solid #d3e6d9;background:#f5faf6;border-radius:12px;padding:16px;margin:18px 0}.home-decision-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:15px}.home-decision-head strong{color:#196e43;font-size:18px}.home-decision-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.home-decision-grid>div{background:#fff;padding:12px;border-radius:8px}.home-decision-grid small{display:block;color:#687c6e;margin-bottom:5px}.home-decision-grid b{font-size:15px}.home-decision p{line-height:1.5}.home-analyze-btn{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#168a4a;color:white;border:0;border-radius:10px;padding:15px 16px;width:100%;text-align:left;font-size:16px;font-weight:700;cursor:pointer}.home-analyze-btn span{font-size:24px}.home-manage-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #e6ebe8}.home-manage-row>div{display:flex;flex-direction:column;gap:4px}.home-manage-row small{color:#6b7d70}.home-manage-row button{white-space:nowrap}
+@media(max-width:750px){.home-hero{margin:0 0 14px;border-radius:16px;padding:20px 14px}.home-hero-title h2{font-size:23px}.home-hero-mark{width:40px;height:40px}.home-periods button{min-width:55px;font-size:12px;padding:10px 6px}.home-big-number{margin:30px 0 3px;font-size:clamp(33px,8.2vw,60px)}.home-hero-summary{gap:13px;font-size:12px}.home-stock-row{gap:9px;padding:13px 12px;min-height:80px}.home-trend-icon{width:35px;height:35px;font-size:22px}.home-stock-main strong{font-size:15px}.home-stock-main small{font-size:11px}.home-stock-right strong{font-size:18px}.home-stock-right small{font-size:13px}.home-list-head{padding:14px 12px 9px}.home-list-head h2{font-size:17px}.home-list-head button{padding:8px;font-size:11px}.home-detail{padding:12px}.home-detail-title h2{font-size:21px}.home-decision-grid b{font-size:14px}}
+.home-trend-icon.home-up,.home-trend-icon.home-down,.home-trend-icon.home-flat{color:#fff}.home-stock-row:focus-visible,.home-periods button:focus-visible,.home-analyze-btn:focus-visible{outline:3px solid #0e6837;outline-offset:2px}
+.home-stock-item{display:flex;align-items:stretch;border-bottom:1px solid #e3e8e5;background:#fff;position:relative}.home-stock-item:last-child{border-bottom:0}.home-stock-item .home-stock-row{flex:1;min-width:0;border:0;padding-left:7px}.home-drag-handle{border:0;background:#fff;color:#6b8976;min-width:44px;padding:12px 5px;cursor:grab;touch-action:none;font-size:22px;line-height:1;user-select:none}.home-drag-handle:active{cursor:grabbing}.home-stock-item.home-dragging{background:#e7f7ed;opacity:.8;outline:2px solid #1b9d54}.home-stock-item.home-drop-target{border-top:3px solid #169d54}.home-sort-hint{margin:0;padding:3px 16px 10px;font-size:12px;color:#5d7968}.home-capital-summary{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin-top:13px}.home-capital-summary span{display:flex;flex-direction:column;padding:8px 10px;border-radius:9px;background:#147d43}.home-capital-summary small{color:#d6ffe5;font-size:11px}.home-capital-summary b{font-size:15px}.home-capital-summary button{padding:9px 11px;white-space:nowrap}@media(max-width:480px){.home-capital-summary{grid-template-columns:1fr 1fr}.home-capital-summary button{grid-column:1/-1}}
+.home-manage-controls{display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end}.home-manage-controls button{min-width:34px;padding:8px}.home-security-data{margin:18px 0;border-top:1px solid #dce9df}.home-security-data h3,.home-trade-history h3{font-size:17px;margin:16px 0 10px}.home-data-line{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 4px;border-bottom:1px solid #e1e7e3}.home-data-line>div{display:flex;flex-direction:column;gap:5px;min-width:0}.home-data-line b{font-size:18px;font-weight:500;overflow-wrap:anywhere}.home-data-line small{color:#75847a;font-size:12px}.home-data-line>span{color:#526b5b;text-align:right;font-size:13px;white-space:nowrap}.home-trade-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 8px}.home-trade-actions button{border:0;border-radius:10px;padding:14px 8px;color:white;font-size:15px;font-weight:700;cursor:pointer}.home-buy-button{background:#168b4b}.home-sell-button{background:#bd5943}.home-trade-actions button:disabled{background:#adbab1;cursor:not-allowed}.home-trade-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:16px;background:#f1f8f3;border:1px solid #cfe4d5;border-radius:12px;margin:10px 0 20px}.home-trade-form h3,.home-trade-form>p{grid-column:1/-1;margin:0}.home-trade-form label{min-width:0}.home-trade-form input{max-width:100%}.home-trade-confirm{display:flex;flex-wrap:wrap;gap:8px}.home-trade-history{margin-top:18px}@media(max-width:750px){.home-stock-item .home-stock-row{padding:13px 8px 13px 4px}.home-drag-handle{min-width:34px;font-size:19px}.home-sort-hint{padding-left:11px;font-size:11px}.home-trade-form{grid-template-columns:1fr}.home-trade-actions button{font-size:13px;padding:13px 5px}.home-data-line b{font-size:16px}.home-data-line>span{font-size:12px}}
+.depot-decision-at-trade{color:#197e4a;font-size:11px;line-height:1.45}.home-position-label{color:#196b41!important;font-weight:600}
+/* Independent UNITY verdict labels: never use a price-change arrow as buy/sell advice. */
+.home-signal{display:inline-flex;align-items:center;gap:5px;width:fit-content;max-width:100%;font-size:12px;font-weight:750;line-height:1.25;border-radius:6px;padding:4px 7px;white-space:normal}
+.home-signal-buy{background:#d9f3e2;color:#116735;border:1px solid #93d4ac}
+.home-signal-sell{background:#fde1df;color:#9c2526;border:1px solid #e8a6a2}
+.home-signal-hold{background:#e0ebff;color:#2256a3;border:1px solid #a9c7ed}.home-signal-technical{background:#e7efff;color:#255a9c;border:1px solid #acc4e8}
+.home-signal-wait{background:#e9ecea;color:#4d6156;border:1px solid #cad5cd}.home-signal-worth{background:#d9f3e2;color:#116735;border:1px solid #93d4ac}.home-signal-not{background:#fde1df;color:#9c2526;border:1px solid #e8a6a2}.home-pre-decision.pre-worth{color:#08753d!important}.home-pre-decision.pre-not{color:#9a4141!important}
+.home-signal-warning{background:#fff0d7;color:#875015;border:1px solid #edc58c}
+.home-signal-summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 16px 12px}
+.home-signal-count{font-size:12px;font-weight:650;border-radius:18px;padding:6px 9px;background:#f1f5f2;color:#44594a}
+.home-signal-count.buy{color:#126d39}.home-signal-count.sell{color:#a1272c}.home-signal-count.warning{color:#885419}
+.home-sort-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 16px 9px;color:#637469;font-size:12px}
+.home-sort-controls button{background:#f1f5f2;border:1px solid #d7e4da;color:#44634d;border-radius:16px;padding:6px 10px;font-size:12px;cursor:pointer}
+.home-sort-controls button.active{background:#168c4c;color:#fff;border-color:#168c4c}
+.home-stock-main .home-signal{margin:2px 0}
+.home-decision-warning{border-left:4px solid #e1a23f}.home-decision-buy{border-left:4px solid #188e4b}
+.home-decision-sell{border-left:4px solid #c5423b}.home-decision-hold{border-left:4px solid #3972b5}.home-decision-wait{border-left:4px solid #89978c}
+.home-signal-reason{font-size:13px;line-height:1.5;margin:12px 0;color:#3e5747}
+@media(max-width:750px){.home-signal-summary{padding:8px 11px;gap:5px}.home-signal-count{font-size:11px;padding:5px 7px}.home-sort-controls{padding:0 11px 8px}.home-stock-main .home-signal{font-size:11px}.home-stock-main strong{font-size:15px}}
+.home-reorder-tools{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:46px;padding:3px 0;border-right:1px solid #eef2ef}
+.home-reorder-tools .home-drag-handle{padding:5px;min-width:40px;font-size:16px}
+.home-shift-btn{border:1px solid #d9e9dd;background:#f5faf6;color:#237747;border-radius:5px;width:36px;min-height:29px;margin:2px 0;font-size:18px;line-height:1}
+.home-shift-btn:disabled{opacity:.25}.home-shift-btn:not(:disabled):active{background:#cdebd5}
+.home-trade-auto{background:#f4f8f5;border:1px solid #e1eae4;padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:3px}
+.home-trade-auto small{color:#657a6a;font-size:12px}.home-trade-total{font-size:17px;font-weight:750;color:#175c35;padding:8px 0}
+
+/* iPhone 15 Pro / Safari PWA: do not let inputs trigger Safari's automatic
+   focus zoom (it persists after closing a simulated-order form). */
+html{-webkit-text-size-adjust:100%;width:100%;max-width:100%;overflow-x:clip}
+body{width:100%;max-width:100%;overflow-x:clip}
+input,select,textarea{font-size:16px;min-width:0}
+main,#app,.home-detail,.unity-chart-box,.unity-chart-green,.home-stock-item,.home-list,.home-hero{min-width:0;max-width:100%}
+#app{overflow-wrap:break-word}
+.unity-chart-heading>div{min-width:0;overflow-wrap:anywhere}
+.unity-chart-heading>strong{flex-shrink:0;white-space:nowrap}
+.unity-chart-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;margin:4px 0 12px;color:#fff}
+.unity-chart-legend span{display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.unity-legend-line{display:inline-block;width:24px;height:0;border-top:3px solid #fff}
+.unity-legend-sma50{border-top:2px dashed #ffe095}
+.unity-legend-sma200{border-top:2px dashed #b8e6ff}
+@media(max-width:750px){
+  header{min-width:0}header>div{min-width:0}header h1{font-size:19px}
+  header .status{font-size:11px;max-width:38%;overflow-wrap:anywhere;text-align:right}
+  main{width:100%;min-width:0}
+  .home-detail{padding:12px}
+  .home-detail-title{gap:7px;min-width:0}
+  .home-detail-title>div{min-width:0;overflow-wrap:anywhere}
+  .home-detail-title h2{font-size:21px;overflow-wrap:anywhere}
+  .home-detail-title button{flex-shrink:0;max-width:42%;padding:9px 10px;font-size:13px}
+  .unity-chart-green{padding:13px 9px}
+  .unity-chart-heading{gap:6px}
+  .unity-chart-heading>strong{font-size:17px}
+  .unity-chart-heading>div>strong{font-size:17px}
+  .unity-range,.unity-chart-green .unity-range{
+    display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;
+    flex-wrap:nowrap;overflow:visible;border-radius:24px;padding:4px;margin:12px 0;
+  }
+  .unity-range button,.unity-chart-green .unity-range button{
+    display:block;min-width:0;width:100%;padding:9px 0;font-size:12px;
+    white-space:nowrap;border-radius:22px;
+  }
+  .unity-main-chart{width:100%;max-width:100%;height:auto;min-height:0;aspect-ratio:640/300}
+  .unity-chart-legend{gap:8px 11px;font-size:11px}
+  .unity-legend-line{width:17px}
+  .unity-chart-footer{align-items:flex-start;flex-direction:column;gap:8px}
+  .home-stock-right strong{font-size:17px}
+  .home-stock-right small{font-size:12px}
+  .home-stock-row{gap:5px}
+}
+@media(max-width:360px){
+  .unity-range button,.unity-chart-green .unity-range button{font-size:11px}
+  .home-detail-title h2{font-size:19px}
+}
+
+/* Unified stock list: analysis and visibility/order controls in the same row. */
+.unity-unified-list{display:grid;gap:0}
+.unity-unified-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #e0e8e3;min-width:0}
+.unity-unified-row:last-child{border-bottom:0}
+.unity-unified-open{display:flex;flex-direction:column;align-items:flex-start;text-align:left;flex:1;min-width:0;gap:5px;border:0;background:transparent;color:#183529;padding:9px 7px;cursor:pointer;border-radius:8px}
+.unity-unified-open:focus-visible,.unity-unified-open:hover{background:#edf7f0;outline-offset:2px}
+.unity-unified-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.unity-unified-name strong{font-size:18px;overflow-wrap:anywhere}
+.unity-unified-name em{font-size:11px;color:#6a7b70;font-style:normal}
+.unity-unified-open small{font-size:12px;color:#63766a;overflow-wrap:anywhere}
+.unity-unified-price{font-weight:700;font-size:16px}
+.unity-unified-link{font-size:13px;color:#167748;font-weight:700}
+.unity-unified-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;flex-shrink:0}
+.unity-unified-arrows{display:flex;gap:5px}
+.unity-unified-arrows button{min-width:39px;min-height:37px;padding:6px;font-size:18px}
+.unity-unified-toggle{border:1px solid #bfd8c8;background:#e6f4eb;color:#166d41;border-radius:8px;min-height:38px;padding:8px 10px;font-weight:650;font-size:12px}
+.unity-unified-hidden{background:#f6f8f6}
+@media(max-width:750px){
+ .unity-unified-row{gap:7px;padding:8px 0}
+ .unity-unified-open{padding:7px 2px}
+ .unity-unified-name strong{font-size:16px}
+ .unity-unified-arrows button{min-width:35px;min-height:34px;padding:5px}
+ .unity-unified-toggle{min-height:34px;padding:6px 8px}
+ .unity-unified-actions{gap:5px}
+}
+
+.unity-fund-pilot{margin:16px 0;padding:15px;border:1px solid #dce7df;border-radius:12px;background:#fbfdfb}
+.unity-fund-pilot .home-data-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;padding:9px 0;border-bottom:1px solid #e1ebe4}
+.unity-fund-pilot .home-data-row>span{flex:1;min-width:110px}
+.unity-fund-pilot .home-data-row>b{text-align:right;overflow-wrap:anywhere}
+.unity-fund-pilot .home-data-row>small{width:100%;font-size:11px;color:#60736a}
+.unity-fund-pilot a{overflow-wrap:anywhere}
+
+/* 0.13.97: quote-first watchlist, designed to fit the iPhone 15 Pro viewport. */
+.home-status-fold{margin-top:12px;text-align:left}
+.home-status-fold>summary{cursor:pointer;color:#e0ffeb;font-size:12px;padding:6px 2px}
+.home-status-fold .home-analysis-status{margin-top:8px}
+.home-value-prompt{padding:15px 0 3px}
+.home-quote-price{font-weight:700;color:#1d3529!important}
+.home-eur-price{color:#29764e!important;font-weight:650}
+.home-quote-date{color:#718277!important;font-size:11px!important}
+.home-stock-main strong{overflow-wrap:anywhere}
+.home-stock-right{min-width:0;flex-shrink:0}
+.home-stock-row{max-width:100%;min-width:0}
+@media(max-width:480px){
+  .home-hero{padding:13px 12px}
+  .home-hero-title h2{font-size:20px}
+  .home-periods{margin-top:12px}
+  .home-hero-summary{gap:8px;margin:12px 0 8px}
+  .home-big-number{margin:12px 0 4px}
+  .home-stock-item .home-stock-row{gap:5px;padding:10px 7px 10px 3px;min-height:66px}
+  .home-stock-main{gap:3px}
+  .home-stock-main strong{font-size:14px;line-height:1.24}
+  .home-stock-main small{font-size:10px}
+  .home-stock-right{gap:3px;text-align:right}
+  .home-stock-right strong{font-size:16px}
+  .home-stock-right small{font-size:11px}
+  .home-trend-icon{width:28px;height:28px;font-size:19px}
+  .home-chevron{display:none}
+  .home-reorder-tools{min-width:31px}
+  .home-reorder-tools .home-drag-handle{min-width:30px;padding:4px;font-size:16px}
+  .home-shift-btn{width:28px;min-height:25px;margin:1px 0;font-size:15px}
+  .home-list-head{flex-wrap:wrap}
+  .home-list-head h2{font-size:17px}
+}
+@media(max-width:350px){
+  .home-trend-icon{display:none}
+  .home-stock-right{max-width:40%}
+}
+
+/* 0.13.97: quiet, readable research priority — never a trading recommendation. */
+.home-research-flag{display:inline-flex;align-items:center;max-width:100%;align-self:flex-start;
+  font-size:11px;line-height:1.25;font-weight:650;color:#4c6658;
+  background:#edf2ee;border-radius:5px;padding:3px 6px;white-space:normal}
+.home-research-research.home-research-flag{color:#11683d;background:#e4f5e9}
+.home-research-observe.home-research-flag{color:#6a561c;background:#f7f1e2}
+.home-research-weak.home-research-flag{color:#59635d;background:#eef0ee}
+.home-research-data.home-research-flag{color:#6a707a;background:#edf0f4}
+.home-research-detail{margin:11px 0 5px;padding:11px 12px;background:#f4f7f5;
+  border-left:3px solid #9eada3;border-radius:6px}
+.home-research-detail.home-research-research{border-left-color:#26865a}
+.home-research-detail.home-research-observe{border-left-color:#ba9a46}
+.home-research-detail p{margin:6px 0;font-size:13px;line-height:1.45}
+.home-research-detail small{font-size:11px;color:#66756b}
+.home-pre-summary .pre-data{color:#677583;font-weight:650}
+@media(max-width:480px){
+  .home-stock-main .home-research-flag{font-size:10px;padding:2px 5px}
+  .unity-unified-name .home-research-flag{font-size:10px}
+  .home-research-detail{padding:10px}
+}
+
+/* UNITY 0.13.97: decision result visible before the long technical report. */
+.unity-result-card{padding:16px;border-left:4px solid #829487;background:#fff}
+.unity-result-review{border-left-color:#28915c}
+.unity-result-wait{border-left-color:#c49d4c}
+.unity-result-stop{border-left-color:#b44b45}
+.unity-result-data{border-left-color:#8096a3}
+.unity-result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.unity-result-top h2{margin:4px 0;font-size:19px}
+.unity-result-top small{font-size:12px;color:#62756b}
+.unity-result-state{font-size:12px;font-weight:700;color:#7f5030;background:#fff0e4;border-radius:7px;padding:6px 9px;line-height:1.3}
+.unity-result-action{display:block;margin:12px 0 8px;font-size:20px;line-height:1.3;color:#234333}
+.unity-result-reason{font-size:14px;line-height:1.5;color:#385344}
+.unity-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px}
+.unity-result-grid>div{min-width:0;border-radius:8px;background:#f2f6f3;padding:10px;display:flex;flex-direction:column;gap:4px}
+.unity-result-grid small{font-size:11px;color:#64736a;line-height:1.35}
+.unity-result-grid b{font-size:14px;overflow-wrap:anywhere;color:#223b2e;line-height:1.3}
+.unity-result-next{padding:10px 11px;background:#eaf4ed;color:#245c3d;border-radius:8px;font-size:13px;line-height:1.45}
+.unity-result-issues{padding:7px 0;margin-bottom:10px}
+.unity-result-issues summary{font-size:13px;cursor:pointer;font-weight:700;color:#355c49}
+.unity-result-issues ul{margin:8px 0;padding-left:20px;font-size:12px;color:#5d6e64;line-height:1.5}
+@media(max-width:480px){
+ .unity-result-card{padding:12px}
+ .unity-result-action{font-size:18px}
+ .unity-result-grid{gap:6px}
+ .unity-result-grid>div{padding:8px}
+ .unity-result-grid b{font-size:13px}
+ .unity-result-top h2{font-size:18px}
+}
+
+/* 0.13.97: portfolio wealth, profit and compact owned positions. */
+.home-wealth-kicker{font-weight:650;text-align:center;margin:14px 0 0;font-size:14px;opacity:.95}
+.home-hero .home-big-number{margin:7px 0 4px;font-weight:550;line-height:1.2;font-size:clamp(34px,8.1vw,62px)}
+.home-wealth-profit{display:flex;align-items:center;justify-content:center;gap:7px 15px;flex-wrap:wrap;margin:10px 0 12px;text-align:center}
+.home-wealth-profit b{font-size:17px}
+.home-wealth-profit span{font-size:13px;font-weight:600}
+.home-profit-up{color:#09703a}
+.home-profit-down{color:#c33434}
+.home-profit-flat{color:#4c6458}
+.home-wealth-profit.home-profit-up{color:#d6ffe5}
+.home-wealth-profit.home-profit-down{color:#ffe6e1}
+.home-wealth-profit.home-profit-flat{color:#f0f7ef}
+.home-wealth-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:13px 0 10px}
+.home-wealth-grid>div{min-width:0;display:flex;flex-direction:column;gap:3px;padding:9px 11px;background:#ffffff1c;border:1px solid #ffffff29;border-radius:9px}
+.home-wealth-grid small{font-size:11px;line-height:1.3;color:#e8fff0}
+.home-wealth-grid b{font-size:15px;line-height:1.35;color:#fff;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.home-wealth-grid .home-profit-up{color:#dcffe9}
+.home-wealth-grid .home-profit-down{color:#ffe6df}
+.home-wealth-warning{font-size:12px;line-height:1.45;color:#fff;background:#00000024;padding:10px;border-radius:9px}
+.home-capital-fold{border-top:1px solid #ffffff45;margin-top:12px;padding-top:10px}
+.home-capital-fold>summary{cursor:pointer;font-size:13px;font-weight:600;color:#effff6}
+.home-capital-fold .home-capital-entry{margin:12px 0 3px}
+.home-capital-fold>small{display:block;margin:5px 0 0;font-size:11px;color:#d8f6e4}
+.home-holdings{background:#fff;border:1px solid #dbe7de;border-radius:14px;padding:13px;margin:12px 0}
+.home-holdings-head{display:flex;flex-direction:column;gap:3px;margin:0 0 11px}
+.home-holdings-head h2{margin:0;font-size:18px;color:#233b2f}
+.home-holdings-head h2 span{font-size:13px;background:#e6f5eb;color:#176e44;border-radius:12px;padding:2px 7px}
+.home-holdings-head small{font-size:12px;color:#60746a}
+.home-holding-card{display:flex;flex-direction:column;gap:5px;width:100%;background:#f7faf7;border:1px solid #dce7df;border-radius:10px;margin:7px 0;padding:10px 11px;text-align:left;color:#20382b;cursor:pointer}
+.home-holding-card:focus-visible{outline:3px solid #298b58}
+.home-holding-top,.home-holding-sub{display:flex;justify-content:space-between;align-items:center;gap:7px;min-width:0}
+.home-holding-top strong{font-size:15px;overflow-wrap:anywhere}
+.home-holding-top b{font-size:16px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.home-holding-sub{font-size:12px;color:#4e6557;flex-wrap:wrap}
+.home-holding-sub b{font-weight:700;font-variant-numeric:tabular-nums}
+.home-holding-stamp{font-size:11px;color:#6a7d71}
+.home-holding-entry{margin:0 0 10px}.home-holding-entry .home-holding-card{margin:0}.home-position-reset{width:100%;border:1px solid #e7c7c3;border-radius:0 0 11px 11px;border-top:0;background:#fff8f7;color:#9b3d35;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer}.home-position-reset:hover{background:#fff1ef}.home-depot-reset{margin:14px 0 0;padding:13px;border-radius:11px;background:#fbf4f2;border:1px solid #ead5d1}.home-depot-reset h3{margin:0 0 5px;color:#753c35;font-size:15px}.home-depot-reset p{margin:0 0 10px;color:#725f5b;font-size:12px;line-height:1.4}.home-depot-reset-all{width:100%;border:1px solid #d9aaa3;border-radius:8px;background:#fff;color:#9b3d35;padding:10px 12px;font-weight:750;cursor:pointer}
+.home-holdings-note{font-size:11px;color:#617267;margin:9px 0 0;line-height:1.4}
+.home-position-profit{font-size:11px;font-weight:650}
+.depot-row-profit{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.depot-row-profit b{font-size:19px}
+.depot-row-profit small{font-size:12px;font-weight:650}
+.depot-row-facts{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:12px;color:#455c4d}
+.depot-holding-label{font-size:10px;color:#126a3e;background:#e1f6e8;padding:2px 5px;border-radius:5px;font-weight:700}
+@media(max-width:480px){
+  .home-wealth-grid{gap:6px}
+  .home-wealth-grid>div{padding:8px}
+  .home-wealth-grid b{font-size:13px}
+  .home-hero .home-big-number{font-size:clamp(33px,8vw,50px)}
+  .home-holding-card{padding:9px}
+  .home-holding-top b{font-size:14px}
+}
+
+/* 0.13.97 — deep yes/no decision before technical charts, compact on iPhone. */
+.unity-policy-card{border-left:4px solid #82938a;background:#fff;padding:15px;margin:12px 0}
+.unity-policy-positive{border-left-color:#1e995a}
+.unity-policy-technical{border-left-color:#347b98}
+.unity-policy-no{border-left-color:#b35c47}
+.unity-policy-wait{border-left-color:#c7a054}
+.unity-policy-data{border-left-color:#8a959d}
+.unity-policy-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.unity-policy-top h2{margin:4px 0;font-size:19px;color:#243e30}
+.unity-policy-top small{font-size:12px;color:#587063}
+.unity-policy-stage{background:#f2f6f3;border-radius:7px;padding:6px 8px;font-size:11px;line-height:1.3;color:#4d685a}
+.unity-policy-action{display:block;font-size:20px;line-height:1.3;margin:13px 0 8px;color:#254632;overflow-wrap:anywhere}
+.unity-policy-positive .unity-policy-action{color:#087b42}
+.unity-policy-technical .unity-policy-action{color:#136b91}
+.unity-policy-no .unity-policy-action{color:#a44837}
+.unity-policy-wait .unity-policy-action{color:#866322}
+.unity-policy-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.unity-policy-metrics>div{background:#f3f7f4;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.unity-policy-metrics small{font-size:11px;color:#69776d;line-height:1.35}
+.unity-policy-metrics b{font-size:14px;color:#294334;overflow-wrap:anywhere;line-height:1.3}
+.unity-policy-evidence,.unity-policy-scenario{margin:9px 0;padding:9px 10px;border:1px solid #d9e5dc;border-radius:8px;font-size:12px;line-height:1.5}
+.unity-policy-evidence summary,.unity-policy-scenario summary{cursor:pointer;font-weight:750;font-size:13px;color:#27543a}
+.unity-policy-evidence p{margin:10px 0 4px}
+.unity-policy-evidence ul{padding-left:20px;margin:4px 0 9px}
+.unity-policy-evidence li{margin:3px 0}
+@media(max-width:480px){
+ .unity-policy-card{padding:11px}
+ .unity-policy-action{font-size:18px}
+ .unity-policy-metrics{gap:6px}
+ .unity-policy-metrics>div{padding:8px}
+ .unity-policy-metrics b{font-size:12px}
+}
+
+.unity-policy-sizing{display:flex;flex-direction:column;gap:4px;background:#ebf5ed;color:#234b34;padding:10px;border-radius:8px;margin:8px 0}
+.unity-policy-sizing b{font-size:13px}
+.unity-policy-sizing small{font-size:11px;line-height:1.35}
+.unity-policy-testbuy{display:block;width:100%;margin:11px 0;padding:12px 14px;background:#18784d;color:white;border:0;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer}
+.unity-policy-testbuy:focus-visible{outline:3px solid #2e9864;outline-offset:2px}
+
+.unity-secondary-check{margin:9px 0}
+.unity-secondary-check>summary{padding:9px 10px;cursor:pointer;color:#416754;background:#f2f7f3;border-radius:8px;font-size:12px;font-weight:700}
+.unity-secondary-check>.unity-result-card{margin:8px 0 0}
+
+.unity-added-status{display:flex;flex-direction:column;gap:5px;background:#ecf6f0;border:1px solid #bcd9c8;border-left:4px solid #26905b;border-radius:9px;padding:10px 12px;margin:0 0 12px;color:#254634}
+.unity-added-status strong{font-size:13px}
+.unity-added-status small{font-size:12px;color:#4a6a57;line-height:1.45}
+
+/* 0.13.97 — technical pullback alert on stock rows, not an order signal. */
+.home-pullback-flag{display:inline-flex;align-self:flex-start;max-width:100%;font-size:11px;
+  line-height:1.3;font-weight:680;padding:4px 7px;border-radius:7px;white-space:normal}
+.home-pullback-reached.home-pullback-flag{color:#135c39;background:#d8f3e3;border:1px solid #94d2ad}
+.home-pullback-blocked.home-pullback-flag{color:#874928;background:#fff0e4;border:1px solid #efbea6}
+.home-pullback-watch.home-pullback-flag{color:#5f6b64;background:#eef2ee;border:1px solid #d5ddd7}
+.home-pullback-summary{display:flex;flex-direction:column;gap:5px;background:#e5f5eb;
+  border-left:4px solid #29845a;border-radius:10px;padding:11px 12px;margin:12px 0;
+  color:#245439}
+.home-pullback-summary strong{font-size:14px}
+.home-pullback-summary small{font-size:11px;line-height:1.4;color:#476857}
+.home-pullback-detail{padding:11px 12px;border-left:4px solid #348563;background:#eaf7ef;
+  border-radius:8px;margin:9px 0;color:#27523c}
+.home-pullback-detail.home-pullback-watch{border-left-color:#97a69d;background:#f0f4f1}
+.home-pullback-detail.home-pullback-blocked{border-left-color:#be7948;background:#fff3e9}
+.home-pullback-detail strong{font-size:14px}
+.home-pullback-detail p{font-size:13px;line-height:1.5;margin:6px 0}
+.home-pullback-detail small{font-size:11px;line-height:1.4}
+/* 0.13.98 — local price-zone watcher; it never submits a broker order. */
+.home-zone-plan{margin:14px 0;padding:13px;border:1px solid #d8e6dd;border-radius:11px;background:#fbfdfb}.home-zone-plan h3{margin:0 0 10px;font-size:16px;color:#234434}.home-zone-auto{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:10px;border-radius:8px;background:#ecf6ee}.home-zone-auto strong{color:#156b3f;font-size:13px;text-align:right}.home-zone-auto small{grid-column:1/-1;color:#506b5a;font-size:11px;line-height:1.35}.home-zone-state{display:flex;flex-direction:column;gap:3px;margin:9px 0;padding:9px 10px;border-left:4px solid #86958c;background:#f0f3f1;font-size:13px}.home-zone-state small{font-size:11px;color:#52645a}.home-zone-state.home-zone-entry{border-left-color:#16834a;background:#e3f5e9}.home-zone-state.home-zone-exit{border-left-color:#c55445;background:#fff0ee}.home-zone-plan details{margin-top:10px}.home-zone-plan summary{cursor:pointer;font-size:13px;font-weight:700;color:#335b45}.home-zone-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}.home-zone-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#496153}.home-zone-form input{border:1px solid #cbd9d0;border-radius:7px;padding:9px;background:#fff;color:#1d3326;font-weight:650}.home-zone-form .full{grid-column:1/-1}.home-zone-form small{font-size:11px;color:#607269;line-height:1.35}.home-zone-form button+button{margin-left:8px}.home-zone-flag{display:inline-flex;align-self:flex-start;padding:3px 6px;border-radius:6px;font-size:10px;font-weight:750}.home-zone-flag.home-zone-entry{background:#d8f3e3;color:#145b38}.home-zone-flag.home-zone-exit{background:#ffe8e5;color:#963d35}@media(max-width:520px){.home-zone-form{grid-template-columns:1fr}.home-zone-auto{grid-template-columns:1fr}.home-zone-auto strong{text-align:left}}
+@media(max-width:480px){
+ .home-stock-main .home-pullback-flag,.unity-unified-name .home-pullback-flag{font-size:10px;padding:3px 5px}
+ .home-pullback-summary{padding:10px}
+}
+
+.home-auto-limit{background:#fff}.home-limit-current{display:flex;justify-content:space-between;align-items:baseline;padding:11px 12px;border-radius:9px;background:#f1f6f2}.home-limit-current small,.home-limit-range small{font-size:11px;color:#5d7164}.home-limit-current strong{font-size:19px;color:#1d3d2b}.home-limit-range{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.home-limit-range>div{padding:11px 12px;border-radius:9px;background:#e8f5ec;display:flex;flex-direction:column;gap:3px}.home-limit-range>div+div{background:#f4f5f4}.home-limit-range strong{font-size:15px;color:#176d40}.home-limit-range>div+div strong{color:#4f6257}
+.home-auto-order{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #e1e9e3}.home-auto-order>div{display:flex;flex-direction:column;gap:4px;min-width:0}.home-auto-order b{font-size:15px;color:#173c2a}.home-auto-order small{font-size:12px;line-height:1.35;color:#53695d}.home-auto-order button{flex:0 0 auto;font-size:12px}.home-auto-sell{margin-top:0}@media(max-width:520px){.home-auto-order{align-items:stretch;flex-direction:column}.home-auto-order button{width:100%}}
+.home-recommendation{display:flex;flex-direction:column;gap:4px;margin-top:9px;padding:10px 12px;border-left:4px solid #87958c;background:#f2f4f2}.home-recommendation b{font-size:15px;color:#233e2d}.home-recommendation small{font-size:12px;line-height:1.4;color:#50675a}.home-recommendation-buy{border-left-color:#17834a;background:#e4f5e9}.home-recommendation-wait{border-left-color:#b1782a;background:#fff5e5}.home-recommendation-open{border-left-color:#809087;background:#f1f3f2}
+/* 0.13.97: safe one-tap remove / reversible archive in iPhone stock lists */
+.unity-unified-remove{display:block;width:100%;padding:8px 9px;margin-top:4px;border:1px solid #e1c0b9;border-radius:8px;background:#fff8f7;color:#a14432;font-size:12px;font-weight:700;cursor:pointer}
+.unity-unified-remove:focus-visible,.home-remove-btn:focus-visible{outline:3px solid #c5745f;outline-offset:2px}
+.unity-archive-panel{border:1px solid #d3ded7;border-radius:12px;padding:12px;background:#f8fbf8;margin:12px 0}
+.unity-archive-panel summary{cursor:pointer;color:#355c47;font-size:14px;font-weight:750}
+.unity-archive-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e2e9e3}
+.unity-archive-row:last-child{border-bottom:0}
+.unity-archive-row span{display:flex;flex-direction:column;min-width:0;gap:3px}
+.unity-archive-row strong{font-size:13px;overflow-wrap:anywhere}
+.unity-archive-row small{font-size:11px;color:#64776b}
+.home-remove-btn{margin-top:5px;border:1px solid #d4d9d5;background:#fff;color:#647067;font-size:13px;line-height:1;border-radius:6px;min-width:30px;min-height:28px;cursor:pointer}
+@media(max-width:480px){.unity-unified-remove{font-size:11px;padding:7px 5px}.unity-archive-panel{padding:10px}}
+
+/* 0.13.97: private pCloud handoff in iPhone Share Sheet. */
+.unity-backup-panel{border-left:4px solid #33835e}
+.unity-backup-actions{display:flex;gap:9px;flex-wrap:wrap;margin:13px 0}
+.unity-backup-actions button{min-width:180px}
+.unity-backup-status:not(:empty){background:#eef6f1;border:1px solid #c9e4d2;border-radius:8px;padding:10px;color:#2e6045;font-size:12px;line-height:1.45}
+@media(max-width:480px){.unity-backup-actions{flex-direction:column}.unity-backup-actions button{width:100%}}
+
+/* Official-source monitor 0.13.97: neutral filing notices, never trading alerts. */
+.unity-issuer-event-flag{font-size:10px;line-height:1.25;display:inline-flex;align-self:flex-start;
+  padding:4px 6px;border-radius:7px;background:#eaf0f8;color:#295577;border:1px solid #c8d9e9;font-weight:650}
+.unity-issuer-panel{border-left:4px solid #527b99;padding:12px;margin:12px 0}
+.unity-issuer-panel h3{font-size:16px;margin:0 0 8px}
+.unity-issuer-panel h4{font-size:13px;margin:12px 0 7px}
+.unity-issuer-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.unity-issuer-metric{padding:9px;border-radius:8px;background:#f1f5f8;display:flex;flex-direction:column;gap:3px;min-width:0}
+.unity-issuer-metric small{color:#586b79;font-size:11px;line-height:1.4}
+.unity-issuer-metric b{font-size:13px;overflow-wrap:anywhere}
+.unity-issuer-event{display:flex;align-items:center;justify-content:space-between;gap:9px;
+  padding:8px 0;border-bottom:1px solid #dce5eb}
+.unity-issuer-event span{display:flex;flex-direction:column;min-width:0;gap:3px}
+.unity-issuer-event strong{font-size:12px}
+.unity-issuer-event small{font-size:10px;color:#657582}
+.unity-issuer-event a{font-size:11px;flex-shrink:0;color:#256388;text-decoration:underline}
+@media(max-width:480px){.unity-issuer-panel{padding:10px}.unity-issuer-metrics{gap:5px}
+.unity-issuer-metric{padding:7px}.unity-issuer-metric b{font-size:12px}}
+
+/* Inkrementelle iPhone-Sicherung: letzte Bestätigung und Import sind sichtbar. */
+.unity-backup-panel h3{font-size:15px;margin:14px 0 6px}
+.unity-backup-panel #inc-confirm{border-color:#9bc8b0;background:#e5f4eb;color:#24593e}
+button[hidden]{display:none!important}
+#inc-import-file{width:100%;max-width:100%;font-size:13px}
+
+/* Eindeutige Trennung der Sicherungsarten, kompakt auf dem iPhone. */
+.unity-backup-intro{border-left:4px solid #548770}
+.unity-backup-folderlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.unity-backup-folder{display:flex;flex-direction:column;gap:6px;border:1px solid #d7e1dc;border-radius:10px;padding:11px;background:#f8faf8;min-width:0}
+.unity-backup-folder strong{font-size:13px}
+.unity-backup-folder code,.unity-backup-panel code,.unity-backup-full code{white-space:normal;overflow-wrap:anywhere;word-break:break-word;color:#1b5940;font-size:12px;font-weight:600}
+.unity-backup-folder small{color:#596c61;font-size:11px;line-height:1.45}
+.unity-backup-details{padding:10px 0;border-top:1px solid #d9e5dd;margin-top:12px}
+.unity-backup-details summary{cursor:pointer;font-weight:700;font-size:13px}
+.unity-backup-full{border-left:4px solid #8c99b0}
+.unity-cloud-future{border:1px dashed #b5c2c8}
+.unity-backup-migrate{margin:10px 0;padding:10px;border:1px solid #d9b887;background:#fcf7eb;border-radius:8px;font-size:12px;line-height:1.45;color:#69502a}
+@media(max-width:480px){.unity-backup-folderlist{grid-template-columns:1fr;gap:7px}.unity-backup-folder{padding:9px}}
+.unity-cloud-auto{border:1px solid #d7e1e7;border-radius:9px;background:#f3f6f8;padding:10px;margin:12px 0}.unity-cloud-auto p{margin:3px 0}.unity-cloud-auto .unity-backup-actions{margin:8px 0 0}.unity-cloud-auto button[disabled]{opacity:.55}
+
+/* UNITY official capital & event radar · public tenders, not equity fund-flow signals. */
+.unity-cap-intro{border-left:4px solid #527fa3}
+.unity-cap-intro h2,.unity-cap-readiness h2{font-size:19px;margin:0 0 10px}
+.unity-cap-topic h3{font-size:16px;margin:0 0 8px}
+.unity-cap-warning{padding:10px;border-radius:8px;background:#f7f2e6;color:#765522;border:1px solid #ecd8ab;font-size:12px;line-height:1.5}
+.unity-cap-statusline{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.unity-cap-statusline>*{padding:7px 9px;background:#f1f5f8;border:1px solid #e0e8ed;border-radius:7px;font-size:12px}
+.unity-cap-topic,.unity-cap-readiness{border-left:3px solid #b6cddc}
+.unity-cap-event{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid #e1e7ec}
+.unity-cap-event>div{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.unity-cap-event strong{font-size:13px}
+.unity-cap-event small{font-size:11px;line-height:1.4;color:#576a79}
+.unity-cap-event a{font-size:11px;white-space:nowrap;color:#1b658a;text-decoration:underline}
+.unity-cap-new{font-size:10px;padding:2px 6px;background:#e2f0e7;color:#226444;border-radius:7px;font-weight:650}
+.unity-cap-gaps{margin-top:8px}
+.unity-cap-gaps>div{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #e4ebef;font-size:12px}
+.unity-cap-gaps small{color:#627380;text-align:right;font-size:11px}
+
+.unity-cap-outcome{font-size:10px!important;font-weight:650;padding:3px 6px;border-radius:6px}
+.unity-cap-award{background:#e9f4eb;color:#256340!important}
+.unity-cap-notaward{background:#f8f0e5;color:#865a23!important}
+.unity-cap-extra{padding:9px 0;border-top:1px solid #dce5eb}
+.unity-cap-extra summary{font-size:12px;color:#285b7c;cursor:pointer;font-weight:650;margin-bottom:5px}
+
+/* UNITY decision cockpit: concise automatic research triage, no green Buy buttons. */
+.unity-cockpit-overview{border-left:4px solid #436987}
+.unity-cockpit-overview h2,.unity-cockpit-detail h2{font-size:18px;margin:0 0 8px}
+.unity-cockpit-overview h3{font-size:14px;margin:14px 0 6px}
+.unity-cockpit-counts{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0}
+.unity-cockpit-counts>span{font-size:11px;padding:7px;border:1px solid #dde6ee;background:#f1f5f9;border-radius:7px}
+.unity-cockpit-pick{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:9px 0;border-top:1px solid #e0e8ef}
+.unity-cockpit-pick div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.unity-cockpit-pick strong{font-size:13px}
+.unity-cockpit-pick small{font-size:11px;color:#536a79;line-height:1.4}
+.unity-cockpit-pick button{flex-shrink:0;font-size:12px;padding:8px}
+.unity-cockpit-master{margin:12px 0}
+.unity-cockpit-master summary{cursor:pointer;color:#275c7f;font-size:12px;font-weight:700}
+.unity-cockpit-no-buy{font-size:12px;padding:9px;border:1px solid #e9dbc9;background:#faf7f0;border-radius:7px}
+.unity-cockpit-detail{border-left:4px solid #5c8197}
+.unity-cockpit-action{display:block;font-size:15px;margin:9px 0;line-height:1.3}
+.unity-cockpit-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}
+.unity-cockpit-metrics>div{background:#f4f7fa;border-radius:7px;padding:9px;display:flex;flex-direction:column;gap:4px}
+.unity-cockpit-metrics small{font-size:11px;color:#607181}
+.unity-cockpit-metrics b{font-size:12px;overflow-wrap:anywhere}
+.unity-cockpit-detail details summary{font-weight:700;font-size:13px;cursor:pointer}
+.unity-cockpit-detail h4{font-size:12px;margin:12px 0 4px}
+.unity-cockpit-detail li{font-size:12px;margin:5px 0}
+.home-auto-desk h2{margin:0 0 8px;font-size:18px}
+.home-auto-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 14px}
+.home-auto-totals>div{background:#eff6f1;border:1px solid #dfebe3;border-radius:9px;padding:9px;min-width:0;display:flex;flex-direction:column;gap:5px}
+.home-auto-totals small{font-size:11px;color:#527263}.home-auto-totals b{font-size:16px;color:#1b5536;overflow-wrap:anywhere}
+.home-auto-task{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid #e0e9e3;flex-wrap:wrap}
+.home-auto-task>div{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.home-auto-task strong,.home-auto-task b{font-size:13px;color:#254c35}
+.home-auto-task small{font-size:12px;color:#67786e;line-height:1.4}
+.home-auto-task button{font-size:12px;white-space:nowrap}
+.home-auto-task .actions{justify-content:flex-end}.home-auto-task select{font-size:16px;max-width:105px;padding:6px}
+.home-auto-stock{margin:12px 0}.home-auto-stock h3{margin:0 0 8px}
+.home-auto-mark,.home-auto-booked{display:block;font-size:10px!important;font-weight:700;color:#267a4d!important}
+.home-auto-booked{color:#466c91!important}
+.home-auto-history{margin-top:10px;font-size:12px}.home-auto-history>summary{cursor:pointer;color:#316448;font-weight:700}
+@media(max-width:480px){.home-auto-task{align-items:stretch;flex-direction:column}.home-auto-task>button{width:100%}.home-auto-task .actions{justify-content:flex-start}.home-auto-totals b{font-size:14px}}
+
+/* 0.16.5: compact data/source readiness, read-only diagnostic. */
+.unity-readiness-overview{margin:12px 0;padding:13px}
+.unity-readiness-overview h3,.unity-readiness-detail h3{margin:0 0 9px;font-size:16px}
+.unity-readiness-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.unity-readiness-metrics span{background:#eff5f2;padding:9px;border-radius:8px;min-width:0}
+.unity-readiness-metrics b{display:block;font-size:18px;color:#1b5338}
+.unity-readiness-metrics small{display:block;font-size:11px;color:#435b4c}
+.unity-readiness-overview details,.unity-readiness-detail details{margin-top:9px;border-top:1px solid #e0e9e4;padding-top:8px}
+.unity-readiness-overview summary,.unity-readiness-detail summary{cursor:pointer;font-weight:650;color:#24513c}
+.unity-readiness-pilot-list,.unity-readiness-rows{display:grid;gap:7px;margin-top:10px}
+.unity-readiness-pilot,.unity-readiness-field{padding:9px;border:1px solid #dfe9e2;border-radius:8px;min-width:0}
+.unity-readiness-pilot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px}
+.unity-readiness-pilot b{font-size:13px}
+.unity-readiness-pilot span{font-size:12px;color:#546856}
+.unity-readiness-pilot small{grid-column:1/-1;color:#617264}
+.unity-readiness-field{display:flex;flex-direction:column;gap:3px}
+.unity-readiness-field b{font-size:13px;color:#24513c}
+.unity-readiness-field small{font-size:12px;overflow-wrap:anywhere;color:#5a6b5f}
+.unity-readiness-negative{border-left:3px solid #b35e42;padding:8px;margin-top:10px;background:#fdf3ec}
+@media(max-width:520px){.unity-readiness-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.unity-readiness-metrics span{padding:8px}.unity-readiness-metrics b{font-size:16px}}
+
+/* Unified investment decision: visually distinguish strict investment review
+   from technical-only paper tests. No decorative live-trading controls. */
+.unity-engine-panel{margin:12px 0;border:1px solid #cddfd5;background:#f9fdfa;padding:13px}
+.unity-engine-panel>small{font-size:12px;color:#446653}
+.unity-engine-panel h3{margin:7px 0;font-size:18px}
+.unity-engine-panel ul{margin:7px 0 10px;padding-left:19px}
+.unity-engine-panel li{margin:4px 0;font-size:13px}
+.unity-engine-action{display:inline-block;font-size:16px}
+.unity-engine-action.positive{color:#17633f}
+.unity-engine-action.negative{color:#a13931}
+.unity-engine-action.blocked{color:#825a31}
+.unity-engine-action.neutral{color:#315c69}
+.unity-engine-veto{border-left:3px solid #a66b32;background:#f9f4e8;padding:9px 11px}
+.unity-engine-technical,.unity-engine-ledger{margin-top:11px;border-top:1px solid #dbe9df;padding-top:9px}
+.unity-engine-technical summary,.unity-engine-ledger summary{cursor:pointer;font-weight:650;color:#22553d}
+.unity-engine-technical p,.unity-engine-ledger p{overflow-wrap:anywhere}
+
+/* 0.16.5: explicit saved status for edited automatic test orders */
+.home-auto-allocation{display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-width:0;flex:1}
+.home-auto-allocation .actions{flex-wrap:wrap;gap:7px}
+.home-auto-allocation .home-auto-save-state{display:block;font-size:12px;font-weight:600;color:#23643d}
+.home-auto-allocation button:disabled{opacity:.65;cursor:wait}
+@media(max-width:480px){.home-auto-allocation{align-items:stretch;width:100%}.home-auto-allocation .actions{justify-content:flex-start}}
+
+/* Fixed EUR amount per automatic test buy + shared ceiling (version 0.16.5). */
+.home-auto-budget{padding:12px;margin:12px 0;border:1px solid #cddfd4;border-radius:10px;background:#f8fbf9}
+.home-auto-budget h3{font-size:15px;margin:0 0 10px;color:#234b34}
+.home-auto-budget-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.home-auto-budget-metrics span{display:flex;flex-direction:column;gap:3px;min-width:0;border-radius:8px;background:#eef5f1;padding:9px}
+.home-auto-budget-metrics small{font-size:11px;color:#4f6a5b}
+.home-auto-budget-metrics b{font-size:14px;overflow-wrap:anywhere}
+.home-auto-budget>.actions{display:flex;align-items:end;justify-content:flex-start;gap:10px;margin-top:10px;flex-wrap:wrap}
+.home-auto-budget>.actions label{min-width:150px;max-width:190px}
+.home-auto-budget input,.home-auto-allocation input{font-size:16px;max-width:160px;width:100%;padding:7px}
+.home-auto-budget-state{display:block;margin-top:8px;font-size:12px;font-weight:650;color:#286944}
+.home-auto-allocation .actions label{min-width:136px;max-width:170px}
+@media(max-width:480px){.home-auto-budget-metrics{grid-template-columns:1fr 1fr}
+.home-auto-budget-metrics span:last-child{grid-column:1/-1}
+.home-auto-budget>.actions label{max-width:100%}}
+
+/* Paper-order model controls and staged trigger state, UNITY 0.15.2. */
+.home-paper-costs{border-top:1px solid #d9e5de;margin-top:13px;padding-top:11px}
+.home-paper-costs summary{font-weight:650;cursor:pointer;color:#245642}
+.home-paper-costs p{margin:9px 0;line-height:1.5}
+.home-paper-cost-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.home-paper-cost-inputs label{font-size:12px;font-weight:600;display:flex;flex-direction:column;gap:5px}
+.home-paper-cost-inputs input{font-size:16px;min-width:0;width:100%;padding:7px}
+.paper-costs-status{display:block;font-size:12px;color:#516c5b;margin-top:9px}
+@media(max-width:520px){.home-paper-cost-inputs{grid-template-columns:1fr 1fr}
+.home-paper-cost-inputs label:last-child{grid-column:1/-1}}
+
+/* 0.16.5 encrypted read-only exchange */
+.unity-exchange-pass{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.unity-exchange-pass label{min-width:0;font-weight:600;display:flex;flex-direction:column;gap:5px}
+.unity-exchange-pass input,.unity-exchange-panel>label input[type="password"]{width:100%;font-size:16px;padding:10px}
+@media(max-width:540px){.unity-exchange-pass{grid-template-columns:1fr}}
+
+/* 0.16.5: Apple Passwords / iOS Face ID-mediated Password AutoFill.
+ * Ordinary HTML credential semantics only; no WebAuthn or direct biometric API. */
+.unity-exchange-apple-help{border-top:1px solid #d7e6db;margin:10px 0 8px;padding-top:10px}
+.unity-exchange-apple-help summary{font-size:13px;font-weight:650;cursor:pointer}
+.unity-exchange-apple-help p{font-size:12px;line-height:1.55;margin:9px 0}
+.unity-exchange-apple-help code{overflow-wrap:anywhere}
+.unity-exchange-credential-form{margin:0 0 9px;max-width:100%;min-width:0}
+.unity-exchange-account{display:flex;flex-direction:column;gap:4px;font-size:12px;margin:6px 0 5px;max-width:250px}
+.unity-exchange-account input{font-size:15px;padding:7px;background:rgba(125,140,130,.06)}
+.unity-exchange-credential-form>label:not(.unity-exchange-account){display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600}
+.unity-exchange-credential-form>label:not(.unity-exchange-account) input{font-size:16px;padding:10px;width:100%;max-width:390px}
+.unity-exchange-pass label small{font-weight:400}
+/* 0.16.5: one primary visible password field; secondary inspection/confirmation collapsed. */
+.unity-exchange-inspect-detail,.unity-exchange-confirm-detail{margin:10px 0;border-top:1px solid #d7e6db;padding:9px 0 2px}
+.unity-exchange-inspect-detail summary,.unity-exchange-confirm-detail summary{cursor:pointer;font-size:13px;font-weight:600}
+.unity-exchange-inspect-detail>label,.unity-exchange-confirm-detail label{display:block;margin:9px 0}
+.unity-exchange-inspect-detail input,.unity-exchange-confirm-detail input{width:100%;font-size:16px;padding:10px}
+#unity-exchange-focus-password{margin:2px 0 8px}
+</style></head><body><header><div><h1>UNITY LAB <span style="font-size:12px;font-weight:400">0.17.0 RC1 · TEST</span></h1><small>Aktien · Kursverläufe · UNITY-Analyse</small></div><span class="status" id="db-status">Lokale Datenbank wird geöffnet …</span></header><main><nav id="nav"><button data-tab="overview" class="active">Mein Depot</button><button data-tab="stocks">Aktien & Kurse</button><button data-tab="radar">Kapitalradar</button><button data-tab="analysis">UNITY-Analyse</button><button data-tab="trades">Simulationsdepot</button><button data-tab="backup">Datensicherung</button></nav><div id="app" aria-live="polite"></div><p class="footer">Unity Lab 0.17.0 RC1 · unveröffentlichter Teststand · Vergleichs-Beta · Alle Transaktionen sind hypothetisch. Verzögerte Referenzkurse sind verfügbar; kein Echtzeitkursfeed. Keine Anlageberatung oder Orderausführung.</p></main><script>
+'use strict';
+const STORES=['instruments','quotes','transactions','strategies','audit','fundamentals','histories','analyses','settings'];let db,activeTab='overview';let cache={};const keys=['valuation','quality','rr','flows','timing','alternatives'];const labels=['Bewertung / Sicherheitsmarge','Unternehmensqualität','Chance-Risiko / Rendite','Kapitalflüsse','Timing / Katalysatoren','Alternativenvergleich'];const defaults={valuation:30,quality:20,rr:20,flows:15,timing:10,alternatives:5};
+// Manuell kuratierter, offline verfügbarer UNITY-Stammdatenkatalog. Keine Kursdaten und kein Live-Abgleich.
+const CATALOG=[
+{name:'ABB',ticker:'ABBN',isin:'CH0012221716',exchange:'SIX Swiss Exchange',currency:'CHF',providerSymbol:'ABBN.SW',group:'Elektrifizierung · Automatisierung'},
+{name:'Schneider Electric',ticker:'SU',isin:'FR0000121972',exchange:'Euronext Paris',currency:'EUR',providerSymbol:'SU.PA',group:'Energiemanagement · Rechenzentren'},
+{name:'Eaton',ticker:'ETN',isin:'IE00B8KQN827',exchange:'NYSE',currency:'USD',providerSymbol:'ETN',group:'Elektrifizierung · Stromverteilung'},
+{name:'Siemens Energy',ticker:'ENR',isin:'DE000ENER6Y0',exchange:'Xetra',currency:'EUR',providerSymbol:'ENR.DE',group:'Stromnetze · Energie'},
+{name:'Vertiv',ticker:'VRT',isin:'US92537N1081',exchange:'NYSE',currency:'USD',providerSymbol:'VRT',group:'Rechenzentren · Kühlung'},
+{name:'Nordex',ticker:'NDX1',isin:'DE000A0D6554',exchange:'Xetra',currency:'EUR',providerSymbol:'NDX1.DE',group:'Windenergie'},
+{name:'Prysmian',ticker:'PRY',isin:'IT0004176001',exchange:'Borsa Italiana',currency:'EUR',providerSymbol:'PRY.MI',group:'Stromkabel · Netzinfrastruktur'},
+{name:'Legrand',ticker:'LR',isin:'FR0010307819',exchange:'Euronext Paris',currency:'EUR',providerSymbol:'LR.PA',group:'Elektroinstallation · Rechenzentren'},
+{name:'Siemens',ticker:'SIE',isin:'DE0007236101',exchange:'Xetra',currency:'EUR',providerSymbol:'SIE.DE',group:'Industrie · Automatisierung'},
+{name:'Belimo',ticker:'BEAN',isin:'CH1101098163',exchange:'SIX Swiss Exchange',currency:'CHF',providerSymbol:'BEAN.SW',group:'Gebäudetechnik · Energieeffizienz'},
+{name:'GE Vernova',ticker:'GEV',isin:'US36828A1016',exchange:'NYSE',currency:'USD',providerSymbol:'GEV',group:'Energietechnik · Stromnetze'},
+{name:'nVent Electric',ticker:'NVT',isin:'IE00BDVJJQ56',exchange:'NYSE',currency:'USD',providerSymbol:'NVT',group:'Elektrogehäuse · Verbindungstechnik'},
+{name:'Hubbell',ticker:'HUBB',isin:'US4435106079',exchange:'NYSE',currency:'USD',providerSymbol:'HUBB',group:'Stromnetze · Netzausrüstung'},
+{name:'Quanta Services',ticker:'PWR',isin:'US74762E1029',exchange:'NYSE',currency:'USD',providerSymbol:'PWR',group:'Netzausbau · Infrastruktur'},
+{name:'Nexans',ticker:'NEX',isin:'FR0000044448',exchange:'Euronext Paris',currency:'EUR',providerSymbol:'NEX.PA',group:'Stromkabel · Elektrifizierung'},
+{name:'Infineon',ticker:'IFX',isin:'DE0006231004',exchange:'Xetra',currency:'EUR',providerSymbol:'IFX.DE',group:'Halbleiter · Leistungselektronik'},
+{name:'Jenoptik AG',ticker:'JEN',isin:'DE000A2NB601',exchange:'Xetra',currency:'EUR',providerSymbol:'JEN.DE',group:'Photonik · Optik · Halbleitertechnik'},
+{name:'RWE',ticker:'RWE',isin:'DE0007037129',exchange:'Xetra',currency:'EUR',providerSymbol:'RWE.DE',group:'Energieversorgung · Stromnetze'},
+{name:'adesso',ticker:'ADN1',isin:'DE000A0Z23Q5',exchange:'Xetra',currency:'EUR',providerSymbol:'ADN1.DE',group:'IT-Dienstleistungen · Digitalisierung'},
+{name:'SoftBank Group',ticker:'9984',isin:'JP3436100006',exchange:'Tokyo Stock Exchange',currency:'JPY',providerSymbol:'9984.T',group:'Technologie · Beteiligungen'},
+{name:'Volkswagen Vz',ticker:'VOW3',isin:'DE0007664039',exchange:'Xetra',currency:'EUR',providerSymbol:'VOW3.DE',group:'Automobil · Vorzugsaktie'},
+{name:'Volkswagen St',ticker:'VOW',isin:'DE0007664005',exchange:'Xetra',currency:'EUR',providerSymbol:'VOW.DE',group:'Automobil · Stammaktie'},
+{name:'Hornbach Holding',ticker:'HBH',isin:'DE0006083405',exchange:'Xetra',currency:'EUR',providerSymbol:'HBH.DE',group:'Handel · Baumärkte'},
+{name:'Black Pearl Digital',ticker:'BPD',isin:'DE000A2BPK34',exchange:'Frankfurt',currency:'EUR',providerSymbol:'BPD.F',group:'Digitalisierung · Small Cap'},
+{name:'Berkshire Hathaway B',ticker:'BRK.B',isin:'US0846707026',exchange:'NYSE',currency:'USD',providerSymbol:'BRK-B',group:'Konglomerat · Versicherung'},
+{name:'NextEra Energy',ticker:'NEE',isin:'US65339F1012',exchange:'NYSE',currency:'USD',providerSymbol:'NEE',group:'Stromversorgung · Erneuerbare'},
+{name:'Netflix',ticker:'NFLX',isin:'US64110L1061',exchange:'NASDAQ',currency:'USD',providerSymbol:'NFLX',group:'Streaming · Medien'},
+{name:'artnet',ticker:'ART',isin:'DE000A1K0375',exchange:'Xetra',currency:'EUR',providerSymbol:'ART.DE',group:'Kunstmarkt · Plattform'},
+{name:'Ares Management',ticker:'ARES',isin:'US03990B1017',exchange:'NYSE',currency:'USD',providerSymbol:'ARES',group:'Alternative Anlagen · Asset Management'},
+{name:'Banco Bilbao Vizcaya Argentaria',ticker:'BBVA',isin:'ES0113211835',exchange:'Bolsa de Madrid',currency:'EUR',providerSymbol:'BBVA.MC',group:'Bank · Spanien'},
+{name:'Tata Motors',ticker:'TTM',isin:'US8765685024',exchange:'NYSE',currency:'USD',providerSymbol:'TTM',group:'Automobil · Indien (ADR)'},
+{name:'Aroundtown',ticker:'AT1',isin:'LU1673108939',exchange:'Xetra',currency:'EUR',providerSymbol:'AT1.DE',group:'Immobilien · Gewerbe'},
+{name:'Amazon',ticker:'AMZN',isin:'US0231351067',exchange:'NASDAQ',currency:'USD',providerSymbol:'AMZN',group:'E-Commerce · Cloud'},
+{name:'Deutsche Börse',ticker:'DB1',isin:'DE0005810055',exchange:'Xetra',currency:'EUR',providerSymbol:'DB1.DE',group:'Börseninfrastruktur · Daten'},
+{name:'Allianz',ticker:'ALV',isin:'DE0008404005',exchange:'Xetra',currency:'EUR',providerSymbol:'ALV.DE',group:'Versicherung · Vermögensverwaltung'},
+{name:'Larsen & Toubro',ticker:'LT',isin:'INE018A01030',exchange:'NSE India',currency:'INR',providerSymbol:'LT.NS',group:'Industrie · Infrastruktur'},
+{name:'Lufthansa',ticker:'LHA',isin:'DE0008232125',exchange:'Xetra',currency:'EUR',providerSymbol:'LHA.DE',group:'Luftfahrt'},
+{name:'American States Water',ticker:'AWR',isin:'US0298991011',exchange:'NYSE',currency:'USD',providerSymbol:'AWR',group:'Wasserversorgung'},
+{name:'Adidas',ticker:'ADS',isin:'DE000A1EWWW0',exchange:'Xetra',currency:'EUR',providerSymbol:'ADS.DE',group:'Sportartikel'},
+{name:'BASF',ticker:'BAS',isin:'DE000BASF111',exchange:'Xetra',currency:'EUR',providerSymbol:'BAS.DE',group:'Chemie'},
+{name:'Singapore Airlines',ticker:'C6L',isin:'SG1V61937297',exchange:'Singapore Exchange',currency:'SGD',providerSymbol:'C6L.SI',group:'Luftfahrt · Asien'},
+{name:'Aozora Bank',ticker:'8304',isin:'JP3711200000',exchange:'Tokyo Stock Exchange',currency:'JPY',providerSymbol:'8304.T',group:'Bank · Japan'},
+{name:'ICICI Bank',ticker:'IBN',isin:'US45104G1040',exchange:'NYSE',currency:'USD',providerSymbol:'IBN',group:'Bank · Indien (ADR)'},
+{name:'SAP',ticker:'SAP',isin:'DE0007164600',exchange:'Xetra',currency:'EUR',providerSymbol:'SAP.DE',group:'Unternehmenssoftware'},
+{name:'National Grid',ticker:'NG',isin:'GB00BDR05C01',exchange:'London Stock Exchange',currency:'GBP',providerSymbol:'NG.L',group:'Energieversorgung · Stromnetze'},
+{name:'Air Liquide',ticker:'AI',isin:'FR0000120073',exchange:'Euronext Paris',currency:'EUR',providerSymbol:'AI.PA',group:'Industriegase'},
+{name:'MSCI',ticker:'MSCI',isin:'US55354G1004',exchange:'NYSE',currency:'USD',providerSymbol:'MSCI',group:'Indexdaten · Analytik'},
+{name:'BHP Group',ticker:'BHP',isin:'AU000000BHP4',exchange:'ASX',currency:'AUD',providerSymbol:'BHP.AX',group:'Rohstoffe · Bergbau'},
+{name:'JD.com',ticker:'JD',isin:'US47215P1066',exchange:'NASDAQ',currency:'USD',providerSymbol:'JD',group:'E-Commerce · China (ADR)'},
+{name:'Bayer',ticker:'BAYN',isin:'DE000BAY0017',exchange:'Xetra',currency:'EUR',providerSymbol:'BAYN.DE',group:'Pharma · Agrar'},
+{name:'Honda Motor',ticker:'7267',isin:'JP3854600008',exchange:'Tokyo Stock Exchange',currency:'JPY',providerSymbol:'7267.T',group:'Automobil · Japan'},
+{name:'First Solar',ticker:'FSLR',isin:'US3364331070',exchange:'NASDAQ',currency:'USD',providerSymbol:'FSLR',group:'Solarenergie'},
+{name:'Heidelberg Materials',ticker:'HEI',isin:'DE0006047004',exchange:'Xetra',currency:'EUR',providerSymbol:'HEI.DE',group:'Baustoffe · Zement'},
+{name:'Deutsche Bank',ticker:'DBK',isin:'DE0005140008',exchange:'Xetra',currency:'EUR',providerSymbol:'DBK.DE',group:'Bank · Deutschland'},
+{name:'Weng Fine Art',ticker:'WFA',isin:'DE0005181606',exchange:'Xetra',currency:'EUR',providerSymbol:'WFA.DE',group:'Kunsthandel · Small Cap'},
+{name:'PKP Cargo',ticker:'PKP',isin:'PLPKPCR00011',exchange:'Warsaw Stock Exchange',currency:'PLN',providerSymbol:'PKP.WA',group:'Logistik · Schiene'},
+{name:'Uber',ticker:'UBER',isin:'US90353T1007',exchange:'NYSE',currency:'USD',providerSymbol:'UBER',group:'Mobilität · Plattform'},
+{name:'SynBiotic',ticker:'SBX',isin:'DE000A3E5A59',exchange:'Xetra',currency:'EUR',providerSymbol:'SBX.DE',group:'Biotechnologie · Cannabis'},
+{name:'Hammer Metals',ticker:'HMX',isin:'AU000000HMX5',exchange:'ASX',currency:'AUD',providerSymbol:'HMX.AX',group:'Rohstoffe · Exploration'},
+{name:'Meyer Burger Technology',ticker:'MBTN',isin:'CH0108503795',exchange:'SIX Swiss Exchange',currency:'CHF',providerSymbol:'MBTN.SW',group:'Solartechnik · Daten prüfen'},
+{name:'Evotec',ticker:'EVT',isin:'DE0005664809',exchange:'Xetra',currency:'EUR',providerSymbol:'EVT.DE',group:'Wirkstoffforschung · Biotechnologie'},
+{name:'Global Cannabis Applications',ticker:'FUAPF',isin:'CA37956B1013',exchange:'OTC',currency:'USD',providerSymbol:'FUAPF',group:'Software · Cannabis · Daten prüfen'},
+{name:'Alibaba',ticker:'BABA',isin:'US01609W1027',exchange:'NYSE',currency:'USD',providerSymbol:'BABA',group:'E-Commerce · Cloud · China (ADR)'},
+{name:'Sony Group',ticker:'SONY',isin:'JP3435000009',exchange:'NYSE',currency:'USD',providerSymbol:'SONY',group:'Unterhaltung · Elektronik (ADR)'},
+{name:'Japan Airlines',ticker:'9201',isin:'JP3705200008',exchange:'Tokyo Stock Exchange',currency:'JPY',providerSymbol:'9201.T',group:'Luftfahrt · Japan'},
+{name:'Airtel Africa',ticker:'AAF',isin:'GB00BKDRYJ47',exchange:'London Stock Exchange',currency:'GBP',providerSymbol:'AAF.L',group:'Telekommunikation · Afrika'},
+{name:'Xiaomi',ticker:'1810',isin:'KYG9830T1067',exchange:'Hong Kong Stock Exchange',currency:'HKD',providerSymbol:'1810.HK',group:'Hardware · Ökosystem'},
+{name:'Siemens Healthineers',ticker:'SHL',isin:'DE000SHL1006',exchange:'Xetra',currency:'EUR',providerSymbol:'SHL.DE',group:'Medizintechnik'},
+{name:'Merck',ticker:'MRK',isin:'DE0006599905',exchange:'Xetra',currency:'EUR',providerSymbol:'MRK.DE',group:'Chemie · Life Science'},
+{name:'Continental',ticker:'CON',isin:'DE0005439004',exchange:'Xetra',currency:'EUR',providerSymbol:'CON.DE',group:'Automobilzulieferer'},
+{name:'Beiersdorf',ticker:'BEI',isin:'DE0005200000',exchange:'Xetra',currency:'EUR',providerSymbol:'BEI.DE',group:'Konsumgüter · Hautpflege'},
+{name:'Deutsche Telekom',ticker:'DTE',isin:'DE0005557508',exchange:'Xetra',currency:'EUR',providerSymbol:'DTE.DE',group:'Telekommunikation'},
+{name:'Commerzbank',ticker:'CBK',isin:'DE000CBK1001',exchange:'Xetra',currency:'EUR',providerSymbol:'CBK.DE',group:'Bank · Deutschland'},
+{name:'Rheinmetall',ticker:'RHM',isin:'DE0007030009',exchange:'Xetra',currency:'EUR',providerSymbol:'RHM.DE',group:'Industrie · Verteidigung'},
+{name:'Vonovia',ticker:'VNA',isin:'DE000A1ML7J1',exchange:'Xetra',currency:'EUR',providerSymbol:'VNA.DE',group:'Wohnimmobilien'},
+{name:'Fresenius Medical Care',ticker:'FME',isin:'DE0005785802',exchange:'Xetra',currency:'EUR',providerSymbol:'FME.DE',group:'Gesundheitsversorgung'},
+{name:'DHL Group',ticker:'DHL',isin:'DE0005552004',exchange:'Xetra',currency:'EUR',providerSymbol:'DHL.DE',group:'Logistik'},
+{name:'BMW',ticker:'BMW',isin:'DE0005190003',exchange:'Xetra',currency:'EUR',providerSymbol:'BMW.DE',group:'Automobil'},
+{name:'Brenntag',ticker:'BNR',isin:'DE000A1DAHH0',exchange:'Xetra',currency:'EUR',providerSymbol:'BNR.DE',group:'Chemiedistribution'},
+{name:'E.ON',ticker:'EOAN',isin:'DE000ENAG999',exchange:'Xetra',currency:'EUR',providerSymbol:'EOAN.DE',group:'Energieversorgung · Netze'},
+{name:'Daimler Truck',ticker:'DTG',isin:'DE000DTR0CK8',exchange:'Xetra',currency:'EUR',providerSymbol:'DTG.DE',group:'Nutzfahrzeuge'},
+{name:'MTU Aero Engines',ticker:'MTX',isin:'DE000A0D9PT0',exchange:'Xetra',currency:'EUR',providerSymbol:'MTX.DE',group:'Luftfahrtantriebe'},
+{name:'Sartorius Vz',ticker:'SRT3',isin:'DE0007165631',exchange:'Xetra',currency:'EUR',providerSymbol:'SRT3.DE',group:'Labortechnik · Vorzugsaktie'},
+{name:'Symrise',ticker:'SY1',isin:'DE000SYM9999',exchange:'Xetra',currency:'EUR',providerSymbol:'SY1.DE',group:'Aromen · Duftstoffe'},
+{name:'Porsche Automobil Holding Vz',ticker:'PAH3',isin:'DE000PAH0038',exchange:'Xetra',currency:'EUR',providerSymbol:'PAH3.DE',group:'Beteiligungen · Vorzugsaktie'},
+{name:'Airbus',ticker:'AIR',isin:'NL0000235190',exchange:'Euronext Paris',currency:'EUR',providerSymbol:'AIR.PA',group:'Luftfahrt · Verteidigung'},
+{name:'Henkel Vz',ticker:'HEN3',isin:'DE0006048432',exchange:'Xetra',currency:'EUR',providerSymbol:'HEN3.DE',group:'Konsumgüter · Vorzugsaktie'},
+{name:'Mercedes-Benz Group',ticker:'MBG',isin:'DE0007100000',exchange:'Xetra',currency:'EUR',providerSymbol:'MBG.DE',group:'Automobil'},
+{name:'Zalando',ticker:'ZAL',isin:'DE000ZAL1111',exchange:'Xetra',currency:'EUR',providerSymbol:'ZAL.DE',group:'E-Commerce · Mode'},
+{name:'Hannover Rück',ticker:'HNR1',isin:'DE0008402215',exchange:'Xetra',currency:'EUR',providerSymbol:'HNR1.DE',group:'Rückversicherung'},
+{name:'Münchener Rück',ticker:'MUV2',isin:'DE0008430026',exchange:'Xetra',currency:'EUR',providerSymbol:'MUV2.DE',group:'Rückversicherung'},
+{name:'iShares Core MSCI World',ticker:'EUNL',isin:'IE00B4L5Y983',exchange:'Xetra',currency:'EUR',providerSymbol:'EUNL.DE',group:'ETF · Weltaktien'},
+{name:'iShares Core DAX',ticker:'EXS1',isin:'DE0005933931',exchange:'Xetra',currency:'EUR',providerSymbol:'EXS1.DE',group:'ETF · DAX'},
+{name:'Bitcoin',ticker:'BTC',isin:'',exchange:'Krypto · Referenzmarkt',currency:'EUR',providerSymbol:'BTC-EUR',group:'Krypto · Bitcoin'},
+{name:'Ethereum',ticker:'ETH',isin:'',exchange:'Krypto · Referenzmarkt',currency:'EUR',providerSymbol:'ETH-EUR',group:'Krypto · Ethereum'}
+];
+const normalizeSearch=s=>String(s||'').toLocaleLowerCase('de-DE').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+const UNITY_UNIVERSE_TABS=[['mine','Meine Auswahl'],['dax','DAX'],['mdax','MDAX'],['sdax','SDAX'],['tecdax','TecDAX'],['europe','Europa'],['usa','USA'],['etf','ETFs'],['crypto','Krypto'],['all','Alle']];
+const UNITY_DAX_TICKERS=new Set(['ADS','AIR','ALV','BAS','BAYN','BEI','BMW','BNR','CBK','CON','DB1','DBK','DHL','DTG','DTE','ENR','EOAN','FME','HEI','HEN3','IFX','MBG','MRK','MTX','MUV2','PAH3','RHM','RWE','SAP','SART3','SIE','SHL','SRT3','SY1','VNA','VOW3','ZAL']);
+const UNITY_MDAX_TICKERS=new Set(['EVT','FRA','JEN','LEG','NDX1','TKA']);
+const UNITY_SDAX_TICKERS=new Set(['ADN1','AT1','HBH','WFA']);
+const UNITY_TECDAX_TICKERS=new Set(['ADN1','EVT','IFX','JEN','NDX1','SAP','SRT3']);
+let unityUniverseCategory='all',unityUniverseTerm='';
+function unityCatalogClasses(s){const g=normalizeSearch(s.group),x=normalizeSearch(s.exchange);const c=[];if(UNITY_DAX_TICKERS.has(s.ticker))c.push('dax');if(UNITY_MDAX_TICKERS.has(s.ticker))c.push('mdax');if(UNITY_SDAX_TICKERS.has(s.ticker))c.push('sdax');if(UNITY_TECDAX_TICKERS.has(s.ticker))c.push('tecdax');if(/etf|etc|etn/.test(g))c.push('etf');if(/krypto/.test(g)||/krypto/.test(x))c.push('crypto');if(/nyse|nasdaq/.test(x))c.push('usa');if(!c.includes('usa')&&!c.includes('crypto')&&!c.includes('etf')&&(/xetra|euronext|borsa italiana|six|frankfurt|madrid|warsaw|london/.test(x)))c.push('europe');return c}
+function unityCatalogMatch(s,index){const term=normalizeSearch(unityUniverseTerm);if(term&&!normalizeSearch([s.name,s.ticker,s.isin,s.group,s.exchange].join(' ')).includes(term))return false;if(unityUniverseCategory==='all')return true;if(unityUniverseCategory==='mine')return !!catalogRecord(s)&&!catalogRecord(s).watchArchivedAt;return unityCatalogClasses(s).includes(unityUniverseCategory)}
+function catalogRecord(s){return cache.instruments.find(x=>(s.isin&&x.isin&&x.isin.toUpperCase()===s.isin)||(x.ticker?.toUpperCase()===s.ticker?.toUpperCase()&&x.exchange?.toLowerCase()===s.exchange?.toLowerCase()))}
+function catalogPresent(s){return !!catalogRecord(s)}
+function catalogResults(){const target=document.getElementById('catalog-results'),input=document.getElementById('catalog-search');if(!target||!input)return;const term=normalizeSearch(input.value);const matches=CATALOG.map((s,i)=>({s,i})).filter(({s})=>!term||normalizeSearch([s.name,s.ticker,s.isin,s.group,s.exchange].join(' ')).includes(term));let h='<div class="catalog-meta">'+matches.length+' Treffer · fester Offline-Katalog, keine Live-Börsensuche</div>';if(!matches.length)h+='<p class="muted">Kein Treffer im Startkatalog. Unten kannst du die Aktie manuell eintragen.</p>';for(const {s,i} of matches.slice(0,term?matches.length:15)){const known=catalogRecord(s),exists=!!known,archived=!!known?.watchArchivedAt;h+=`<div class="catalog-item"><div><strong>${esc(s.name)} <span class="tiny muted">${esc(s.ticker)}</span></strong><small>${esc(s.isin)} · ${esc(s.exchange)} · ${esc(s.currency)}</small><small>${esc(s.group)}</small></div><button type="button" class="${exists?'secondary':'primary'}" ${archived?'data-watch-restore="'+esc(known.id)+'"':'data-catalog="'+i+'"'} ${exists&&!archived?'disabled':''}>${archived?'Wiederherstellen':exists?'Vorhanden':'Hinzufügen'}</button></div>`}target.innerHTML=h}
+/* Additions live in local IndexedDB. Each is processed by the same research
+   workflow without changing source code, publishing personal watchlists or
+   requesting new GitHub permissions. Provider data remain indicative. */
+let unityRecentAddition=null;
+function unityRecentAdditionPanel(){
+  if(!unityRecentAddition)return '';
+  const r=unityRecentAddition;
+  return '<aside class="unity-added-status" aria-live="polite"><strong>'+esc(r.name)+' · '+esc(r.label)+'</strong><small>'+esc(r.detail)+'</small></aside>';
+}
+function unitySetAdditionState(stock,label,detail){
+  unityRecentAddition={id:stock.id,name:stock.name,label,detail};
+  if(typeof activeTab!=='undefined'&&activeTab==='stocks'&&typeof render==='function')render();
+}
+function unityDeferredFirstHistoryLoad(stock){
+  if(!stock?.providerSymbol||typeof unityLoadDynamicStock!=='function')return Promise.resolve(false);
+  const existing=typeof unityMarketForStock==='function'?unityMarketForStock(stock):null;
+  if(existing){
+    const good=existing.dynamicExperimental||
+      (typeof unityDataQuality==='function'&&unityDataQuality(existing,stock.isin||('@'+stock.providerSymbol))?.canCompare);
+    if(good)return Promise.resolve(true);
+  }
+  return Promise.resolve(unityLoadDynamicStock(stock)).then(()=>{
+    const found=typeof unityMarketForStock==='function'?unityMarketForStock(stock):null;
+    return !!found&&found.currency===stock.currency&&Number(found.price)>0;
+  });
+}
+async function unityFinishStockOnboarding(stock,preloadedChart=null){
+  unityRecentAddition={id:stock.id,name:stock.name,label:'Hinzugefügt',detail:'Kursquelle und Analysedaten werden automatisch geprüft.'};
+  await refresh();
+  if(preloadedChart){
+    if(typeof unityDynamicItems!=='undefined'&&stock.providerSymbol)
+      unityDynamicItems.set(stock.providerSymbol.toUpperCase(),preloadedChart);
+    if(typeof unityPersistDynamicHistory==='function'){
+      try{await unityPersistDynamicHistory(stock,preloadedChart)}
+      catch(e){console.warn('Lokale Kursreihe konnte nicht zwischengespeichert werden',e)}
+    }
+    unitySetAdditionState(stock,'Kursreihe verfügbar · indikativ',
+      'Historie lokal übernommen. Recherche-Radar und Tiefenanalyse verwenden sie als unbestätigte Referenz; für eine Kaufempfehlung sind weitere Quellen erforderlich.');
+    return;
+  }
+  if(!stock.providerSymbol){
+    unitySetAdditionState(stock,'Wertpapier gespeichert · Daten prüfen',
+      'Kein eindeutig zugeordnetes Börsensymbol. Stammdaten erst prüfen, bevor Kurse oder Analysen zugeordnet werden.');
+    return;
+  }
+  unityDeferredFirstHistoryLoad(stock).then(found=>{
+    unitySetAdditionState(stock,found?'Kursreihe verfügbar':'Daten prüfen',
+      found?'Die vorhandenen Kursdaten werden automatisch für Recherche-Radar und Tiefenanalyse verwendet. Inoffizielle Quellen bleiben gekennzeichnet.':
+      'Der automatische Kursabruf ist noch nicht verfügbar. Die Aktie bleibt in deiner Liste, ohne erfundene Bewertung.');
+  }).catch(e=>{
+    console.warn('Neuer Aktienkurs nicht abrufbar',e);
+    unitySetAdditionState(stock,'Daten prüfen','Der Kursabruf ist vorerst fehlgeschlagen. Die Aktie bleibt gespeichert.');
+  });
+}
+
+async function unityEnrichCatalogStocks(){
+  let changed=0;
+  for(const stock of stocks()){
+    try{
+      if(stock.providerSymbol)continue;
+      const ref=CATALOG.find(s=>s.ticker===stock.ticker&&s.currency===stock.currency&&(s.name===stock.name||!stock.isin||s.isin===stock.isin));
+      if(!ref?.providerSymbol)continue;
+      const next={...stock,providerSymbol:ref.providerSymbol,isin:stock.isin||ref.isin||''};
+      await put('instruments',next);
+      const i=cache.instruments.findIndex(x=>x.id===stock.id);if(i>=0)cache.instruments[i]=next;
+      changed++;
+    }catch(e){console.warn('Kursquellen-Zuordnung übersprungen',stock?.id,e)}
+  }
+  return changed;
+}
+async function addCatalogStock(index){const s=CATALOG[index];if(!s)throw Error('Unbekannter Katalogeintrag.');const known=catalogRecord(s);if(known?.watchArchivedAt)return unityRestoreStock(known.id);if(known)throw Error('Diese Aktie ist bereits in deiner Liste.');const obj={id:id(),name:s.name,ticker:s.ticker,isin:s.isin||'',exchange:s.exchange,currency:s.currency,providerSymbol:s.providerSymbol||'',createdAt:new Date().toISOString(),catalogSource:'UNITY Vorauswahl 0.13.97'};await put('instruments',obj);await audit('STOCK_CATALOG_ADD',obj.id,s.ticker);await unityFinishStockOnboarding(obj)}
+// Erweiterbare, schlüssellose Online-Stammdatensuche. Wikidata ist eine offene Wissensdatenbank,
+// keine Börsenstammdaten- oder Kursbestätigung. Treffer werden vor der Übernahme geprüft.
+let onlineResults=[],onlineRequest=0,onlineTimer=null,onlineAbort=null;
+const WIKI_API='https://www.wikidata.org/w/api.php';
+function wikiUrl(params){return WIKI_API+'?'+new URLSearchParams({format:'json',origin:'*',...params}).toString()}
+async function wikiFetch(params,signal){const response=await fetch(wikiUrl(params),{signal,credentials:'omit',headers:{Accept:'application/json'}});if(!response.ok)throw Error('Wikidata meldet HTTP '+response.status);const body=await response.json();if(body.error)throw Error(body.error.info||'Wikidata-Fehler');return body}
+const claimValue=claim=>claim?.mainsnak?.datavalue?.value;
+const claimId=claim=>claimValue(claim)?.id||'';
+const claimString=claim=>{const v=claimValue(claim);return typeof v==='string'?v.trim():''};
+const activeClaim=claim=>claim&&claim.rank!=='deprecated'&&!claim.qualifiers?.P582?.length;
+const uniq=arr=>[...new Set(arr.filter(Boolean))];
+const cleanIsin=v=>/^[A-Z]{2}[A-Z0-9]{10}$/.test(v||'')?v:'';
+const cleanTicker=v=>/^[A-Za-z0-9.\-^]{1,25}$/.test(v||'')?v.toUpperCase():'';
+// Nur bekannte Handelsplätze zuordnen. Handelswährung ist immer ein zu prüfender Vorschlag.
+function currencyHint(exchange){const v=normalizeSearch(exchange);if(/new york stock exchange|nasdaq|nyse/.test(v))return 'USD';if(/six swiss|swiss exchange|suisse/.test(v))return 'CHF';if(/xetra|frankfurt|euronext paris|paris stock|borsa italiana|milan stock|deutsche borse/.test(v))return 'EUR';if(/london stock/.test(v))return 'GBP';if(/stockholm/.test(v))return 'SEK';if(/oslo/.test(v))return 'NOK';if(/copenhagen/.test(v))return 'DKK';if(/tokyo stock/.test(v))return 'JPY';return ''}
+function wikiListings(entity,searchItem,exchanges){const claims=entity?.claims||{};const activeIsins=uniq((claims.P946||[]).filter(activeClaim).map(claimString).map(cleanIsin));const isin=activeIsins.length===1?activeIsins[0]:'';const name=entity?.labels?.de?.value||entity?.labels?.en?.value||searchItem.label||'';
+ const listings=[];
+ for(const claim of (claims.P414||[]).filter(activeClaim)){
+   const exchangeId=claimId(claim),exchange=exchanges[exchangeId]||'';
+   for(const q of (claim.qualifiers?.P249||[])){
+     const ticker=cleanTicker(typeof q.datavalue?.value==='string'?q.datavalue.value:'');
+     if(ticker)listings.push({name,ticker,isin,exchange,currency:currencyHint(exchange),qid:entity.id,source:'Wikidata',note:searchItem.description||'',ambiguousIsin:activeIsins.length>1});
+   }
+ }
+ // Bei separatem Ticker ohne eindeutige Börsenzuordnung keine Börse erfinden.
+ if(!listings.length){for(const claim of (claims.P249||[]).filter(activeClaim)){
+   const ticker=cleanTicker(claimString(claim));if(ticker)listings.push({name,ticker,isin,exchange:'',currency:'',qid:entity.id,source:'Wikidata',note:searchItem.description||'',ambiguousIsin:activeIsins.length>1});
+ }}
+ if(!listings.length&&isin)listings.push({name,ticker:'',isin,exchange:'',currency:'',qid:entity.id,source:'Wikidata',note:searchItem.description||'',ambiguousIsin:activeIsins.length>1});
+ return listings;
+}
+async function wikiSearchCandidates(term,signal){
+ const out=[],seen=new Set();
+ for(const language of ['de','en']){
+  const data=await wikiFetch({action:'wbsearchentities',search:term,language,uselang:language,type:'item',limit:'12'},signal);
+  for(const item of data.search||[])if(/^Q\d+$/.test(item.id)&&!seen.has(item.id)){seen.add(item.id);out.push(item)}
+  if(out.length>=12)break;
+ }
+ const q=term.trim().toUpperCase();
+ if(/^[A-Z]{2}[A-Z0-9]{10}$/.test(q)||/^[A-Z0-9.\-]{2,8}$/.test(q)){
+  const property=q.length===12?'P946':'P249';
+  try{
+   const data=await wikiFetch({action:'query',list:'search',srsearch:'haswbstatement:"'+property+'='+q+'"',srnamespace:'0',srlimit:'12'},signal);
+   for(const page of data.query?.search||[]){
+    const id=String(page.title||'');
+    if(/^Q\d+$/.test(id)&&!seen.has(id)){seen.add(id);out.push({id,label:q,description:'Wertpapierkennung aus Wikidata'})}
+   }
+  }catch(e){if(e.name==='AbortError')throw e}
+ }
+ return out.slice(0,24);
+}
+function onlineStatus(message){const el=document.getElementById('online-results');if(el)el.innerHTML='<p class="muted">'+esc(message)+'</p>'}
+function renderOnlineResults(){const el=document.getElementById('online-results');if(!el)return;
+ if(!onlineResults.length){onlineStatus('Kein passender Börseneintrag in den kostenlosen Quellen gefunden. Das bedeutet nicht, dass die Aktie nicht existiert. Versuche Name, Ticker oder ISIN.');return}
+ let h='<p class="catalog-meta">'+onlineResults.length+' mögliche Börseneinträge · Quelle je Treffer angegeben · keine geprüften Echtzeitkurse</p>';
+ for(let i=0;i<onlineResults.length;i++){
+  const s=onlineResults[i],present=catalogPresent(s),yahoo=s.searchKind==='yahoo';
+  const missing=[!s.ticker?'Ticker':'',!s.exchange?'Börse':'',!s.currency&&!yahoo?'Währung':'',!s.isin&&!yahoo?'ISIN':''].filter(Boolean);
+  const canAdd=yahoo||!missing.length;
+  const url=yahoo?'https://finance.yahoo.com/quote/'+encodeURIComponent(s.providerSymbol)+'/':'https://www.wikidata.org/wiki/'+encodeURIComponent(s.qid||'');
+  h+='<div class="catalog-item"><div><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.exchange||'Börse offen')+' · '+esc(s.currency||'Währung beim Hinzufügen automatisch prüfen')+'</small>'+
+  '<small>'+esc(s.source||'Wikidata')+' · <a href="'+url+'" target="_blank" rel="noopener noreferrer">Datenquelle</a></small>'+
+  (!s.isin?'<small class="muted">ISIN noch nicht bestätigt; keine operative UNITY-Freigabe.</small>':'<small>ISIN: '+esc(s.isin)+'</small>')+
+  (missing.length?'<small class="negative">Unvollständige Börsendaten: '+esc(missing.join(', '))+'</small>':'')+
+  '</div><button type="button" class="'+(present?'secondary':'primary')+'" data-online="'+i+'" '+(present||!canAdd?'disabled':'')+'>'+(present?'Vorhanden':canAdd?'Automatisch hinzufügen':'Daten fehlen')+'</button></div>';
+ }
+ el.innerHTML=h;
+}
+function verifiedCatalogSearch(term){
+ const q=normalizeSearch(term);
+ return q.length>=2?CATALOG.map((s,i)=>({s,i})).filter(({s})=>normalizeSearch([s.name,s.ticker,s.isin,s.group].join(' ')).includes(q)):[];
+}
+function showVerifiedCatalogMatches(matches){
+ const el=document.getElementById('online-results');if(!el)return;
+ el.innerHTML='<p class="catalog-meta">'+matches.length+' Treffer aus dem kuratierten UNITY-Stammdatenkatalog · keine Live-Kursbestätigung</p>'+
+ matches.map(({s,i})=>'<div class="catalog-item"><div><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.isin)+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</small><small>'+esc(s.group)+'</small></div><button type="button" class="'+(catalogPresent(s)?'secondary':'primary')+'" data-catalog="'+i+'" '+(catalogPresent(s)?'disabled':'')+'>'+(catalogPresent(s)?'Vorhanden':'Hinzufügen')+'</button></div>').join('');
+}
+async function searchOnline(){const input=document.getElementById('online-search');if(!input)return;const term=input.value.trim();const request=++onlineRequest;if(onlineAbort)onlineAbort.abort();onlineResults=[];
+ if(term.length<2){onlineStatus('Mindestens zwei Zeichen eingeben. Suche nach Unternehmensnamen, Börsenkürzel oder ISIN.');return}
+ const known=verifiedCatalogSearch(term);
+ if(known.length){showVerifiedCatalogMatches(known);return}
+ onlineAbort=new AbortController();const signal=onlineAbort.signal;onlineStatus('Weltweite Börsensuche läuft …');
+ try{
+  if(typeof unitySearchWorldwide==='function'){
+   try{
+    const global=await unitySearchWorldwide(term,signal);
+    if(request!==onlineRequest||activeTab!=='stocks')return;
+    if(global.length){onlineResults=global;renderOnlineResults();return}
+   }catch(error){if(error.name==='AbortError')return}
+  }
+  onlineStatus('Weltweite Börsenquelle ohne Treffer; prüfe offene Unternehmensdaten …');
+  const matches=await wikiSearchCandidates(term,signal);
+  const ids=uniq(matches.map(x=>x.id).filter(x=>/^Q\d+$/.test(x)));
+  if(!ids.length){if(request===onlineRequest)renderOnlineResults();return}
+  const detail=await wikiFetch({action:'wbgetentities',ids:ids.join('|'),props:'claims|labels',languages:'de|en'},signal);
+  const exIds=uniq(Object.values(detail.entities||{}).flatMap(e=>(e.claims?.P414||[]).filter(activeClaim).map(claimId)).filter(x=>/^Q\d+$/.test(x)));
+  const exData=exIds.length?await wikiFetch({action:'wbgetentities',ids:exIds.join('|'),props:'labels',languages:'de|en'},signal):{entities:{}};
+  const exchanges=Object.fromEntries(Object.entries(exData.entities||{}).map(([qid,e])=>[qid,e.labels?.en?.value||e.labels?.de?.value||'']));
+  if(request!==onlineRequest||activeTab!=='stocks')return;
+  onlineResults=matches.flatMap(m=>wikiListings(detail.entities?.[m.id],m,exchanges)).filter(s=>s.name&&(s.ticker||s.isin)).slice(0,24);
+  renderOnlineResults();
+ }catch(e){if(request!==onlineRequest||e.name==='AbortError')return;onlineStatus('Online-Suche derzeit nicht erreichbar: '+(e.message||'Netzwerkfehler')+'. Der Offline-Katalog und die manuelle Eingabe funktionieren weiter.')}
+}
+async function resolveWorldwideIsin(candidate){
+ if(!candidate?.name||!candidate.providerSymbol)return '';
+ try{
+  const term=candidate.name.slice(0,70),data=await wikiFetch({action:'wbsearchentities',search:term,language:'en',type:'item',limit:'8'});
+  const ids=(data.search||[]).map(x=>x.id).filter(x=>/^Q\d+$/.test(x));
+  if(!ids.length)return '';
+  const response=await wikiFetch({action:'wbgetentities',ids:ids.join('|'),props:'claims|labels',languages:'en|de'});
+  const key=candidate.providerSymbol.split('.')[0].toUpperCase(),possible=[];
+  for(const entity of Object.values(response.entities||{})){
+   const claims=entity.claims||{};
+   const tickers=(claims.P249||[]).filter(activeClaim).map(claimString).map(x=>x.toUpperCase());
+   for(const exchange of (claims.P414||[]).filter(activeClaim))for(const q of exchange.qualifiers?.P249||[])
+    if(typeof q.datavalue?.value==='string')tickers.push(q.datavalue.value.toUpperCase());
+   if(!tickers.includes(key)&&!tickers.includes(candidate.providerSymbol.toUpperCase()))continue;
+   for(const c of (claims.P946||[]).filter(activeClaim)){
+    const isin=cleanIsin(claimString(c));
+    if(isin)possible.push(isin);
+   }
+  }
+  return [...new Set(possible)].length===1?possible[0]:'';
+ }catch(e){return ''}
+}
+async function addOnlineStock(index){const s=onlineResults[index];if(!s)throw Error('Suchergebnis nicht mehr vorhanden.');const known=catalogRecord(s);if(known?.watchArchivedAt)return unityRestoreStock(known.id);if(known)throw Error('Die Aktie ist bereits in deiner Beobachtungsliste.');
+ if(s.searchKind==='yahoo'){
+   if(typeof unityFetchWorldwideHistory!=='function')throw Error('Kursprüfung nicht geladen');
+   const chart=await unityFetchWorldwideHistory(s.providerSymbol);
+   const isin=s.isin||await resolveWorldwideIsin(s);
+   const obj={id:id(),name:s.name,ticker:s.ticker,providerSymbol:s.providerSymbol,isin,
+     exchange:chart.exchange,currency:chart.currency,note:s.note||'',createdAt:new Date().toISOString(),
+     catalogSource:'Yahoo Finance (inoffiziell) über cors.dev',quality:'external-unverified',
+     sourceCheckedAt:new Date().toISOString(),isinSource:isin?'Wikidata (nicht börslich bestätigt)':'offen'};
+   if(!confirm('Aktie automatisch hinzufügen?\\n\\n'+obj.name+' · '+obj.ticker+'\\n'+obj.exchange+' · '+obj.currency+
+     '\\nLetzter verfügbarer Schlusskurs: '+number(chart.price,2)+' '+chart.currency+' ('+chart.date+')'+
+     '\\n\\nQuelle: inoffiziell über einen externen CORS-Dienst. Keine börslich geprüften Daten, keine operative Kaufempfehlung.'+
+     (isin?'':'\\nISIN nicht bestätigt.')))return;
+   if(catalogPresent(obj))throw Error('Aktie bereits vorhanden.');
+   await put('instruments',obj);
+   await audit('STOCK_WORLDWIDE_ADD',obj.id,obj.providerSymbol);
+   await unityFinishStockOnboarding(obj,chart);return;
+ }
+ if(!s.exchange||!s.currency||!s.isin){const form=document.getElementById('stock-form');if(!form)throw Error('Eingabeformular nicht gefunden.');for(const field of ['name','ticker','isin','exchange'])form.elements[field].value=s[field]||'';form.elements.currency.value=s.currency||'EUR';form.scrollIntoView({behavior:'smooth',block:'start'});alert('Die gefundenen Daten wurden ins Formular übernommen. Bitte Börse, ISIN und Währung prüfen und fehlende Angaben ergänzen. Noch nichts gespeichert.');return}
+ const message=`Aktie übernehmen?\n\n${s.name}\nTicker: ${s.ticker}\nISIN: ${s.isin}\nBörse: ${s.exchange}\nHandelswährung (Vorschlag): ${s.currency}\n\nQuelle: Wikidata (nicht börslich verifiziert). Bitte prüfen.`;
+ if(!confirm(message))return;
+ const obj={id:id(),name:s.name,ticker:s.ticker,isin:s.isin,exchange:s.exchange,currency:s.currency,createdAt:new Date().toISOString(),catalogSource:'Wikidata',sourceEntity:s.qid,sourceCheckedAt:new Date().toISOString(),quality:'external-unverified'};
+ await put('instruments',obj);await audit('STOCK_ONLINE_ADD',obj.id,s.qid+' '+s.ticker);await unityFinishStockOnboarding(obj);
+}
+const id=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const euro=v=>Number.isFinite(v)?new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(v):'–';
+const number=(v,d=2)=>Number.isFinite(v)?new Intl.NumberFormat('de-DE',{maximumFractionDigits:d,minimumFractionDigits:d}).format(v):'–';
+const stamp=s=>s?new Date(s).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):'–';
+const localNow=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)};
+const parse=(v)=>{if(v===null||v===undefined||String(v).trim()==='')return NaN;return Number(String(v).replace(',','.'))};
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('unity-lab',3);r.onupgradeneeded=()=>{for(const n of STORES)if(!r.result.objectStoreNames.contains(n))r.result.createObjectStore(n,{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function all(store){return new Promise((res,rej)=>{const r=db.transaction(store).objectStore(store).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function put(store,obj){return new Promise((res,rej)=>{const r=db.transaction(store,'readwrite').objectStore(store).put(obj);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function bulkInsert(data,replacements={}){return new Promise((res,rej)=>{const tx=db.transaction(STORES,'readwrite');for(const store of STORES){const os=tx.objectStore(store);for(const item of data[store]||[])os.add(item);for(const item of replacements[store]||[])os.put(item)}tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+async function audit(type,ref,detail){await put('audit',{id:id(),at:new Date().toISOString(),type,ref,detail})}
+async function refresh(){
+  for(const n of STORES)cache[n]=await all(n);
+  // Before showing any pending orders or running their new-EOD checks, migrate
+  // all outstanding legacy percentage instructions in one atomic transaction.
+  if(typeof unityAutoMigrateLegacy==='function'&&await unityAutoMigrateLegacy())
+    cache.settings=await all('settings');
+  render();
+}
+function stockRecords(){return [...(cache.instruments||[])].sort((a,b)=>a.name.localeCompare(b.name))}
+function stocks(){return stockRecords().filter(s=>!s.watchArchivedAt)}
+function archivedStocks(){return stockRecords().filter(s=>!!s.watchArchivedAt)}
+function unityOpenTradeCount(id){
+  if(typeof depotLedger==='function')return Math.max(0,depotLedger(id).qty);
+  const trades=(cache.transactions||[]).filter(t=>t.instrumentId===id&&!t.voidedAt&&(t.type==='BUY'||t.type==='SELL'));
+  return trades.reduce((n,t)=>n+(t.type==='BUY'?1:-1)*Number(t.quantity||0),0);
+}
+async function unityRemoveStock(id){
+  const s=cache.instruments.find(x=>x.id===id&&!x.watchArchivedAt);
+  if(!s)return false;
+  if(unityOpenTradeCount(id)>1e-8)throw Error('Diese Aktie ist noch im Testdepot. Bitte zuerst den Bestand fiktiv verkaufen oder die Aktie nur auf der Startseite ausblenden. Bestehende Buchungen bleiben geschützt.');
+  if(!confirm('„'+s.name+'“ aus der aktiven Aktienliste entfernen?\n\nBisherige Analysen, Kurse und abgeschlossene Testbuchungen bleiben erhalten. Die Aktie kannst du unter „Archivierte Aktien“ wiederherstellen.'))return false;
+  await put('instruments',{...s,watchArchivedAt:new Date().toISOString(),archiveReason:'Manuell aus Beobachtungsliste entfernt'});
+  await audit('STOCK_ARCHIVED',s.id,s.ticker+' · manuell entfernt');
+  if(typeof unityHomeSelected!=='undefined'&&unityHomeSelected===id)unityHomeSelected='';
+  if(typeof selectedUnityStock!=='undefined'&&selectedUnityStock===id)selectedUnityStock='';
+  await refresh();return true;
+}
+async function unityRestoreStock(id){
+  const s=cache.instruments.find(x=>x.id===id&&x.watchArchivedAt);
+  if(!s)return false;
+  const next={...s};delete next.watchArchivedAt;delete next.archiveReason;
+  next.watchHidden=false;next.restoredAt=new Date().toISOString();
+  await put('instruments',next);
+  await audit('STOCK_RESTORED',s.id,s.ticker+' · wiederhergestellt');
+  await refresh();return true;
+}
+function unityArchivedPanel(){
+  const saved=archivedStocks();if(!saved.length)return '';
+  let h='<details class="unity-archive-panel"><summary>Archivierte Aktien wiederherstellen ('+saved.length+')</summary>'+
+    '<p class="tiny muted">Diese Aktien sind nur aus den aktiven Listen entfernt. Historische Daten und frühere Testbuchungen bleiben erhalten.</p>';
+  for(const s of saved)h+='<div class="unity-archive-row"><span><strong>'+esc(s.name)+'</strong><small>'+esc(s.ticker)+' · '+esc(s.exchange)+'</small></span>'+
+    '<button type="button" class="secondary" data-watch-restore="'+esc(s.id)+'">Wiederherstellen</button></div>';
+  return h+'</details>';
+}
+function quotesFor(sid){return cache.quotes.filter(q=>q.instrumentId===sid).sort((a,b)=>b.quotedAt.localeCompare(a.quotedAt)||b.createdAt.localeCompare(a.createdAt))}
+function quote(sid){return quotesFor(sid)[0]}
+function buys(sid){return cache.transactions.filter(t=>t.instrumentId===sid&&t.type==='BUY'&&!t.voidedAt)}
+function calc(s){const tx=buys(s.id);const qty=tx.reduce((a,t)=>a+t.quantity,0);const cost=tx.reduce((a,t)=>a+t.amount*t.fx+(Number(t.fee)||0),0);const q=quote(s.id);const valid=!!q&&q.price>0&&q.fx>0;const value=valid?qty*q.price*q.fx:NaN;return {qty,cost,value,pnl:value-cost,quote:q,valid,tx:tx.length}}
+function tableHead(cols){return '<div class="tablewrap"><table><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'}
+function endTable(){return '</tbody></table></div>'}
+function summary(){const pos=stocks().map(s=>({s,...calc(s)})).filter(p=>p.qty>0);const incomplete=pos.filter(p=>!p.valid);const cost=pos.reduce((a,p)=>a+p.cost,0);const value=incomplete.length?NaN:pos.reduce((a,p)=>a+p.value,0);return {pos,incomplete,cost,value,pnl:value-cost}}
+function metrics(){const a=summary();return `<div class="grid"><div class="metric"><small>Hypothetisch investiert</small><strong>${euro(a.cost)}</strong></div><div class="metric"><small>Aktueller Depotwert</small><strong>${euro(a.value)}</strong></div><div class="metric"><small>Offener Gewinn / Verlust</small><strong class="${a.pnl>=0?'positive':'negative'}">${euro(a.pnl)}</strong><small>${a.cost>0&&Number.isFinite(a.pnl)?number(a.pnl/a.cost*100)+' %':'–'}</small></div><div class="metric"><small>Positionen</small><strong>${a.pos.length}</strong><small>${a.incomplete.length?'Bei '+a.incomplete.length+' fehlen Kurs/FX':''}</small></div></div>`}
+function overview(){return typeof unityHome==='function'?unityHome():(typeof unityComparisonView==='function'?unityComparisonView():'')} 
+function watchlistCards(){
+  // A single stock row contains its analysis and management actions.
+  // Hidden stocks remain accessible here so they can always be shown again.
+  const all=stocks(),visible=typeof unityHomeStocks==='function'?unityHomeStocks():all.filter(s=>!s.watchHidden);
+  const ordered=[...visible,...all.filter(s=>s.watchHidden)];
+  let h=`<section class="panel unity-unified-watchlist"><h2>Meine Aktien</h2><p class="muted">Aktie antippen: Kurs, Diagramm und UNITY-Analyse. Daneben direkt sortieren, auf der Startseite ausblenden oder aus der aktiven Liste entfernen. Frühere Daten bleiben beim Entfernen erhalten.</p><div class="unity-unified-list">`;
+  if(!ordered.length)h+='<p class="muted">Noch keine Aktien vorhanden. Füge unten eine Aktie hinzu.</p>';
+  for(const s of ordered){
+    const i=visible.findIndex(x=>x.id===s.id),q=typeof unityDisplayQuote==='function'?unityDisplayQuote(s):null,research=typeof unityResearchIndicator==='function'?unityResearchIndicator(s):null,pullback=typeof unityPullbackAlert==='function'?unityPullbackAlert(s):null,issuerBadge=typeof unityResearchBadge==='function'?unityResearchBadge(s):'';
+    const m=typeof unityMarketItem==='function'?unityMarketItem(s.isin):null;
+    const stored=quote(s.id),last=q?number(q.price,2)+' '+esc(s.currency):m?number(m.price,2)+' '+esc(s.currency):stored?number(stored.price,2)+' '+esc(s.currency):'Kurs noch nicht verfügbar';
+    const stamp=q?(q.precision==='15m-bar'?'15-Minuten-Referenz · '+esc(q.date):'Schlusskurs · '+esc(q.date)):m?'Schlusskurs · '+esc(m.date):stored?'Manuell erfasst · '+esc(stored.quotedAt.slice(0,10)):'Automatischer Kursabruf, sofern verfügbar';
+    h+=`<div class="unity-unified-row${s.watchHidden?' unity-unified-hidden':''}">
+      <button type="button" class="unity-unified-open" data-analyze="${esc(s.id)}" aria-label="${esc(s.name)}: Kurs und UNITY-Analyse öffnen">
+        <span class="unity-unified-name"><strong>${esc(s.name)}</strong>${issuerBadge}${pullback&&typeof unityPullbackLabel==='function'?unityPullbackLabel(s,pullback):''}${research?'<span class="home-research-flag home-research-'+esc(research.kind)+'">'+esc(research.label)+'</span>':''}${s.watchHidden?'<em>Auf Startseite ausgeblendet</em>':''}</span>
+        <small>${esc(s.ticker)} · ${esc(s.exchange)} · ${esc(s.currency)}</small>
+        <span class="unity-unified-price">${last}</span><small>${stamp}</small>
+        <span class="unity-unified-link">Kurs &amp; Analyse ansehen <span aria-hidden="true">›</span></span>
+      </button>
+      <div class="unity-unified-actions" aria-label="Reihenfolge und Sichtbarkeit für ${esc(s.name)}">
+        <div class="unity-unified-arrows">
+          <button type="button" class="secondary" data-home-shift="${esc(s.id)}" data-direction="-1" ${i<=0?'disabled':''} aria-label="${esc(s.name)} nach oben verschieben">↑</button>
+          <button type="button" class="secondary" data-home-shift="${esc(s.id)}" data-direction="1" ${i<0||i===visible.length-1?'disabled':''} aria-label="${esc(s.name)} nach unten verschieben">↓</button>
+        </div>
+        <button type="button" class="unity-unified-toggle" data-home-toggle="${esc(s.id)}" aria-label="${esc(s.name)} ${s.watchHidden?'auf Startseite anzeigen':'auf Startseite ausblenden'}">${s.watchHidden?'Anzeigen':'Ausblenden'}</button><button type="button" class="unity-unified-remove" data-watch-remove="${esc(s.id)}" aria-label="${esc(s.name)} aus Aktienliste entfernen" title="Aus Liste entfernen">Entfernen</button>
+      </div>
+    </div>`;
+  }
+  return h+'</div></section>';
+}
+function unityCatalogPanel(){const matches=CATALOG.map((s,i)=>({s,i})).filter(({s,i})=>unityCatalogMatch(s,i));const tabStyle='display:flex;gap:7px;overflow-x:auto;padding:3px 0 8px;margin:0 -2px';let h='<section class="panel"><h2>Handelsplatz</h2><div class="universe-tabs" style="'+tabStyle+'">';for(const [id,label] of UNITY_UNIVERSE_TABS){h+='<button type="button" data-universe-category="'+id+'" class="'+(unityUniverseCategory===id?'active':'secondary')+'" '+(unityUniverseCategory===id?'style="background:#164d70;color:#fff;border-color:#164d70"':'')+'>'+label+'</button>'}h+='</div><p class="universe-note">'+matches.length+' Werte · direkt aus der Übersicht in „Meine Auswahl“ übernehmen. Erst dann werden Kurs und Analyse geladen.</p><div class="catalog-results">';if(!matches.length)h+='<p class="muted">In dieser Rubrik ist noch kein Wert ausgewählt. Wähle „Alle“ oder eine Marktrubrik.</p>';for(const {s,i} of matches){const known=catalogRecord(s),exists=!!known,archived=!!known?.watchArchivedAt;h+='<div class="catalog-item"><div><strong>'+esc(s.name)+' <span class="tiny muted">'+esc(s.ticker)+'</span></strong><small>'+esc(s.isin||'Krypto')+' · '+esc(s.exchange)+' · '+esc(s.currency)+'</small><small>'+esc(s.group)+'</small></div><button type="button" class="'+(exists?'secondary':'primary')+'" '+(archived?'data-watch-restore="'+esc(known.id)+'"':'data-catalog="'+i+'"')+' '+(exists&&!archived?'disabled':'')+'>'+(archived?'Wiederherstellen':exists?'In meiner Auswahl':'Auswählen')+'</button></div>'}return h+'</div><label class="universe-search">Wert gezielt suchen<input id="universe-search" type="search" autocomplete="off" value="'+esc(unityUniverseTerm)+'" placeholder="Name, Kürzel oder ISIN"></label></section>'}
+function stocksView(){return unityRecentAdditionPanel()+unityCatalogPanel()+watchlistCards()+unityArchivedPanel()+`<details class="panel"><summary><b>Wert außerhalb des Katalogs suchen</b></summary><p class="muted">Nur falls ein Wert noch nicht im Analyseuniversum enthalten ist.</p><h2>Aktie weltweit suchen</h2>
+ <p class="muted">Ein Suchfeld für <b>Unternehmensname, Börsenkürzel oder ISIN</b>. Zuerst UNITY-Stammdaten, dann internationale Börseneinträge. Du musst keine Börsen- oder Währungsfelder ausfüllen.</p>
+ <label>Wertpapier suchen<input id="online-search" type="search" autocomplete="off" placeholder="z. B. Jenoptik, ASML, AAPL oder ISIN"></label>
+ <div class="actions" style="margin-top:10px"><button type="button" class="primary" id="online-search-button">Aktien suchen</button></div>
+ <div id="online-results" class="catalog-results"><p class="muted">Mindestens zwei Zeichen eingeben.</p></div>
+ <p class="tiny muted">Die internationale Suche nutzt die inoffizielle Yahoo-Finance-Suche über den externen Dienst cors.dev; Suchbegriff und Börsenkürzel werden an diese Dienste übertragen. Alternativ wird Wikidata abgefragt. Kein API-Schlüssel und keine zusätzlichen Kosten. Verfügbarkeit, Aktualität und Nutzungsrechte sind nicht garantiert. Ungeprüfte Daten erlauben keine operative Kauf- oder Verkaufsempfehlung.</p>
+ </details>`}
+function stockOptions(){return stocks().map(s=>`<option value="${esc(s.id)}">${esc(s.name)} (${esc(s.ticker)}, ${esc(s.currency)})</option>`).join('')}
+function tradesView(){let h=(typeof depotCsvPanel==='function'?depotCsvPanel():'')+(typeof depotSellForm==='function'?depotSellForm():'')+`<div class="panel"><h2>Hypothetischen Kauf / Zukauf erfassen</h2><div class="hint">Jeder Zukauf ist eine neue, datierte Buchung. Die ursprünglichen Einträge bleiben erhalten. Für eine Korrektur kann ein fehlerhafter Eintrag storniert werden; er bleibt im Protokoll sichtbar.</div><form id="trade-form"><label>Aktie<select name="instrumentId" id="trade-stock" required>${stockOptions()}</select></label><label>Entscheidungszeitpunkt<input name="decidedAt" type="datetime-local" value="${localNow()}" required></label><label>Simulierter Kaufzeitpunkt<input name="executedAt" type="datetime-local" value="${localNow()}" required></label><label>Hypothetischer Betrag in Handelswährung<input name="amount" type="number" step="any" min="0.01" required></label><label>Simulierter Kaufkurs<input name="price" type="number" step="any" min="0.000001" required></label><label>EUR je 1 Handelswährung<input name="fx" type="number" step="any" min="0.000001" required placeholder="EUR = 1"></label><label>Gebühr in EUR<input name="fee" type="number" step="0.01" min="0" value="1.00" required><small>Standard 1,00 € je Simulation; bei Bedarf ändern.</small></label><label class="full">Notiz / Entscheidungsgrund<textarea name="note" maxlength="1000" placeholder="Warum dieser hypothetische Einstieg?"></textarea></label><div class="full actions"><button class="primary" ${stocks().length?'':'disabled'}>Hypothetischen Kauf speichern</button></div></form></div><div class="panel"><h2>Transaktionshistorie</h2>`;h+=tableHead(['Entscheidung','Simulierter Handel','Aktie','Betrag','Kurs / Stückzahl','Status']);const ts=[...cache.transactions].sort((a,b)=>b.executedAt.localeCompare(a.executedAt));if(!ts.length)h+='<tr><td colspan="6" class="empty">Noch keine Buchungen vorhanden.</td></tr>';for(const t of ts){const s=cache.instruments.find(s=>s.id===t.instrumentId);h+=`<tr><td>${stamp(t.decidedAt)}</td><td>${stamp(t.executedAt)}</td><td>${esc(s?.name||'Unbekannt')}<br><b>${t.type==='SELL'?'Verkauf':'Kauf'}</b><br><span class="tiny muted">${esc(t.note||'')}</span></td><td>${number(t.amount)} ${esc(s?.currency||'')}<br><span class="tiny">${euro(t.amount*t.fx)} · Gebühr ${euro(Number(t.fee)||0)}</span></td><td>${number(t.price,4)}<br><span class="tiny">${number(t.quantity,4)} Stück</span></td><td>${t.voidedAt?`<span class="negative">Storniert ${stamp(t.voidedAt)}</span>`:`<button class="danger" data-void="${esc(t.id)}">Stornieren</button>`}</td></tr>`}return h+endTable()+'</div>'}
+function backupView(){
+ const folder='UNITY-LAB/';
+ return '<section class="panel unity-backup-intro"><h2>Datensicherung · UNITY LAB</h2>'+
+ '<p>Die Sicherungen werden künftig <b>nach Zweck getrennt</b>. Sie bleiben auf deinem iPhone gespeichert, bis du sie bewusst in pCloud ablegst. Wir ändern keine vorhandenen Dateien oder Ordner automatisch.</p>'+
+ '<div class="unity-backup-folderlist">'+
+ '<div class="unity-backup-folder"><strong>1 · Änderungssicherung</strong><code>'+folder+'01-AENDERUNGEN/</code><small>BASIS und alle AENDERUNG-Dateien gehören <b>zusammen</b> in diesen Ordner.</small></div>'+
+ '<div class="unity-backup-folder"><strong>2 · Vollsicherung</strong><code>'+folder+'02-VOLLSICHERUNG/</code><small>Unabhängige vollständige JSON-Rückfallebene – nicht mit Änderungen mischen.</small></div>'+
+ '</div><p class="tiny muted">Diese Unterordner bitte einmal in der privaten pCloud anlegen. Bestehende Dateien nicht einzeln verschieben: Für eine inkrementelle Wiederherstellung müssen BASIS und alle späteren AENDERUNG-Dateien gemeinsam auffindbar bleiben.</p>'+
+ (typeof unityIncBackupState==='function'&&unityIncBackupState()?'<p class="unity-backup-migrate"><b>Bestehende Änderungssicherungen erkannt.</b> Beim Wechsel zum neuen Ordner entweder alle bisherigen BASIS-/AENDERUNG-Dateien gemeinsam verschieben oder unten „Neue vollständige BASIS“ auswählen und in 01-AENDERUNGEN/ sichern. Sonst könnte eine spätere Wiederherstellung scheitern.</p>':'')+'</section>'+
+ '<section class="panel unity-backup-panel"><h3>01 · Nur Änderungen sichern</h3>'+
+ '<div class="unity-cloud-auto" id="unity-cloud-auto-status">'+(typeof unityCloudStatusHtml==="function"?unityCloudStatusHtml():'')+'</div>'+
+ '<p><b>Regelmäßige Sicherung:</b> SHA-256-Prüfung erkennt geänderte Datensätze. Unveränderte Kursreihen werden nicht erneut vollständig gespeichert.</p>'+
+ '<p><b>Zielordner:</b> <code>UNITY-LAB/01-AENDERUNGEN/</code></p>'+
+ '<div class="unity-backup-actions"><button type="button" class="primary" id="inc-pcloud">Änderungen vorbereiten</button>'+
+ '<button type="button" class="secondary" id="inc-share" '+(unityIncPending&&!unityIncPending.offered?'':'hidden')+'>Datei nach pCloud teilen</button>'+
+ '<button type="button" class="secondary" id="inc-confirm" '+(unityIncPending?.offered?'':'hidden')+'>Speicherung in pCloud bestätigen</button></div>'+
+ (typeof unityIncSummary==="function"?'<p class="tiny muted">'+unityIncSummary()+'</p>':'')+
+ '<details class="unity-backup-details"><summary>Was bedeuten BASIS und AENDERUNG?</summary>'+
+ '<p>Die erste Datei mit dem Zusatz BASIS enthält den kompletten Startbestand. Danach entstehen AENDERUNG-Dateien mit nur den veränderten Datensätzen. Bei der Wiederherstellung werden alle Dateien einer Kette benötigt. Bitte keine AENDERUNG-Datei isoliert löschen.</p>'+
+ '<button type="button" class="secondary" id="inc-new-base">Neue vollständige BASIS für diesen Ordner beginnen</button>'+
+ '<p class="tiny muted">Erst wenn die neue BASIS in pCloud geprüft wurde, können ältere Ketten separat archiviert werden. Kein automatisches Löschen.</p></details>'+
+ '<p class="tiny muted"><b>Aktuell noch manuell:</b> Die iPhone-Dateifreigabe wählt den Zielordner nicht selbst. Erst die tatsächliche Ablage in pCloud prüfen, dann die Speicherung bestätigen.</p>'+
+ '<p id="unity-backup-status" class="unity-backup-status" role="status" aria-live="polite"></p></section>'+
+ '<section class="panel"><h3>Änderungssicherung wiederherstellen</h3>'+
+ '<p>Aus <code>01-AENDERUNGEN</code> genau eine BASIS und alle zugehörigen AENDERUNG-Dateien zusammen auswählen. UNITY prüft die Kette und übernimmt nur fehlende Datensätze. Abweichende vorhandene Daten bleiben unangetastet.</p>'+
+ '<label>Sicherungskette auswählen<input type="file" accept="application/json,.json" multiple id="inc-import-file"></label>'+
+ '<div class="actions"><button type="button" class="secondary" id="inc-import">Dateien prüfen und fehlende Daten ergänzen</button></div></section>'+
+ '<section class="panel unity-backup-full"><h3>02 · Vollsicherung · zusätzliche Sicherheit</h3>'+
+ '<p><b>Zielordner:</b> <code>UNITY-LAB/02-VOLLSICHERUNG/</code></p>'+
+ '<p>Hier wird bewusst <b>eine vollständige Datei</b> mit dem gesamten lokalen UNITY-Bestand erstellt. Nur gelegentlich als unabhängige Rückfallebene nötig – nicht nach jeder kleinen Änderung.</p>'+
+ '<div class="unity-backup-actions"><button type="button" class="secondary" id="backup-pcloud">Vollsicherung an pCloud teilen</button>'+
+ '<button type="button" class="secondary" id="export">Vollsicherung herunterladen</button></div>'+
+ '<label>Vollständiges JSON-Backup auswählen<input type="file" accept="application/json,.json" id="import-file"></label>'+
+ '<div class="actions"><button type="button" class="secondary" id="import">Vollsicherung prüfen und ergänzen</button></div>'+
+ '<p class="tiny muted">Auch bisherige Dateien vom Typ UNITY-LAB_BACKUP bleiben über diese Auswahl importierbar.</p></section>'+
+ '<section class="panel unity-exchange-panel"><h3>03 · Austausch für PC / Hintergrundprozess (nur Prüfung)</h3>'+
+ '<p>Exportiert ausschließlich die offenen automatischen Aktien-Testaufträge, die zugehörigen Aktienkennungen, die bisherigen automatischen Testbuchungen und das Euro-Gesamtbudget. Keine API-Schlüssel, keine vollständigen persönlichen Archive und <b>keine automatische Orderfreigabe</b>.</p>'+
+ '<p><b>Privater pCloud-Zielordner (Vorschlag):</b> <code>UNITY-LAB/03-AUSTAUSCH/</code>. Er ist unabhängig von BASIS- und ÄNDERUNGSSICHERUNGEN. Die Datei wird nur auf deinen ausdrücklichen Wunsch geteilt. <b>Neu: Die Austauschdatei wird mit AES-256-GCM verschlüsselt.</b> Vergib dafür ein <b>eigenes Passwort mit mindestens 12 Zeichen</b> (nicht das pCloud-Kontopasswort). Es wird nur im iPhone zur Verschlüsselung verwendet, nicht in UNITY gespeichert. Ohne dieses Passwort kann die Datei später nicht entschlüsselt werden.</p>'+
+ '<details class="unity-exchange-apple-help"><summary>Apple Passwörter mit Face ID verwenden</summary>'+
+ '<p>Einmal in der iPhone-App <b>Passwörter</b> unter <b>Alle → Neues Passwort</b> einen Eintrag anlegen: Webseite <code>'+(typeof location==='undefined'?'Adresse der UNITY-Web-App':esc(location.hostname))+'</code>, Benutzername <code>unity-austausch</code> und ein <b>eigenes sicheres Austauschpasswort</b> (nicht dein Apple-ID- oder pCloud-Passwort). Danach beim Passwortfeld den Vorschlag <b>Passwörter</b> wählen; iOS kann die Freigabe mit Face ID bestätigen.</p>'+
+ '<p class="tiny muted">Apple Passwörter bietet das Passwort gegebenenfalls nach dem Aktivieren des Eingabefelds an. <b>Das Feld selbst startet Face ID nicht.</b> Wenn kein Vorschlag erscheint, kannst du das gespeicherte Passwort in der App Passwörter kopieren und hier über die Tastatur einsetzen. UNITY speichert das Austauschpasswort nicht. Es gibt keine Verbindung zu deiner Apple-ID.</p></details>'+
+ '<form id="unity-exchange-create-form" class="unity-exchange-credential-form" autocomplete="on" novalidate>'+
+ '<label class="unity-exchange-account">Austauschkennung für Apple Passwörter<input type="text" id="unity-exchange-autofill-username" name="username" autocomplete="username" value="unity-austausch" autocapitalize="none" autocorrect="off" spellcheck="false"></label>'+
+ '<div class="unity-exchange-pass"><label>1 · Austauschpasswort<input id="unity-exchange-password" type="password" name="password" autocomplete="current-password" minlength="12" maxlength="256" spellcheck="false" placeholder="Hier tippen: Passwort aus Apple Passwörter wählen"></label></div>'+
+ '<button type="button" class="secondary" id="unity-exchange-focus-password">Passwortfeld aktivieren</button>'+
+ '<p class="tiny muted">Danach den Passwortvorschlag von iOS oberhalb der Tastatur wählen. Face ID wird bei Bedarf von iOS gestartet, nicht durch UNITY.</p>'+
+ '<details class="unity-exchange-confirm-detail"><summary>Passwort bei erster manueller Eingabe wiederholen (optional)</summary>'+
+ '<label>Passwort wiederholen<input id="unity-exchange-password-confirm" type="password" name="password-confirm" autocomplete="off" minlength="12" maxlength="256" spellcheck="false" placeholder="Nur zur Kontrolle bei erstmaliger Vergabe"></label></details></form>'+
+ '<div class="unity-backup-actions"><button type="button" class="primary" id="unity-exchange-prepare">Austauschdatei vorbereiten</button>'+
+ '<button type="button" class="secondary" id="unity-exchange-share" '+(typeof unityExchangePending!=='undefined'&&unityExchangePending?'':'hidden')+'>Datei teilen</button></div>'+
+ '<details class="unity-exchange-inspect-detail"><summary>Vorhandene Austauschdatei später prüfen (nur lesen)</summary>'+
+ '<p class="tiny muted">Diesen Bereich brauchst du erst, wenn eine verschlüsselte Austauschdatei existiert. Er ist für die erstmalige Erstellung nicht erforderlich.</p>'+
+ '<label>Vorhandene Austauschdatei auswählen<input type="file" id="unity-exchange-inspect-file" accept=".json,application/json"></label>'+
+ '<form id="unity-exchange-inspect-form" class="unity-exchange-credential-form" autocomplete="on" novalidate>'+
+ '<label class="unity-exchange-account">Austauschkennung für Apple Passwörter<input type="text" name="username" autocomplete="username" value="unity-austausch" autocapitalize="none" autocorrect="off" spellcheck="false"></label>'+
+ '<label>Passwort zum Entschlüsseln (Apple Passwörter)<input id="unity-exchange-inspect-password" type="password" name="password" autocomplete="current-password" minlength="12" maxlength="256" spellcheck="false" placeholder="Passwort aus Apple Passwörter wählen"></label></form>'+
+ '<button type="button" class="secondary" id="unity-exchange-inspect">Entschlüsseln und prüfen · nur lesen</button></details>'+
+ '<p id="unity-exchange-status" role="status" aria-live="polite" class="unity-backup-status">Noch keine Datei vorbereitet. Importkontrolle verändert keine Depotdaten.</p></section>'+
+ '<details class="panel unity-backup-details" id="unity-sync-manual-panel"><summary>04 · Verschlüsselter Änderungsabgleich (iPhone / später PC) · Test</summary>'+
+ '<p>Nur bewusst ausgelöste Dateiübertragung über die private pCloud – <b>keine direkte Cloud-Anmeldung</b>. In diesem ersten Test werden ausschließlich Aktien-Stammdaten und Analysen übertragen; keine Depotbuchungen, keine offenen Kaufaufträge, keine Passwörter.</p>'+
+ '<p class="tiny muted">Die erste Datei enthält die pilothaft freigegebenen Datensätze. Nach bestätigter Ablage enthalten Folgepakete nur Änderungen. Bestehende abweichende Datensätze werden <b>niemals automatisch überschrieben</b>. Der Import ergänzt nach ausdrücklicher Bestätigung nur völlig neue IDs.</p>'+
+ '<p><b>Privater pCloud-Zielordner:</b> <code>UNITY-LAB/03-AUSTAUSCH/</code>. Diese verschlüsselten Dateien unabhängig von den normalen Sicherungen aufbewahren.</p>'+
+ '<label>Austauschpasswort (mindestens 12 Zeichen, nicht das pCloud-Passwort)<input id="unity-sync-password" type="password" autocomplete="current-password" minlength="12" maxlength="256" spellcheck="false" placeholder="Passwort aus Apple Passwörter oder manuell"></label>'+
+ '<div class="unity-backup-actions"><button type="button" class="secondary" id="unity-sync-prepare">Änderungspaket verschlüsseln</button>'+
+ '<button type="button" class="secondary" id="unity-sync-share" '+(typeof unitySyncPending!=='undefined'&&unitySyncPending?'':'hidden')+'>Datei in pCloud ablegen</button>'+
+ '<button type="button" class="secondary" id="unity-sync-confirm" '+(typeof unitySyncPending!=='undefined'&&unitySyncPending?.offered?'':'hidden')+'>Ablage in pCloud bestätigen</button></div>'+
+ '<p class="tiny muted">Die Ablage muss selbst in pCloud kontrolliert werden. Das Schließen des Teilen-Menüs ist kein Speichernachweis. Das Austauschpasswort wird nicht gespeichert.</p>'+
+ '<details class="unity-backup-details"><summary>Verschlüsselte Datei auf diesem Gerät prüfen oder fehlende Datensätze ergänzen</summary>'+
+ '<label>UNITY-SYNC-Datei auswählen<input type="file" id="unity-sync-file" accept=".json,application/json"></label>'+
+ '<div class="unity-backup-actions"><button type="button" class="secondary" id="unity-sync-inspect">Entschlüsseln und Unterschiede prüfen</button>'+
+ '<button type="button" class="secondary" id="unity-sync-import-new" '+(typeof unitySyncIncoming!=='undefined'&&unitySyncIncoming?.review?.counts?.new?'':'hidden')+'>Nur bisher fehlende Datensätze übernehmen</button></div>'+
+ '<div id="unity-sync-review" class="tiny muted"></div>'+
+ '</details>'+
+ '<p id="unity-sync-status" role="status" aria-live="polite" class="unity-backup-status">Noch kein Änderungspaket vorbereitet. Keine automatische Synchronisation aktiv.</p></details>'+
+ '<section class="panel unity-cloud-future"><h3>Geplante direkte pCloud-Verbindung</h3>'+
+ '<p><b>Ziel:</b> Einmalige sichere Freigabe von pCloud, danach ein Knopfdruck in UNITY → automatischer Upload in den richtigen privaten Unterordner → Bestätigung erst nach erfolgreicher Cloud-Prüfung.</p>'+
+ '<p class="tiny muted">Noch nicht verbunden: Dafür benötigen wir eine geschützte OAuth-Anbindung an die pCloud-API. Die aktuelle GitHub-Pages-App darf sich nicht als automatisch synchronisiert ausgeben oder Zugangstokens ungeschützt im öffentlich ausgelieferten Code speichern.</p></section>';
+}
+function render(){const pages={overview,stocks:stocksView,radar:unityCapitalView,analysis:analysisView,trades:tradesView,backup:backupView};document.getElementById('app').innerHTML=pages[activeTab]();if(activeTab==='backup'&&typeof unityCloudCheck==='function'&&!unityCloudChecked)unityCloudCheck().catch(()=>{});if(activeTab==='radar'&&typeof unityCapitalLoad==='function')unityCapitalLoad().catch(()=>{});if(activeTab==='stocks'){catalogResults();onlineResults=[];onlineRequest++;if(onlineAbort)onlineAbort.abort()}document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab))}
+async function handleForm(e){if(!e.target.matches('form')||['unity-fund','unity-csv','sell-form'].includes(e.target.id))return;e.preventDefault();if(e.target.id==='unity-exchange-create-form'||e.target.id==='unity-exchange-inspect-form')return;const f=e.target, d=Object.fromEntries(new FormData(f));try{if(f.id==='stock-form'){const ticker=d.ticker.trim().toUpperCase();if(cache.instruments.some(x=>x.ticker.toUpperCase()===ticker&&x.exchange.toLowerCase()===d.exchange.trim().toLowerCase()))throw Error('Ticker und Börsenplatz sind bereits vorhanden.');const s={id:id(),name:d.name.trim(),ticker,isin:d.isin.trim().toUpperCase(),exchange:d.exchange.trim(),currency:d.currency,createdAt:new Date().toISOString()};if(!s.name||!s.ticker||!s.exchange)throw Error('Pflichtfelder fehlen.');await put('instruments',s);await audit('STOCK_ADD',s.id,s.ticker)}else if(f.id==='quote-form'){const s=cache.instruments.find(x=>x.id===d.instrumentId);if(!s)throw Error('Aktie fehlt.');const price=parse(d.price),fx=parse(d.fx);if(!(price>0&&fx>0))throw Error('Kurs und FX müssen positiv sein.');if(new Date(d.quotedAt).getTime()>Date.now()+60000)throw Error('Kurszeitpunkt liegt in der Zukunft.');const q={id:id(),instrumentId:s.id,price,fx,quotedAt:new Date(d.quotedAt).toISOString(),createdAt:new Date().toISOString(),source:d.source.trim()||'Manuelle Eingabe',quality:'manual-unverified'};await put('quotes',q);await audit('QUOTE_ADD',q.id,s.ticker)}else if(f.id==='trade-form'){const s=cache.instruments.find(x=>x.id===d.instrumentId);if(!s)throw Error('Aktie fehlt.');const amount=parse(d.amount),price=parse(d.price),fx=parse(d.fx),fee=parse(d.fee||0);if(!(amount>0&&price>0&&fx>0&&fee>=0))throw Error('Betrag, Kurs und FX müssen positiv sein; die Gebühr darf nicht negativ sein.');const decidedAt=new Date(d.decidedAt),executedAt=new Date(d.executedAt);if(!Number.isFinite(decidedAt.getTime())||!Number.isFinite(executedAt.getTime()))throw Error('Datum ungültig.');if(decidedAt>executedAt)throw Error('Die Entscheidung darf nicht nach dem simulierten Kauf liegen.');if(executedAt.getTime()>Date.now()+60000)throw Error('Zukünftige Käufe dürfen nicht als bereits ausgeführt gebucht werden.');const t={id:id(),instrumentId:s.id,decidedAt:decidedAt.toISOString(),executedAt:executedAt.toISOString(),type:'BUY',amount,price,fx,fee,quantity:amount/price,note:d.note.trim(),createdAt:new Date().toISOString()};await put('transactions',t);await audit('BUY_ADD',t.id,s.ticker)}else if(f.id==='strategy-form'){const weights={};for(const k of keys){const v=parse(d[k]);if(!Number.isInteger(v)||v<0||v>100)throw Error('Gewichte müssen ganze Prozentwerte von 0 bis 100 sein.');weights[k]=v}if(Object.values(weights).reduce((a,b)=>a+b,0)!==100)throw Error('Die Gewichte müssen zusammen genau 100 % ergeben.');if(!d.version.trim()||!d.reason.trim())throw Error('Name und Hypothese sind Pflicht.');const mode=e.submitter?.value||'draft';if(mode==='active'&&!confirm('Neue Strategieversion aktivieren? Bisherige Versionen bleiben archiviert.'))return;const s={id:id(),version:d.version.trim(),weights,reason:d.reason.trim(),status:mode==='active'?'active':'draft',createdAt:new Date().toISOString()};if(mode==='active')await deactivateStrategies();await put('strategies',s);await audit('STRATEGY_ADD',s.id,s.version)}await refresh();}catch(err){alert(err.message||String(err))}}
+async function deactivateStrategies(){for(const s of cache.strategies.filter(x=>x.status==='active')){await put('strategies',{...s,status:'archived'});await audit('STRATEGY_ARCHIVE',s.id,s.version)}}
+async function activateStrategy(sid){const s=cache.strategies.find(x=>x.id===sid&&x.status==='draft');if(!s||!confirm('Diesen Strategieentwurf aktivieren?'))return;await deactivateStrategies();await put('strategies',{...s,status:'active',activatedAt:new Date().toISOString()});await audit('STRATEGY_ACTIVATE',s.id,s.version);await refresh()}
+async function voidTrade(tid){const t=cache.transactions.find(x=>x.id===tid&&!x.voidedAt);if(!t)return;if(t.type==='BUY'&&typeof depotActiveTrades==='function'){let n=0;for(const x of depotActiveTrades(t.instrumentId).filter(x=>x.id!==tid)){n+=x.type==='BUY'?Number(x.quantity):-Number(x.quantity);if(n< -1e-8)throw Error('Dieser Kauf kann nicht storniert werden, weil spätere Verkäufe davon abhängen. Bitte zuerst die betreffenden Verkäufe stornieren.')}}if(!confirm('Simulierten '+(t.type==='SELL'?'Verkauf':'Kauf')+' stornieren? Die Buchung bleibt sichtbar.'))return;await put('transactions',{...t,voidedAt:new Date().toISOString()});await audit(t.type==='SELL'?'SELL_VOID':'BUY_VOID',tid,'Storno');await refresh()}
+/* Local-first, private snapshot. No pCloud tokens, folder URLs, or
+   credentials are stored in the public repository or inside backups.
+   The Share Sheet is user-mediated; its completion does NOT prove upload. */
+async function unityBackupFile(){
+  const payload={format:'unity-lab-backup',schema:3,exportedAt:new Date().toISOString(),data:{}};
+  for(const n of STORES){const records=await all(n);payload.data[n]=n==='settings'?records.filter(x=>x?.id!=='unity-lab-incremental-checkpoint-v1'):records;}
+  const name='UNITY-LAB-VOLLSICHERUNG_'+payload.exportedAt.replace(/[:.]/g,'-')+'.json';
+  const body=JSON.stringify(payload,null,2);
+  return new File([body],name,{type:'application/json'});
+}
+function unityBackupStatus(message){
+  const el=document.getElementById('unity-backup-status');
+  if(el)el.textContent=message;
+}
+function unityDownloadBackup(file){
+  const u=URL.createObjectURL(file),a=document.createElement('a');
+  a.href=u;a.download=file.name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(u),30000);
+}
+async function exportBackup(){
+  unityBackupStatus('Lokale Sicherungsdatei wird erstellt …');
+  const file=await unityBackupFile();
+  unityDownloadBackup(file);
+  unityBackupStatus('Datei '+file.name+' zum Speichern bereitgestellt. Der Download ist noch keine bestätigte pCloud-Sicherung.');
+}
+async function unityBackupShare(){
+  unityBackupStatus('Vollständige Sicherungsdatei wird erstellt …');
+  const file=await unityBackupFile();
+  if(typeof navigator!=='undefined'&&typeof navigator.share==='function'&&
+    (typeof navigator.canShare!=='function'||navigator.canShare({files:[file]}))){
+    try{
+      await navigator.share({files:[file],title:'UNITY LAB · Private Datensicherung',
+        text:'Vollständige UNITY-LAB-Rückfallebene: bitte in UNITY-LAB/02-VOLLSICHERUNG/ ablegen (nicht in den Änderungssicherungsordner).'});
+      unityBackupStatus('Teilen-Menü geschlossen. Bitte in pCloud prüfen, ob '+file.name+' tatsächlich gespeichert wurde.');
+      return;
+    }catch(e){
+      if(e?.name==='AbortError'){
+        unityBackupStatus('Teilen abgebrochen. Es wurde keine pCloud-Sicherung bestätigt.');
+        return;
+      }
+      console.warn('Teilen nicht möglich, Download als Alternative',e);
+    }
+  }
+  unityDownloadBackup(file);
+  unityBackupStatus('Der iPhone-Teilen-Dialog war nicht verfügbar. Datei wurde als Download bereitgestellt. Bitte anschließend manuell nach pCloud sichern.');
+}
+async function importBackup(){const file=document.getElementById('import-file')?.files?.[0];if(!file)throw Error('Bitte eine Datei auswählen.');if(file.size>50e6)throw Error('Backup größer als 50 MB. Bitte zunächst eine kleinere Sicherung auswählen.');const obj=JSON.parse(await file.text());if(obj.format!=='unity-lab-backup'||![1,2,3].includes(obj.schema)||!obj.data)throw Error('Ungültiges Unity-Lab-Backup.');const inserts={},replacements={};let count=0,capitalReplacement=null;for(const n of STORES){if(obj.schema<3&&!obj.data[n]&&['fundamentals','histories','analyses','settings'].includes(n))obj.data[n]=[];if(!Array.isArray(obj.data[n]))throw Error('Backup unvollständig: '+n);const existing=new Map(cache[n].map(x=>[x.id,x]));const seen=new Set();inserts[n]=[];replacements[n]=[];for(const item of obj.data[n]){if(!item||typeof item!=='object'||typeof item.id!=='string'||item.id.length>150||seen.has(item.id))throw Error('Ungültige oder doppelte ID in '+n);seen.add(item.id);if(existing.has(item.id)){if(JSON.stringify(existing.get(item.id))!==JSON.stringify(item)){if(n==='settings'&&item.id==='portfolio-capital'){capitalReplacement=item;replacements[n].push(item);count++;}else throw Error('Konflikt bei ID '+item.id+' in '+n+'. Import vollständig abgebrochen.');}}else{inserts[n].push(item);count++}}}if(!count){alert('Keine neuen Datensätze.');return}if(capitalReplacement&&!confirm('Das Backup enthält ein anderes fiktives Grundkapital ('+euro(Number(capitalReplacement.amount))+'). Diesen Backup-Betrag übernehmen und die übrigen Daten ergänzen?'))return;if(!confirm(count+' Datensätze aus dem Backup übernehmen? Aktien und Buchungen werden ergänzt; nur das fiktive Grundkapital kann aus dem Backup ersetzt werden.'))return;await bulkInsert(inserts,replacements);await refresh();alert(count+' Datensätze aus dem Backup übernommen.')}
+document.getElementById('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(b){activeTab=b.dataset.tab;render();if(activeTab==='analysis'&&typeof publicFetch==='function'&&CATALOG.some(x=>x.isin===stocks().find(y=>y.id===selectedUnityStock)?.isin))publicFetch()}});document.addEventListener('submit',handleForm);document.addEventListener('input',e=>{if(e.target.id==='catalog-search')catalogResults();if(e.target.id==='online-search'){clearTimeout(onlineTimer);onlineTimer=setTimeout(searchOnline,550)}});document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;try{if(b.dataset.watchRemove)await unityRemoveStock(b.dataset.watchRemove);if(b.dataset.watchRestore)await unityRestoreStock(b.dataset.watchRestore);if(b.dataset.catalog!==undefined)await addCatalogStock(Number(b.dataset.catalog));if(b.dataset.online!==undefined)await addOnlineStock(Number(b.dataset.online));if(b.id==='online-search-button'){clearTimeout(onlineTimer);await searchOnline()}if(b.dataset.void)await voidTrade(b.dataset.void);if(b.dataset.activate)await activateStrategy(b.dataset.activate);if(b.id==='unity-cap-reload')await unityCapitalLoad(true);if(b.id==='cloud-direct-upload')await unityCloudUpload();if(b.id==='cloud-direct-connect')unityCloudConnect();if(b.id==='inc-pcloud')await unityIncShare();if(b.id==='unity-exchange-prepare')await unityExchangePrepare();if(b.id==='unity-exchange-focus-password')document.getElementById('unity-exchange-password')?.focus();if(b.id==='unity-exchange-share')unityExchangeShare();if(b.id==='unity-exchange-inspect')await unityExchangeInspectSelected();if(b.id==='unity-sync-prepare')await unitySyncPrepare();if(b.id==='unity-sync-share')await unitySyncShare();if(b.id==='unity-sync-confirm')await unitySyncConfirm();if(b.id==='unity-sync-inspect')await unitySyncInspect();if(b.id==='unity-sync-import-new')await unitySyncImportNew();if(b.id==='inc-new-base')await unityIncPrepareNewBase();if(b.id==='inc-share')await unityIncSharePrepared();if(b.id==='inc-confirm')await unityIncConfirmSaved();if(b.id==='inc-import')await unityIncRestore();if(b.id==='export')await exportBackup();if(b.id==='backup-pcloud')await unityBackupShare();if(b.id==='import')await importBackup()}catch(err){alert(err.message||String(err))}});
+document.addEventListener('DOMContentLoaded',()=>{(async()=>{try{db=await openDB();const s=await all('strategies');if(!s.length)await put('strategies',{id:id(),version:'UNITY 5.2 – Basis',weights:defaults,reason:'Dokumentierte Ausgangsgewichtung; noch nicht empirisch validiert.',status:'active',createdAt:new Date().toISOString()});document.getElementById('db-status').textContent='Lokal gespeichert · verzögerte Referenzdaten';await refresh();
+setTimeout(async()=>{
+  try{
+    await unityEnrichCatalogStocks();
+    if(typeof unityHydrateDynamicHistories==='function')unityHydrateDynamicHistories(stocks());
+    if(typeof unityEnsurePilotTwenty==='function')await unityEnsurePilotTwenty();
+    const pilot=typeof unityPilotStocks==='function'?unityPilotStocks():stocks();
+    const missing=pilot.filter(s=>typeof unityMarketForStock==='function'?!unityMarketForStock(s):false);
+    const el=document.getElementById('db-status');
+    if(missing.length&&typeof unityCompleteDynamicHistories==='function'){
+      if(el)el.textContent='Kursreihen werden ergänzt: 0/'+missing.length;
+      unityCompleteDynamicHistories(missing,p=>{
+        const status=document.getElementById('db-status');
+        if(status)status.textContent='Kursreihen werden ergänzt: '+p.done+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'');
+      }).then(p=>{
+        const status=document.getElementById('db-status');
+        if(status)status.textContent='Lokal gespeichert · Kursreihen '+p.ok+'/'+p.total+(p.failed?' · '+p.failed+' nicht verfügbar':'')});
+    }else if(el)el.textContent='Lokal gespeichert · Kursdaten bereit zum Prüfen';
+  }catch(e){const el=document.getElementById('db-status');if(el)el.textContent='Lokal gespeichert · Kursreihen später erneut prüfen'}
+},80);if('serviceWorker'in navigator&&location.protocol.startsWith('http')){/* RC1: updates activate after existing tabs close; do not interrupt local edits with a forced reload. */navigator.serviceWorker.register('./sw.js?v=0.17.0-rc1').then(reg=>reg.update()).catch(()=>{});}}catch(e){document.getElementById('db-status').textContent='Speicherfehler';document.getElementById('app').innerHTML='<div class="alert">Die lokale Datenbank konnte nicht geöffnet werden: '+esc(e.message)+'</div>'}})();});
+</script><script src="./discovery.js?v=0.13.97"></script><script src="./fundamentals.js?v=0.13.97"></script><script src="./financial-metrics.js?v=0.16.5"></script><script src="./valuation-scenarios.js?v=0.17.0-rc1"></script><script src="./reverse-valuation.js?v=0.16.5"></script><script src="./research.js?v=0.13.97"></script>
+<script src="./issuer-calendar.js?v=0.13.97"></script><script src="./foresight.js?v=0.16.5"></script><script src="./own-model.js?v=0.16.5"></script><script src="./issuer-dossier.js?v=0.13.97"></script><script src="./market-context.js?v=0.13.97"></script><script src="./research-lifecycle.js?v=0.13.97"></script><script src="./capital-radar.js?v=0.13.97"></script><script src="./analysis.js?v=0.13.97"></script><script src="./datafeeds.js"></script><script src="./publicfeed.js"></script><script src="./charts.js"></script><script src="./dataquality.js?v=0.13.97"></script><script src="./dashboard.js"></script><script src="./intraday.js"></script><script src="./fx.js"></script><script src="./decision-policy.js?v=0.13.97"></script><script src="./data/crypto-market.js?v=0.13.97"></script><script src="./crypto-sources.js?v=0.13.97"></script><script src="./crypto-policy.js?v=0.13.97"></script><script src="./decision-cockpit.js?v=0.13.97"></script><script src="./depot.js?v=0.13.97"></script><script src="./depotcsv.js"></script><script src="./readiness-audit.js?v=0.16.5"></script><script src="./decision-engine.js?v=0.16.5"></script><script src="./paper-order-engine.js?v=0.16.5"></script><script src="./home.js?v=0.16.5"></script><script src="./exchange-protocol.js?v=0.16.5"></script><script src="./exchange-crypto.js?v=0.16.5"></script><script src="./exchange-ui.js?v=0.16.5"></script><script src="./incremental.js?v=0.13.97"></script><script src="./pcloud-direct.js?v=0.13.97"></script><script src="./sync-plan.js?v=0.17.0-rc1"></script><script src="./sync-transfer.js?v=0.17.0-rc1"></script><script src="./sync-crypto.js?v=0.17.0-rc1"></script><script src="./sync-ui.js?v=0.17.0-rc1"></script><script src="./universe.js?v=0.13.98"></script></body></html>

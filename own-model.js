@@ -1,5 +1,5 @@
 'use strict';
-/* UNITY 0.16.4 – first *own* precommitted experimental revenue hypotheses.
+/* UNITY 0.16.5 – first *own* precommitted experimental revenue hypotheses.
    Model skill: UNPROVEN until future annual filings; no buy/sell permissions. */
 let unityOwnModelJournal=null,unityOwnModelError='',unityOwnModelLoading=false;
 function unityOwnModelNumber(x){return typeof x==='number'&&Number.isFinite(x)?x:null}
@@ -119,6 +119,7 @@ function unityOwnModelForecastPanel(stock){
     (e.status==='revision-review'?' · Achtung: korrigierter SEC-Wert muss geprüft werden.':'')+
     '. Prüfung erst nach Originalveröffentlichung.</p>';
  }else h+='<p class="tiny muted">Ergebnisprüfung noch offen; kein Treffer behauptet.</p>';
+ h+=unityOwnModelChallengeMarkup(stock,e);
  h+='<p class="tiny muted">Prognosequelle: <a href="'+esc(f.inputs.current.sourceUrl)+
   '" target="_blank" rel="noopener noreferrer">SEC-Konzernabschluss '+esc(f.basePeriodEnd.slice(0,4))+'</a>'+
   '. Unveränderliches Prognoseprotokoll; kein Kauf- oder Verkaufssignal.</p></details>';
@@ -129,11 +130,22 @@ function unityOwnModelOverview(){
  if(!d)return '';
  const entries=Object.values(d.forecasts||{}),count=entries.length;
  if(!count)return '';
+ const contradictions=entries.map(entry=>({
+  entry,comparison:unityOwnModelChallenge(
+   {isin:entry.frozen?.isin,ticker:entry.frozen?.ticker},{entry})
+ })).filter(x=>x.comparison.kind==='comparable'&&x.comparison.side!=='inside')
+ .sort((a,b)=>b.comparison.gapPct-a.comparison.gapPct);
  let h='<section class="panel"><h3>UNITY-Forschung · eigene Vorhersagen</h3>'+
    '<p><b>'+count+' im Voraus protokollierte Modellhypothesen</b> · '+
    (d.measuredSampleSize||0)+' später überprüfte Ergebnisse.</p>'+
    '<p class="tiny muted">Es gibt noch keine verifizierte Prognoseleistung. Erst ab 20 voneinander getrennten Ergebnissen prüfen wir statistische Fehler und den Vergleich mit einer einfachen Nullwachstums-Basis.</p>'+
    '<details class="unity-secondary-check"><summary>Vergleichsmodell und Unternehmen ansehen</summary>';
+ h+='<p class="tiny muted">'+contradictions.length+
+  ' dokumentierte Abweichungen zwischen vereinfachtem Modell und vergleichbarer Managementprognose. '+
+  'Die Differenz ist ein Prüfauftrag, keine Kaufempfehlung.</p>';
+ for(const conflict of contradictions.slice(0,4))
+  h+='<div class="home-data-row"><span>'+esc(conflict.entry.frozen.ticker)+
+   ' · Abstand zur offiziellen Umsatzspanne</span><b>'+conflict.comparison.gapPct+' %</b></div>';
  for(const e of entries.slice(-8)){
   const f=e.frozen;
   h+='<div class="home-data-row"><span>'+esc(f.ticker)+' · Geschäftsjahr '+

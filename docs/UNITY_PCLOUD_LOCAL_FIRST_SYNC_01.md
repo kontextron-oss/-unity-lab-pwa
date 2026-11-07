@@ -116,3 +116,19 @@ Wichtiger iPhone-Unterschied: Die offiziellen pCloud-Methoden [getfilelink](http
 ### Verbindlicher Stand
 
 `sync-pcloud-log.js` und `sync-policy.js` definieren nun das sichere Append-only-Prinzip. `tests/sync-pcloud-log.cjs` prüft Offline-/Freigabesperren, Kollisionen, idempotente Wiederholungen, Cloud-Quittungen, Hash-/Byte-Nachkontrolle und die Isolation der pCloud-Ordner. **Der produktive pCloud-OAuth-Adapter ist noch nicht mit UNITY verbunden.** Die bisherige manuelle Sicherung und alle veröffentlichten Versionen bleiben unverändert. Die zusätzliche Vercel-Anbindung wurde entfernt; nur GitHub und pCloud werden genutzt.
+
+## Nächster umgesetzter Schritt: PC-Dateiadapter (07.11.2026)
+
+Datei: `worker/pcloud-node-adapter.cjs`.
+
+Der bisher nur abstrakt beschriebene pCloud-Dateitransport ist nun **für den zukünftigen PC-/Electron-Prozess implementiert und gegen eine simulierte pCloud-API getestet**. Es handelt sich ausdrücklich noch nicht um eine freigegebene Produktivverbindung.
+
+- **Vorhandenes System weiterverwenden:** Die API-Muster aus `WERK-ARCHIV/desktop/core/pcloud-api.js` sind fachlicher Ausgangspunkt. Das neue Modul übernimmt **keine** Zugangsdaten oder Token aus dem WERK-ARCHIV, sondern akzeptiert ausschließlich eine vom autorisierten PC-Prozess bereitgestellte Sitzung im Arbeitsspeicher. Windows-`safeStorage` und OAuth bleiben Aufgaben des späteren UNITY-PC-Clients.
+- **Eigener Datenraum:** Vor jedem Lesen oder Schreiben sucht der Adapter vom pCloud-Stammverzeichnis aus exakt `UNITY-LAB/03-AUSTAUSCH/immutable-v1`. Fehlende oder abweichende Ordner werden **nicht** automatisch angelegt oder durch andere Ordner ersetzt. WERK-ARCHIV-Dateien werden nicht geöffnet oder verändert.
+- **Uploadschutz:** Aufruf von `uploadfile` mit `renameifexists=1` und `nopartial=1`; abweichende Dateinamen oder Zielordner werden als Fehler behandelt. Es gibt **keine** Funktion zum Löschen, Verschieben oder Überschreiben vorhandener Dateien.
+- **Downloadprüfung:** Es werden nur Datei-IDs zugelassen, die zuvor im geprüften UNITY-Zielordner aufgelistet wurden. Downloadadressen werden auf vertrauenswürdige pCloud-Hosts und HTTPS eingeschränkt. Die eigentliche SHA-256-Nachprüfung und Freigabe des Checkpoints erfolgt in `sync-pcloud-log.js`.
+- **Tests:** `tests/pcloud-node-adapter.cjs` simuliert die pCloud-Anmeldung, Ordnerauflösung, den Upload, die anschließende Downloadprüfung, eine idempotente Wiederholung, Konflikte, manipulierte Hosts und fremde Ordner. Kein echter Netzzugriff; keine Daten auf pCloud verändert.
+
+**Bewusste technische Grenze:** Die Datei ist ein `Node.js`-Modul für den geschützten PC-Prozess und wird **nicht** in die öffentlich ausgelieferte iPhone-PWA aufgenommen. Die pCloud-Methode `getfilelink` ist nach offizieller pCloud-Dokumentation nicht für gewöhnliche Webanwendungen freigegeben. Der iPhone-Autorisierungs- und Downloadweg muss deshalb separat mit der bestehenden WERK-ARCHIV-Mobiltechnik geprüft werden; ein funktionierender PC-Adapter ist noch kein funktionierender iPhone-Sync.
+
+**Nächste verbindliche Schritte:** PC-seitig sichere Sitzung in einem UNITY-Testprofil herstellen; dann ein einziges verschlüsseltes Testpaket in dem separaten UNITY-Unterordner nach ausdrücklicher Freigabe hochladen und zurücklesen. Anschließend mobile Lesbarkeit, sichere Synchronisation beim Öffnen der PWA und bei Netzrückkehr testen. Erst nach erfolgreicher Datenverlust-/Konfliktprüfung die Automatik einschalten. Keine Änderung der laufenden App `main`.

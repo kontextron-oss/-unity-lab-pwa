@@ -4,6 +4,11 @@ const ctx={Date,Math,Number,String,Object,Array,JSON,Intl,URL,
  esc:v=>String(v)};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync('own-model.js','utf8'),ctx);
+const allGuidance=JSON.parse(fs.readFileSync('data/issuer-guidance.json','utf8')).items;
+ctx.unityGuidanceEvidence=(stock,registry)=>{
+ const g=registry?.[stock?.isin]||allGuidance[stock?.isin];
+ return g?.isin===stock?.isin&&g?.sourceUrl?.startsWith('https://')?g:null;
+};
 const empty=JSON.parse(fs.readFileSync('data/unity-model-forecasts.json','utf8'));
 assert.equal(empty.schemaVersion,1);
 assert.equal(empty.measuredSampleSize,0);
@@ -54,8 +59,38 @@ ctx.stock={isin:'US0000000001',ticker:'ETN'};
 assert.equal(vm.runInContext('unityOwnModelForecastPanel(stock)',ctx),'','Wrong ISIN must not inherit Eaton forecasts');
 ctx.stock={isin:etn.isin,ticker:'NOTETN'};
 assert.equal(vm.runInContext('unityOwnModelForecastPanel(stock)',ctx),'','Wrong ticker must not inherit identity');
+// A model registered after management guidance must NEVER be marketed as
+// discovering the same information before the company itself disclosed it.
+const live=JSON.parse(fs.readFileSync('data/unity-model-forecasts.json','utf8'));
+ctx.document=live;vm.runInContext('unityOwnModelJournal=document',ctx);
+const vertiv={isin:'US92537N1081',ticker:'VRT',name:'Vertiv'};
+ctx.stock=vertiv;
+const challenge=vm.runInContext('unityOwnModelChallenge(stock)',ctx);
+assert.equal(challenge.kind,'comparable');
+assert.equal(challenge.side,'below');
+assert.equal(challenge.tradeApproved,false);
+assert.equal(challenge.entryZone,null);
+assert.equal(challenge.guidanceKnownAtRegistration,true);
+assert.equal(challenge.severity,'high');
+assert.ok(Math.abs(challenge.gapPct-19.38)<0.02);
+assert.equal(challenge.ownRevenueUSD,11_650_000_000);
+assert.equal(challenge.managementLowUSD,14_450_000_000);
+assert.match(vm.runInContext('unityOwnModelForecastPanel(stock)',ctx),/Kein Informationsvorsprung/);
+ctx.stock=etn;
+const etnChallenge=vm.runInContext('unityOwnModelChallenge(stock)',ctx);
+assert.equal(etnChallenge.kind,'unavailable','Organic growth does not equal consolidated revenue guidance');
+assert.equal(etnChallenge.tradeApproved,false);
+ctx.stock=vertiv;
+ctx.badGuide={...allGuidance[vertiv.isin],
+ guidance:[{metric:'adjustedRevenue',unit:'USD',horizon:'FY2026',lower:14e9,upper:15e9,nonGAAP:true}]};
+assert.equal(vm.runInContext('unityOwnModelChallenge(stock,{guidance:badGuide}).kind',ctx),'unavailable');
+ctx.badGuide={...allGuidance[vertiv.isin],publishedAt:'2027-01-01'};
+assert.equal(vm.runInContext('unityOwnModelChallenge(stock,{guidance:badGuide}).kind',ctx),'unavailable');
+const overview=vm.runInContext('unityOwnModelOverview()',ctx);
+assert.match(overview,/dokumentierte Abweichungen/);
+assert.match(overview,/VRT/);
 const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
-assert.match(html,/own-model\.js\?v=0\.16\.4/);
+assert.match(html,/own-model\.js\?v=0\.16\.5/);
 assert.match(sw,/data\/unity-model-forecasts\.json/);
-assert.match(sw,/unity-lab-v0\.16\.4/);
+assert.match(sw,/unity-lab-v0\.16\.5/);
 console.log('UNITY independent forecast lab: source identity, immutable research panel, comparison, unknown skill and no-trade passed.');

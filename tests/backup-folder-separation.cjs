@@ -33,7 +33,7 @@ assert.match(html,/01-AENDERUNGEN\/.*BASIS/i);
 assert.match(html,/bisherige Dateien vom Typ UNITY-LAB_BACKUP/);
 assert.match(readme,/Ein-Klick-Automatik/);
 assert.match(readme,/noch keine direkte automatische pCloud-Verbindung/);
-assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.(13|14|15|16)\.\d+/);
+assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.17\.0-rc1/);
 const start=html.indexOf('function backupView(){');
 const end=html.indexOf('function render(){',start);
 assert.ok(start>=0&&end>start);

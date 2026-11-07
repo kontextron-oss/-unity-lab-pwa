@@ -10,6 +10,8 @@ on:
       - tests/debt-pilot-evidence.cjs
       - tests/pilot-scenario-sensitivity.cjs
       - tests/pilot-ttm-cashflow.cjs
+      - tests/pilot-normalization-audit.cjs
+      - data/normalization-evidence.json
       - .github/workflows/unity-017-valuation.yml
   pull_request:
     paths:
@@ -45,3 +47,4 @@ jobs:
           node tests/debt-pilot-evidence.cjs
           node tests/pilot-scenario-sensitivity.cjs
           node tests/pilot-ttm-cashflow.cjs
+          node tests/pilot-normalization-audit.cjs

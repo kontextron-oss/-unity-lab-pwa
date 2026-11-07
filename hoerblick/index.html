@@ -59,7 +59,7 @@ async function startCamera(){
  visible($('cameraFallback'),false);status('Kamera wird gestartet …');
  try{
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw Error('Diese Umgebung erlaubt keinen Kamerazugriff.');
-  var stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},aspectRatio:{ideal:210/297},width:{ideal:1920},height:{ideal:2560}}});
+  var stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160},frameRate:{ideal:24,max:30}}});
   if(state.page!=='camera'){stream.getTracks().forEach(function(t){t.stop();});return;}
   state.stream=stream;state.track=stream.getVideoTracks()[0];
   $('video').srcObject=stream;await $('video').play().catch(function(){});
@@ -85,11 +85,36 @@ function cropForFrame(w,h,frameW,frameH){
 function createPhotoCanvas(){
  var v=$('video'),w=v.videoWidth,h=v.videoHeight,frame=$('guide');
  var crop=cropForFrame(w,h,frame.clientWidth,frame.clientHeight);
- var factor=Math.min(1,2400/Math.max(crop.w,crop.h)),c=document.createElement('canvas');
+ var factor=Math.min(1,3200/Math.max(crop.w,crop.h)),c=document.createElement('canvas');
  c.width=Math.max(1,Math.round(crop.w*factor));
  c.height=Math.max(1,Math.round(crop.h*factor));
  c.getContext('2d',{willReadFrequently:true}).drawImage(v,crop.x,crop.y,crop.w,crop.h,0,0,c.width,c.height);
  return c;
+}
+async function captureHighResolution(){
+ // Prefer a real still picture, when this camera supports it. Safari can fall back to a video frame.
+ if(typeof window.ImageCapture==='function'&&state.track){
+  try{
+   var photoBlob=await new window.ImageCapture(state.track).takePhoto();
+   if(photoBlob&&photoBlob.size){
+    var srcUrl=URL.createObjectURL(photoBlob);
+    try{
+     var im=new Image();
+     await new Promise(function(ok,bad){im.onload=ok;im.onerror=bad;im.src=srcUrl;});
+     var guide=$('guide'),crop=cropForFrame(im.naturalWidth,im.naturalHeight,guide.clientWidth,guide.clientHeight);
+     var sc=Math.min(1,3200/Math.max(crop.w,crop.h)),can=document.createElement('canvas');
+     can.width=Math.max(1,Math.round(crop.w*sc));can.height=Math.max(1,Math.round(crop.h*sc));
+     can.getContext('2d').drawImage(im,crop.x,crop.y,crop.w,crop.h,0,0,can.width,can.height);
+     return await canvasBlob(can);
+    }finally{URL.revokeObjectURL(srcUrl);}
+   }
+  }catch(e){console.info('Standbild nicht verfügbar; Kameravorschau wird benutzt.');}
+ }
+ return await canvasBlob(createPhotoCanvas());
+}
+function primeSpeech(){
+ // Start a silent speech utterance directly on a real tap to unlock WebKit audio for the later OCR result.
+ try{if(!window.speechSynthesis||!window.SpeechSynthesisUtterance)return;var u=new SpeechSynthesisUtterance(' ');u.lang='de-DE';u.volume=0;u.rate=5;speechSynthesis.speak(u);}catch(e){}
 }
 var shutterContext=null;
  function photoConfirmation(){
@@ -119,7 +144,7 @@ var shutterContext=null;
   status('Foto aufgenommen. Text wird erkannt …');
  }
  function canvasBlob(c){return new Promise(function(resolve,reject){c.toBlob(function(b){if(b)resolve(b);else reject(Error('Kein Foto'));},'image/jpeg',.9);});}
-async function capture(){if(state.busy||state.page!=='camera')return;state.busy=true;try{var c=createPhotoCanvas();photoConfirmation();var blob=await canvasBlob(c);await showPhoto(blob);}
+async function capture(){if(state.busy||state.page!=='camera')return;state.busy=true;primeSpeech();try{photoConfirmation();var blob=await captureHighResolution();await showPhoto(blob);}
  catch(e){handleError(e);}finally{state.busy=false;}}
 async function showPhoto(blob,remember){stopSpeech();releaseCamera();state.page='read';state.lines=[];state.current=-1;state.word=-1;state.zoom=1;state.tx=0;state.ty=0;state.mode='original';state.saved=false;
  visible($('camera'),false);visible($('read'),true);visible($('photoStage'),true);visible($('readerText'),false);$('viewBtn').textContent='Textansicht';
@@ -129,19 +154,65 @@ async function showPhoto(blob,remember){stopSpeech();releaseCamera();state.page=
  $('readBtn').textContent='Vorlesen';status('Text wird erkannt …');
  await analyzePhoto(blob);
 }
+function extractOCRLines(data){
+ var out=[],blocks=(data&&data.blocks)||[];
+ blocks.forEach(function(block){
+  (block.paragraphs||[]).forEach(function(paragraph){
+   (paragraph.lines||[]).forEach(function(line){
+    var words=(line.words||[]).filter(function(w){return w&&w.text&&w.text.trim();});
+    var txt=words.length?words.map(function(w){return w.text.trim();}).join(' ').replace(/\s+([,.;:!?])/g,'$1'):
+      String(line.text||'').trim();
+    if(!txt)return;
+    var bb=line.bbox||null;
+    if(words.length&&words.every(function(w){return w.bbox;})){
+     bb={x0:Math.min.apply(null,words.map(function(w){return w.bbox.x0;})),
+         y0:Math.min.apply(null,words.map(function(w){return w.bbox.y0;})),
+         x1:Math.max.apply(null,words.map(function(w){return w.bbox.x1;})),
+         y1:Math.max.apply(null,words.map(function(w){return w.bbox.y1;}))};
+    }
+    if(bb&&(!Number.isFinite(bb.x0)||!Number.isFinite(bb.y0)||!Number.isFinite(bb.x1)||!Number.isFinite(bb.y1)))bb=null;
+    out.push({text:txt,bbox:bb,words:words.map(function(w){return{text:w.text,bbox:w.bbox||null};})});
+   });
+  });
+ });
+ return out;
+}
 async function analyzePhoto(blob){
  try{
   if(!window.Tesseract){throw Error('Texterkennung muss beim ersten Start über Internet geladen werden.');}
-  if(!state.worker){status('Texterkennung wird vorbereitet …');state.worker=await Tesseract.createWorker('deu+eng',1,{logger:function(m){if(m&&m.status==='recognizing text'&&m.progress){status('Text wird erkannt: '+Math.round(m.progress*100)+' %');}}});}
-  var c=document.createElement('canvas'),f=Math.min(1,1800/Math.max(state.width,state.height));c.width=Math.floor(state.width*f);c.height=Math.floor(state.height*f);c.getContext('2d').drawImage($('photo'),0,0,c.width,c.height);
+  if(!state.worker){
+   status('Deutsche Texterkennung wird geladen …');
+   // Reuse the proven Hörblick 0.3 OCR setup.
+   state.worker=await Tesseract.createWorker('deu',1,{logger:function(m){
+    if(m&&m.status==='recognizing text'&&m.progress!=null)status('Text wird erkannt: '+Math.round(m.progress*100)+' %');
+   }});
+   await state.worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
+  }
+  var c=document.createElement('canvas'),f=Math.min(1,2600/Math.max(state.width,state.height));
+  c.width=Math.max(1,Math.round(state.width*f));c.height=Math.max(1,Math.round(state.height*f));
+  c.getContext('2d').drawImage($('photo'),0,0,c.width,c.height);
   state.ocrWidth=c.width;state.ocrHeight=c.height;
   var result=await state.worker.recognize(c,{}, {blocks:true});
-  var lines=[];var bs=(result.data&&result.data.blocks)||[];
-  bs.forEach(function(block){(block.paragraphs||[]).forEach(function(p){(p.lines||[]).forEach(function(ln){var text=String(ln.text||((ln.words||[]).map(function(w){return w.text;}).join(' '))||'').trim();if(!text)return;var words=(ln.words||[]).map(function(w){return{text:String(w.text||''),bbox:w.bbox||null};});lines.push({text:text,bbox:ln.bbox||null,words:words});});});});
-  if(!lines.length){lines=String((result.data&&result.data.text)||'').split(/\n+/).map(function(t){return{text:t.trim(),bbox:null,words:[]};}).filter(function(x){return x.text;});}
+  var lines=extractOCRLines(result.data);
+  // Retry multi-column layout recognition only if the original recognition looks weak.
+  var confidence=Number(result.data&&result.data.confidence)||0;
+  if((confidence<42||lines.length<2)&&c.width>200&&c.height>200){
+   try{
+    await state.worker.setParameters({tessedit_pageseg_mode:'3'});
+    var alt=await state.worker.recognize(c,{}, {blocks:true});
+    var candidate=extractOCRLines(alt.data),otherConfidence=Number(alt.data&&alt.data.confidence)||0;
+    if(candidate.length&&(otherConfidence>confidence+5||!lines.length)){
+     result=alt;lines=candidate;confidence=otherConfidence;
+    }
+   }catch(e){console.warn('Zweiter OCR-Durchgang nicht möglich',e);}
+   finally{await state.worker.setParameters({tessedit_pageseg_mode:'6'}).catch(function(){});}
+  }
+  if(!lines.length){lines=String((result.data&&result.data.text)||'').split(/\n+/).map(function(t){
+   return{text:t.trim(),bbox:null,words:[]};
+  }).filter(function(x){return x.text;});}
   state.lines=lines;state.readingStart=findReadingStart(lines);renderLines();
   if(!lines.length){status('Kein Text sicher erkannt. Ein anderes Foto versuchen.');$('readBtn').textContent='Kamera';return;}
-  status(lines.length+' Textzeilen erkannt. Text antippen oder „Vorlesen“ sagen.');
+  status(confidence<45?'Texterkennung unsicher. Für besseres Ergebnis näher fotografieren.':lines.length+' Zeilen erkannt. Text antippen oder Vorlesen.');
   if(state.audioEnabled){speakFrom(state.readingStart,true);}
   await saveDocument(blob,lines);
  }catch(e){status(e.message&&e.message.includes('Internet')?e.message:'Texterkennung nicht möglich. Bitte erneut versuchen.');console.error(e);}

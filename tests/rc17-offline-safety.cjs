@@ -144,7 +144,7 @@ async function exercise(){
   vm.runInContext('unityValuationAssumptions',analysisContext).items)),{},
   'still no invented trade-approved valuation assumptions');
  assert.equal(record.deletes,0);
- assert.equal(record.skip,0);
+ assert.equal(record.skip,1,'one deliberate activation message, no automatic update');
  console.log('RC1 cache: original IndexedDB schema untouched, prior caches retained, no forced reload, all evidence JSON offline, valuation module offline load passed.');
 }
 exercise().catch(err=>{console.error(err);process.exitCode=1});

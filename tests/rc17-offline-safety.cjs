@@ -89,6 +89,10 @@ assert.equal(new Set(config.ASSETS).size,config.ASSETS.length,'no duplicate entr
 for(const asset of evidence)assert.ok(config.ASSETS.includes(asset),'missing offline source '+asset);
 assert.ok(config.ASSETS.includes('./valuation-scenarios.js?v='+rc));
 assert.ok(config.ASSETS.includes('./update.html'),'update helper available offline');
+assert.ok(config.ASSETS.includes('./unity-017.html'),'versioned direct launch available offline');
+assert.match(fs.readFileSync('unity-017.html','utf8'),/Unity Lab 0\.17\.0 RC1 · Direktstart/);
+assert.match(fs.readFileSync('unity-017.html','utf8'),/indexedDB\.open\('unity-lab',3\)/);
+assert.match(helper,/unity-017\.html/);
 assert.ok(!config.ASSETS.includes('./valuation-scenarios.js?v=0.16.5'));
 for(const eventName of ['install','activate','fetch','message'])
  assert.equal(typeof events[eventName],'function','SW event missing: '+eventName);

@@ -15,7 +15,7 @@ button:disabled{opacity:.5}a{color:#145f93}#status{padding:12px 0;min-height:90p
 <p>Diese Seite prüft den aktuellen Stand und aktiviert auf Wunsch die bereits veröffentlichte Version. <strong>Deine lokalen Daten und pCloud-Sicherungen werden dabei nicht gelöscht.</strong></p>
 <p id="status" role="status" aria-live="polite">Prüfung wird gestartet …</p>
 <button id="activate" type="button">Version 0.17 aktivieren</button>
-<p><a id="open" href="./index.html?open=017">UNITY öffnen</a></p>
+<p><a id="open" href="./unity-017.html?open=017">UNITY öffnen</a></p>
 <small>Falls oben weiterhin 0.16.5 erscheint, diese Seite bitte in Safari öffnen – nicht im internen GitHub-Browser. Keinen Browser-Speicher löschen und die bisherige App nicht entfernen.</small>
 </main>
 <script>
@@ -24,11 +24,11 @@ button:disabled{opacity:.5}a{color:#145f93}#status{padding:12px 0;min-height:90p
  const status=document.getElementById('status');
  const button=document.getElementById('activate');
  const put=(s)=>status.textContent=s;
- const target='./index.html?unity_update=017';
+ const target='./unity-017.html?unity_update=017';
  let attempt=false;
  async function networkVersion(){
   try{
-   const response=await fetch('./index.html?unity_version_check='+Date.now(),{cache:'no-store',redirect:'error'});
+   const response=await fetch('./unity-017.html?unity_version_check='+Date.now(),{cache:'no-store',redirect:'error'});
    if(!response.ok)throw Error('HTTP '+response.status);
    const html=await response.text();
    const title=(html.match(/<title>([^<]+)<\/title>/i)||[])[1]||'Unbekannte Version';

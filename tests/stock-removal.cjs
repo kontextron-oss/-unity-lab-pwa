@@ -73,6 +73,6 @@ const fn=(expression)=>vm.runInContext(expression,box);
  const depot=fs.readFileSync('depot.js','utf8');
  assert.equal(depot.split("const realized=(cache.instruments||[]).reduce").length-1,2);
  assert.match(html,/0\.13\.\d+/);
- assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.(13|14|15|16)\.\d+/);
+ assert.match(fs.readFileSync('sw.js','utf8'),/unity-lab-v0\.17\.0-rc1/);
  console.log('Watchlist remove/restore: soft archive, open position lock, closed trades preserved, restore ID, main buttons and no startup re-add passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

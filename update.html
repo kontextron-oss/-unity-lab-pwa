@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#13283a">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>UNITY · Sichere Aktualisierung</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#142638;background:#f3f5f7}
+*{box-sizing:border-box}body{margin:0;padding:30px 16px;line-height:1.5}
+main{max-width:580px;margin:auto;border:1px solid #d5dfe4;background:white;padding:24px;border-radius:14px}
+h1{font-size:22px;margin-top:0}button{border:0;border-radius:10px;background:#157b52;color:white;padding:14px 18px;font-size:16px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}a{color:#145f93}#status{padding:12px 0;min-height:90px;white-space:pre-line}small{color:#566573}
+</style></head><body><main>
+<h1>UNITY 0.17 · Sicher aktualisieren</h1>
+<p>Diese Seite prüft den aktuellen Stand und aktiviert auf Wunsch die bereits veröffentlichte Version. <strong>Deine lokalen Daten und pCloud-Sicherungen werden dabei nicht gelöscht.</strong></p>
+<p id="status" role="status" aria-live="polite">Prüfung wird gestartet …</p>
+<button id="activate" type="button">Version 0.17 aktivieren</button>
+<p><a id="open" href="./index.html?open=017">UNITY öffnen</a></p>
+<small>Falls oben weiterhin 0.16.5 erscheint, diese Seite bitte in Safari öffnen – nicht im internen GitHub-Browser. Keinen Browser-Speicher löschen und die bisherige App nicht entfernen.</small>
+</main>
+<script>
+'use strict';
+(() => {
+ const status=document.getElementById('status');
+ const button=document.getElementById('activate');
+ const put=(s)=>status.textContent=s;
+ const target='./index.html?unity_update=017';
+ let attempt=false;
+ async function networkVersion(){
+  try{
+   const response=await fetch('./index.html?unity_version_check='+Date.now(),{cache:'no-store',redirect:'error'});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const html=await response.text();
+   const title=(html.match(/<title>([^<]+)<\/title>/i)||[])[1]||'Unbekannte Version';
+   return title;
+  }catch(e){return 'Online-Prüfung fehlgeschlagen: '+String(e.message||e)}
+ }
+ async function inspect(){
+  const title=await networkVersion();
+  if(!('serviceWorker' in navigator)){
+   put('Gelieferte Webseite: '+title+'\nKein Service Worker verfügbar. UNITY über den Link darunter öffnen.');
+   button.disabled=true;
+   return;
+  }
+  const reg=await navigator.serviceWorker.getRegistration('./');
+  const worker=reg?.waiting?'Eine neue Version wartet auf Aktivierung.':
+   reg?.active?'Ein Offline-Cache ist aktiv.':'Noch kein Offline-Cache registriert.';
+  put('Gelieferte Webseite: '+title+'\n'+worker+
+   '\nZum Übernehmen auf „Version 0.17 aktivieren“ tippen.');
+ }
+ navigator.serviceWorker?.addEventListener('controllerchange',()=>{
+  if(attempt)window.location.replace(target+'&activated='+Date.now());
+ });
+ button.addEventListener('click',async()=>{
+  if(attempt)return;
+  attempt=true;button.disabled=true;
+  put('GitHub-Version wird geprüft. Die vorhandene Datenbank bleibt erhalten …');
+  try{
+   let reg=await navigator.serviceWorker.getRegistration('./');
+   if(!reg){
+    reg=await navigator.serviceWorker.register('./sw.js?v=0.17.0-rc1');
+   }
+   await reg.update();
+   if(reg.waiting){
+    put('Neue Offline-Version gefunden. Sie wird jetzt aktiviert …');
+    reg.waiting.postMessage({type:'UNITY_ACTIVATE_UPDATE'});
+   } else {
+    const title=await networkVersion();
+    put('Gelieferte Webseite: '+title+'\nKein wartendes Update gefunden. UNITY jetzt über den Link darunter öffnen.');
+    attempt=false;button.disabled=false;
+   }
+  }catch(e){
+   put('Aktualisierung nicht abgeschlossen: '+String(e.message||e)+
+    '\nKeine Daten gelöscht. Prüfe die Internetverbindung.');
+   attempt=false;button.disabled=false;
+  }
+ });
+ inspect().catch(e=>put('Versionsprüfung: '+String(e.message||e)));
+})();
+</script></body></html>

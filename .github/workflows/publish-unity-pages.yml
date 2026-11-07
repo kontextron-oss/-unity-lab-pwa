@@ -60,5 +60,31 @@ jobs:
       - name: Deploy static UNITY to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify live UNITY 0.17 and update page on GitHub Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ steps.deployment.outputs.page_url }}"
+          BASE="${BASE%/}"
+          if [[ -z "$BASE" || "$BASE" != "https://kontextron-oss.github.io/-unity-lab-pwa" ]]; then
+            echo "::error::Unexpected Pages target URL: $BASE"
+            exit 1
+          fi
+          for n in {1..10}; do
+            echo "Live-site verification attempt ${n}/10"
+            if curl -fsSL --connect-timeout 8 --max-time 20 \
+              "${BASE}/unity-017.html?release=${GITHUB_SHA}" -o /tmp/unity-017.html \
+              && curl -fsSL --connect-timeout 8 --max-time 20 \
+              "${BASE}/update.html?release=${GITHUB_SHA}" -o /tmp/unity-update.html \
+              && grep -Fq 'Unity Lab 0.17.0 RC1 · Direktstart' /tmp/unity-017.html \
+              && grep -Fq 'UNITY_ACTIVATE_UPDATE' /tmp/unity-update.html; then
+              echo 'Confirmed: UNITY 0.17 and the safe update helper are live.'
+              exit 0
+            fi
+            sleep 6
+          done
+          echo '::error::Published website still missing UNITY 0.17 direct start or update page.'
+          exit 1
+
 
 # Restart publication after GitHub Pages source switched to GitHub Actions (2026-11-07).

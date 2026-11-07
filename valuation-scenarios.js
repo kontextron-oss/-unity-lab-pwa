@@ -571,6 +571,7 @@ function unityPilotFinancingStress(s,options={}){
   sourceRefs:[],missing,
   text:'Keine zukunftsgerichtete Zinsprognose oder Anlagefreigabe'};
  const valid=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0;
+ const signed=n=>typeof n==='number'&&Number.isFinite(n);
  if(!evidence||evidence.isin!==isin||evidence.cik!==expectedCik||
    evidence.reportPeriodEnd!=='2026-09-30'||evidence.audited!==false||
    evidence.currency!=='USD'||evidence.unit!=='USD millions'||
@@ -587,7 +588,7 @@ function unityPilotFinancingStress(s,options={}){
  if(q?.kind!=='unity-unaudited-10q-debt-evidence-v1'||
     q.isin!==isin||q.currency!=='USD'||q.audited!==false||
     q.reviewGateSatisfied!==false||q.tradeApproved!==false||
-    !valid(q.grossFinancialDebt)||!valid(q.debtLessCash))
+    !valid(q.grossFinancialDebt)||!signed(q.debtLessCash))
     missing.push('Konsistente Q3-2026-Finanzschulden und Cash fehlen');
  if(!valid(evidence?.priorGrossFinancialDebt)||
     Math.abs(q?.grossFinancialDebt/(1+q?.debtChangePct/100)-evidence.priorGrossFinancialDebt)>2)

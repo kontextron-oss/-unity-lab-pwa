@@ -57,7 +57,7 @@ assert.equal(tamper('IE00B8KQN827',r=>r.periodEnd='2025-12-31'),null);
 assert.equal(tamper('IE00B8KQN827',r=>r.audited=true),null);
 assert.equal(tamper('IE00B8KQN827',r=>r.filedAt='2020-01-01'),null);
 assert.equal(tamper('IE00B8KQN827',r=>r.debtComponents[0].amount=-1),null);
-assert.equal(tamper('IE00B8KQN827',r=>r.debtComponents.push({...r.debtComponents[0]})),4);
+assert.equal(tamper('IE00B8KQN827',r=>r.debtComponents.push({...r.debtComponents[0]})),null);
 assert.equal(tamper('IE00B8KQN827',r=>r.yearToDate.period='2026-01-01/2026-12-31'),null);
 assert.equal(tamper('US92537N1081',r=>r.debtComponents[1].key='currentLongTermDebt'),null);
 assert.equal(tamper('US92537N1081',r=>r.cashAndEquivalents=null),null);

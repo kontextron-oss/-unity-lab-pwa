@@ -15,7 +15,7 @@
   AUTH:'authorize-pcloud',UNLOCK:'unlock-encryption',
   CHECK:'read-remote-manifest',CONFLICT:'review-conflicts',
   RECONCILE:'plan-verified-merge',UP_TO_DATE:'up-to-date',
-  UPLOAD:'prepare-upload-after-cas',RETRY:'retry-after-backoff'
+  UPLOAD:'prepare-immutable-upload',RETRY:'retry-after-backoff'
  });
  function result(action,reason,canTransfer=false){
   return {kind:'unity-auto-sync-policy-v1',version:VERSION,action,reason,
@@ -42,9 +42,13 @@
     return result(ACTIONS.RECONCILE,'Sicheren drei-Wege-Abgleich prüfen');
   if(x.localChanges!==true&&x.remoteChanges!==true)
     return result(ACTIONS.UP_TO_DATE,'Beide Datenstände identisch');
-  if(x.providerSupportsCAS!==true||x.remoteVersionCASChecked!==true)
+  // pCloud uploadfile overwrites existing filenames by default. There is no
+  // documented conditional update (CAS). Never use a shared mutable index.
+  // Only unique content-addressed encrypted log files + no-overwrite adapter.
+  if(x.writeMode!=='immutable-log'||x.noOverwriteUploadVerified!==true||
+     x.remoteLogScanned!==true||x.uniqueContentAddressedName!==true)
     return result(ACTIONS.RECONCILE,
-     'Keine sichere atomare Konfliktsperre für parallel bearbeitete Cloud-Dateien');
+     'Kein geprüfter append-only-Upload: pCloud darf keine bestehende Datei ersetzen');
   if(x.verifiedEncryptedPayload!==true)
     return result(ACTIONS.RECONCILE,'Verschlüsselte und signierte/identitätsgeprüfte Nutzdaten fehlen');
   if(x.backoffActive===true)
@@ -53,7 +57,7 @@
     return result(ACTIONS.RECONCILE,
      'Remote-Änderungen noch nicht sicher lokal angewendet; erst nach Transaktionsprüfung bestätigen');
   return result(ACTIONS.UPLOAD,
-   'Nur bei extern verifiziertem Upload-Receipt und danach erneut bestätigter Revision übernehmen',
+   'Nur eine neue verschlüsselte, unveränderliche Datei hochladen; nach Readback und SHA-256 bestätigen',
    true);
  }
  return {VERSION,ACTIONS,evaluate};

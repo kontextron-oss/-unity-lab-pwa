@@ -57,3 +57,5 @@ jobs:
       - name: Deploy static UNITY to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Restart publication after GitHub Pages source switched to GitHub Actions (2026-11-07).

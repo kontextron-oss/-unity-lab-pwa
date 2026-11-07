@@ -7,7 +7,7 @@ const market={schemaVersion:1,generatedAt:new Date(now).toISOString(),items:{
 const s={isin,name:'Infineon',exchange:'Xetra',currency:'EUR'};
 let renders=0;
 const ctx={Date,Number,Math,Set,AbortController,setTimeout,clearTimeout,
- CATALOG:[s],unityMarketItem:()=>({isin,date:new Date(now-86400000).toISOString().slice(0,10),price:33.1,currency:'EUR',exchange:'Xetra',source:'Daily EOD'}),
+ CATALOG:[s],unityMarketItem:()=>({isin,date:new Date(now-2*86400000).toISOString().slice(0,10),price:33.1,currency:'EUR',exchange:'Xetra',source:'Daily EOD'}),
  fetch:async()=>({ok:true,json:async()=>market}),render:()=>renders++};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('intraday.js','utf8'),ctx);
 (async()=>{

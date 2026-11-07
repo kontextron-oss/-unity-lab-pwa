@@ -28,6 +28,8 @@ on:
       - scripts/build-staging.cjs
       - tests/rc17-staging-bundle.cjs
       - vercel.json
+      - sync-plan.js
+      - tests/sync-plan.cjs
       - .github/workflows/unity-017-valuation.yml
   pull_request:
     paths:
@@ -50,6 +52,8 @@ on:
       - scripts/build-staging.cjs
       - tests/rc17-staging-bundle.cjs
       - vercel.json
+      - sync-plan.js
+      - tests/sync-plan.cjs
       - .github/workflows/unity-017-valuation.yml
   workflow_dispatch:
 permissions:
@@ -83,5 +87,9 @@ jobs:
         run: |
           node tests/financial-metrics.cjs
           node tests/rc17-offline-safety.cjs
+      - name: Test pCloud/PC safe comparison and immutable local data contracts
+        run: |
+          node --check sync-plan.js
+          node tests/sync-plan.cjs
       - name: Build isolated staging static assets and check public allowlist
         run: node tests/rc17-staging-bundle.cjs

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-07",
+  "scope": "Issuer SEC Form 10-Q nine-month cash-flow and management-commentary observations (unaudited). These are explanatory context, NOT additive EBITDA, standalone acquired-business FCFE or a normalized earnings forecast.",
+  "items": {
+    "IE00B8KQN827": {
+      "isin": "IE00B8KQN827",
+      "cik": "0001551182",
+      "ticker": "ETN",
+      "periodEnd": "2026-09-30",
+      "comparisonPeriodEnd": "2025-09-30",
+      "filedAt": "2026-11-03",
+      "audited": false,
+      "unit": "USD millions",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm",
+      "operatingWorkingCapitalMovement": {
+        "in9m2026": -1050,
+        "in9m2025": -1313,
+        "scope": "Reported consolidated changes in working capital; cash-flow reconciliation line. Not a proven recurring reversal."
+      },
+      "acquisitionCashPaid": {
+        "in9m2026": 11079,
+        "in9m2025": 1504,
+        "scope": "Business acquisitions net of cash acquired; INVESTING cash flow, not a deduction from operating cash flow or capex in the reported FCF proxy."
+      },
+      "financingBorrowingsProceeds": {
+        "in9m2026": 9871,
+        "in9m2025": 1058,
+        "scope": "Proceeds from borrowings; FINANCING cash flow and not an addition to company operating earnings."
+      },
+      "financingShortTermDebtNet": {
+        "in9m2026": 1592,
+        "in9m2025": 761,
+        "scope": "Short-term debt net cash financing; not to add to FCF."
+      },
+      "expected2026PpeCapex": {
+        "value": 1150,
+        "horizon": "FY2026",
+        "scope": "Issuer approximate full-year FY2026 property, plant, equipment capital expenditures; management expectation not realized cash flow."
+      },
+      "acquisitionTransactionNotes": "Boyd Thermal completed March 2026; acquisition accounting and debt financing change comparability. An acquired-business full-year pro-forma operating cash flow and post-deal cash-interest run rate are not independently available from these fields."
+    },
+    "US92537N1081": {
+      "isin": "US92537N1081",
+      "cik": "0001674101",
+      "ticker": "VRT",
+      "periodEnd": "2026-09-30",
+      "comparisonPeriodEnd": "2025-09-30",
+      "filedAt": "2026-10-28",
+      "audited": false,
+      "unit": "USD millions",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm",
+      "operatingWorkingCapitalMovement": {
+        "in9m2026": 540.5,
+        "in9m2025": -166.7,
+        "scope": "Management discussion of TRADE working capital, not total group working capital; not directly comparable to Eaton's reported total."
+      },
+      "acquisitionCashPaid": {
+        "in9m2026": 278.1,
+        "in9m2025": 195.7,
+        "scope": "Business acquisitions net of cash acquired; INVESTING cash flow, not operating cash flow."
+      },
+      "softwareCapitalized": {
+        "in9m2026": 5.3,
+        "in9m2025": 4.7,
+        "scope": "Cash investments in capitalized software are separate from property, plant, equipment CapEx. Disclosure supports a distinct optional broader reinvestment indicator, not an automatic rewrite of reported OCF-minus-PPE-CapEx."
+      },
+      "acquisitionTransactionNotes": "Q3 report contains working-capital tailwind and increased capex; neither gives a durable standalone forward FCF forecast."
+    }
+  }
+}

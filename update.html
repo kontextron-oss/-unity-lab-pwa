@@ -61,6 +61,20 @@ button:disabled{opacity:.5}a{color:#145f93}#status{padding:12px 0;min-height:90p
     reg=await navigator.serviceWorker.register('./sw.js?v=0.17.0-rc1');
    }
    await reg.update();
+   // update() may finish before the newly fetched worker reaches "installed".
+   // Wait for that transition; the user's data and existing cache are untouched.
+   if(reg.installing&&!reg.waiting){
+    const incoming=reg.installing;
+    await new Promise(resolve=>{
+     if(['installed','activated','redundant'].includes(incoming.state)){resolve();return}
+     let finished=false;
+     const complete=()=>{if(finished)return;finished=true;resolve()};
+     incoming.addEventListener('statechange',()=>{
+      if(['installed','activated','redundant'].includes(incoming.state))complete()
+     });
+     setTimeout(complete,12000);
+    });
+   }
    if(reg.waiting){
     put('Neue Offline-Version gefunden. Sie wird jetzt aktiviert …');
     reg.waiting.postMessage({type:'UNITY_ACTIVATE_UPDATE'});

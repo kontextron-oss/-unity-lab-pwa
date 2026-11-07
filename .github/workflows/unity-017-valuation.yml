@@ -35,6 +35,8 @@ on:
       - tests/sync-transfer.cjs
       - sync-ui.js
       - tests/sync-ui.cjs
+      - sync-pcloud-log.js
+      - tests/sync-pcloud-log.cjs
       - sync-policy.js
       - tests/sync-policy.cjs
       - .github/workflows/unity-017-valuation.yml
@@ -66,6 +68,8 @@ on:
       - tests/sync-transfer.cjs
       - sync-ui.js
       - tests/sync-ui.cjs
+      - sync-pcloud-log.js
+      - tests/sync-pcloud-log.cjs
       - sync-policy.js
       - tests/sync-policy.cjs
       - .github/workflows/unity-017-valuation.yml
@@ -112,5 +116,7 @@ jobs:
           node tests/sync-ui.cjs
           node --check sync-policy.js
           node tests/sync-policy.cjs
+          node --check sync-pcloud-log.js
+          node tests/sync-pcloud-log.cjs
       - name: Build isolated staging static assets and check public allowlist
         run: node tests/rc17-staging-bundle.cjs

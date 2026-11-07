@@ -56,10 +56,11 @@ button:disabled{opacity:.5}a{color:#145f93}#status{padding:12px 0;min-height:90p
   attempt=true;button.disabled=true;
   put('GitHub-Version wird geprüft. Die vorhandene Datenbank bleibt erhalten …');
   try{
-   let reg=await navigator.serviceWorker.getRegistration('./');
-   if(!reg){
-    reg=await navigator.serviceWorker.register('./sw.js?v=0.17.0-rc1');
-   }
+   // A fresh script URL avoids the stale iOS cached registration URL.
+   // The same scope keeps one registration, and no IndexedDB data is touched.
+   const reg=await navigator.serviceWorker.register(
+    './sw.js?v=0.17.0-rc1-update-20261107',
+    {scope:'./',updateViaCache:'none'});
    await reg.update();
    // update() may finish before the newly fetched worker reaches "installed".
    // Wait for that transition; the user's data and existing cache are untouched.

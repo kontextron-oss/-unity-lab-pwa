@@ -182,9 +182,11 @@ function unityQuarterDebtEvidence(s,registry){
     prior.periodEnd!=='2025-12-31'||
     !positive(prior.cashAndEquivalents)||!nonNegative(prior.shortTermInvestments))
   return null;
- const ytd=data.yearToDate||{};
+ const ytd=data.yearToDate||{},priorYtd=data.priorYearToDate||{};
  if(ytd.period!=='2026-01-01/2026-09-30'||!positive(ytd.operatingCashFlow)||
-    !nonNegative(ytd.capitalExpenditure))return null;
+    !nonNegative(ytd.capitalExpenditure)||
+    priorYtd.period!=='2025-01-01/2025-09-30'||
+    !positive(priorYtd.operatingCashFlow)||!nonNegative(priorYtd.capitalExpenditure))return null;
  const total=rows=>Math.round(rows.reduce((sum,x)=>sum+x.amount,0)*100)/100;
  const grossDebt=total(data.debtComponents),priorDebt=total(prior.debtComponents);
  if(!(grossDebt>0&&priorDebt>0))return null;
@@ -199,6 +201,7 @@ function unityQuarterDebtEvidence(s,registry){
   debtLessCash:Math.round((grossDebt-data.cashAndEquivalents)*100)/100,
   debtChangePct:Math.round(10000*(grossDebt/priorDebt-1))/100,
   yearToDate:{...ytd,fcfProxy:Math.round((ytd.operatingCashFlow-ytd.capitalExpenditure)*100)/100},
+  priorYearToDate:{...priorYtd,fcfProxy:Math.round((priorYtd.operatingCashFlow-priorYtd.capitalExpenditure)*100)/100},
   tradeApproved:false,reviewGateSatisfied:false
  };
 }
@@ -326,6 +329,95 @@ function unityPilotValuationAuditPanel(s,options={}){
  return h;
 }
 
+
+/* UNITY 0.17 – source-reconciled trailing twelve months (TTM), not an
+ * annualization or intrinsic valuation. FY2025 SEC 10-K and SEC 10-Q figures
+ * for Jan–Sep 2025/2026 are from compatible periods; acquisition accounting
+ * and working-capital swings are not normalized away. */
+function unityPilotTrailingCashFlow(s,options={}){
+ const isin=String(s?.isin||''),expectedCik=isin==='IE00B8KQN827'?'0001551182':
+   isin==='US92537N1081'?'0001674101':null;
+ if(!expectedCik)return null;
+ const financial=options.financial===undefined?
+   (typeof unityFinancialStockSnapshot==='function'?unityFinancialStockSnapshot(s):null):options.financial;
+ const q=options.debt===undefined?unityQuarterDebtEvidence(s):options.debt;
+ const problems=[],r={kind:'unity-rolling-ttm-fcf-bridge-v1',isin,status:'blocked',
+  asOf:'2026-09-30',currency:'USD',unit:'USD millions',
+  ttmOperatingCashFlow:null,ttmCapitalExpenditure:null,ttmFcfProxy:null,
+  bridge:null,sourceRefs:[],normalised:false,
+  fairValue:null,entryZone:null,tradeApproved:false,missing:problems};
+ if(financial?.instrument?.isin!==isin||financial?.coreComplete!==true||
+    financial?.sourceKind!=='sec'||financial?.period!=='2025-12-31'||
+    financial?.reportCurrency!=='USD'||
+    financial?.sourceUrl!=='https://data.sec.gov/api/xbrl/companyfacts/CIK'+expectedCik+'.json')
+   problems.push('Quellenrichtiger, geprüfter FY2025-SEC-Bericht erforderlich');
+ if(q?.isin!==isin||q.kind!=='unity-unaudited-10q-debt-evidence-v1'||
+    q.periodEnd!=='2026-09-30'||q.audited!==false||
+    q.currency!=='USD'||q.unit!=='USD millions'||q.tradeApproved!==false||
+    q.reviewGateSatisfied!==false||
+    !String(q.sourceUrl||'').startsWith('https://www.sec.gov/Archives/edgar/data/'+Number(expectedCik)+'/'))
+   problems.push('Quellenrichtige, unauditierte Vergleichszeiträume aus SEC 10-Q fehlen');
+ const annualOCF=financial?.core?.operatingCashFlow;
+ const annualCapex=financial?.valuation?.capitalExpenditure;
+ const yearOCF=q?.yearToDate?.operatingCashFlow;
+ const yearCapex=q?.yearToDate?.capitalExpenditure;
+ const previousOCF=q?.priorYearToDate?.operatingCashFlow;
+ const previousCapex=q?.priorYearToDate?.capitalExpenditure;
+ const finitePositive=x=>typeof x==='number'&&Number.isFinite(x)&&x>0;
+ const finiteNonNegative=x=>typeof x==='number'&&Number.isFinite(x)&&x>=0;
+ if(!finitePositive(annualOCF)||!finiteNonNegative(annualCapex)||
+    !finitePositive(yearOCF)||!finiteNonNegative(yearCapex)||
+    !finitePositive(previousOCF)||!finiteNonNegative(previousCapex)||
+    q?.yearToDate?.period!=='2026-01-01/2026-09-30'||
+    q?.priorYearToDate?.period!=='2025-01-01/2025-09-30')
+   problems.push('Gleich definierte OCF-/CapEx-Werte für FY2025, 9M2025 und 9M2026 fehlen');
+ if(problems.length)return r;
+ const mn=n=>Math.round(n/1e4)/100; // USD absolute to USD millions, rounded to 0.01
+ const fyOCF=mn(annualOCF),fyCapex=mn(annualCapex);
+ const ttmOCF=Math.round((fyOCF-previousOCF+yearOCF)*100)/100;
+ const ttmCapex=Math.round((fyCapex-previousCapex+yearCapex)*100)/100;
+ if(ttmOCF<=0||ttmCapex<0){
+   problems.push('TTM-Überleitung nicht mathematisch plausibel');return r;
+ }
+ r.status='reported-ttm-only';
+ r.bridge={fy2025:{operatingCashFlow:fyOCF,capitalExpenditure:fyCapex},
+  minus9m2025:{operatingCashFlow:previousOCF,capitalExpenditure:previousCapex},
+  plus9m2026:{operatingCashFlow:yearOCF,capitalExpenditure:yearCapex}};
+ r.ttmOperatingCashFlow=ttmOCF;
+ r.ttmCapitalExpenditure=ttmCapex;
+ r.ttmFcfProxy=Math.round((ttmOCF-ttmCapex)*100)/100;
+ r.sourceRefs=[{period:'FY2025',url:financial.sourceUrl},
+  {period:'9M2025 and 9M2026',url:q.sourceUrl}];
+ return r;
+}
+function unityPilotTrailingCashFlowPanel(s,options={}){
+ const r=unityPilotTrailingCashFlow(s,options);
+ if(!r)return '';
+ const de=n=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(n);
+ if(r.status!=='reported-ttm-only')
+  return '<p class="tiny muted">TTM-Cashflow-Überleitung nicht belegt: '+
+   esc(r.missing.join(' · '))+'. Keine Bewertung.</p>';
+ let h='<details class="unity-secondary-check"><summary>Rollierender 12-Monats-Cashflow bis 30.09.2026</summary>'+
+  '<p class="tiny muted">TTM = geprüfter FY2025-Jahreswert − SEC 9M2025 + SEC 9M2026. '+
+  '2026er Quartalsdaten sind unauditiert; keine bloße Hochrechnung und keine Prognose.</p>';
+ for(const [label,values] of [
+  ['FY2025',r.bridge.fy2025],['abzüglich 9M2025',r.bridge.minus9m2025],
+  ['zuzüglich 9M2026',r.bridge.plus9m2026]])
+  h+='<div class="home-data-row"><span>'+esc(label)+
+   ' · OCF / Sachinvestitionen</span><b>'+esc(de(values.operatingCashFlow))+' / '+
+   esc(de(values.capitalExpenditure))+' Mio. USD</b></div>';
+ for(const [label,num] of [
+  ['TTM operativer Cashflow',r.ttmOperatingCashFlow],
+  ['TTM Sachinvestitionen',r.ttmCapitalExpenditure],
+  ['TTM FCF-Proxy (OCF − Sachinvestitionen)',r.ttmFcfProxy]])
+  h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+
+   esc(de(num))+' Mio. USD</b></div>';
+ h+='<p class="tiny muted">Vorläufiger historischer Istwert: nicht normalisiert für Übernahmen, '+
+  'Working-Capital-Effekte, Aktienzahl oder künftige Kapitalausgaben; bei Vertiv sind '+
+  'separate Investitionen in aktivierte Software nicht in der Sachinvestitionsreihe enthalten. '+
+  '<b>Kein fairer Wert, keine Einstiegszone und keine Kauf-Freigabe.</b></p></details>';
+ return h;
+}
 
 /* UNITY 0.17 – deliberately UNVALIDATED scenario sensitivity.
  * A constant-growth hypothetical owner-cashflow proxy is not a verified
@@ -460,6 +552,7 @@ function unityScenarioValuationPanel(s){
  let h='<h4>Zukunftserwartungen und Szenariobewertung · UNITY</h4>';
  h+=unityPilotValuationAuditPanel(s,{guidance:g,model:m});
  h+=unityPilotScenarioSensitivityPanel(s);
+ h+=unityPilotTrailingCashFlowPanel(s);
  if(g){
   h+='<p class="tiny muted"><b>Unternehmensprognose '+g.fiscalYear+':</b> Quelle vom '+esc(g.publishedAt)+
     ', geprüft '+esc(g.reviewedAt)+' · nur die konkret angegebenen Prognosegrößen, keine 5-Jahres-Schätzung.</p>';

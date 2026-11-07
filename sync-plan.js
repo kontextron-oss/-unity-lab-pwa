@@ -22,8 +22,10 @@
  const DENIED_KEYS=new Set(['__proto__','prototype','constructor']);
  function fail(message){throw Error('UNITY Sync: '+message)}
  function ensure(c,msg){if(!c)fail(msg)}
- function isObj(x){return x!==null&&typeof x==='object'&&!Array.isArray(x)&&
-  (Object.getPrototypeOf(x)===Object.prototype||Object.getPrototypeOf(x)===null)}
+ function isObj(x){if(x===null||typeof x!=='object'||Array.isArray(x)||
+   Object.prototype.toString.call(x)!=='[object Object]')return false;
+  const proto=Object.getPrototypeOf(x);
+  return proto===null||Object.getPrototypeOf(proto)===null;}
  function sortedKeys(x){return Object.keys(x).sort()}
  function exact(x,keys){return isObj(x)&&sortedKeys(x).join('|')===keys.slice().sort().join('|')}
  function canonical(value,seen=new Set()){

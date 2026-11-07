@@ -69,6 +69,9 @@ jobs:
           print('Catalog market parser: identity keys and Fresenius history seed passed.')
           PY
 
+      - name: Verify strict annual SEC data selection before merging
+        run: python3 -m unittest discover -s tests -p 'test_sec_fundamentals.py' -v
+
       - name: Check inline application script
         run: |
           python3 - <<'PY'

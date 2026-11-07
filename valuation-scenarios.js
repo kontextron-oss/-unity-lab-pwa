@@ -149,9 +149,101 @@ function unityScenarioValuation(s,options={}){
  result.decision='Modellhafte Preiszone – Marktregime, Earnings und UNITY-Vetos separat prüfen';
  return result;
 }
+/* UNITY 0.17 research pilot – evidence readiness, not an investment approval.
+ * Display the exact missing gate without fabricating valuations or changing orders. */
+function unityPilotValuationAudit(s,options={}){
+ const isin=String(s?.isin||'');
+ if(!['IE00B8KQN827','US92537N1081'].includes(isin))return null;
+ const resolve=(key,get)=>Object.prototype.hasOwnProperty.call(options,key)?options[key]:get();
+ const financial=resolve('financial',()=>typeof unityFinancialStockSnapshot==='function'?
+   unityFinancialStockSnapshot(s):null);
+ const rawGuidance=resolve('guidance',()=>unityGuidanceEvidence(s));
+ const guidance=rawGuidance?unityGuidanceEvidence(s,{[isin]:rawGuidance}):null;
+ const assumptions=resolve('assumptions',()=>unityValuationAssumptions?.items?.[isin]);
+ const model=resolve('model',()=>unityScenarioValuation(s,{financial,guidance,assumptions}));
+ const calendar=resolve('calendar',()=>typeof unityIssuerCalendarItem==='function'?
+   unityIssuerCalendarItem(s):null);
+ const calendarFresh=resolve('calendarFresh',()=>typeof unityIssuerCalendarFresh==='function'?
+   unityIssuerCalendarFresh()===true:false);
+ const positive=n=>typeof n==='number'&&Number.isFinite(n)&&n>0;
+ const nonNegative=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0;
+ const sameIssuer=!!assumptions&&assumptions.isin===isin&&
+   assumptions.periodEnd===financial?.period&&
+   assumptions.currency===financial?.reportCurrency&&
+   !!guidance&&assumptions.guidanceSourceUrl===guidance.sourceUrl;
+ const debt=assumptions?.debtRiskReview||null;
+ const debtAge=unityValuationDateAge(debt?.asOf);
+ const debtReady=sameIssuer&&debt?.status==='reviewed'&&
+   debt.isin===isin&&debt.periodEnd===financial.period&&
+   debt.currency===financial.reportCurrency&&
+   nonNegative(debt.grossDebt)&&nonNegative(debt.cashAndEquivalents)&&
+   debt.cashFlowBasisVerified===true&&
+   ['acceptable','elevated'].includes(debt.outcome)&&
+   debtAge!==null&&debtAge>=-1&&debtAge<=550&&
+   unityValuationUrlValid(debt.sourceUrl,debt.sourceHost);
+ const scenarioReady=!!debtReady&&model?.status==='scenario-only'&&
+   model.tradeApproved===false&&!!model.modelValues&&
+   Number.isFinite(model.marginOfSafetyPct);
+ const priceZone=scenarioReady?model.indicativeEntryZone:null;
+ const marketReady=!!priceZone&&positive(priceZone.referencePrice)&&
+   priceZone.currency===String(s?.currency||'');
+ const earningsDate=String(calendar?.nextEarnings||'');
+ const earningsAt=/^\d{4}-\d{2}-\d{2}$/.test(earningsDate)?
+   Date.parse(earningsDate+'T12:00:00Z'):NaN;
+ const earningsReady=calendarFresh&&calendar?.status==='confirmed-future-earnings'&&
+   Number.isFinite(earningsAt)&&earningsAt>Date.now()&&
+   /^https:\/\//.test(String(calendar.sourceUrl||''));
+ const gates=[
+  {key:'annual',label:'Aktueller geprüfter Konzernabschluss',
+   ready:financial?.coreComplete===true,
+   next:'Geprüften Konzernabschluss für das passende Geschäftsjahr vervollständigen'},
+  {key:'cashflow',label:'Free Cashflow und passende Aktienzahl',
+   ready:financial?.coreComplete===true&&
+     positive(financial?.valuation?.freeCashFlow)&&
+     positive(financial?.valuation?.sharesOutstanding),
+   next:'Free-Cashflow-Basis und stichtagsbezogene Aktienzahl aus Originalquellen überprüfen'},
+  {key:'guidance',label:'Aktuelle offizielle Unternehmensprognose',
+   ready:!!guidance,
+   next:'Veröffentlichungsdatum, Geschäftsjahr und Originalquelle der Guidance prüfen'},
+  {key:'debt',label:'Gesamtverschuldung und Liquidität bewertet',
+   ready:!!debtReady,
+   next:'Schulden, Liquidität und Cashflow-Basis quellengebunden und unabhängig prüfen'},
+  {key:'valuation',label:'Drei begründete, unabhängig geprüfte Szenarien',
+   ready:!!scenarioReady,
+   next:'Bear/Base/Bull mit begründeten Wachstum-/Diskontsätzen und Sicherheitsmarge dokumentieren'},
+  {key:'market',label:'Aktueller Kurs- und Währungsvergleich',
+   ready:!!marketReady,
+   next:'Datierte Börsen- und Währungskurse für den Modellvergleich prüfen'},
+  {key:'earnings',label:'Nächster Ergebnis-Termin bestätigt',
+   ready:!!earningsReady,
+   next:'Nächsten Earnings-Termin aus aktueller offizieller Quelle bestätigen'}
+ ];
+ const open=gates.filter(g=>!g.ready);
+ return {kind:'unity-valuation-evidence-audit-v1',isin,readyCount:gates.length-open.length,
+  total:gates.length,gates,nextSteps:open.map(x=>x.next),
+  sourceReady:open.length===0,tradeApproved:false,
+  action:'Forschungsprüfung – keine Handelsfreigabe'};
+}
+function unityPilotValuationAuditPanel(s,options={}){
+ const result=unityPilotValuationAudit(s,options);
+ if(!result)return '';
+ let h='<details class="unity-secondary-check"><summary>UNITY 0.17 · Bewertungsnachweise '+
+   result.readyCount+' / '+result.total+'</summary>'+
+   '<p class="tiny muted">Eaton-/Vertiv-Pilot: Quellenstand und offene Nachweise. Fehlende Nachweise sind kein negatives Unternehmensurteil. '+
+   'Auch alle sieben Nachweise allein sind keine Handelsfreigabe; UNITY-Vetos und Chance/Risiko bleiben gesondert bindend.</p>';
+ for(const gate of result.gates)
+  h+='<div class="home-data-row"><span>'+esc(gate.label)+'</span><b>'+
+    (gate.ready?'Belegt':'Offen')+'</b></div>';
+ if(result.nextSteps.length)
+  h+='<p class="tiny muted"><b>Nächste Aufgaben:</b> '+result.nextSteps.slice(0,3).map(esc).join(' · ')+'</p>';
+ h+='</details>';
+ return h;
+}
+
 function unityScenarioValuationPanel(s){
  const g=unityGuidanceEvidence(s),m=unityScenarioValuation(s);
  let h='<h4>Zukunftserwartungen und Szenariobewertung · UNITY</h4>';
+ h+=unityPilotValuationAuditPanel(s,{guidance:g,model:m});
  if(g){
   h+='<p class="tiny muted"><b>Unternehmensprognose '+g.fiscalYear+':</b> Quelle vom '+esc(g.publishedAt)+
     ', geprüft '+esc(g.reviewedAt)+' · nur die konkret angegebenen Prognosegrößen, keine 5-Jahres-Schätzung.</p>';

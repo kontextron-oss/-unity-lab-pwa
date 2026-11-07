@@ -5,13 +5,6 @@ const fs=require('node:fs'),path=require('node:path'),
  crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..');
 const out=path.join(root,'dist');
-const config=JSON.parse(fs.readFileSync('vercel.json','utf8'));
-assert.equal(config.framework,null);
-assert.equal(config.outputDirectory,'dist');
-assert.equal(config.buildCommand,'node scripts/build-staging.cjs');
-assert.ok(config.headers.some(x=>x.headers?.some(h=>h.key==='X-Robots-Tag'&&h.value.includes('noindex'))));
-assert.ok(config.headers.some(x=>x.source==='/sw.js'&&
- x.headers?.some(h=>h.key==='Cache-Control'&&h.value.includes('no-cache'))));
 const build=cp.spawnSync(process.execPath,['scripts/build-staging.cjs'],
  {cwd:root,encoding:'utf8',timeout:120000});
 assert.equal(build.status,0,'Preview build failed: '+build.stderr);
@@ -48,4 +41,4 @@ assert.ok(!compiled.includes('vercel.json'));
 const nFiles=(dir)=>fs.readdirSync(dir,{withFileTypes:true})
  .reduce((n,f)=>n+(f.isDirectory()?nFiles(path.join(dir,f.name)):1),0);
 assert.ok(nFiles(out)>35);
-console.log('RC1 staging bundle validated: public-only assets, all 5 evidence files, immutable source, no private directories, noindex and isolated preview settings.');
+console.log('RC1 GitHub-only static package verified: public-only assets, 5 evidence files, immutable source and no private directories; no hosting provider required.');

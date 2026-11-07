@@ -14,6 +14,7 @@ on:
       - 'data/**'
       - 'hoerblick/**'
       - 'hoerblick-05-release/**'
+      - 'hoerblick-original-release/**'
       - 'scripts/build-staging.cjs'
       - 'tests/rc17-staging-bundle.cjs'
       - 'tests/rc17-offline-safety.cjs'
@@ -61,6 +62,24 @@ jobs:
           test -s "$GITHUB_WORKSPACE/dist/hoerblick-05/index.html"
           grep -Fq '/-unity-lab-pwa/hoerblick-05/' "$GITHUB_WORKSPACE/dist/hoerblick-05/index.html"
           echo "Isolated Hörblick 0.5 Safari build prepared."
+      - name: Restore original HÖRBLICK pre-circle-button build of 2026-08-25
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hoerblick-original-0825
+          base64 -d hoerblick-original-release/0825-client-source.tar.gz.b64 > /tmp/hoerblick-original-0825.tar.gz
+          echo '189251f5dfb0b1468072defbdeab655696dfe9bf472aba7637ae39b553691cd9  /tmp/hoerblick-original-0825.tar.gz' | sha256sum --check -
+          tar -xzf /tmp/hoerblick-original-0825.tar.gz -C /tmp/hoerblick-original-0825 --no-same-owner --no-same-permissions
+          cd /tmp/hoerblick-original-0825
+          npm install --no-audit --no-fund
+          npm run build
+          test -s dist/index.html
+          grep -Fq '/-unity-lab-pwa/hoerblick-stabil-0825/' dist/index.html
+          test -s dist/sw.js
+          test -s dist/manifest.webmanifest
+          mkdir -p "$GITHUB_WORKSPACE/dist/hoerblick-stabil-0825"
+          cp -R dist/. "$GITHUB_WORKSPACE/dist/hoerblick-stabil-0825/"
+          echo "Isolated original HÖRBLICK 2026-08-25 Safari PWA compiled."
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload only allowlisted production PWA assets

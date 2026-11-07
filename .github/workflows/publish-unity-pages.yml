@@ -13,6 +13,7 @@ on:
       - '*.js'
       - 'data/**'
       - 'hoerblick/**'
+      - 'hoerblick-05-release/**'
       - 'scripts/build-staging.cjs'
       - 'tests/rc17-staging-bundle.cjs'
       - 'tests/rc17-offline-safety.cjs'
@@ -31,7 +32,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 18
     steps:
       - name: Checkout public UNITY source
         uses: actions/checkout@v4
@@ -43,6 +44,23 @@ jobs:
         run: |
           node tests/rc17-staging-bundle.cjs
           node tests/rc17-offline-safety.cjs
+      - name: Restore and compile the isolated HÖRBLICK 0.5 Safari application
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hoerblick-05
+          base64 -d hoerblick-05-release/client-source.tar.gz.b64 > /tmp/hoerblick-05-source.tar.gz
+          printf '%s  %s\\n' 'd9b52637dada4146a1940401df8921d7cd499d703c3af9a49683716a47d3e5f1' /tmp/hoerblick-05-source.tar.gz | sha256sum --check -
+          tar -xzf /tmp/hoerblick-05-source.tar.gz -C /tmp/hoerblick-05 --no-same-owner --no-same-permissions
+          cd /tmp/hoerblick-05
+          npm install --no-audit --no-fund
+          npm run build
+          test -s dist/index.html
+          mkdir -p "$GITHUB_WORKSPACE/dist/hoerblick-05"
+          cp -R dist/. "$GITHUB_WORKSPACE/dist/hoerblick-05/"
+          test -s "$GITHUB_WORKSPACE/dist/hoerblick-05/index.html"
+          grep -Fq '/-unity-lab-pwa/hoerblick-05/' "$GITHUB_WORKSPACE/dist/hoerblick-05/index.html"
+          echo "Isolated Hörblick 0.5 Safari build prepared."
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload only allowlisted production PWA assets

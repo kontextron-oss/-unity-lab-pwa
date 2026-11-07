@@ -110,6 +110,6 @@ assert.match(invoke('unityAutoStockBadge(buyStock)',Object.assign(sandbox,{buySt
  const idx=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
  assert.match(idx,/paper-order-engine\.js\?v=0\.16\.5/);
  assert.match(sw,/paper-order-engine\.js\?v=0\.16\.5/);
- assert.match(sw,/unity-lab-v0\.16\.5/);
+ assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
  console.log('Auto simulation: 10 staged triggers, next-observed-EOD fills with fees/spread, 300/500 EUR caps, protective sell, no duplicate or partial fills passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

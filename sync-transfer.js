@@ -16,8 +16,10 @@
  const HEX=/^[0-9a-f]{64}$/;
  function fail(s){throw Error('UNITY Änderungsaustausch: '+s)}
  function requireThat(x,s){if(!x)fail(s)}
- function plain(x){return x!==null&&typeof x==='object'&&!Array.isArray(x)&&
-  (Object.getPrototypeOf(x)===Object.prototype||Object.getPrototypeOf(x)===null)}
+ function plain(x){if(x===null||typeof x!=='object'||Array.isArray(x)||
+   Object.prototype.toString.call(x)!=='[object Object]')return false;
+  const proto=Object.getPrototypeOf(x);
+  return proto===null||Object.getPrototypeOf(proto)===null;}
  function exact(x,keys){return plain(x)&&Object.keys(x).sort().join(',')===keys.slice().sort().join(',')}
  function bytes(s){return typeof TextEncoder!=='undefined'?new TextEncoder().encode(s).length:
   typeof Buffer!=='undefined'?Buffer.byteLength(s,'utf8'):s.length}

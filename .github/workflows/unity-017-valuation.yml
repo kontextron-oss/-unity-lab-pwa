@@ -27,7 +27,6 @@ on:
       - data/debt-pilot-evidence.json
       - scripts/build-staging.cjs
       - tests/rc17-staging-bundle.cjs
-      - vercel.json
       - sync-plan.js
       - tests/sync-plan.cjs
       - sync-transfer.js
@@ -60,7 +59,6 @@ on:
       - data/debt-pilot-evidence.json
       - scripts/build-staging.cjs
       - tests/rc17-staging-bundle.cjs
-      - vercel.json
       - sync-plan.js
       - tests/sync-plan.cjs
       - sync-transfer.js
@@ -118,5 +116,5 @@ jobs:
           node tests/sync-policy.cjs
           node --check sync-pcloud-log.js
           node tests/sync-pcloud-log.cjs
-      - name: Build isolated staging static assets and check public allowlist
+      - name: Build GitHub-only RC1 static assets and check public allowlist
         run: node tests/rc17-staging-bundle.cjs

@@ -28,7 +28,13 @@ assertContains(html,"const STORES="+JSON.stringify(originalStores).replaceAll('"
 assert.doesNotMatch(html,/indexedDB\.deleteDatabase\s*\(/);
 assert.doesNotMatch(html,/controllerchange[^;]*location\.reload\s*\(/);
 assert.doesNotMatch(html,/localStorage\.clear\s*\(/);
-assert.doesNotMatch(sw,/skipWaiting\s*\(/,'no forced service-worker takeover');
+assert.match(sw,/event\.data\?\.type==='UNITY_ACTIVATE_UPDATE'/,'explicit safe update request required');
+assert.match(sw,/self\.skipWaiting\s*\(/,'user-initiated activation supported');
+assert.ok(fs.existsSync('update.html'),'non-destructive Safari update page exists');
+const helper=fs.readFileSync('update.html','utf8');
+assert.match(helper,/UNITY_ACTIVATE_UPDATE/);
+assert.match(helper,/getRegistration\('\.\/'\)/);
+assert.doesNotMatch(helper,/deleteDatabase\s*\(|caches\.delete\s*\(|localStorage\.clear\s*\(|unregister\s*\(/);
 assert.doesNotMatch(sw,/caches\.delete\s*\(/,'prior caches preserved for fallback');
 assert.doesNotMatch(sw,/\.delete\s*\(k\)/,'no cache pruning during RC');
 assert.doesNotMatch(valuation,/indexedDB\./,'analysis logic read only');
@@ -82,8 +88,9 @@ assert.equal(config.CACHE,'unity-lab-v'+rc);
 assert.equal(new Set(config.ASSETS).size,config.ASSETS.length,'no duplicate entries');
 for(const asset of evidence)assert.ok(config.ASSETS.includes(asset),'missing offline source '+asset);
 assert.ok(config.ASSETS.includes('./valuation-scenarios.js?v='+rc));
+assert.ok(config.ASSETS.includes('./update.html'),'update helper available offline');
 assert.ok(!config.ASSETS.includes('./valuation-scenarios.js?v=0.16.5'));
-for(const eventName of ['install','activate','fetch'])
+for(const eventName of ['install','activate','fetch','message'])
  assert.equal(typeof events[eventName],'function','SW event missing: '+eventName);
 
 async function exercise(){
@@ -92,6 +99,10 @@ async function exercise(){
  await pending;
  assert.equal(record.installRequests.length,config.ASSETS.length);
  assert.equal(record.skip,0,'do not immediately override active session');
+ events.message({data:{type:'NOT_THE_APPROVED_UPDATE'}});
+ assert.equal(record.skip,0,'ignore unrelated messages');
+ events.message({data:{type:'UNITY_ACTIVATE_UPDATE'}});
+ assert.equal(record.skip,1,'update activation requires explicit user action');
  events.activate({waitUntil(promise){pending=promise}});
  await pending;
  assert.equal(record.deletes,0,'keep older caches while testing RC');

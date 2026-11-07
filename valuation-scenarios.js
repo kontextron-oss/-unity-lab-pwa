@@ -465,12 +465,12 @@ function unityPilotNormalizationReview(s,options={}){
  if(!validPair(wc,true)||!validPair(acq,false))
     missing.push('Belegte Veränderungen des Umlaufvermögens und Akquisitionszahlungen fehlen');
  if(isin==='IE00B8KQN827'&&
-   (!validPair(raw.financingBorrowingsProceeds,false)||
-    !validPair(raw.financingShortTermDebtNet,true)||
-    raw.expected2026PpeCapex?.horizon!=='FY2026'||
-    !validMoney(raw.expected2026PpeCapex?.value)))
+   (!validPair(raw?.financingBorrowingsProceeds,false)||
+    !validPair(raw?.financingShortTermDebtNet,true)||
+    raw?.expected2026PpeCapex?.horizon!=='FY2026'||
+    !validMoney(raw?.expected2026PpeCapex?.value)))
     missing.push('Eaton: Finanzierungskomponenten oder explizite CapEx-Erwartung fehlen');
- if(isin==='US92537N1081'&&!validPair(raw.softwareCapitalized,false))
+ if(isin==='US92537N1081'&&!validPair(raw?.softwareCapitalized,false))
     missing.push('Vertiv: separat ausgewiesene Softwareinvestitionen fehlen');
  if(missing.length)return result;
  result.status='disclosure-complete-normalization-open';

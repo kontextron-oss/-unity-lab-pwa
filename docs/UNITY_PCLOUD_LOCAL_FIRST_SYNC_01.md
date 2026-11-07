@@ -63,3 +63,31 @@ Datei: `sync-plan.js` (Node + Browser, bisher nicht in der veröffentlichten PWA
 **Nicht behaupten:** „pCloud ist nun die Datenbank“, „Synchronisation läuft automatisch“, „iPhone und PC sind bereits synchron“, „Ende-zu-Ende-Verschlüsselung aktiviert“ oder „Konflikte automatisch gelöst“. Das ist noch nicht implementiert und wäre ohne Tests riskant.
 
 Das Projekt benötigt **keinen zusätzlichen Host/Cloudanbieter**. Die sichere Synchronisation ist eine zusätzliche Schicht über der bereits vorhandenen UNITY- und pCloud-Infrastruktur.
+
+## Zielkorrektur: automatische Synchronisation, bestehende WERK-ARCHIV-pCloud-Integration nutzen
+
+Verbindliches Ziel ist **keine dauerhafte manuelle Dateiübertragung**. Die neu eingebauten Funktionen in \`sync-ui.js\` sind ausdrücklich ein isolierter Pilot, um Authentizität, Konfliktverhalten, reversible Importe und Verschlüsselung vor dem eigentlichen Cloudbetrieb zu testen. Sie dürfen nicht als endgültige Bedienlösung vorgestellt werden.
+
+Das **WERK-ARCHIV** hat eine eigenständige pCloud-App-/OAuth-Einrichtung, und die PC-Version wurde in der bisherigen Entwicklung ebenfalls darauf ausgerichtet. Zu unterscheiden sind:
+1. Die **pCloud App Key / Client ID** ist eine App-Registrierung und kein persönlicher Zugriffstoken. Es kann sinnvoll sein, dieselbe Registrierung bzw. die bewährte OAuth-Codeflow-Komponente für UNITY zu verwenden, soweit Redirect-URIs und Sicherheitsgrenzen das gestatten.
+2. **Ein Benutzerzugriff/Access-Token ist ursprungs- und authentifizierungsbezogen**. Es wird weder aus WERK-ARCHIV exportiert, noch in das öffentliche UNITY-HTML, GitHub, Screenshots oder unverschlüsselte Backup-Dateien kopiert. Falls die bestehende Backend-/OAuth-Verbindung für UNITY nicht berechtigt ist, muss die Berechtigung im regulären pCloud-Dialog für UNITY erteilt werden.
+3. **Zwei getrennte Datenräume** im selben pCloud-Konto: WERK-ARCHIV behält seine vorhandene Datenstruktur; UNITY erhält private, versionierte Synchronisationsdateien in einem gesonderten Verzeichnis. Es erfolgt keine Wiederverwendung fremder fileids/folderids; bestehende Backups bleiben unangetastet.
+4. Offizielle pCloud-Dokumentation: OAuth 2.0 ([authorize](https://docs.pcloud.com/methods/oauth_2.0/authorize.html)), API-Host nach Kontoregion ([pCloud Developers](https://docs.pcloud.com/)); in Europa \`eapi.pcloud.com\`, in den USA \`api.pcloud.com\`. Der Client-Secret bleibt auf einem geschützten Server/Backend, sofern ein Code-Flow eingesetzt wird.
+5. Ein bestehender WERK-ARCHIV-Login bedeutet **nicht automatisch**, dass UNITY bereits über eine authentifizierte Verbindung verfügt. Die konkrete vorhandene Verbindung muss vor einer Aktivierung technisch überprüft werden, ohne geheime Daten in GitHub abzulegen.
+
+### Verhalten der späteren Automatik
+
+- Bei **Appstart**, nach Rückkehr aus dem Offline-Modus sowie während aktiver Nutzung bei Änderungen: Synchronisationsbedarf erkennen und, sofern das Gerät zuvor sicher freigegeben ist, automatisch private pCloud-Manifeste lesen.
+- Bei **gleichem Datensatz und bestätigter Revision**: nichts tun. Bei **eindeutig neuem, plausibel validiertem Datensatz**: kontrolliert übernehmen. Bei **Konflikten, unklarer Löschung oder paralleler Bearbeitung**: vollständige Auto-Übernahme stoppen und ein übersichtliches Entscheidungsfeld anbieten. Keine „neuester Zeitstempel gewinnt“-Logik.
+- Vor Upload: **lokale Transaktion und Verschlüsselung**, bestätigte Geräte-/Benutzerberechtigung, atomare Versionsprüfung bzw. optimistische Sperre (CAS) und Upload-Quittung. Erst nach tatsächlicher Remote-Bestätigung einen lokalen Checkpoint fortschreiben. Bei Netzfehlern: nicht den Datenstand als synchronisiert markieren, spätere Wiederholung ohne Dubletten.
+- iPhone-PWA: Synchronisation grundsätzlich bei aktiver/erneut geöffneter App; **nicht als zuverlässig rund um die Uhr laufender Hintergrundprozess behaupten**. Safari/iOS unterstützt die gängigen Background-Sync-APIs nicht durchgängig; die PC-Version kann je nach gewählter Technik kontinuierlicher arbeiten.
+- Die **bestehende manuelle Vollsicherung in pCloud** bleibt als unabhängige Rückfallebene erhalten, auch wenn der spätere Sync automatisch wird.
+
+### Neu im Entwicklungszweig
+
+- \`sync-transfer.js\`: verifizierte, auf **Aktien-Stammdaten und Analysen** begrenzte Änderungs-Pilotpakete. Strenge Vorversion, Hash-/ID-Verifizierung, Konfliktvorschau.
+- \`sync-crypto.js\`: eigene Passwortverschlüsselung **AES-256-GCM + PBKDF2-SHA256** für den bewusst ausgelösten Test-Dateiaustausch.
+- \`sync-ui.js\`: aufklappbarer RC1-Testbereich „Datensicherung → 04 · Verschlüsselter Änderungsabgleich“ mit pCloud-Share-Dialog und nur manuell freigegebenem **Add-only-Import**. Keine automatischen Änderungen an bestehenden Datensätzen.
+- \`sync-policy.js\`: **rein deklarative**, inaktiver Prüf- und Ablaufkern für den späteren Automatikbetrieb. Die Freigabe erfordert: pCloud-OAuth und Konto, autorisiertes Gerät, verfügbare Verschlüsselung, frische Remote-Revision, nachgewiesene Datenintegrität, konfliktfreien Plan und Schutz gegen gleichzeitiges Schreiben. Er enthält **keine** echte pCloud-Verbindung oder automatischen Ausführungen.
+
+**Vollständige Synchronisation aller neun Datenbereiche ist noch nicht implementiert.** Die Erweiterung muss insbesondere Konto-/Budgetdaten, Kauforders, Simulationsbuchungen, große Kursdatenreihen und später das PC-Datenmodell separat und nicht-destruktiv behandeln. Eine Finanz- oder Brokerorder darf nie aus einem Cloud-Import ausgelöst werden.

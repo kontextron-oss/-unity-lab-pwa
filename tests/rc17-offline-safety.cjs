@@ -3,6 +3,10 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const html=fs.readFileSync('index.html','utf8');
 const sw=fs.readFileSync('sw.js','utf8');
+const manifest=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
+assert.equal(manifest.short_name,'UNITY RC1');
+assert.equal(manifest.start_url,'./index.html');
+assert.equal(manifest.scope,'./');
 const valuation=fs.readFileSync('valuation-scenarios.js','utf8');
 const originalStores=['instruments','quotes','transactions','strategies','audit',
  'fundamentals','histories','analyses','settings'];

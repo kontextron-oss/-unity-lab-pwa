@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedAt": "2026-11-07",
-  "scope": "Two issuer-specific SEC Form 10-Q disclosures for quarter ended 2026-09-30. UNAUDITED quarterly numbers, in USD millions unless specified. Research only: no DCF assumptions, not the 2025 audited annual baseline, no trading approval.",
+  "scope": "Two issuer-specific SEC Form 10-Q disclosures for quarter ended 2026-09-30. UNAUDITED quarterly numbers, in USD millions unless specified. Research only: no DCF assumptions, not the 2025 audited annual baseline, no trading approval. Includes same-source 2025 nine-month cash-flow comparatives for true rolling FY2025 - 9M2025 + 9M2026 TTM calculation, not normalized forward FCF.",
   "items": {
     "IE00B8KQN827": {
       "isin": "IE00B8KQN827",
@@ -59,7 +59,12 @@
         "operatingCashFlow": 2943,
         "capitalExpenditure": 721
       },
-      "commentary": "2026 acquisitions and borrowings materially change the 2025 debt profile. Financial debt is carrying-value components; leases and other liabilities are not silently added. Quarterly 9M FCF proxy is not annual or audited."
+      "commentary": "2026 acquisitions and borrowings materially change the 2025 debt profile. Financial debt is carrying-value components; leases and other liabilities are not silently added. Quarterly 9M FCF proxy is not annual or audited.",
+      "priorYearToDate": {
+        "period": "2025-01-01/2025-09-30",
+        "operatingCashFlow": 2507,
+        "capitalExpenditure": 527
+      }
     },
     "US92537N1081": {
       "isin": "US92537N1081",
@@ -109,7 +114,13 @@
         "capitalExpenditure": 425,
         "additionalCapitalizedSoftware": 5.3
       },
-      "commentary": "Cash exceeds the disclosed debt-component sum at the 2026-09-30 balance-sheet date. This is not an assertion of net cash after all obligations; current and noncurrent debt from one SEC balance sheet, capitalized software shown separately."
+      "commentary": "Cash exceeds the disclosed debt-component sum at the 2026-09-30 balance-sheet date. This is not an assertion of net cash after all obligations; current and noncurrent debt from one SEC balance sheet, capitalized software shown separately.",
+      "priorYearToDate": {
+        "period": "2025-01-01/2025-09-30",
+        "operatingCashFlow": 1108.9,
+        "capitalExpenditure": 126.7,
+        "additionalCapitalizedSoftware": 4.7
+      }
     }
   }
 }

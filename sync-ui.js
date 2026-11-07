@@ -111,6 +111,10 @@ function unitySyncSafeRecord(obj){
   throw Error('Importdatei enthält zu große oder potenziell unsichere Texte.');
 }
 async function unitySyncInspect(){
+ // A failed or canceled inspection must never leave a previously authorized import staged.
+ unitySyncIncoming=null;
+ const prior=document.getElementById('unity-sync-import-new');if(prior)prior.hidden=true;
+ const priorReview=document.getElementById('unity-sync-review');if(priorReview)priorReview.textContent='';
  const f=document.getElementById('unity-sync-file')?.files?.[0];
  if(!f)throw Error('Zuerst eine verschlüsselte UNITY-SYNC-Datei auswählen.');
  if(f.size>6*1024*1024)throw Error('Austauschdatei ist zu groß.');
@@ -171,11 +175,25 @@ async function unitySyncImportNew(){
  if(!additions.length)throw Error('Keine bisher fehlenden Datensätze.');
  const incoming=new Map(pending.packet.changes.map(x=>[x.store+'/'+x.id,x.record]));
  const inserts={};for(const k of STORES)inserts[k]=[];
+ const existingStocks=records.instruments||[];
+ const addedStockIsins=new Set();
  for(const row of additions){
   if(!UNITY_SYNC_TRANSFER.TYPES.includes(row.store))throw Error('Unzulässige Importgruppe.');
   const item=incoming.get(row.store+'/'+row.id);
   if(!item)throw Error('Datensatz fehlt im geprüften Austauschpaket.');
   unitySyncSafeRecord(item);
+  if(row.store==='instruments'){
+   const isin=String(item.isin||'').trim().toUpperCase();
+   const ticker=String(item.ticker||'').trim().toUpperCase();
+   const exchange=String(item.exchange||'').trim().toUpperCase();
+   if(!ticker||!exchange||!item.name||!isin||!/^([A-Z]{2}[A-Z0-9]{9}[0-9])$/.test(isin))
+    throw Error('Aktienstammdaten unvollständig. Kein automatisches Hinzufügen.');
+   if(existingStocks.some(s=>String(s.isin||'').trim().toUpperCase()===isin||
+      String(s.ticker||'').trim().toUpperCase()===ticker&&
+      String(s.exchange||'').trim().toUpperCase()===exchange)||addedStockIsins.has(isin))
+    throw Error('Aktie bereits unter anderer ID/ISIN oder Börsenkennung vorhanden. Nur manuell bereinigen.');
+   addedStockIsins.add(isin);
+  }
   inserts[row.store].push(item);
  }
  const unresolved=again.counts.conflict+again.counts.canReviewUpdate;

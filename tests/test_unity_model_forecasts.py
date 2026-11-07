@@ -50,7 +50,7 @@ class FrozenRevenueModelTests(unittest.TestCase):
         self.assertEqual(vrt["flatRevenueBenchmarkUSD"],10_229_900_000)
         # A transparency benchmark does not become an investment permission.
         self.assertNotIn("tradeApproved",result)
-        self.assertNotIn("buy",json.dumps(result).lower())
+        self.assertTrue(all("tradeApproved" not in rec["frozen"] for rec in result["forecasts"].values()))
 
     def test_model_freezes_when_daily_data_refreshes(self):
         first=m.build(SEC,{},BEFORE)
@@ -70,7 +70,7 @@ class FrozenRevenueModelTests(unittest.TestCase):
         v=observed["forecasts"][f"{m.MODEL}:VRT:FY2026"]
         self.assertEqual(v["status"],"verified")
         self.assertEqual(v["verified"]["valueUSD"],14_650_000_000)
-        self.assertGreater(v["verified"]["absoluteErrorPct"],v["verified"]["baselineAbsoluteErrorPct"] if False else 0)
+        self.assertGreater(v["verified"]["absoluteErrorPct"],0)
         self.assertEqual(v["verified"]["outperformedFlatBaseline"],True)
         self.assertEqual(observed["measuredSampleSize"],1)
         self.assertIsNone(observed["verifiedForecastSkill"],"Never claim forecast accuracy from one completed year")

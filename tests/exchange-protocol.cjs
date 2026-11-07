@@ -74,7 +74,7 @@ const clone=x=>JSON.parse(JSON.stringify(x));
  assert.match(idx,/exchange-ui\.js\?v=0\.16\.5/);
  assert.match(idx,/unity-exchange-prepare/);
  assert.match(idx,/unity-exchange-inspect-file/);
- assert.match(sw,/unity-lab-v0\.16\.5/);
+ assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
  assert.match(sw,/exchange-protocol\.js\?v=0\.16\.5/);
  console.log('UNITY exchange 0.16.5: browser/Node protocol, SHA256 integrity, manual review-only data, conflicts, tamper and crypto/remote-execution veto passed.');
 })().catch(err=>{console.error(err);process.exitCode=1});

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-07",
+  "scope": "Official SEC Q3 2026 unaudited 10-Q, net interest expense (not cash interest paid), 3M and 9M actuals; no interest-rate forecast or trade signal. All amounts USD millions.",
+  "items": {
+    "IE00B8KQN827": {
+      "isin": "IE00B8KQN827",
+      "ticker": "ETN",
+      "cik": "0001551182",
+      "reportPeriodEnd": "2026-09-30",
+      "filedAt": "2026-11-03",
+      "audited": false,
+      "currency": "USD",
+      "unit": "USD millions",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm",
+      "netInterestExpense": {
+        "q3_2026": 198,
+        "q3_2025": 67,
+        "nineMonths2026": 505,
+        "nineMonths2025": 171
+      },
+      "priorGrossFinancialDebt": 9895,
+      "notes": "Net interest expense contains offsetting interest income and is already reflected in US-GAAP earnings / operating cash flow, not a standalone cash interest amount. Debt balance includes 3 disclosed components; increased debt cannot solely be assigned to one acquisition."
+    },
+    "US92537N1081": {
+      "isin": "US92537N1081",
+      "ticker": "VRT",
+      "cik": "0001674101",
+      "reportPeriodEnd": "2026-09-30",
+      "filedAt": "2026-10-28",
+      "audited": false,
+      "currency": "USD",
+      "unit": "USD millions",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm",
+      "netInterestExpense": {
+        "q3_2026": 6.4,
+        "q3_2025": 22.8,
+        "nineMonths2026": 19.4,
+        "nineMonths2025": 69.4
+      },
+      "priorGrossFinancialDebt": 2913,
+      "notes": "Lower net interest expense partly driven by increased interest income and Term Loan repayment; gross debt stress cannot be construed as future net interest costs or cash interest. Debt covers reported current and long-term portions, not leases or all financing."
+    }
+  }
+}

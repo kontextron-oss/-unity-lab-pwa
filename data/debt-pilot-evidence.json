@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-07",
+  "scope": "Two issuer-specific SEC Form 10-Q disclosures for quarter ended 2026-09-30. UNAUDITED quarterly numbers, in USD millions unless specified. Research only: no DCF assumptions, not the 2025 audited annual baseline, no trading approval. Includes same-source 2025 nine-month cash-flow comparatives for true rolling FY2025 - 9M2025 + 9M2026 TTM calculation, not normalized forward FCF.",
+  "items": {
+    "IE00B8KQN827": {
+      "isin": "IE00B8KQN827",
+      "name": "Eaton",
+      "ticker": "ETN",
+      "cik": "0001551182",
+      "filingType": "10-Q",
+      "filedAt": "2026-11-03",
+      "periodEnd": "2026-09-30",
+      "reportCurrency": "USD",
+      "unit": "USD millions",
+      "audited": false,
+      "sourceHost": "www.sec.gov",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1551182/000155118226000040/etn-20260930.htm",
+      "cashAndEquivalents": 528,
+      "shortTermInvestments": 290,
+      "debtComponents": [
+        {
+          "key": "shortTermDebt",
+          "label": "Short-term debt",
+          "amount": 1594
+        },
+        {
+          "key": "currentLongTermDebt",
+          "label": "Current portion of long-term debt",
+          "amount": 710
+        },
+        {
+          "key": "noncurrentLongTermDebt",
+          "label": "Long-term debt",
+          "amount": 17802
+        }
+      ],
+      "priorYearComparison": {
+        "periodEnd": "2025-12-31",
+        "cashAndEquivalents": 622,
+        "shortTermInvestments": 181,
+        "debtComponents": [
+          {
+            "key": "shortTermDebt",
+            "amount": 1
+          },
+          {
+            "key": "currentLongTermDebt",
+            "amount": 1136
+          },
+          {
+            "key": "noncurrentLongTermDebt",
+            "amount": 8758
+          }
+        ]
+      },
+      "yearToDate": {
+        "period": "2026-01-01/2026-09-30",
+        "operatingCashFlow": 2943,
+        "capitalExpenditure": 721
+      },
+      "commentary": "2026 acquisitions and borrowings materially change the 2025 debt profile. Financial debt is carrying-value components; leases and other liabilities are not silently added. Quarterly 9M FCF proxy is not annual or audited.",
+      "priorYearToDate": {
+        "period": "2025-01-01/2025-09-30",
+        "operatingCashFlow": 2507,
+        "capitalExpenditure": 527
+      }
+    },
+    "US92537N1081": {
+      "isin": "US92537N1081",
+      "name": "Vertiv",
+      "ticker": "VRT",
+      "cik": "0001674101",
+      "filingType": "10-Q",
+      "filedAt": "2026-10-28",
+      "periodEnd": "2026-09-30",
+      "reportCurrency": "USD",
+      "unit": "USD millions",
+      "audited": false,
+      "sourceHost": "www.sec.gov",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1674101/000162828026067893/vrt-20260930.htm",
+      "cashAndEquivalents": 3512.9,
+      "shortTermInvestments": 198.8,
+      "debtComponents": [
+        {
+          "key": "currentLongTermDebt",
+          "label": "Current portion of long-term debt",
+          "amount": 3.4
+        },
+        {
+          "key": "noncurrentLongTermDebt",
+          "label": "Long-term debt, net",
+          "amount": 2925.1
+        }
+      ],
+      "priorYearComparison": {
+        "periodEnd": "2025-12-31",
+        "cashAndEquivalents": 1728.4,
+        "shortTermInvestments": 99.5,
+        "debtComponents": [
+          {
+            "key": "currentLongTermDebt",
+            "amount": 20.9
+          },
+          {
+            "key": "noncurrentLongTermDebt",
+            "amount": 2892.1
+          }
+        ]
+      },
+      "yearToDate": {
+        "period": "2026-01-01/2026-09-30",
+        "operatingCashFlow": 2660.6,
+        "capitalExpenditure": 425,
+        "additionalCapitalizedSoftware": 5.3
+      },
+      "commentary": "Cash exceeds the disclosed debt-component sum at the 2026-09-30 balance-sheet date. This is not an assertion of net cash after all obligations; current and noncurrent debt from one SEC balance sheet, capitalized software shown separately.",
+      "priorYearToDate": {
+        "period": "2025-01-01/2025-09-30",
+        "operatingCashFlow": 1108.9,
+        "capitalExpenditure": 126.7,
+        "additionalCapitalizedSoftware": 4.7
+      }
+    }
+  }
+}

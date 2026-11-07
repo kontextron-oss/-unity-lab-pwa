@@ -126,7 +126,7 @@ const assertContract=x=>{
  const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),home=fs.readFileSync('home.js','utf8');
  assert.match(html,/decision-engine\.js\?v=0\.16\.5/);
  assert.match(sw,/decision-engine\.js\?v=0\.16\.5/);
- assert.match(sw,/unity-lab-v0\.16\.5/);
+ assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
  assert.match(home,/unityDecisionPanel\(s\)/);
  assert.match(home,/approval\.testActionEligible/);
  assert.match(home,/unityDecisionLedgerCapture/);

@@ -1,0 +1,126 @@
+name: UNITY 0.17 valuation regression
+on:
+  push:
+    branches:
+      - feat/unity-017-valuation-evidence
+    paths:
+      - valuation-scenarios.js
+      - data/debt-pilot-evidence.json
+      - tests/valuation-pilot-audit.cjs
+      - tests/debt-pilot-evidence.cjs
+      - tests/pilot-scenario-sensitivity.cjs
+      - tests/pilot-ttm-cashflow.cjs
+      - tests/pilot-normalization-audit.cjs
+      - tests/pilot-financing-stress.cjs
+      - data/financing-stress-evidence.json
+      - data/normalization-evidence.json
+      - index.html
+      - sw.js
+      - tests/rc17-offline-safety.cjs
+      - tests/financial-metrics.cjs
+      - tests/reverse-valuation.cjs
+      - tests/valuation-scenarios.cjs
+      - data/issuer-guidance.json
+      - data/valuation-assumptions.json
+      - data/normalization-evidence.json
+      - data/financing-stress-evidence.json
+      - data/debt-pilot-evidence.json
+      - scripts/build-staging.cjs
+      - tests/rc17-staging-bundle.cjs
+      - sync-plan.js
+      - tests/sync-plan.cjs
+      - sync-transfer.js
+      - sync-crypto.js
+      - tests/sync-transfer.cjs
+      - sync-ui.js
+      - tests/sync-ui.cjs
+      - worker/pcloud-node-adapter.cjs
+      - tests/pcloud-node-adapter.cjs
+      - sync-pcloud-log.js
+      - tests/sync-pcloud-log.cjs
+      - sync-policy.js
+      - tests/sync-policy.cjs
+      - .github/workflows/unity-017-valuation.yml
+  pull_request:
+    paths:
+      - valuation-scenarios.js
+      - data/debt-pilot-evidence.json
+      - tests/valuation-pilot-audit.cjs
+      - tests/debt-pilot-evidence.cjs
+      - tests/pilot-scenario-sensitivity.cjs
+      - index.html
+      - sw.js
+      - tests/rc17-offline-safety.cjs
+      - tests/financial-metrics.cjs
+      - tests/reverse-valuation.cjs
+      - tests/valuation-scenarios.cjs
+      - data/issuer-guidance.json
+      - data/valuation-assumptions.json
+      - data/normalization-evidence.json
+      - data/financing-stress-evidence.json
+      - data/debt-pilot-evidence.json
+      - scripts/build-staging.cjs
+      - tests/rc17-staging-bundle.cjs
+      - sync-plan.js
+      - tests/sync-plan.cjs
+      - sync-transfer.js
+      - sync-crypto.js
+      - tests/sync-transfer.cjs
+      - sync-ui.js
+      - tests/sync-ui.cjs
+      - worker/pcloud-node-adapter.cjs
+      - tests/pcloud-node-adapter.cjs
+      - sync-pcloud-log.js
+      - tests/sync-pcloud-log.cjs
+      - sync-policy.js
+      - tests/sync-policy.cjs
+      - .github/workflows/unity-017-valuation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  valuation-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source syntax
+        run: node --check valuation-scenarios.js
+      - name: Existing valuation and reverse valuation guards
+        run: |
+          node tests/valuation-scenarios.cjs
+          node tests/reverse-valuation.cjs
+      - name: Pilot debt, readiness and three-scenario tests
+        run: |
+          node tests/valuation-pilot-audit.cjs
+          node tests/debt-pilot-evidence.cjs
+          node tests/pilot-scenario-sensitivity.cjs
+          node tests/pilot-ttm-cashflow.cjs
+          node tests/pilot-normalization-audit.cjs
+          node tests/pilot-financing-stress.cjs
+      - name: Release-candidate offline / storage / service-worker guards
+        run: |
+          node tests/financial-metrics.cjs
+          node tests/rc17-offline-safety.cjs
+      - name: Test pCloud/PC safe comparison and immutable local data contracts
+        run: |
+          node --check sync-plan.js
+          node tests/sync-plan.cjs
+          node --check sync-transfer.js
+          node --check sync-crypto.js
+          node tests/sync-transfer.cjs
+          node --check sync-ui.js
+          node tests/sync-ui.cjs
+          node --check sync-policy.js
+          node tests/sync-policy.cjs
+          node --check sync-pcloud-log.js
+          node tests/sync-pcloud-log.cjs
+          node --check worker/pcloud-node-adapter.cjs
+          node tests/pcloud-node-adapter.cjs
+      - name: Build GitHub-only RC1 static assets and check public allowlist
+        run: node tests/rc17-staging-bundle.cjs

@@ -13,3 +13,6 @@ worker/pcloud/
 **/*.pem
 **/*.key
 *.log
+
+# Generated allowlist-only RC1 preview bundle (never commit generated deployment files).
+/dist/

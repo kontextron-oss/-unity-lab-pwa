@@ -1,13 +1,13 @@
 {
-  "name": "Unity Lab",
-  "short_name": "Unity Lab",
+  "name": "UNITY Lab 0.17 RC1 (Test)",
+  "short_name": "UNITY RC1",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f3f5f7",
   "theme_color": "#13283a",
   "lang": "de",
-  "description": "Lokales UNITY-Forschungslabor mit hypothetischem Simulationsdepot",
+  "description": "Unveröffentlichter UNITY-0.17-Teststand – lokales Investment-Forschungslabor und hypothetisches Simulationsdepot",
   "icons": [
     {
       "src": "icon.svg",

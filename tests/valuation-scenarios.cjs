@@ -34,7 +34,7 @@ function output(config={}){context.stock=config.stock||s;context.options={
  assumptions:config.assumptions===undefined?assumptions:config.assumptions};
  return vm.runInContext('unityScenarioValuation(stock,options)',context)}
 let result=output();
-assert.equal(result.status,'scenario-only');
+assert.equal(result.status,'scenario-only','Model should pass test fixture: '+JSON.stringify({missing:result.missing,guidance:result.guidance?.sourceUrl,now:new Date().toISOString()}));
 assert.equal(result.tradeApproved,false);
 assert.equal(result.method,'illustrative-equity-fcf-proxy');
 assert.equal(result.marginOfSafetyPct,25);
@@ -88,7 +88,7 @@ context.stock=s;
 const empty=JSON.parse(fs.readFileSync('data/valuation-assumptions.json','utf8'));
 assert.equal(Object.keys(empty.items).length,0,'Never deploy implicit growth/discount assumptions');
 const ix=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
-assert.match(ix,/valuation-scenarios\.js\?v=0\.16\.5/);
-assert.match(sw,/valuation-scenarios\.js\?v=0\.16\.5/);
-assert.match(sw,/unity-lab-v0\.16\.5/);
+assert.match(ix,/valuation-scenarios\.js\?v=0\.17\.0-rc1/);
+assert.match(sw,/valuation-scenarios\.js\?v=0\.17\.0-rc1/);
+assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
 console.log('Source-bound management guidance, 3-scenario owner-cashflow proxy, safety-margin band and strict no-trade vetos passed.');

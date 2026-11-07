@@ -86,9 +86,9 @@ ctx.badGuide={...allGuidance[vertiv.isin],
 assert.equal(vm.runInContext('unityOwnModelChallenge(stock,{guidance:badGuide}).kind',ctx),'unavailable');
 ctx.badGuide={...allGuidance[vertiv.isin],publishedAt:'2027-01-01'};
 assert.equal(vm.runInContext('unityOwnModelChallenge(stock,{guidance:badGuide}).kind',ctx),'unavailable');
-const overview=vm.runInContext('unityOwnModelOverview()',ctx);
-assert.match(overview,/dokumentierte Abweichungen/);
-assert.match(overview,/VRT/);
+const challengeOverview=vm.runInContext('unityOwnModelOverview()',ctx);
+assert.match(challengeOverview,/dokumentierte Abweichungen/);
+assert.match(challengeOverview,/VRT/);
 const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
 assert.match(html,/own-model\.js\?v=0\.16\.5/);
 assert.match(sw,/data\/unity-model-forecasts\.json/);

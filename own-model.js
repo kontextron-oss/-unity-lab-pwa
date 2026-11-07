@@ -42,6 +42,57 @@ function unityOwnModelEntries(stock,doc=unityOwnModelJournal){
     e.forecastFingerprint.length===64)
   .sort((a,b)=>String(b.frozen.targetPeriodEnd).localeCompare(String(a.frozen.targetPeriodEnd)));
 }
+function unityOwnModelChallenge(stock,opts={}){
+ const entry=opts.entry===undefined?unityOwnModelEntries(stock)[0]:opts.entry;
+ const f=entry?.frozen;
+ const blocked=reason=>({kind:'unavailable',reason,tradeApproved:false});
+ if(!f||f.isin!==stock?.isin||f.ticker!==stock?.ticker||f.metric!=='revenue'||
+    f.nonProbabilistic!==true||!(f.predictedRevenueUSD>0))
+  return blocked('Keine gültige vorab registrierte Modellprognose');
+ const raw=opts.guidance===undefined?
+  (typeof unityGuidanceEvidence==='function'?unityGuidanceEvidence(stock):null):opts.guidance;
+ const g=raw&&typeof unityGuidanceEvidence==='function'?
+  unityGuidanceEvidence(stock,{[stock.isin]:raw}):null;
+ if(!g||g.isin!==f.isin||g.fiscalYear!==Number(f.targetPeriodEnd.slice(0,4))||
+    !Array.isArray(g.guidance)||!g.sourceUrl?.startsWith('https://')||
+    !g.publishedAt||g.publishedAt>new Date().toISOString().slice(0,10))
+  return blocked('Keine aktuell überprüfte vergleichbare Unternehmensprognose');
+ const matches=g.guidance.filter(x=>x.metric==='revenue'&&
+  x.horizon==='FY'+g.fiscalYear&&x.unit==='USD'&&x.nonGAAP!==true&&
+  typeof x.lower==='number'&&typeof x.upper==='number'&&
+  Number.isFinite(x.lower)&&Number.isFinite(x.upper)&&x.lower>0&&x.upper>=x.lower);
+ if(matches.length!==1)return blocked('Prognosebasis nicht vergleichbar (z. B. organisches Wachstum statt Gesamtumsatz)');
+ const {lower,upper}=matches[0],forecast=f.predictedRevenueUSD;
+ const side=forecast<lower?'below':forecast>upper?'above':'inside';
+ const delta=side==='below'?100*(lower-forecast)/lower:
+   side==='above'?100*(forecast-upper)/upper:0;
+ const gapPct=Math.round(delta*100)/100;
+ return {kind:'comparable',tradeApproved:false,entryZone:null,side,gapPct,
+  ownRevenueUSD:forecast,flatRevenueUSD:f.flatRevenueBenchmarkUSD,
+  managementLowUSD:lower,managementHighUSD:upper,
+  sourceUrl:g.sourceUrl,sourcePublishedAt:g.publishedAt,modelRegisteredAt:f.createdAt,
+  guidanceKnownAtRegistration:g.publishedAt<=f.createdAt.slice(0,10),
+  severity:side==='inside'?'none':gapPct>=10?'high':gapPct>=5?'medium':'low',
+  nextReview:'Geschäftsmix, Auftragsbestand, Übernahmen und Prognoserevisionen mit Primärquellen vergleichen.',
+  verdict:'Hypothesenwiderspruch – keine Handelsfreigabe'};
+}
+function unityOwnModelChallengeMarkup(stock,entry){
+ const c=unityOwnModelChallenge(stock,{entry});
+ if(c.kind!=='comparable')return '<p class="tiny muted">'+esc(c.reason)+
+  '. Ein fehlender Vergleich ist kein negatives Unternehmenssignal.</p>';
+ const relation=c.side==='below'?'unter der unteren Managementspanne':
+  c.side==='above'?'über der oberen Managementspanne':'innerhalb der Managementspanne';
+ return '<p class="tiny muted"><b>Hypothesenvergleich:</b> Modell '+esc(relation)+
+   (c.side==='inside'?'':' · Abstand '+c.gapPct+' %')+
+   '. Management-Prognose: '+unityOwnModelMoney(c.managementLowUSD)+
+   ' – '+unityOwnModelMoney(c.managementHighUSD)+
+   ' · <a href="'+esc(c.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Originalquelle</a> ('+
+   esc(c.sourcePublishedAt)+').</p><p class="tiny muted">'+
+   (c.guidanceKnownAtRegistration?
+   '<b>Kein Informationsvorsprung:</b> Die Managementprognose war bei Registrierung des vereinfachten Modells bereits bekannt. ':
+   'Die Managementprognose wurde nach Registrierung veröffentlicht. ')+
+   '<b>Prüfauftrag:</b> '+esc(c.nextReview)+'</p>';
+}
 function unityOwnModelForecastPanel(stock){
  const entries=unityOwnModelEntries(stock);
  if(!entries.length)return '';

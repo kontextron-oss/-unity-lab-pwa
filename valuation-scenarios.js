@@ -1,7 +1,7 @@
 'use strict';
 /* UNITY 0.15.3.9 – research-only, source-checked forecast and value scenarios.
    No private holdings, real orders, simulated orders, or trading permissions. */
-let unityIssuerGuidance=null,unityValuationAssumptions=null,unityQuarterDebtPilot=null,unityGuidanceFetchError='';
+let unityIssuerGuidance=null,unityValuationAssumptions=null,unityQuarterDebtPilot=null,unityNormalizationPilot=null,unityGuidanceFetchError='';
 async function unityLoadValuationEvidence(){
  const load=async url=>{
   let r;
@@ -13,15 +13,17 @@ async function unityLoadValuationEvidence(){
    throw Error('Ungültige öffentliche Prognosedatei');
   return v;
  };
- const [guide,assumptions,debtQuarter]=await Promise.allSettled([
+ const [guide,assumptions,debtQuarter,normalization]=await Promise.allSettled([
   load('./data/issuer-guidance.json'),
   load('./data/valuation-assumptions.json'),
-  load('./data/debt-pilot-evidence.json')
+  load('./data/debt-pilot-evidence.json'),
+  load('./data/normalization-evidence.json')
  ]);
  unityIssuerGuidance=guide.status==='fulfilled'?guide.value:null;
  unityValuationAssumptions=assumptions.status==='fulfilled'?assumptions.value:null;
  unityQuarterDebtPilot=debtQuarter.status==='fulfilled'?debtQuarter.value:null;
- unityGuidanceFetchError=[guide,assumptions,debtQuarter].filter(x=>x.status==='rejected').map(x=>String(x.reason)).join(' · ');
+ unityNormalizationPilot=normalization.status==='fulfilled'?normalization.value:null;
+ unityGuidanceFetchError=[guide,assumptions,debtQuarter,normalization].filter(x=>x.status==='rejected').map(x=>String(x.reason)).join(' · ');
  if(typeof render==='function'&&typeof db!=='undefined'&&db)render();
 }
 function unityValuationDateAge(date){
@@ -419,6 +421,132 @@ function unityPilotTrailingCashFlowPanel(s,options={}){
  return h;
 }
 
+/* UNITY 0.17 – Acquisition/working-capital/financing disclosure audit.
+ * No add-back, annualization or normalized fair value is generated. Acquired
+ * companies' post-acquisition incremental OCF is not disclosed here; even a
+ * quantified WC swing is not a reliable recurring FCF adjustment. */
+function unityPilotNormalizationReview(s,options={}){
+ const isin=String(s?.isin||'');
+ const expectedCik=isin==='IE00B8KQN827'?'0001551182':
+   isin==='US92537N1081'?'0001674101':null;
+ if(!expectedCik)return null;
+ const raw=options.evidence===undefined?unityNormalizationPilot?.items?.[isin]:options.evidence;
+ const q=options.quarter===undefined?unityQuarterDebtEvidence(s):options.quarter;
+ const ttm=options.ttm===undefined?unityPilotTrailingCashFlow(s,{debt:q}):options.ttm;
+ const missing=[];
+ const result={kind:'unity-fcf-normalization-gate-v1',isin,
+  periodEnd:'2026-09-30',status:'blocked',sourceRefs:[],
+  reportedTTMFcfProxy:null,normalizedTTMFcf:null,
+  potentialDistortions:null,comparisonScope:null,
+  completeness:'insufficient-for-forward-normalization',
+  blockers:[],missing,tradeApproved:false,investmentReady:false,
+  fairValue:null,entryZone:null};
+ const validMoney=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0;
+ const validDelta=n=>typeof n==='number'&&Number.isFinite(n);
+ const validPair=(pair,allowNegative=false)=>pair&&
+   (allowNegative?validDelta(pair.in9m2026):validMoney(pair.in9m2026))&&
+   (allowNegative?validDelta(pair.in9m2025):validMoney(pair.in9m2025))&&
+   typeof pair.scope==='string'&&pair.scope.length>=24;
+ if(!raw||raw.isin!==isin||raw.cik!==expectedCik||
+    raw.periodEnd!=='2026-09-30'||raw.comparisonPeriodEnd!=='2025-09-30'||
+    raw.unit!=='USD millions'||raw.audited!==false||
+    !String(raw.sourceUrl||'').startsWith(
+      'https://www.sec.gov/Archives/edgar/data/'+Number(expectedCik)+'/')||
+    q?.sourceUrl!==raw.sourceUrl||raw.filedAt!==q?.filedAt)
+    missing.push('Exakt zugeordneter SEC-Quartalsbericht und einheitlicher 2025/2026-Zeitraum fehlen');
+ if(q?.isin!==isin||q.kind!=='unity-unaudited-10q-debt-evidence-v1'||
+    q.reviewGateSatisfied!==false||q.tradeApproved!==false)
+    missing.push('Unveränderte geprüfte Quartalsdatenbasis fehlt');
+ if(ttm?.isin!==isin||ttm.status!=='reported-ttm-only'||
+    ttm.tradeApproved!==false||ttm.normalised!==false||
+    ttm.asOf!=='2026-09-30'||!validMoney(ttm.ttmFcfProxy))
+    missing.push('Nicht normalisierte zwölfmonatige Cashflow-Überleitung fehlt');
+ const wc=raw?.operatingWorkingCapitalMovement,acq=raw?.acquisitionCashPaid;
+ if(!validPair(wc,true)||!validPair(acq,false))
+    missing.push('Belegte Veränderungen des Umlaufvermögens und Akquisitionszahlungen fehlen');
+ if(isin==='IE00B8KQN827'&&
+   (!validPair(raw.financingBorrowingsProceeds,false)||
+    !validPair(raw.financingShortTermDebtNet,true)||
+    raw.expected2026PpeCapex?.horizon!=='FY2026'||
+    !validMoney(raw.expected2026PpeCapex?.value)))
+    missing.push('Eaton: Finanzierungskomponenten oder explizite CapEx-Erwartung fehlen');
+ if(isin==='US92537N1081'&&!validPair(raw.softwareCapitalized,false))
+    missing.push('Vertiv: separat ausgewiesene Softwareinvestitionen fehlen');
+ if(missing.length)return result;
+ result.status='disclosure-complete-normalization-open';
+ result.sourceRefs=[{type:'SEC-10Q-9M2026-and-2025',url:raw.sourceUrl},
+  ...(ttm.sourceRefs||[])];
+ result.reportedTTMFcfProxy=ttm.ttmFcfProxy;
+ result.comparisonScope=isin==='IE00B8KQN827'?
+   'Total consolidated changes in working capital':
+   'Trade working capital disclosed in management discussion (not total working capital)';
+ result.potentialDistortions={
+  workingCapital:{in9m2026:wc.in9m2026,in9m2025:wc.in9m2025,
+   yearOnYearChange:Math.round((wc.in9m2026-wc.in9m2025)*100)/100,
+   classification:'operating-cash-flow-component',
+   automaticAdjustmentAllowed:false,scope:wc.scope},
+  acquisitions:{in9m2026:acq.in9m2026,in9m2025:acq.in9m2025,
+   classification:'investing-cash-flow-not-ocf',
+   automaticAdjustmentAllowed:false,scope:acq.scope},
+  ...(isin==='IE00B8KQN827'?{
+    borrowings:{in9m2026:raw.financingBorrowingsProceeds.in9m2026,
+     in9m2025:raw.financingBorrowingsProceeds.in9m2025,
+     classification:'financing-not-operating-cash-flow',
+     automaticAdjustmentAllowed:false},
+    expectedFullYearCapex:{value:raw.expected2026PpeCapex.value,
+     fiscalYear:2026,classification:'company-outlook-not-executed',
+     automaticAdjustmentAllowed:false}
+   }:{
+    softwareCapitalized:{in9m2026:raw.softwareCapitalized.in9m2026,
+     in9m2025:raw.softwareCapitalized.in9m2025,
+     classification:'separate-investing-item-not-ppe-capex',
+     automaticAdjustmentAllowed:false}
+   })
+ };
+ result.blockers=[
+  'Akquisitionsbeiträge zum eigenständigen zukünftigen operativen Cashflow nicht nachgewiesen',
+  'Wiederkehrender und nur temporärer Working-Capital-Effekt nicht unabhängig getrennt',
+  'Nachhaltiger Erhaltungs- und Wachstums-CapEx nach 2026 nicht normalisiert',
+  'Künftige Cash-Zinslast, Refinanzierung, Steuern und Finanzierungsänderungen nicht vollständig abgestimmt',
+  'Mehrjähriger FCF nach Aktienzahl und Verwässerung nicht plausibilisiert'
+ ];
+ return result;
+}
+function unityPilotNormalizationReviewPanel(s,options={}){
+ const a=unityPilotNormalizationReview(s,options);
+ if(!a)return '';
+ let h='<details class="unity-secondary-check"><summary>UNITY 0.17 · Cashflow-Bereinigung und offene Risiken</summary>';
+ if(a.status!=='disclosure-complete-normalization-open')
+  return h+'<p class="tiny muted">SEC-Abgleich noch nicht vollständig: '+
+    esc(a.missing.join(' · '))+'. Keine automatische Normalisierung.</p></details>';
+ const fmt=n=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(n);
+ h+='<p class="tiny muted"><b>Berichteter TTM-Cashflow-Proxy</b> '+
+   esc(fmt(a.reportedTTMFcfProxy))+
+   ' Mio. USD. Ein nachhaltig bereinigter zukünftiger Cashflow liegt nicht vor.</p>';
+ const x=a.potentialDistortions;
+ h+='<div class="home-data-row"><span>9M2026 Umlaufvermögenseffekt</span><b>'+
+   esc(fmt(x.workingCapital.in9m2026))+' Mio. USD</b></div>'+
+   '<p class="tiny muted">'+esc(a.comparisonScope)+
+   '. Ein positiver oder negativer Effekt wird <b>nicht automatisch hinzu- oder abgerechnet</b>.</p>'+
+   '<div class="home-data-row"><span>9M2026 Akquisitionszahlungen (Investitions-Cashflow)</span><b>'+
+   esc(fmt(x.acquisitions.in9m2026))+' Mio. USD</b></div>';
+ if(x.borrowings)
+  h+='<div class="home-data-row"><span>9M2026 Kreditaufnahmen (Finanzierungs-Cashflow)</span><b>'+
+   esc(fmt(x.borrowings.in9m2026))+' Mio. USD</b></div>';
+ if(x.expectedFullYearCapex)
+  h+='<div class="home-data-row"><span>Sachinvestitionen 2026, Unternehmensausblick (kein Istwert)</span><b>'+
+   esc(fmt(x.expectedFullYearCapex.value))+' Mio. USD</b></div>';
+ if(x.softwareCapitalized)
+  h+='<div class="home-data-row"><span>9M2026 separat aktivierte Software</span><b>'+
+   esc(fmt(x.softwareCapitalized.in9m2026))+' Mio. USD</b></div>';
+ h+='<p class="tiny muted"><b>Offene Bewertungsprüfungen:</b> '+
+   a.blockers.slice(0,5).map(esc).join(' · ')+
+   '. <b>Keine Bereinigung, kein fairer Wert und keine Kauf-Freigabe.</b></p>'+
+   '<p class="tiny muted"><a href="'+esc(a.sourceRefs[0].url)+
+   '" target="_blank" rel="noopener noreferrer">SEC-Originalbericht</a> · Angaben aus 2026 unauditiert.</p></details>';
+ return h;
+}
+
 /* UNITY 0.17 – deliberately UNVALIDATED scenario sensitivity.
  * A constant-growth hypothetical owner-cashflow proxy is not a verified
  * future cash-flow forecast, intrinsic value, buy zone, or source-backed
@@ -553,6 +681,7 @@ function unityScenarioValuationPanel(s){
  h+=unityPilotValuationAuditPanel(s,{guidance:g,model:m});
  h+=unityPilotScenarioSensitivityPanel(s);
  h+=unityPilotTrailingCashFlowPanel(s);
+ h+=unityPilotNormalizationReviewPanel(s);
  if(g){
   h+='<p class="tiny muted"><b>Unternehmensprognose '+g.fiscalYear+':</b> Quelle vom '+esc(g.publishedAt)+
     ', geprüft '+esc(g.reviewedAt)+' · nur die konkret angegebenen Prognosegrößen, keine 5-Jahres-Schätzung.</p>';

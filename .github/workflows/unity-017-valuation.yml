@@ -124,3 +124,27 @@ jobs:
           node tests/pcloud-node-adapter.cjs
       - name: Build GitHub-only RC1 static assets and check public allowlist
         run: node tests/rc17-staging-bundle.cjs
+
+      - name: Probe deployed GitHub Pages release (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://kontextron-oss.github.io/-unity-lab-pwa"
+          failed=0
+          for name in index.html unity-017.html update.html; do
+            status=$(curl --silent --show-error --location --connect-timeout 8 --max-time 20 \
+              --output "/tmp/unity-${name}" --write-out "%{http_code}" \
+              "${BASE}/${name}?check=${GITHUB_SHA}" || true)
+            echo "LIVE FILE ${name} HTTP ${status}"
+            if [[ "$status" != "200" ]]; then failed=1; fi
+          done
+          if ! grep -Fq 'Unity Lab 0.17.0 RC1' /tmp/unity-index.html; then
+            echo "::error::index.html does not serve UNITY 0.17.0 RC1"; failed=1
+          fi
+          if ! grep -Fq 'Unity Lab 0.17.0 RC1 · Direktstart' /tmp/unity-unity-017.html; then
+            echo "::error::unity-017.html is absent or old"; failed=1
+          fi
+          if ! grep -Fq 'UNITY_ACTIVATE_UPDATE' /tmp/unity-update.html; then
+            echo "::error::update.html absent or stale"; failed=1
+          fi
+          exit $failed

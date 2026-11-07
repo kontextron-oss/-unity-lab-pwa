@@ -35,6 +35,8 @@ on:
       - tests/sync-transfer.cjs
       - sync-ui.js
       - tests/sync-ui.cjs
+      - sync-policy.js
+      - tests/sync-policy.cjs
       - .github/workflows/unity-017-valuation.yml
   pull_request:
     paths:
@@ -64,6 +66,8 @@ on:
       - tests/sync-transfer.cjs
       - sync-ui.js
       - tests/sync-ui.cjs
+      - sync-policy.js
+      - tests/sync-policy.cjs
       - .github/workflows/unity-017-valuation.yml
   workflow_dispatch:
 permissions:
@@ -106,5 +110,7 @@ jobs:
           node tests/sync-transfer.cjs
           node --check sync-ui.js
           node tests/sync-ui.cjs
+          node --check sync-policy.js
+          node tests/sync-policy.cjs
       - name: Build isolated staging static assets and check public allowlist
         run: node tests/rc17-staging-bundle.cjs

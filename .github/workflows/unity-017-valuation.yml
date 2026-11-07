@@ -14,6 +14,17 @@ on:
       - tests/pilot-financing-stress.cjs
       - data/financing-stress-evidence.json
       - data/normalization-evidence.json
+      - index.html
+      - sw.js
+      - tests/rc17-offline-safety.cjs
+      - tests/financial-metrics.cjs
+      - tests/reverse-valuation.cjs
+      - tests/valuation-scenarios.cjs
+      - data/issuer-guidance.json
+      - data/valuation-assumptions.json
+      - data/normalization-evidence.json
+      - data/financing-stress-evidence.json
+      - data/debt-pilot-evidence.json
       - .github/workflows/unity-017-valuation.yml
   pull_request:
     paths:
@@ -22,6 +33,17 @@ on:
       - tests/valuation-pilot-audit.cjs
       - tests/debt-pilot-evidence.cjs
       - tests/pilot-scenario-sensitivity.cjs
+      - index.html
+      - sw.js
+      - tests/rc17-offline-safety.cjs
+      - tests/financial-metrics.cjs
+      - tests/reverse-valuation.cjs
+      - tests/valuation-scenarios.cjs
+      - data/issuer-guidance.json
+      - data/valuation-assumptions.json
+      - data/normalization-evidence.json
+      - data/financing-stress-evidence.json
+      - data/debt-pilot-evidence.json
       - .github/workflows/unity-017-valuation.yml
   workflow_dispatch:
 permissions:
@@ -51,3 +73,7 @@ jobs:
           node tests/pilot-ttm-cashflow.cjs
           node tests/pilot-normalization-audit.cjs
           node tests/pilot-financing-stress.cjs
+      - name: Release-candidate offline / storage / service-worker guards
+        run: |
+          node tests/financial-metrics.cjs
+          node tests/rc17-offline-safety.cjs

@@ -41,3 +41,24 @@ Die regulären GitHub-Actions-Läufe `UNITY 0.17 valuation regression` und `Vali
 **Nicht vor diesen Voraussetzungen nach `main` mergen:** frische CI-Ergebnisse, zugängliche RC1-HTTPS-Testadresse, tatsächlicher Offline-/Online-Test auf dem iPhone, unabhängiges Backup, kein Datenverlust, keine Performance-Regressions, klare Release-/Rollback-Anleitung. Für endgültiges 0.17 ohne „RC1“ müssen Cache-ID, Titel, Manifest und betroffene Assertions kontrolliert neu versioniert werden.
 
 Dieser Teststand ist eine **technische Kandidatenversion**, keine Behauptung, dass der reale iPhone-Test oder die Veröffentlichung bereits stattgefunden hat.
+
+## Isolierte HTTPS-Vorschau: Vercel, noch nicht veröffentlicht
+
+Die bestehende Produktiv-URL auf GitHub Pages ist `https://kontextron-oss.github.io/-unity-lab-pwa/`. **Ein zweiter Pfad unter dieser Domain reicht zur Isolation nicht aus:** IndexedDB ist originbezogen, nicht service-worker-scope-bezogen. Deshalb darf RC1 nicht dort als scheinbar separate App veröffentlicht werden.
+
+Die GitHub-Dateien `scripts/build-staging.cjs` und `vercel.json` bereiten eine **statische Vorschau auf einer anderen HTTPS-Origin** vor. Der Builder erzeugt `dist/` ausschließlich aus der geprüften öffentlich verwendeten Service-Worker-Dateiliste (plus Index, Manifest und Icon), schließt `worker/`, `tests/`, `docs/`, `.env`, CI und andere Repo-Dateien vom öffentlichen Upload aus und prüft alle fünf Bewertungsquellen. Es werden keine persönlichen Depotdaten aus dem iPhone kopiert.
+
+Die Vorschau ist zurzeit **noch nicht gehostet und hat noch keine bestätigte URL**. Der GitHub-PR ist nur Quellcode. Für eine echte Adresse wird ein verbundener Vercel-Hosting-Zugang benötigt:
+
+1. In ChatGPT Vercel verbinden (Authentifizierung beim Anbieter, keine Token oder Passwörter hier senden). Vercel kann das vorhandene GitHub-Projekt deployen.
+2. Aus `kontextron-oss/-unity-lab-pwa` einen **Preview-Deploy** des Branches `feat/unity-017-valuation-evidence` erzeugen – **kein Merge und kein Deploy zur bestehenden GitHub-Pages-Domain**.
+3. Build Command: `node scripts/build-staging.cjs`; Output Directory: `dist` (bereits in `vercel.json`). Vertrauliche Umgebungsvariablen dürfen nicht für die Preview benötigt werden. Die Vorschau enthält ausschließlich statische Quellen.
+4. Zugriffsschutz unter **Deployment Protection / Vercel Authentication für Preview** aktivieren, sofern nach gewählter Hosting-Konfiguration verfügbar. Die Vorschau soll nicht in Suchmaschinen erscheinen: `X-Robots-Tag: noindex` und `robots.txt` sind vorbereitet. Ein öffentliches Repository bedeutet nicht, dass man private Testdaten veröffentlichen darf.
+5. Erst die durch Vercel tatsächlich zurückgemeldete, erreichbare `*.vercel.app`-Vorschauadresse verwenden. **Nicht** eine URL aus Projektnamen raten. Den Safari-Login, Home-Screen-Start, Offline-Rückkehr und Cache-Effekt auf dem iPhone real prüfen. Geschützte Vorschau und iOS-PWA-Cookies können sich unterscheiden.
+6. Die Testversion hat eine andere Website-Origin als GitHub Pages und damit eine **getrennte IndexedDB**. Das ist beabsichtigt: Testdaten werden dort getrennt angelegt; persönliche Daten werden nicht von der Produktiv-App automatisch übernommen. Beim Test weder Produktions-Backups hochladen noch Produktiv-Accounts verbinden, sofern das nicht ausdrücklich und mit Sicherungsstrategie freigegeben wurde.
+
+### CI-Nachweis
+
+`tests/rc17-staging-bundle.cjs` startet den Builder unter Node, validiert die Dateihashes aller fünf öffentlichen SEC-Datenquellen, sichert den Ausschluss von privaten Quellordnern und prüft Vercel-Build-/Noindex-Einstellungen. Der Test ist Teil der GitHub-Pipeline `.github/workflows/unity-017-valuation.yml`. Erfolgreiche CI bedeutet **nur bereites Paket**, nicht tatsächliche HTTPS-Veröffentlichung.
+
+Das **einzige notwendige externe Handlungsstück** vor der ersten Safari-Testadresse ist daher die Verbindung eines Hosting-Kontos und das Auslösen der Preview-Veröffentlichung; die bestehende GitHub-Pages-App bleibt davon unberührt.

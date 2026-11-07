@@ -50,7 +50,7 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/hoerblick-05
           base64 -d hoerblick-05-release/client-source.tar.gz.b64 > /tmp/hoerblick-05-source.tar.gz
-          printf '%s  %s\\n' 'd9b52637dada4146a1940401df8921d7cd499d703c3af9a49683716a47d3e5f1' /tmp/hoerblick-05-source.tar.gz | sha256sum --check -
+          echo 'd9b52637dada4146a1940401df8921d7cd499d703c3af9a49683716a47d3e5f1  /tmp/hoerblick-05-source.tar.gz' | sha256sum --check -
           tar -xzf /tmp/hoerblick-05-source.tar.gz -C /tmp/hoerblick-05 --no-same-owner --no-same-permissions
           cd /tmp/hoerblick-05
           npm install --no-audit --no-fund

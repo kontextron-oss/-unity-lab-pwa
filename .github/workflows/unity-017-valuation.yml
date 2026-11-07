@@ -1,0 +1,45 @@
+name: UNITY 0.17 valuation regression
+on:
+  push:
+    branches:
+      - feat/unity-017-valuation-evidence
+    paths:
+      - valuation-scenarios.js
+      - data/debt-pilot-evidence.json
+      - tests/valuation-pilot-audit.cjs
+      - tests/debt-pilot-evidence.cjs
+      - tests/pilot-scenario-sensitivity.cjs
+      - .github/workflows/unity-017-valuation.yml
+  pull_request:
+    paths:
+      - valuation-scenarios.js
+      - data/debt-pilot-evidence.json
+      - tests/valuation-pilot-audit.cjs
+      - tests/debt-pilot-evidence.cjs
+      - tests/pilot-scenario-sensitivity.cjs
+      - .github/workflows/unity-017-valuation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  valuation-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source syntax
+        run: node --check valuation-scenarios.js
+      - name: Existing valuation and reverse valuation guards
+        run: |
+          node tests/valuation-scenarios.cjs
+          node tests/reverse-valuation.cjs
+      - name: Pilot debt, readiness and three-scenario tests
+        run: |
+          node tests/valuation-pilot-audit.cjs
+          node tests/debt-pilot-evidence.cjs
+          node tests/pilot-scenario-sensitivity.cjs

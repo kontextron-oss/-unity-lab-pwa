@@ -9,6 +9,7 @@ on:
       - tests/valuation-pilot-audit.cjs
       - tests/debt-pilot-evidence.cjs
       - tests/pilot-scenario-sensitivity.cjs
+      - tests/pilot-ttm-cashflow.cjs
       - .github/workflows/unity-017-valuation.yml
   pull_request:
     paths:
@@ -43,3 +44,4 @@ jobs:
           node tests/valuation-pilot-audit.cjs
           node tests/debt-pilot-evidence.cjs
           node tests/pilot-scenario-sensitivity.cjs
+          node tests/pilot-ttm-cashflow.cjs

@@ -67,6 +67,21 @@ for(const relative of [...assets].sort()){
  manifestReport.push({path:relative,bytes:raw.length,
   sha256:crypto.createHash('sha256').update(raw).digest('hex')});
 }
+// Isolated HÖRBLICK public PWA: explicit four-file allowlist.
+const hoerblickAssets=[
+ 'hoerblick/index.html','hoerblick/sw.js',
+ 'hoerblick/manifest.webmanifest','hoerblick/icon.svg'
+];
+for(const relative of hoerblickAssets){
+ const from=path.join(root,relative),to=path.join(output,relative);
+ const stat=fs.lstatSync(from);
+ if(!stat.isFile()||stat.isSymbolicLink())throw Error('Unsafe Hörblick asset '+relative);
+ fs.mkdirSync(path.dirname(to),{recursive:true});
+ fs.copyFileSync(from,to);
+ const raw=fs.readFileSync(to);
+ manifestReport.push({path:relative,bytes:raw.length,
+  sha256:crypto.createHash('sha256').update(raw).digest('hex')});
+}
 fs.writeFileSync(path.join(output,'robots.txt'),'User-agent: *\nDisallow: /\n');
 fs.writeFileSync(path.join(output,'BUILD-INFO.txt'),
  'UNITY 0.17.0 RC1 · separate-origin test only\n'+

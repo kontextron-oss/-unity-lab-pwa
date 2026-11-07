@@ -34,7 +34,7 @@ function output(config={}){context.stock=config.stock||s;context.options={
  assumptions:config.assumptions===undefined?assumptions:config.assumptions};
  return vm.runInContext('unityScenarioValuation(stock,options)',context)}
 let result=output();
-assert.equal(result.status,'scenario-only');
+assert.equal(result.status,'scenario-only','Model should pass test fixture: '+JSON.stringify({missing:result.missing,guidance:result.guidance?.sourceUrl,now:new Date().toISOString()}));
 assert.equal(result.tradeApproved,false);
 assert.equal(result.method,'illustrative-equity-fcf-proxy');
 assert.equal(result.marginOfSafetyPct,25);

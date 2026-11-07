@@ -326,10 +326,136 @@ function unityPilotValuationAuditPanel(s,options={}){
  return h;
 }
 
+
+/* UNITY 0.17 – deliberately UNVALIDATED scenario sensitivity.
+ * A constant-growth hypothetical owner-cashflow proxy is not a verified
+ * future cash-flow forecast, intrinsic value, buy zone, or source-backed
+ * discount rate. Q3 2026 debt facts are kept as separate risk context;
+ * do not mix 9M cash flow into the FY2025 annual DCF baseline. */
+const UNITY_PILOT_SENSITIVITY_CASES=Object.freeze([
+ {id:'bear',label:'Vorsichtiges Stressszenario',growthPct:-5,discountPct:12,
+  terminalGrowthPct:1,explanation:'Jährlich rückläufiger Cashflow als Stresstest'},
+ {id:'base',label:'Mittlere Sensitivität',growthPct:5,discountPct:10,
+  terminalGrowthPct:2,explanation:'Gleichmäßiger Modellanstieg, nicht Unternehmensprognose'},
+ {id:'bull',label:'Hohe Wachstumsannahme',growthPct:15,discountPct:8,
+  terminalGrowthPct:3,explanation:'Hohe FCF-Zuwächse als Gegenprobe; besonders unsicher'}
+]);
+function unityPilotScenarioSensitivity(s,options={}){
+ const isin=String(s?.isin||'');
+ if(!['IE00B8KQN827','US92537N1081'].includes(isin))return null;
+ const financial=options.financial===undefined?
+   (typeof unityFinancialStockSnapshot==='function'?unityFinancialStockSnapshot(s):null):
+   options.financial;
+ const debt=options.debt===undefined?unityQuarterDebtEvidence(s):options.debt;
+ const missing=[];
+ const result={kind:'unity-illustrative-fcf-sensitivity-v1',isin,
+  status:'blocked',assumptionStatus:'hypothetical-not-reviewed',
+  fiscalCashFlowPeriod:'2025-12-31',quarterRiskPeriod:'2026-09-30',
+  cashFlowPerShare:null,scenarios:null,
+  referencePrice:null,referenceDate:null,reportCurrency:null,
+  financingChangePct:null,quarterRisk:null,sourceRefs:[],
+  fairValue:null,entryZone:null,tradeApproved:false,
+  verdict:'Nur Sensitivitätsrechnung; keine Marktwert- oder Kaufempfehlung.',
+  missing};
+ if(!financial||financial.instrument?.isin!==isin||financial.coreComplete!==true||
+    !['sec','issuer-pdf','esef'].includes(financial.sourceKind)||
+    financial.period!=='2025-12-31'||
+    !/^https:\/\//.test(String(financial.sourceUrl||'')))
+  missing.push('Identischer, geprüfter FY2025-Konzernabschluss fehlt');
+ const fcf=financial?.valuation?.freeCashFlow,shares=financial?.valuation?.sharesOutstanding;
+ if(!(typeof fcf==='number'&&Number.isFinite(fcf)&&fcf>0&&
+      typeof shares==='number'&&Number.isFinite(shares)&&shares>0))
+  missing.push('Belegter FY2025-Cashflow nach Capex und echte Stichtags-Aktienzahl fehlen');
+ if(!(debt&&debt.kind==='unity-unaudited-10q-debt-evidence-v1'&&debt.isin===isin&&
+      debt.periodEnd==='2026-09-30'&&debt.audited===false&&debt.tradeApproved===false&&
+      debt.reviewGateSatisfied===false&&
+      typeof debt.grossFinancialDebt==='number'&&debt.grossFinancialDebt>0&&
+      typeof debt.cashAndEquivalents==='number'&&debt.cashAndEquivalents>0&&
+      /^https:\/\/www\.sec\.gov\/Archives\/edgar\/data\//.test(String(debt.sourceUrl||''))))
+  missing.push('Getrennter und zugeordneter SEC-Quartalsabgleich September 2026 fehlt');
+ if(missing.length)return result;
+ const fcfPerShare=fcf/shares;
+ const scenarios=UNITY_PILOT_SENSITIVITY_CASES.map(row=>{
+  const value=unityModelDiscountedEquityCashFlow(fcfPerShare,row.growthPct,
+    row.discountPct,row.terminalGrowthPct,5);
+  return {...row,years:5,modelBarValuePerShare:value,
+   isIssuerForecast:false,investmentReady:false};
+ });
+ if(scenarios.some(x=>!(x.modelBarValuePerShare>0))||
+    !(scenarios[0].modelBarValuePerShare<=scenarios[1].modelBarValuePerShare&&
+      scenarios[1].modelBarValuePerShare<=scenarios[2].modelBarValuePerShare)){
+   missing.push('Illustrative Szenarien mathematisch unzulässig');
+   return result;
+ }
+ result.status='sensitivity-only';
+ result.cashFlowPerShare=fcfPerShare;
+ result.reportCurrency=financial.reportCurrency;
+ result.sourceRefs=[{type:'FY2025',url:financial.sourceUrl},
+  {type:'Q3-2026',url:debt.sourceUrl}];
+ result.financingChangePct=debt.debtChangePct;
+ result.quarterRisk={grossDebt:debt.grossFinancialDebt,
+  cashAndEquivalents:debt.cashAndEquivalents,
+  debtLessCash:debt.debtLessCash,
+  nineMonthOperatingCashFlow:debt.yearToDate?.operatingCashFlow??null,
+  nineMonthCapitalExpenditure:debt.yearToDate?.capitalExpenditure??null,
+  audited:false};
+ const price=financial?.quoteInReportCurrency,quote=financial?.priceRef;
+ const age=unityValuationDateAge(quote?.date);
+ const priceOk=typeof price==='number'&&Number.isFinite(price)&&price>0&&
+   quote&&age!==null&&age>=-1&&age<=5.5;
+ if(priceOk){
+  result.referencePrice=price;
+  result.referenceDate=quote.date;
+ }
+ result.scenarios=scenarios.map(x=>({
+  ...x,relativeToReferencePct:priceOk?
+   Math.round(10000*(x.modelBarValuePerShare/price-1))/100:null
+ }));
+ result.verdict='Forschungs-Sensitivität: Modellbarwerte hängen vollständig von '+
+  'ungeprüften Cashflow-Wachstums- und Renditeannahmen ab. '+
+  '2026er Finanzierung und Übernahmen können den FY2025-Ausgangspunkt entwerten.';
+ return result;
+}
+function unityPilotScenarioSensitivityPanel(s,options={}){
+ const x=unityPilotScenarioSensitivity(s,options);
+ if(!x)return '';
+ const fmt=n=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(n);
+ let h='<details class="unity-secondary-check"><summary>UNITY 0.17 · Drei Cashflow-Szenarien (Forschung)</summary>';
+ if(x.status!=='sensitivity-only'){
+  return h+'<p class="tiny muted">Keine Szenariorechnung: '+esc(x.missing.join(' · '))+
+   '. Kein fairer Wert und kein Kaufkurs.</p></details>';
+ }
+ h+='<p class="tiny muted"><b>Rechenbeispiel, keine Unternehmensbewertung:</b> FY2025 '+
+   'OCF minus Capex je ausstehender FY2025-Aktie: '+esc(fmt(x.cashFlowPerShare))+
+   ' '+esc(x.reportCurrency)+'. Die Szenarien nehmen für fünf Jahre '+
+   'ausdrücklich <b>hypothetische</b> jährliche Cashflow-Veränderungen und Eigenkapitalkosten an. '+
+   'Keine davon ist ein Unternehmensausblick oder unabhängig bestätigter Kapitalmarktzins.</p>';
+ for(const c of x.scenarios){
+  h+='<div class="home-data-row"><span>'+esc(c.label)+'<small>'+
+    esc(c.growthPct)+' % Wachstum · '+esc(c.discountPct)+
+    ' % Abzinsung · '+esc(c.terminalGrowthPct)+' % Endwachstum</small></span><b>'+
+    esc(fmt(c.modelBarValuePerShare))+' '+esc(x.reportCurrency)+
+    '</b></div>';
+ }
+ h+='<p class="tiny muted">Angezeigte Beträge sind <b>mathematische Modellbarwerte</b> der jeweiligen Annahmen, '+
+   'keine fairen Unternehmenswerte, Kursziele oder Einstiegszonen. '+
+   (x.referencePrice!==null?
+   'Vergleichsschlusskurs '+esc(x.referenceDate)+': '+esc(fmt(x.referencePrice))+' '+
+   esc(x.reportCurrency)+'. ':'Kein frischer, vergleichbarer Börsenkurs vorhanden. ')+
+   'SEC-Quartalsbilanz 30.09.2026: Finanzschulden '+esc(fmt(x.quarterRisk.grossDebt))+
+   ' Mio. USD; liquide Mittel '+esc(fmt(x.quarterRisk.cashAndEquivalents))+
+   ' Mio. USD. Der Q3-Stand ist unauditiert und wird nicht in den FY2025-Cashflow hineingerechnet.</p>'+
+   '<p class="tiny muted"><b>Nicht abgedeckt:</b> Veränderungen durch Übernahmen, künftige Refinanzierung, '+
+   'Aktienverwässerung, Normalisierung des 2026er Cashflows und vollständige Kapitalkostenprüfung. '+
+   'UNITY-Freigabe bleibt gesperrt.</p></details>';
+ return h;
+}
+
 function unityScenarioValuationPanel(s){
  const g=unityGuidanceEvidence(s),m=unityScenarioValuation(s);
  let h='<h4>Zukunftserwartungen und Szenariobewertung · UNITY</h4>';
  h+=unityPilotValuationAuditPanel(s,{guidance:g,model:m});
+ h+=unityPilotScenarioSensitivityPanel(s);
  if(g){
   h+='<p class="tiny muted"><b>Unternehmensprognose '+g.fiscalYear+':</b> Quelle vom '+esc(g.publishedAt)+
     ', geprüft '+esc(g.reviewedAt)+' · nur die konkret angegebenen Prognosegrößen, keine 5-Jahres-Schätzung.</p>';

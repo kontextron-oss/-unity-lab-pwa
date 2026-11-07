@@ -1,17 +1,17 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-07T01:07:13Z",
+  "generatedAt": "2026-11-07T02:56:08Z",
   "refresh": "GitHub Actions · alle 2 Stunden",
   "source": "Kraken · USD-Spotmarkt",
   "assets": {
     "ADA": {
       "ticker": "ADA",
       "currency": "USD",
-      "price": 0.184687,
-      "volume24": 14632627.92291299,
+      "price": 0.184006,
+      "volume24": 14133338.03148731,
       "marketCap": 0,
       "date": "2026-11-07",
-      "fetchedAt": "2026-11-07T01:07:13Z",
+      "fetchedAt": "2026-11-07T02:56:08Z",
       "source": "Kraken · USD-Spotmarkt",
       "venue": "Kraken Spot",
       "points": [
@@ -3617,8 +3617,8 @@
         },
         {
           "date": "2026-11-07",
-          "close": 0.184687,
-          "volume": 287764.60015236
+          "close": 0.184006,
+          "volume": 702228.31129117
         }
       ]
     },
@@ -3626,10 +3626,10 @@
       "ticker": "SOL",
       "currency": "USD",
       "price": 90.22,
-      "volume24": 199168.44683756,
+      "volume24": 197063.38499456,
       "marketCap": 0,
       "date": "2026-11-07",
-      "fetchedAt": "2026-11-07T01:07:13Z",
+      "fetchedAt": "2026-11-07T02:56:08Z",
       "source": "Kraken · USD-Spotmarkt",
       "venue": "Kraken Spot",
       "points": [
@@ -7236,18 +7236,18 @@
         {
           "date": "2026-11-07",
           "close": 90.22,
-          "volume": 2691.00017144
+          "volume": 8785.04473142
         }
       ]
     },
     "ETC": {
       "ticker": "ETC",
       "currency": "USD",
-      "price": 7.036,
-      "volume24": 1636.4090459,
+      "price": 6.999,
+      "volume24": 1645.21133243,
       "marketCap": 0,
       "date": "2026-11-07",
-      "fetchedAt": "2026-11-07T01:07:13Z",
+      "fetchedAt": "2026-11-07T02:56:08Z",
       "source": "Kraken · USD-Spotmarkt",
       "venue": "Kraken Spot",
       "points": [
@@ -10853,8 +10853,8 @@
         },
         {
           "date": "2026-11-07",
-          "close": 7.036,
-          "volume": 23.26268202
+          "close": 6.999,
+          "volume": 35.85221955
         }
       ]
     }

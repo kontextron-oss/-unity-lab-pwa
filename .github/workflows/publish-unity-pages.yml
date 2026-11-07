@@ -1,0 +1,59 @@
+name: Publish UNITY to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - 'icon.svg'
+      - '*.js'
+      - 'data/**'
+      - 'scripts/build-staging.cjs'
+      - 'tests/rc17-staging-bundle.cjs'
+      - '.github/workflows/publish-unity-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: unity-pages-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout public UNITY source
+        uses: actions/checkout@v4
+      - name: Setup Node for deterministic static build
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source and build public-only static PWA
+        run: |
+          node tests/rc17-staging-bundle.cjs
+          node tests/rc17-offline-safety.cjs
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload only allowlisted production PWA assets
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy static UNITY to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,7 +1,7 @@
 'use strict';
 /* UNITY 0.15.3.9 – research-only, source-checked forecast and value scenarios.
    No private holdings, real orders, simulated orders, or trading permissions. */
-let unityIssuerGuidance=null,unityValuationAssumptions=null,unityGuidanceFetchError='';
+let unityIssuerGuidance=null,unityValuationAssumptions=null,unityQuarterDebtPilot=null,unityGuidanceFetchError='';
 async function unityLoadValuationEvidence(){
  const load=async url=>{
   let r;
@@ -13,13 +13,15 @@ async function unityLoadValuationEvidence(){
    throw Error('Ungültige öffentliche Prognosedatei');
   return v;
  };
- const [guide,assumptions]=await Promise.allSettled([
+ const [guide,assumptions,debtQuarter]=await Promise.allSettled([
   load('./data/issuer-guidance.json'),
-  load('./data/valuation-assumptions.json')
+  load('./data/valuation-assumptions.json'),
+  load('./data/debt-pilot-evidence.json')
  ]);
  unityIssuerGuidance=guide.status==='fulfilled'?guide.value:null;
  unityValuationAssumptions=assumptions.status==='fulfilled'?assumptions.value:null;
- unityGuidanceFetchError=[guide,assumptions].filter(x=>x.status==='rejected').map(x=>String(x.reason)).join(' · ');
+ unityQuarterDebtPilot=debtQuarter.status==='fulfilled'?debtQuarter.value:null;
+ unityGuidanceFetchError=[guide,assumptions,debtQuarter].filter(x=>x.status==='rejected').map(x=>String(x.reason)).join(' · ');
  if(typeof render==='function'&&typeof db!=='undefined'&&db)render();
 }
 function unityValuationDateAge(date){
@@ -149,6 +151,89 @@ function unityScenarioValuation(s,options={}){
  result.decision='Modellhafte Preiszone – Marktregime, Earnings und UNITY-Vetos separat prüfen';
  return result;
 }
+/* UNITY 0.17: point-in-time unaudited SEC 10-Q financial debt review.
+ * These issuer numbers are independent of the audited FY2025 cash-flow base;
+ * they NEVER make the DCF debt-risk reviewer gate true. */
+function unityQuarterDebtEvidence(s,registry){
+ const data=(registry===undefined?unityQuarterDebtPilot?.items:registry)?.[s?.isin];
+ const isin=String(s?.isin||''),cik=String(data?.cik||'');
+ if(!['IE00B8KQN827','US92537N1081'].includes(isin)||
+    data?.isin!==isin||!/^0{0,9}[1-9]\d{5,9}$/.test(cik)||
+    data.filingType!=='10-Q'||data.audited!==false||
+    data.periodEnd!=='2026-09-30'||data.reportCurrency!=='USD'||
+    data.unit!=='USD millions'||data.sourceHost!=='www.sec.gov'||
+    !unityValuationUrlValid(data.sourceUrl,'www.sec.gov')||
+    !String(data.sourceUrl).startsWith('https://www.sec.gov/Archives/edgar/data/'+Number(cik)+'/'))
+  return null;
+ const day=unityValuationDateAge(data.filedAt);
+ if(day===null||day< -1||day>180||data.filedAt<data.periodEnd)return null;
+ const positive=n=>typeof n==='number'&&Number.isFinite(n)&&n>0;
+ const nonNegative=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0;
+ if(!positive(data.cashAndEquivalents)||!nonNegative(data.shortTermInvestments)||
+    !Array.isArray(data.debtComponents)||!Array.isArray(data.priorYearComparison?.debtComponents))
+  return null;
+ const expected=isin==='IE00B8KQN827'?
+   ['shortTermDebt','currentLongTermDebt','noncurrentLongTermDebt']:
+   ['currentLongTermDebt','noncurrentLongTermDebt'];
+ const checkComponents=list=>list.length===expected.length&&
+   expected.every(key=>list.filter(row=>row?.key===key&&nonNegative(row.amount)).length===1);
+ const prior=data.priorYearComparison;
+ if(!checkComponents(data.debtComponents)||!checkComponents(prior.debtComponents)||
+    prior.periodEnd!=='2025-12-31'||
+    !positive(prior.cashAndEquivalents)||!nonNegative(prior.shortTermInvestments))
+  return null;
+ const ytd=data.yearToDate||{};
+ if(ytd.period!=='2026-01-01/2026-09-30'||!positive(ytd.operatingCashFlow)||
+    !nonNegative(ytd.capitalExpenditure))return null;
+ const total=rows=>Math.round(rows.reduce((sum,x)=>sum+x.amount,0)*100)/100;
+ const grossDebt=total(data.debtComponents),priorDebt=total(prior.debtComponents);
+ if(!(grossDebt>0&&priorDebt>0))return null;
+ return {
+  kind:'unity-unaudited-10q-debt-evidence-v1',
+  isin,periodEnd:data.periodEnd,filedAt:data.filedAt,sourceUrl:data.sourceUrl,
+  currency:data.reportCurrency,unit:data.unit,audited:false,
+  debtComponents:data.debtComponents,
+  grossFinancialDebt: grossDebt,
+  cashAndEquivalents:data.cashAndEquivalents,
+  shortTermInvestments:data.shortTermInvestments,
+  debtLessCash:Math.round((grossDebt-data.cashAndEquivalents)*100)/100,
+  debtChangePct:Math.round(10000*(grossDebt/priorDebt-1))/100,
+  yearToDate:{...ytd,fcfProxy:Math.round((ytd.operatingCashFlow-ytd.capitalExpenditure)*100)/100},
+  tradeApproved:false,reviewGateSatisfied:false
+ };
+}
+function unityQuarterDebtPanel(s,registry){
+ const d=unityQuarterDebtEvidence(s,registry);
+ if(!d)return '<p class="tiny muted">Neuer SEC-Quartalsabgleich derzeit nicht quellensicher verfügbar; '+
+   'die Schuldendienst-/Bewertungsprüfung bleibt offen.</p>';
+ const fmt=n=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(n);
+ let h='<div class="unity-quarter-debt"><p class="tiny muted"><b>Aktualisierte Liquiditäts- und Schuldenbasis '+
+   esc(d.periodEnd)+'</b> · SEC 10-Q, <b>ungeprüfter Quartalsbericht</b> vom '+
+   esc(d.filedAt)+'. Die bisherige geprüfte Cashflow-Basis bleibt FY2025; '+
+   'Jahres-/Quartalszeiträume werden nicht vermischt.</p>';
+ for(const row of d.debtComponents)
+  h+='<div class="home-data-row"><span>'+esc(row.label)+'</span><b>'+
+   esc(fmt(row.amount))+' Mio. USD</b></div>';
+ for(const [label,n] of [
+  ['Ausgewiesene Finanzschulden (Summe der Bilanzpositionen)',d.grossFinancialDebt],
+  ['Liquide Mittel',d.cashAndEquivalents],
+  ['Kurzfristige Anlagen (separat; nicht mit Cash vermischt)',d.shortTermInvestments],
+  ['Finanzschulden abzüglich liquider Mittel (Teilkennzahl)',d.debtLessCash],
+  ['Operativer Cashflow 9 Monate 2026',d.yearToDate.operatingCashFlow],
+  ['Sachinvestitionen 9 Monate 2026',d.yearToDate.capitalExpenditure],
+  ['OCF − Sachinvestitionen, 9 Monate 2026 (nicht annualisiert)',d.yearToDate.fcfProxy]
+ ])h+='<div class="home-data-row"><span>'+esc(label)+'</span><b>'+esc(fmt(n))+
+   ' Mio. USD</b></div>';
+ h+='<p class="tiny muted">Finanzschulden gegenüber 31.12.2025: '+
+   (d.debtChangePct>0?'+':'')+esc(fmt(d.debtChangePct))+
+   ' %. Keine Gesamtverschuldung einschließlich Leasing, keine abschließende Nettoverschuldungs- oder Ratingprüfung. '+
+   'Insbesondere 9-Monats-Cashflow darf nicht als Jahres-FCF für den DCF eingesetzt werden.</p>'+
+   '<p class="tiny muted"><a href="'+esc(d.sourceUrl)+
+   '" target="_blank" rel="noopener noreferrer">Originaler SEC-Quartalsbericht</a> · '+
+   '<b>Risikofreigabe bleibt offen.</b></p></div>';
+ return h;
+}
+
 /* UNITY 0.17 research pilot – evidence readiness, not an investment approval.
  * Display the exact missing gate without fabricating valuations or changing orders. */
 function unityPilotValuationAudit(s,options={}){
@@ -231,6 +316,7 @@ function unityPilotValuationAuditPanel(s,options={}){
    result.readyCount+' / '+result.total+'</summary>'+
    '<p class="tiny muted">Eaton-/Vertiv-Pilot: Quellenstand und offene Nachweise. Fehlende Nachweise sind kein negatives Unternehmensurteil. '+
    'Auch alle sieben Nachweise allein sind keine Handelsfreigabe; UNITY-Vetos und Chance/Risiko bleiben gesondert bindend.</p>';
+ h+=unityQuarterDebtPanel(s);
  for(const gate of result.gates)
   h+='<div class="home-data-row"><span>'+esc(gate.label)+'</span><b>'+
     (gate.ready?'Belegt':'Offen')+'</b></div>';

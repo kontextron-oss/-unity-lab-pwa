@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'unity-017.html'
       - 'update.html'
       - 'sw.js'
       - 'manifest.webmanifest'

@@ -1057,13 +1057,13 @@ function backupView(){
  '<p><b>Privater pCloud-Zielordner:</b> <code>UNITY-LAB/03-AUSTAUSCH/</code>. Diese verschlüsselten Dateien unabhängig von den normalen Sicherungen aufbewahren.</p>'+
  '<label>Austauschpasswort (mindestens 12 Zeichen, nicht das pCloud-Passwort)<input id="unity-sync-password" type="password" autocomplete="current-password" minlength="12" maxlength="256" spellcheck="false" placeholder="Passwort aus Apple Passwörter oder manuell"></label>'+
  '<div class="unity-backup-actions"><button type="button" class="secondary" id="unity-sync-prepare">Änderungspaket verschlüsseln</button>'+
- '<button type="button" class="secondary" id="unity-sync-share" '+(unitySyncPending?'':'hidden')+'>Datei in pCloud ablegen</button>'+
- '<button type="button" class="secondary" id="unity-sync-confirm" '+(unitySyncPending?.offered?'':'hidden')+'>Ablage in pCloud bestätigen</button></div>'+
+ '<button type="button" class="secondary" id="unity-sync-share" '+(typeof unitySyncPending!=='undefined'&&unitySyncPending?'':'hidden')+'>Datei in pCloud ablegen</button>'+
+ '<button type="button" class="secondary" id="unity-sync-confirm" '+(typeof unitySyncPending!=='undefined'&&unitySyncPending?.offered?'':'hidden')+'>Ablage in pCloud bestätigen</button></div>'+
  '<p class="tiny muted">Die Ablage muss selbst in pCloud kontrolliert werden. Das Schließen des Teilen-Menüs ist kein Speichernachweis. Das Austauschpasswort wird nicht gespeichert.</p>'+
  '<details class="unity-backup-details"><summary>Verschlüsselte Datei auf diesem Gerät prüfen oder fehlende Datensätze ergänzen</summary>'+
  '<label>UNITY-SYNC-Datei auswählen<input type="file" id="unity-sync-file" accept=".json,application/json"></label>'+
  '<div class="unity-backup-actions"><button type="button" class="secondary" id="unity-sync-inspect">Entschlüsseln und Unterschiede prüfen</button>'+
- '<button type="button" class="secondary" id="unity-sync-import-new" '+(unitySyncIncoming?.review?.counts?.new?'':'hidden')+'>Nur bisher fehlende Datensätze übernehmen</button></div>'+
+ '<button type="button" class="secondary" id="unity-sync-import-new" '+(typeof unitySyncIncoming!=='undefined'&&unitySyncIncoming?.review?.counts?.new?'':'hidden')+'>Nur bisher fehlende Datensätze übernehmen</button></div>'+
  '<div id="unity-sync-review" class="tiny muted"></div>'+
  '</details>'+
  '<p id="unity-sync-status" role="status" aria-live="polite" class="unity-backup-status">Noch kein Änderungspaket vorbereitet. Keine automatische Synchronisation aktiv.</p></details>'+

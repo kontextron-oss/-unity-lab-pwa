@@ -38,7 +38,7 @@
 <script defer>
 (function(){'use strict';
 var $=function(id){return document.getElementById(id);};
-var state={page:'camera',stream:null,track:null,torch:false,canTorch:false,busy:false,voice:null,voiceWanted:true,voiceActive:false,voiceFatal:false,voicePausedForSpeech:false,audioEnabled:true,mode:'original',photoURL:null,width:1,height:1,ocrWidth:1,ocrHeight:1,lines:[],current:-1,word:-1,speaking:false,speechToken:0,zoom:1,tx:0,ty:0,font:27,worker:null,readingStart:0,saved:false};
+var state={page:'camera',stream:null,track:null,torch:false,canTorch:false,busy:false,voice:null,voiceWanted:true,voiceActive:false,voiceFatal:false,voicePausedForSpeech:false,audioEnabled:true,mode:'original',photoURL:null,width:1,height:1,ocrWidth:1,ocrHeight:1,lines:[],current:-1,word:-1,speaking:false,speechToken:0,zoom:1,tx:0,ty:0,font:27,worker:null,ocrPromise:null,readingStart:0,saved:false};
 try{state.audioEnabled=localStorage.getItem('hb2-audio')!=='false';}catch(e){}
 var R=window.SpeechRecognition||window.webkitSpeechRecognition;
 function status(msg){if(state.page==='camera')$('cameraHint').textContent=msg;else $('readNotice').textContent=msg;}
@@ -59,6 +59,8 @@ async function startCamera(){
   if(state.page!=='camera'){stream.getTracks().forEach(function(t){t.stop();});return;}
   state.stream=stream;state.track=stream.getVideoTracks()[0];
   $('video').srcObject=stream;await $('video').play().catch(function(){});
+   // Prepare the OCR language data while the user is aligning the page, not after the photo.
+   warmOCR();
   var caps=state.track.getCapabilities?state.track.getCapabilities():{};
   state.canTorch=!!caps.torch;
   if(state.canTorch)await setTorch(false,true);
@@ -174,45 +176,61 @@ function extractOCRLines(data){
  });
  return out;
 }
+function ensureOCRWorker(){
+ if(state.worker)return Promise.resolve(state.worker);
+ if(state.ocrPromise)return state.ocrPromise;
+ if(!window.Tesseract)return Promise.reject(Error('Texterkennung nicht geladen. Internetverbindung prüfen.'));
+ state.ocrPromise=(async function(){
+  var worker=await Tesseract.createWorker('deu',1,{logger:function(m){
+   if(state.page==='read'&&m&&m.status==='recognizing text'&&m.progress!=null)
+    status('Text wird erkannt: '+Math.round(m.progress*100)+' %');
+  }});
+  try{await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});}
+  catch(e){try{await worker.terminate();}catch(x){}throw e;}
+  state.worker=worker;return worker;
+ })().catch(function(e){state.ocrPromise=null;state.worker=null;throw e;});
+ return state.ocrPromise;
+}
+function warmOCR(){ensureOCRWorker().catch(function(e){console.warn('OCR-Vorbereitung nicht möglich',e);});}
 async function analyzePhoto(blob){
  try{
-  if(!window.Tesseract){throw Error('Texterkennung muss beim ersten Start über Internet geladen werden.');}
-  if(!state.worker){
-   status('Deutsche Texterkennung wird geladen …');
-   // Reuse the proven Hörblick 0.3 OCR setup.
-   state.worker=await Tesseract.createWorker('deu',1,{logger:function(m){
-    if(m&&m.status==='recognizing text'&&m.progress!=null)status('Text wird erkannt: '+Math.round(m.progress*100)+' %');
-   }});
-   await state.worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
-  }
-  var c=document.createElement('canvas'),f=Math.min(1,2600/Math.max(state.width,state.height));
-  c.width=Math.max(1,Math.round(state.width*f));c.height=Math.max(1,Math.round(state.height*f));
-  c.getContext('2d').drawImage($('photo'),0,0,c.width,c.height);
+  status('Text wird erkannt …');
+  var worker=await ensureOCRWorker();
+  // Single pass, like the original 0.3 reader: no automatic second full-page OCR.
+  var maxSide=2000,scale=Math.min(1,maxSide/Math.max(state.width,state.height));
+  var c=document.createElement('canvas');
+  c.width=Math.max(1,Math.round(state.width*scale));
+  c.height=Math.max(1,Math.round(state.height*scale));
+  var context=c.getContext('2d');context.imageSmoothingEnabled=true;
+  context.imageSmoothingQuality='high';
+  context.drawImage($('photo'),0,0,c.width,c.height);
   state.ocrWidth=c.width;state.ocrHeight=c.height;
-  var result=await state.worker.recognize(c,{}, {blocks:true});
+  var result=await worker.recognize(c,{}, {blocks:true});
   var lines=extractOCRLines(result.data);
-  // Retry multi-column layout recognition only if the original recognition looks weak.
-  var confidence=Number(result.data&&result.data.confidence)||0;
-  if((confidence<42||lines.length<2)&&c.width>200&&c.height>200){
-   try{
-    await state.worker.setParameters({tessedit_pageseg_mode:'3'});
-    var alt=await state.worker.recognize(c,{}, {blocks:true});
-    var candidate=extractOCRLines(alt.data),otherConfidence=Number(alt.data&&alt.data.confidence)||0;
-    if(candidate.length&&(otherConfidence>confidence+5||!lines.length)){
-     result=alt;lines=candidate;confidence=otherConfidence;
-    }
-   }catch(e){console.warn('Zweiter OCR-Durchgang nicht möglich',e);}
-   finally{await state.worker.setParameters({tessedit_pageseg_mode:'6'}).catch(function(){});}
+  if(!lines.length){
+   lines=String((result.data&&result.data.text)||'').split(/\n+/).map(function(text){
+    return{text:text.trim(),bbox:null,words:[]};
+   }).filter(function(line){return line.text;});
   }
-  if(!lines.length){lines=String((result.data&&result.data.text)||'').split(/\n+/).map(function(t){
-   return{text:t.trim(),bbox:null,words:[]};
-  }).filter(function(x){return x.text;});}
   state.lines=lines;state.readingStart=findReadingStart(lines);renderLines();
-  if(!lines.length){status('Kein Text sicher erkannt. Ein anderes Foto versuchen.');$('readBtn').textContent='Kamera';resumeVoiceAfterSpeech();return;}
-  status(confidence<45?'Texterkennung unsicher. Für besseres Ergebnis näher fotografieren.':lines.length+' Zeilen erkannt. Text antippen oder Vorlesen.');
-  if(state.audioEnabled){speakFrom(state.readingStart,true);}else{status('Still. Text erkannt. Zum Vorlesen auf Vorlesen tippen.');resumeVoiceAfterSpeech();}
-  await saveDocument(blob,lines);
- }catch(e){status(e.message&&e.message.includes('Internet')?e.message:'Texterkennung fehlgeschlagen. Erneut fotografieren.');resumeVoiceAfterSpeech();console.error(e);}
+  if(!lines.length){
+   status('Kein Text sicher erkannt. Näher fotografieren.');$('readBtn').textContent='Kamera';
+   resumeVoiceAfterSpeech();return;
+  }
+  if(state.audioEnabled){
+   status('Text erkannt. Vorlesen startet …');
+   speakFrom(state.readingStart,true);
+  }else{
+   status('Text erkannt. Zum Vorlesen „Laut“ wählen.');
+   resumeVoiceAfterSpeech();
+  }
+  // Persist only after speech has already been requested; never hold up reading for storage.
+  saveDocument(blob,lines).catch(function(e){console.warn('Dokument nicht gespeichert',e);});
+ }catch(e){
+  status((e.message&&e.message.includes('Internet'))?e.message:
+   'Texterkennung nicht möglich. Noch einmal fotografieren.');
+  resumeVoiceAfterSpeech();console.error(e);
+ }
 }
 function findReadingStart(lines){
  var hello=/^(sehr geehrte|guten tag|hallo|liebe[rsn]?\b)/i;
@@ -261,7 +279,7 @@ function speakFrom(index,auto){
   state.current=i;state.word=-1;updateHighlight();
   if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){finish('Sprachausgabe nicht verfügbar.');return;}
   var utterance=new SpeechSynthesisUtterance(state.lines[i].text);
-  utterance.lang='de-DE';utterance.rate=.88;utterance.pitch=1;
+  utterance.lang='de-DE';utterance.rate=1.02;utterance.pitch=1;
   try{
    var voices=speechSynthesis.getVoices().filter(function(v){return /^de[-_]/i.test(v.lang||'');});
    var local=voices.find(function(v){return v.localService;});

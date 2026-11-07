@@ -11,6 +11,8 @@ on:
       - tests/pilot-scenario-sensitivity.cjs
       - tests/pilot-ttm-cashflow.cjs
       - tests/pilot-normalization-audit.cjs
+      - tests/pilot-financing-stress.cjs
+      - data/financing-stress-evidence.json
       - data/normalization-evidence.json
       - .github/workflows/unity-017-valuation.yml
   pull_request:
@@ -48,3 +50,4 @@ jobs:
           node tests/pilot-scenario-sensitivity.cjs
           node tests/pilot-ttm-cashflow.cjs
           node tests/pilot-normalization-audit.cjs
+          node tests/pilot-financing-stress.cjs

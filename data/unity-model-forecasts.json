@@ -1,17 +1,202 @@
 {
   "schemaVersion": 1,
-  "generatedAt": null,
+  "generatedAt": "2026-11-07T00:14:39Z",
   "source": "SEC annual companyfacts; prospectively locked baseline forecasts",
   "methodology": "unity-revenue-momentum-shrink-v1",
   "modelCalibrated": false,
   "qualityRule": "Do not compute a model success rate or confidence until >=20 out-of-sample annual results; no buy signals.",
   "counts": {
-    "awaiting-audited-target-year": 0,
+    "awaiting-audited-target-year": 4,
     "verified": 0,
     "verified-previous-source-unavailable": 0,
     "revision-review": 0
   },
   "measuredSampleSize": 0,
   "verifiedForecastSkill": null,
-  "forecasts": {}
+  "forecasts": {
+    "unity-revenue-momentum-shrink-v1:PWR:FY2026": {
+      "frozen": {
+        "id": "unity-revenue-momentum-shrink-v1:PWR:FY2026",
+        "modelId": "unity-revenue-momentum-shrink-v1",
+        "createdAt": "2026-11-07T00:14:39Z",
+        "ticker": "PWR",
+        "isin": "US74762E1029",
+        "cik": "0001050915",
+        "metric": "revenue",
+        "targetPeriodEnd": "2026-12-31",
+        "basePeriodEnd": "2025-12-31",
+        "priorPeriodEnd": "2024-12-31",
+        "inputs": {
+          "current": {
+            "value": 28479697000.0,
+            "periodEnd": "2025-12-31",
+            "filedAt": "2026-02-19",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          },
+          "prior": {
+            "value": 23672795000.0,
+            "periodEnd": "2024-12-31",
+            "filedAt": "2026-02-19",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050915.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          }
+        },
+        "formula": "clamp(0.5*(FY_current_revenue/FY_prior_revenue-1),-20%,+25%); predicted=FY_current*(1+growth)",
+        "historicGrowthPct": 20.31,
+        "projectedGrowthPct": 10.15,
+        "predictedRevenueUSD": 31370000000,
+        "flatRevenueBenchmarkUSD": 28479697000.0,
+        "nonProbabilistic": true,
+        "calibrated": false,
+        "purpose": "Forward one-year revenue, experimental benchmark; not a buy/sell or valuation signal"
+      },
+      "forecastFingerprint": "6af44a2c0fe1239e748c5145454a655ff85aaada783b7a56bf03d7f9642788df",
+      "status": "awaiting-audited-target-year",
+      "verified": null,
+      "observedCandidate": null
+    },
+    "unity-revenue-momentum-shrink-v1:GEV:FY2026": {
+      "frozen": {
+        "id": "unity-revenue-momentum-shrink-v1:GEV:FY2026",
+        "modelId": "unity-revenue-momentum-shrink-v1",
+        "createdAt": "2026-11-07T00:14:39Z",
+        "ticker": "GEV",
+        "isin": "US36828A1016",
+        "cik": "0001996810",
+        "metric": "revenue",
+        "targetPeriodEnd": "2026-12-31",
+        "basePeriodEnd": "2025-12-31",
+        "priorPeriodEnd": "2024-12-31",
+        "inputs": {
+          "current": {
+            "value": 38068000000.0,
+            "periodEnd": "2025-12-31",
+            "filedAt": "2026-01-29",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          },
+          "prior": {
+            "value": 34935000000.0,
+            "periodEnd": "2024-12-31",
+            "filedAt": "2026-01-29",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001996810.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          }
+        },
+        "formula": "clamp(0.5*(FY_current_revenue/FY_prior_revenue-1),-20%,+25%); predicted=FY_current*(1+growth)",
+        "historicGrowthPct": 8.97,
+        "projectedGrowthPct": 4.48,
+        "predictedRevenueUSD": 39770000000,
+        "flatRevenueBenchmarkUSD": 38068000000.0,
+        "nonProbabilistic": true,
+        "calibrated": false,
+        "purpose": "Forward one-year revenue, experimental benchmark; not a buy/sell or valuation signal"
+      },
+      "forecastFingerprint": "1a60403676c2ab65e905b83b301679d71981e80f4bf78ecf5022b1ab1766dc6d",
+      "status": "awaiting-audited-target-year",
+      "verified": null,
+      "observedCandidate": null
+    },
+    "unity-revenue-momentum-shrink-v1:VRT:FY2026": {
+      "frozen": {
+        "id": "unity-revenue-momentum-shrink-v1:VRT:FY2026",
+        "modelId": "unity-revenue-momentum-shrink-v1",
+        "createdAt": "2026-11-07T00:14:39Z",
+        "ticker": "VRT",
+        "isin": "US92537N1081",
+        "cik": "0001674101",
+        "metric": "revenue",
+        "targetPeriodEnd": "2026-12-31",
+        "basePeriodEnd": "2025-12-31",
+        "priorPeriodEnd": "2024-12-31",
+        "inputs": {
+          "current": {
+            "value": 10229900000.0,
+            "periodEnd": "2025-12-31",
+            "filedAt": "2026-02-13",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          },
+          "prior": {
+            "value": 8011800000.0,
+            "periodEnd": "2024-12-31",
+            "filedAt": "2026-02-13",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001674101.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          }
+        },
+        "formula": "clamp(0.5*(FY_current_revenue/FY_prior_revenue-1),-20%,+25%); predicted=FY_current*(1+growth)",
+        "historicGrowthPct": 27.69,
+        "projectedGrowthPct": 13.84,
+        "predictedRevenueUSD": 11650000000,
+        "flatRevenueBenchmarkUSD": 10229900000.0,
+        "nonProbabilistic": true,
+        "calibrated": false,
+        "purpose": "Forward one-year revenue, experimental benchmark; not a buy/sell or valuation signal"
+      },
+      "forecastFingerprint": "28729827d51fe64e713822354473e21a26ee8103cdd849da7dc08718c59d6997",
+      "status": "awaiting-audited-target-year",
+      "verified": null,
+      "observedCandidate": null
+    },
+    "unity-revenue-momentum-shrink-v1:ETN:FY2026": {
+      "frozen": {
+        "id": "unity-revenue-momentum-shrink-v1:ETN:FY2026",
+        "modelId": "unity-revenue-momentum-shrink-v1",
+        "createdAt": "2026-11-07T00:14:39Z",
+        "ticker": "ETN",
+        "isin": "IE00B8KQN827",
+        "cik": "0001551182",
+        "metric": "revenue",
+        "targetPeriodEnd": "2026-12-31",
+        "basePeriodEnd": "2025-12-31",
+        "priorPeriodEnd": "2024-12-31",
+        "inputs": {
+          "current": {
+            "value": 27448000000.0,
+            "periodEnd": "2025-12-31",
+            "filedAt": "2026-02-26",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001551182.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          },
+          "prior": {
+            "value": 24878000000.0,
+            "periodEnd": "2024-12-31",
+            "filedAt": "2026-02-26",
+            "sourceUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001551182.json",
+            "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "currency": "USD",
+            "unit": "USD"
+          }
+        },
+        "formula": "clamp(0.5*(FY_current_revenue/FY_prior_revenue-1),-20%,+25%); predicted=FY_current*(1+growth)",
+        "historicGrowthPct": 10.33,
+        "projectedGrowthPct": 5.17,
+        "predictedRevenueUSD": 28870000000,
+        "flatRevenueBenchmarkUSD": 27448000000.0,
+        "nonProbabilistic": true,
+        "calibrated": false,
+        "purpose": "Forward one-year revenue, experimental benchmark; not a buy/sell or valuation signal"
+      },
+      "forecastFingerprint": "9dbc1055c1526b011996f433ea7b6f5665b4298569a0e78a155fc52ab327061b",
+      "status": "awaiting-audited-target-year",
+      "verified": null,
+      "observedCandidate": null
+    }
+  }
 }

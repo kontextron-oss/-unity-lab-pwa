@@ -12,6 +12,7 @@ on:
       - 'icon.svg'
       - '*.js'
       - 'data/**'
+      - 'hoerblick/**'
       - 'scripts/build-staging.cjs'
       - 'tests/rc17-staging-bundle.cjs'
       - 'tests/rc17-offline-safety.cjs'

@@ -23,6 +23,7 @@ jobs:
           node --check valuation-scenarios.js
           node --check reverse-valuation.js
           node --check foresight.js
+          node --check own-model.js
           python3 -m py_compile scripts/refresh_foresight_outcomes.py
           node --check research.js
           node --check capital-radar.js
@@ -227,6 +228,11 @@ jobs:
         run: node tests/reverse-valuation.cjs
       - name: Test pre-registered guidance, next filings and prospective learning checkpoints
         run: node tests/foresight.cjs
+      - name: Test own prospectively registered forecast laboratory and unproven skill UI
+        run: node tests/own-model.cjs
+
+      - name: Test independent model forecasts against future year without hindsight
+        run: python3 -m unittest discover -s tests -p 'test_unity_model_forecasts.py' -v
       - name: Test automated immutable SEC outcome audit, revisions and no-lookahead
         run: |
           python3 -m unittest discover -s tests -p 'test_foresight_outcomes.py' -v

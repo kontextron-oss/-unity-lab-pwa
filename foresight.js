@@ -296,7 +296,9 @@ function unityForesightPanel(stock){
    esc(s.auditCheckedAt.slice(0,10))+' · '+esc(unityForesightOutcomes?.source||'SEC')+'</p>';
  else h+='<p class="tiny muted">Automatischer Jahresergebnis-Abgleich noch nicht initialisiert'+
    (unityForesightAuditError?' · Quelle derzeit nicht geladen':'')+'.</p>';
- h+='<p class="tiny muted">Ein Unternehmenssignal allein setzt keine UNITY-Kaufregel außer Kraft.</p></section>';
+ h+='<p class="tiny muted">Ein Unternehmenssignal allein setzt keine UNITY-Kaufregel außer Kraft.</p>';
+ if(typeof unityOwnModelForecastPanel==='function')h+=unityOwnModelForecastPanel(stock);
+ h+='</section>';
  return h;
 }
 function unityForesightOverview(list){
@@ -329,6 +331,7 @@ function unityForesightOverview(list){
      item.guidanceSource?'Nur qualitative/ungeprüft vergleichbare Prognose':'Daten offen')+
     '</b></div>';
  h+='</details></section>';
+ if(typeof unityOwnModelOverview==='function')h+=unityOwnModelOverview();
  return h;
 }
 if(typeof fetch==='function')unityForesightLoad();

@@ -9,7 +9,7 @@ ctx.unityGuidanceEvidence=(stock,registry)=>{
  const g=registry?.[stock?.isin]||allGuidance[stock?.isin];
  return g?.isin===stock?.isin&&g?.sourceUrl?.startsWith('https://')?g:null;
 };
-const empty=JSON.parse(fs.readFileSync('data/unity-model-forecasts.json','utf8'));
+const empty={...JSON.parse(fs.readFileSync('data/unity-model-forecasts.json','utf8')),forecasts:{}};
 assert.equal(empty.schemaVersion,1);
 assert.equal(empty.measuredSampleSize,0);
 assert.equal(empty.verifiedForecastSkill,null);

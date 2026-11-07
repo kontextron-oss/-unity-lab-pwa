@@ -25,6 +25,9 @@ on:
       - data/normalization-evidence.json
       - data/financing-stress-evidence.json
       - data/debt-pilot-evidence.json
+      - scripts/build-staging.cjs
+      - tests/rc17-staging-bundle.cjs
+      - vercel.json
       - .github/workflows/unity-017-valuation.yml
   pull_request:
     paths:
@@ -44,6 +47,9 @@ on:
       - data/normalization-evidence.json
       - data/financing-stress-evidence.json
       - data/debt-pilot-evidence.json
+      - scripts/build-staging.cjs
+      - tests/rc17-staging-bundle.cjs
+      - vercel.json
       - .github/workflows/unity-017-valuation.yml
   workflow_dispatch:
 permissions:
@@ -77,3 +83,5 @@ jobs:
         run: |
           node tests/financial-metrics.cjs
           node tests/rc17-offline-safety.cjs
+      - name: Build isolated staging static assets and check public allowlist
+        run: node tests/rc17-staging-bundle.cjs

@@ -17,6 +17,7 @@ on:
       - index.html
       - sw.js
       - tests/rc17-offline-safety.cjs
+      - tests/live-pages-assets.cjs
       - tests/financial-metrics.cjs
       - tests/reverse-valuation.cjs
       - tests/valuation-scenarios.cjs
@@ -51,6 +52,7 @@ on:
       - index.html
       - sw.js
       - tests/rc17-offline-safety.cjs
+      - tests/live-pages-assets.cjs
       - tests/financial-metrics.cjs
       - tests/reverse-valuation.cjs
       - tests/valuation-scenarios.cjs
@@ -124,3 +126,5 @@ jobs:
           node tests/pcloud-node-adapter.cjs
       - name: Build GitHub-only RC1 static assets and check public allowlist
         run: node tests/rc17-staging-bundle.cjs
+      - name: Check that GitHub Pages delivers ALL mandatory PWA files
+        run: node tests/live-pages-assets.cjs

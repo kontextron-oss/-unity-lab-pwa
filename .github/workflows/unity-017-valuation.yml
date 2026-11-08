@@ -128,3 +128,22 @@ jobs:
         run: node tests/rc17-staging-bundle.cjs
       - name: Check that GitHub Pages delivers ALL mandatory PWA files
         run: node tests/live-pages-assets.cjs
+
+      - name: Diagnose deployed UNITY worker (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://kontextron-oss.github.io/-unity-lab-pwa"
+          for n in {1..12}; do
+            echo "Live Service Worker check ${n}/12"
+            if curl -fsSL --connect-timeout 8 --max-time 25 \
+              "${BASE}/sw.js?verified=20261108-${GITHUB_SHA}" -o /tmp/unity-remote-sw.js \
+              && grep -Fq "then(()=>self.skipWaiting())" /tmp/unity-remote-sw.js \
+              && grep -Fq "currentThenPrevious" /tmp/unity-remote-sw.js; then
+              echo "SUCCESS: updated service worker with automatic activation is LIVE"
+              exit 0
+            fi
+            sleep 8
+          done
+          echo "::error::The updated UNITY service worker is NOT live yet"
+          exit 1

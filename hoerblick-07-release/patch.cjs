@@ -74,7 +74,8 @@ const stageStart=s.indexOf(stageNeedle,renderStart);
 if(stageStart<0)throw Error('Stage class missing');
 s=s.slice(0,stageStart)+s.slice(stageStart).replace(stageNeedle,stageNeedle+`
           onClick={(event) => {
-            if (fullscreenReading || loading || frozenImage || importedDocumentName || suppressCameraTapRef.current) return;
+            if (fullscreenReading || loading || importedDocumentName || suppressCameraTapRef.current) return;
+            if (frozenImage && !photoText) { void openMagnifier(); return; }
             if (event.target instanceof Element && event.target.closest("button")) return;
             if (!streamRef.current) { void openMagnifier(); return; }
             void captureMagnifier();
@@ -85,7 +86,7 @@ const imageEnd=s.indexOf('          ) : (\n            <video',imageStart);
 if(imageStart<0||imageEnd<0)throw Error('Photo render branch not found');
 s=s.slice(0,imageStart)+`          ) : (loading || frozenImage || importedDocumentName) ? (
             <div className="hb07-processing" role="status" aria-live="polite">
-              <p>{status}</p>
+              <p>{status}{!loading && frozenImage && !photoText ? " Zum Wiederholen das Bild antippen." : ""}</p>
             </div>
 `+s.slice(imageEnd);
 // Remove camera rectangle and unnecessary floating zoom badge.

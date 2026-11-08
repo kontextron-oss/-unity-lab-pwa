@@ -16,6 +16,7 @@ on:
       - 'hoerblick-05-release/**'
       - 'hoerblick-original-release/**'
       - 'hoerblick-06-release/**'
+      - 'hoerblick-07-release/**'
       - 'scripts/build-staging.cjs'
       - 'tests/rc17-staging-bundle.cjs'
       - 'tests/rc17-offline-safety.cjs'
@@ -101,6 +102,27 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/dist/hoerblick-06"
           cp -R dist/. "$GITHUB_WORKSPACE/dist/hoerblick-06/"
           echo "HÖRBLICK 0.6 isolated Safari PWA built."
+      - name: Restore and publish HÖRBLICK 0.7 camera-first accessible reader
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hoerblick-07
+          base64 -d hoerblick-06-release/client-source.tar.gz.b64 > /tmp/hoerblick-07-source.tar.gz
+          echo 'c1a20575aa160720925efb72ffaf87eba4127950e8c65b54ce82c0c604f6c3e7  /tmp/hoerblick-07-source.tar.gz' | sha256sum --check -
+          tar -xzf /tmp/hoerblick-07-source.tar.gz -C /tmp/hoerblick-07 --no-same-owner --no-same-permissions
+          node hoerblick-07-release/patch.cjs /tmp/hoerblick-07
+          cd /tmp/hoerblick-07
+          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund --no-save tailwindcss@4.2.1
+          npm run build
+          test -s dist/index.html
+          test -s dist/sw.js
+          test -s dist/manifest.webmanifest
+          grep -Fq '/-unity-lab-pwa/hoerblick-07/' dist/index.html
+          test "$(find dist/assets -name '*.js' | wc -l)" -ge 1
+          mkdir -p "$GITHUB_WORKSPACE/dist/hoerblick-07"
+          cp -R dist/. "$GITHUB_WORKSPACE/dist/hoerblick-07/"
+          echo "HÖRBLICK 0.7 camera-first Safari PWA built."
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload only allowlisted production PWA assets

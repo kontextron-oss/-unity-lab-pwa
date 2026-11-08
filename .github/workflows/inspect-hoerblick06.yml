@@ -1,0 +1,39 @@
+name: Inspect HÖRBLICK 0.6 source before isolated UI restoration
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-hoerblick06.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect source markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hb06
+          base64 -d hoerblick-06-release/client-source.tar.gz.b64 | tar -xz -C /tmp/hb06
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('/tmp/hb06/app/page.tsx')
+          s=src.read_text()
+          a=s.splitlines()
+          print('TOTAL LINES',len(a),'CHARS',len(s))
+          markers=['type View =','useState<View>','const speakText','const createGermanRecognition','const recognizePhoto','const openMagnifier','const captureMagnifier','const closeMagnifier','const fullscreenReading','const readingText','if (view === "magnifier")','if (view === "archive")','return (','const [voices','const [voice','const [rate']
+          for m in markers:
+            where=[i for i,x in enumerate(a) if m in x]
+            print('MARKER',m,where[:10])
+            for pos in where[:1]:
+              print('----',m,'----')
+              for j in range(max(0,pos-3),min(len(a),pos+17)):
+                print('%04d'% (j+1),a[j])
+          print('--- MAGNIFIER RENDER ---')
+          p=next(i for i,x in enumerate(a) if 'if (view === "magnifier")' in x)
+          e=next(i for i,x in enumerate(a[p+1:],p+1) if 'if (view === "archive")' in x)
+          for j in range(p,e):
+            print('%04d'%(j+1),a[j])
+          PY

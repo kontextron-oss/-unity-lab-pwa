@@ -136,7 +136,7 @@ jobs:
           node hoerblick-08-release/patch.cjs /tmp/hoerblick-08
           cd /tmp/hoerblick-08
           npm install --no-audit --no-fund
-          npm install --no-audit --no-fund --no-save tailwindcss@4.2.1
+          npm install --no-audit --no-fund --no-save tailwindcss@4.2.1 esbuild@0.25.12
           ./node_modules/.bin/esbuild "$GITHUB_WORKSPACE/hoerblick-08-release/document-structure.ts" --bundle --platform=node --format=cjs --outfile="$GITHUB_WORKSPACE/hoerblick-08-release/document-structure.cjs"
           node "$GITHUB_WORKSPACE/hoerblick-08-release/test-document-structure.mjs"
           npm run build

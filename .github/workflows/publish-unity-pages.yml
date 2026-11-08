@@ -181,6 +181,9 @@ jobs:
               "${BASE}/unity-017.html?release=${GITHUB_SHA}" -o /tmp/unity-017.html \
               && curl -fsSL --connect-timeout 8 --max-time 20 \
               "${BASE}/update.html?release=${GITHUB_SHA}" -o /tmp/unity-update.html \
+              && curl -fsSL --connect-timeout 8 --max-time 20 \
+              "${BASE}/sw.js?release=${GITHUB_SHA}" -o /tmp/unity-sw.js \
+              && grep -Fq "then(()=>self.skipWaiting())" /tmp/unity-sw.js \
               && grep -Fq 'Unity Lab 0.17.0 RC1 · Direktstart' /tmp/unity-017.html \
               && grep -Fq 'UNITY_ACTIVATE_UPDATE' /tmp/unity-update.html; then
               echo 'Confirmed: UNITY 0.17 and the safe update helper are live.'

@@ -45,6 +45,7 @@ const events={};
 const record={installRequests:[],opened:[],deletes:0,skip:0,claimed:0,
  fetchRequests:[],cacheHits:0};
 const cached=new Map();
+const stale=new Map([[new URL('./index.html',origin).href,new Response('<title>Unity Lab 0.16.5</title>',{status:200})]]);
 function repoPath(asset){
  const pathname=new URL(asset,origin).pathname.slice(1);
  return pathname||'index.html';
@@ -62,12 +63,23 @@ const cacheAPI={
      cached.set(new URL(asset,origin).href,new Response(contents,{status:200}));
     }
    },
+   async match(req,options){
+    const url=typeof req==='string'?new URL(req,origin):new URL(req.url);
+    let item=cached.get(url.href);
+    if(!item&&options?.ignoreSearch){
+     url.search='';item=cached.get(url.href);
+    }
+    if(item){record.cacheHits++;return item.clone()}
+    return undefined;
+   },
    async put(req,response){cached.set(req.url,response)}
+
   };
  },
  async match(request){
-  const match=cached.get(request.url);
-  if(match){record.cacheHits++;return match.clone()}
+  // Global CacheStorage.match searches the old 0.16.5 cache first.
+  const hit=stale.get(request.url)||cached.get(request.url);
+  if(hit){record.cacheHits++;return hit.clone()}
   return undefined;
  },
  async keys(){return ['unity-lab-v0.16.5','unity-lab-v0.17.0-rc1']},
@@ -102,15 +114,26 @@ async function exercise(){
  events.install({waitUntil(promise){pending=promise}});
  await pending;
  assert.equal(record.installRequests.length,config.ASSETS.length);
- assert.equal(record.skip,0,'do not immediately override active session');
+ assert.equal(record.skip,1,'activate automatically only after the full new cache is ready');
  events.message({data:{type:'NOT_THE_APPROVED_UPDATE'}});
- assert.equal(record.skip,0,'ignore unrelated messages');
+ assert.equal(record.skip,1,'ignore unrelated messages');
  events.message({data:{type:'UNITY_ACTIVATE_UPDATE'}});
- assert.equal(record.skip,1,'update activation requires explicit user action');
+ assert.equal(record.skip,2,'explicit update request remains supported');
  events.activate({waitUntil(promise){pending=promise}});
  await pending;
  assert.equal(record.deletes,0,'keep older caches while testing RC');
  assert.equal(record.claimed,1);
+ // An old 0.16.5 cache must never outrank the current offline HTML.
+ {
+  const req=new Request(new URL('./index.html?old-pwa=1',origin));
+  let answer;
+  events.fetch({request:req,respondWith(p){answer=p}});
+  assert.ok(answer,'offline navigation intercepted');
+  const page=await answer;
+  const content=await page.text();
+  assert.match(content,/Unity Lab 0\.17\.0 RC1/,
+   '0.17 current cache wins over stale 0.16.5 HTML');
+ }
  // Actual offline fetch path of the service worker: all three new SEC
  // references must be served successfully from the atomic precache.
  for(const asset of evidence){
@@ -148,7 +171,7 @@ async function exercise(){
   vm.runInContext('unityValuationAssumptions',analysisContext).items)),{},
   'still no invented trade-approved valuation assumptions');
  assert.equal(record.deletes,0);
- assert.equal(record.skip,1,'one deliberate activation message, no automatic update');
+ assert.equal(record.skip,2,'one automatic activation after precache plus one explicit user request');
  console.log('RC1 cache: original IndexedDB schema untouched, prior caches retained, no forced reload, all evidence JSON offline, valuation module offline load passed.');
 }
 exercise().catch(err=>{console.error(err);process.exitCode=1});

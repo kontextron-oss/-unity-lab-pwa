@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T07:52:57+00:00",
+  "generatedAt": "2026-11-09T07:59:44+00:00",
   "source": "Amtliche EU-Veröffentlichungen · TED Search API v3",
   "sourceUrl": "https://docs.ted.europa.eu/api/latest/search.html",
   "sourceFailures": 0,
@@ -13,14 +13,56 @@
       "cpv": "31170000",
       "context": "Europäische Netztechnik und Transformatoren",
       "status": "available",
-      "checkedAt": "2026-11-06T07:52:57+00:00",
-      "querySince": "20260922",
+      "checkedAt": "2026-11-09T07:59:44+00:00",
+      "querySince": "20260925",
       "noticeType": "award-notice",
-      "sampleSize": 39,
-      "newSincePreviousScan": 4,
-      "totalMatchingNotices": 81,
+      "sampleSize": 41,
+      "newSincePreviousScan": 2,
+      "totalMatchingNotices": 78,
       "isComplete": false,
       "events": [
+        {
+          "id": "778594-2026",
+          "publishedAt": "2026-11-09",
+          "title": "Slovenija – Transformatorji – Dobava in montaža energetskega 110 kV transformatorja 40 MVA RTP 110/20 kV RTP Brdo",
+          "titleLanguage": "slv",
+          "buyer": "ELEKTRO LJUBLJANA, podjetje za distribucijo električne energije, d.d.",
+          "buyerCountry": "SVN",
+          "winner": "ELTIMA trgovina, zastopanje in posredovanje, d.o.o.",
+          "winnerIdentityVerified": false,
+          "noticeType": "award-notice",
+          "winnerSelectedForAtLeastOneLot": true,
+          "lotResultCode": "selec-w",
+          "cpv": "31170000",
+          "publishedValue": 3347800.0,
+          "currency": "EUR",
+          "source": "EU TED · amtliche Bekanntmachung",
+          "url": "https://ted.europa.eu/en/notice/-/detail/778594-2026",
+          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
+          "firstSeenAt": "2026-11-09T07:59:44+00:00",
+          "newSincePreviousScan": true
+        },
+        {
+          "id": "776160-2026",
+          "publishedAt": "2026-11-09",
+          "title": "Eesti – Trafod – Uue 120MVA jõutrafo tootmine ja tarne BEJ",
+          "titleLanguage": "est",
+          "buyer": "Enefit OÜ",
+          "buyerCountry": "EST",
+          "winner": "Jiangsu Yawei Transformer Co.,Ltd.",
+          "winnerIdentityVerified": false,
+          "noticeType": "award-notice",
+          "winnerSelectedForAtLeastOneLot": true,
+          "lotResultCode": "selec-w",
+          "cpv": "31170000",
+          "publishedValue": 2634300.0,
+          "currency": "EUR",
+          "source": "EU TED · amtliche Bekanntmachung",
+          "url": "https://ted.europa.eu/en/notice/-/detail/776160-2026",
+          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
+          "firstSeenAt": "2026-11-09T07:59:44+00:00",
+          "newSincePreviousScan": true
+        },
         {
           "id": "775087-2026",
           "publishedAt": "2026-11-06",
@@ -40,7 +82,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/775087-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-06T07:52:57+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "773940-2026",
@@ -61,7 +103,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/773940-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-06T07:52:57+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "772312-2026",
@@ -82,7 +124,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/772312-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-06T07:52:57+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "771500-2026",
@@ -103,7 +145,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/771500-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-06T07:52:57+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "769430-2026",
@@ -503,48 +545,6 @@
           "interpretation": "TED: Ergebnisbekanntmachung; Vergabe/Zuschlag nicht bestätigt.",
           "firstSeenAt": "2026-11-03T09:30:43+00:00",
           "newSincePreviousScan": false
-        },
-        {
-          "id": "738154-2026",
-          "publishedAt": "2026-10-26",
-          "title": "Deutschland – Akkumulatoren und Batterien – Versorgungsbetriebe Bordesholm: Bau eines Batteriespeichers - Lieferung u. optionale Wartung von Batteriecontainern inkl. Wechselrichter, Trafos mit MSP-Schaltanlage u. zentraler Netzeinbindung, Los 1",
-          "titleLanguage": "deu",
-          "buyer": "Versorgungsbetriebe Bordesholm GmbH",
-          "buyerCountry": "DEU",
-          "winner": "Schaper Energies GmbH",
-          "winnerIdentityVerified": false,
-          "noticeType": "award-notice",
-          "winnerSelectedForAtLeastOneLot": true,
-          "lotResultCode": "selec-w",
-          "cpv": "31170000",
-          "publishedValue": null,
-          "currency": "",
-          "source": "EU TED · amtliche Bekanntmachung",
-          "url": "https://ted.europa.eu/en/notice/-/detail/738154-2026",
-          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
-          "firstSeenAt": "2026-11-03T09:30:43+00:00",
-          "newSincePreviousScan": false
-        },
-        {
-          "id": "736744-2026",
-          "publishedAt": "2026-10-23",
-          "title": "Suomi – Sähkötarvikkeet – Kaupintavarasto",
-          "titleLanguage": "fin",
-          "buyer": "Rovakairan Verkonrakennus Oy",
-          "buyerCountry": "FIN",
-          "winner": "Ahlsell Oy",
-          "winnerIdentityVerified": false,
-          "noticeType": "award-notice",
-          "winnerSelectedForAtLeastOneLot": true,
-          "lotResultCode": "selec-w",
-          "cpv": "31170000",
-          "publishedValue": 6000000.0,
-          "currency": "EUR",
-          "source": "EU TED · amtliche Bekanntmachung",
-          "url": "https://ted.europa.eu/en/notice/-/detail/736744-2026",
-          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
-          "firstSeenAt": "2026-11-03T09:30:43+00:00",
-          "newSincePreviousScan": false
         }
       ],
       "warning": "Begrenzter Stichprobenausschnitt jüngster Vergaben. Keine vollständige Branchenstatistik, keine Investmentzuflüsse, keine gesicherte Zuordnung zu börsennotierten Unternehmen."
@@ -554,12 +554,12 @@
       "cpv": "31320000",
       "context": "Europäische Kabel- und Netzbeschaffung",
       "status": "available",
-      "checkedAt": "2026-11-06T07:52:57+00:00",
-      "querySince": "20260922",
+      "checkedAt": "2026-11-09T07:59:44+00:00",
+      "querySince": "20260925",
       "noticeType": "award-notice",
       "sampleSize": 12,
       "newSincePreviousScan": 0,
-      "totalMatchingNotices": 125,
+      "totalMatchingNotices": 111,
       "isComplete": false,
       "events": [
         {
@@ -822,12 +822,12 @@
       "cpv": "42510000",
       "context": "Gebäude- und technische Kühl-/Wärmetechnik; nicht automatisch Rechenzentren",
       "status": "available",
-      "checkedAt": "2026-11-06T07:52:57+00:00",
-      "querySince": "20260922",
+      "checkedAt": "2026-11-09T07:59:44+00:00",
+      "querySince": "20260925",
       "noticeType": "award-notice",
-      "sampleSize": 4,
-      "newSincePreviousScan": 1,
-      "totalMatchingNotices": 218,
+      "sampleSize": 3,
+      "newSincePreviousScan": 0,
+      "totalMatchingNotices": 197,
       "isComplete": false,
       "events": [
         {
@@ -849,7 +849,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/773588-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-06T07:52:57+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "761463-2026",
@@ -889,27 +889,6 @@
           "currency": "",
           "source": "EU TED · amtliche Bekanntmachung",
           "url": "https://ted.europa.eu/en/notice/-/detail/756862-2026",
-          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
-          "firstSeenAt": "2026-11-03T09:30:43+00:00",
-          "newSincePreviousScan": false
-        },
-        {
-          "id": "742616-2026",
-          "publishedAt": "2026-10-27",
-          "title": "Deutschland – Wärmeaustauscher, Klimaanlagen und Kältemaschinen sowie Filtriergeräte – Austausch Kältemaschine WKZN nord - Uni Bayreuth",
-          "titleLanguage": "deu",
-          "buyer": "Stadtwerke Bayreuth Energie und Wasser GmbH",
-          "buyerCountry": "DEU",
-          "winner": "AGO GmbH Energie + Anlagen",
-          "winnerIdentityVerified": false,
-          "noticeType": "award-notice",
-          "winnerSelectedForAtLeastOneLot": true,
-          "lotResultCode": "selec-w",
-          "cpv": "42510000",
-          "publishedValue": 586942.68,
-          "currency": "EUR",
-          "source": "EU TED · amtliche Bekanntmachung",
-          "url": "https://ted.europa.eu/en/notice/-/detail/742616-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-03T09:30:43+00:00",
           "newSincePreviousScan": false

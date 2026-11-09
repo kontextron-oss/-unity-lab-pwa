@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T18:12:19+00:00",
+  "generatedAt": "2026-11-09T08:47:48+00:00",
   "source": "XBRL International filings.xbrl.org",
   "scope": "Four European pilot issuers; source-checked FY2025 official financial statements for ABB, Siemens Energy and Infineon; no live valuations",
   "items": {
@@ -204,7 +204,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://view.news.eu.nasdaq.com/view?id=b86f420f8a6782c144d96528c116ffccf&lang=en&src=micro",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-06T18:12:20+00:00",
+        "verifiedAt": "2026-11-09T08:47:49+00:00",
         "currency": "USD",
         "facts": {
           "revenue": {
@@ -237,7 +237,7 @@
         "coreMetricsValidated": true,
         "stale": false
       },
-      "checkedAt": "2026-11-06T18:12:19+00:00",
+      "checkedAt": "2026-11-09T08:47:48+00:00",
       "source": "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft",
       "errors": []
     },
@@ -392,7 +392,7 @@
       },
       "officialHighlights": null,
       "annualReport": null,
-      "checkedAt": "2026-11-06T18:12:19+00:00",
+      "checkedAt": "2026-11-09T08:47:48+00:00",
       "source": "filings.xbrl.org ESEF (XBRL International)",
       "errors": []
     },
@@ -403,7 +403,7 @@
       "reportCurrency": "EUR",
       "investorRelations": "https://www.siemens-energy.com/global/en/home/investor-relations.html",
       "note": "Deutsche ESEF-Berichte im öffentlichen Archiv möglicherweise nicht vorhanden.",
-      "status": "issuer-pdf-metrics-complete",
+      "status": "stale-previous",
       "metrics": {
         "revenue": {
           "value": 39077000000,
@@ -596,7 +596,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.siemensenergy.com/us/en/home/press-releases/siemens-energy-fulfills-all-commitments---and-increases-mid-term.html",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-06T18:12:26+00:00",
+        "verifiedAt": "2026-11-09T08:47:54+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -649,13 +649,16 @@
         "accountingCurrency": "EUR",
         "format": "issuer-consolidated-annual-pdf",
         "sourceType": "issuer-official-annual-report",
-        "extractionStatus": "checked-pdf-fy2025",
-        "coreMetricsValidated": true,
-        "stale": false
+        "extractionStatus": "stale-previous-pdf",
+        "coreMetricsValidated": false,
+        "stale": true
       },
-      "checkedAt": "2026-11-06T18:12:19+00:00",
-      "source": "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft",
-      "errors": []
+      "checkedAt": "2026-11-09T08:47:48+00:00",
+      "source": "Vorheriger PDF-Konzernabschluss, erneute Prüfung fehlgeschlagen",
+      "errors": [
+        "Jahresbericht PDF: HTTP Error 503: Service Temporarily Unavailable"
+      ],
+      "previousCheckedAt": "2026-11-06T18:12:19+00:00"
     },
     "DE0006231004": {
       "name": "Infineon",
@@ -857,7 +860,7 @@
         "fiscalYear": "2025",
         "sourceUrl": "https://www.infineon.com/press-release/2025/infxx202511-021",
         "sourceType": "issuer-primary-disclosure",
-        "verifiedAt": "2026-11-06T18:12:27+00:00",
+        "verifiedAt": "2026-11-09T08:47:55+00:00",
         "currency": "EUR",
         "facts": {
           "revenue": {
@@ -898,7 +901,7 @@
         "coreMetricsValidated": true,
         "stale": false
       },
-      "checkedAt": "2026-11-06T18:12:19+00:00",
+      "checkedAt": "2026-11-09T08:47:48+00:00",
       "source": "Offizieller Konzernjahresabschluss – fünf Quellenwerte PDF-geprüft",
       "errors": []
     }

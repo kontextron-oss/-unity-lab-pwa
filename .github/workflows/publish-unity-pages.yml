@@ -159,7 +159,7 @@ jobs:
             cp "kontakte/$file" "dist/kontakte/$file"
           done
           grep -Fq '<title>Kontakte</title>' dist/kontakte/index.html
-          grep -Fq 'kontakte-pwa-v05' dist/kontakte/sw.js
+          grep -Fq 'kontakte-pwa-v06' dist/kontakte/sw.js
           echo 'Kontakte offline PWA included as public-only app; no contact data uploaded.'
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

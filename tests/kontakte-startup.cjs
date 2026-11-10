@@ -24,6 +24,10 @@ new Function('window','document','navigator','localStorage','crypto',scripts[0])
  await click('address');
  assert.match(root.innerHTML,/Name suchen/);
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
+ assert.match(root.innerHTML,/Adressübersicht/);
+ assert.match(root.innerHTML,/Musterstraße 12/);
+ assert.match(root.innerHTML,/01234 Dresden/);
+ assert.match(root.innerHTML,/iPhone-Tastatur/);
  await click('select','__beispiel__');
  assert.match(root.innerHTML,/Musterstraße 12/);
  assert.match(root.innerHTML,/Postleitzahl|01234/);

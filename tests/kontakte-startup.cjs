@@ -10,17 +10,31 @@ assert.match(html,/Kontakte werden geöffnet/,'Accessible initial loading messag
 const root={innerHTML:'',events:{},addEventListener(type,fn){this.events[type]=fn;},querySelector(){return null;}};
 const local=new Map();
 const localStorage={getItem:k=>local.has(k)?local.get(k):null,setItem:(k,v)=>local.set(k,v),removeItem:k=>local.delete(k)};
+localStorage.setItem('kontakte-lokal-fallback-v1',JSON.stringify([
+ {id:'legacy-1',name:'Frühere Nummer',phone:'0351 12345',street:'Altweg',house:'5',zip:'01067',city:'Dresden'}
+]));
 const document={getElementById:id=>id==='app'?root:null};
 const window={};
 const navigator={};
-new Function('window','document','navigator','localStorage','crypto',scripts[0])(window,document,navigator,localStorage,{randomUUID:()=> 'test-id'});
+const location={href:''};
+let confirmed=0;
+class FakeFormData{
+ constructor(form){this.fields=form.fields;}
+ get(k){return this.fields[k]||'';}
+ getAll(k){return this.fields[k]||[];}
+}
+const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken};})();');
+assert.notEqual(testScript,scripts[0],'Test helper injection must work');
+new Function('window','document','navigator','localStorage','crypto','FormData','confirm','location',testScript)(
+ window,document,navigator,localStorage,{randomUUID:()=> 'test-id'},FakeFormData,()=>{confirmed++;return true;},location
+);
 (async()=>{
  await new Promise(resolve=>setImmediate(resolve));
  assert.match(root.innerHTML,/>Adresse<\/button>/);
  assert.match(root.innerHTML,/>Telefonnummer<\/button>/);
  assert.match(root.innerHTML,/>Neuer Kontakt<\/button>/);
  assert.equal((root.innerHTML.match(/data-a="/g)||[]).length,3,'Home has exactly three actions');
- const click=async(a,id)=>root.events.click({target:{closest:()=>({dataset:{a,id}})}});
+ const click=async(a,id,index)=>root.events.click({target:{closest:()=>({dataset:{a,id,index}})}});
  await click('address');
  assert.match(root.innerHTML,/Kontakt suchen/);
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
@@ -34,6 +48,51 @@ new Function('window','document','navigator','localStorage','crypto',scripts[0])
  await click('new');
  assert.match(root.innerHTML,/Kontakt(e)? bearbeiten|Neuer Kontakt/);
  assert.match(root.innerHTML,/id="name"/);
+ assert.match(root.innerHTML,/phone-fields/,'phone-entry section shown');
+ assert.match(root.innerHTML,/Weitere Telefonnummer/);
+ assert.match(root.innerHTML,/E-Mail-Adresse/);
+ assert.match(root.innerHTML,/Webseite/);
+ assert.match(root.innerHTML,/Kommentare \/ Notizen/);
+ assert.match(root.innerHTML,/vCard exportieren/);
+ assert.match(root.innerHTML,/Kontakte importieren/);
  assert.doesNotMatch(html,/data-a="sms"|data-a="message"/);
- console.log('Kontakte startup, home actions, search, address and new-contact screen passed.');
+ const {valid,phoneList,toVcard,parseVcard}=window.__contactsTest;
+ const legacy=valid({id:'a',name:'Altbestand',phone:'012 3456'});
+ assert.equal(legacy.phone,'012 3456');
+ assert.deepEqual(phoneList(legacy),[{label:'Mobil',number:'012 3456'}],
+  'Migration preserves a legacy single number');
+ const sample=valid({
+  id:'new-id',name:'Max Muster',phones:[{label:'Mobil',number:'+491701234'},
+   {label:'Arbeit',number:'0351 678'}],
+  street:'Ringstraße',house:'12',zip:'01234',city:'Dresden',
+  email:'max@example.org',website:'example.org',notes:'Bitte abends anrufen.'
+ });
+ const parsed=parseVcard(toVcard([sample]))[0];
+ assert.equal(parsed.name,sample.name,'vCard name');
+ assert.deepEqual(parsed.phones,sample.phones,'vCard multi-number roundtrip');
+ assert.equal(parsed.email,sample.email,'vCard email');
+ assert.equal(parsed.website,sample.website,'vCard website');
+ assert.equal(parsed.notes,sample.notes,'vCard notes');
+ assert.equal(parsed.house,sample.house,'vCard house');
+ assert.equal(parsed.zip,sample.zip,'vCard ZIP');
+ await click('phone');
+ assert.match(root.innerHTML,/Frühere Nummer/,'Existing legacy contact remains available');
+ await click('select','legacy-1');
+ assert.match(root.innerHTML,/0351 12345/,'Legacy number in detail');
+ assert.match(root.innerHTML,/Anrufen/,'Call button on selected number');
+ await click('call',undefined,0);
+ assert.equal(location.href,'tel:035112345','Native telephone handoff');
+ assert.equal(confirmed,1,'User must confirm call');
+ await click('new');
+ await root.events.submit({target:{id:'form',fields:{
+  name:'Mehrfach-Test',phoneType:['Mobil','Arbeit'],phoneNumber:['0176 555','0351 999'],
+  street:'Testweg',house:'8',zip:'01067',city:'Dresden',
+  email:'test@example.org',website:'example.org',notes:'Am Wochenende'
+ }},preventDefault(){}});
+ assert.match(root.innerHTML,/Kontakt lokal gespeichert/);
+ await click('phone');
+ assert.match(root.innerHTML,/Mehrfach-Test/);
+ assert.match(root.innerHTML,/Mobil: 0176 555/);
+ assert.match(root.innerHTML,/Arbeit: 0351 999/);
+ console.log('Kontakte: startup, legacy migration, multi-number save, phone-call handoff and vCard roundtrip passed.');
 })().catch(err=>{console.error(err);process.exitCode=1;});

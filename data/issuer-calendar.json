@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T13:22:26Z",
+  "generatedAt": "2026-11-10T01:10:58Z",
   "source": "Offizielle IR-Kalenderseiten",
   "scope": "Nur explizit auf der Emittentenseite erkennbare zukünftige Ergebnis- oder Financial-Results-Termine; keine Schätzung. Deutsche und englische Datumsformate, keine Konferenz- oder Roadshow-Termine.",
   "items": {
@@ -10,7 +10,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.microsoft.com/en-us/Investor/",
       "annualReportUrl": "https://www.microsoft.com/en-us/Investor/annual-reports.aspx",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -29,7 +29,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investor.apple.com/investor-relations/default.aspx",
       "annualReportUrl": "https://investor.apple.com/sec-filings/default.aspx",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -48,7 +48,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://ir.amd.com/news-events/ir-calendar",
       "annualReportUrl": "https://ir.amd.com/financial-information/sec-filings",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -67,7 +67,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.adobe.com/investor-relations.html",
       "annualReportUrl": "https://www.adobe.com/investor-relations/sec-filings.html",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "2026-12-09",
       "guidance": {
         "verified": false,
@@ -86,7 +86,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://investors.quantaservices.com/news-events/ir-calendar",
       "annualReportUrl": "https://investors.quantaservices.com/financial-information/sec-filings",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -105,7 +105,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://global.abb/group/en/investors/overview",
       "annualReportUrl": "https://global.abb/group/en/investors/results-and-reports/annual-reports",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,
@@ -124,7 +124,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.siemens.com/de-de/company/investor-relations/financial-calendar/",
       "annualReportUrl": "https://www.siemens.com/de-de/company/investor-relations/annual-reports/",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "2026-11-12",
       "guidance": {
         "verified": false,
@@ -143,16 +143,16 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.jenoptik.com/investors/events",
       "annualReportUrl": "https://www.jenoptik.com/investors/annual-report-2025",
-      "checkedAt": "2026-11-09T13:22:26Z",
-      "nextEarnings": "2026-11-10",
+      "checkedAt": "2026-11-10T01:10:58Z",
+      "nextEarnings": "",
       "guidance": {
         "verified": false,
         "reason": "Guidance wird nur aus einer ausdrücklich zugeordneten Unternehmensveröffentlichung bestätigt."
       },
-      "status": "confirmed-future-earnings",
+      "status": "no-confirmed-future-earnings",
       "earnings": {
-        "confirmed": true,
-        "date": "2026-11-10",
+        "confirmed": false,
+        "date": "",
         "sourceUrl": "https://www.jenoptik.com/investors/events"
       }
     },
@@ -162,7 +162,7 @@
       "source": "Offizielle Investor-Relations-Kalenderseite",
       "sourceUrl": "https://www.se.com/ww/en/about-us/investor-relations/financial-calendar-and-events/",
       "annualReportUrl": "https://www.se.com/ww/en/about-us/investor-relations/regulatory-information/annual-reports/",
-      "checkedAt": "2026-11-09T13:22:26Z",
+      "checkedAt": "2026-11-10T01:10:58Z",
       "nextEarnings": "",
       "guidance": {
         "verified": false,

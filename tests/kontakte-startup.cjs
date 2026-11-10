@@ -22,7 +22,7 @@ new Function('window','document','navigator','localStorage','crypto',scripts[0])
  assert.equal((root.innerHTML.match(/data-a="/g)||[]).length,3,'Home has exactly three actions');
  const click=async(a,id)=>root.events.click({target:{closest:()=>({dataset:{a,id}})}});
  await click('address');
- assert.match(root.innerHTML,/Name suchen/);
+ assert.match(root.innerHTML,/Kontakt suchen/);
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
  assert.match(root.innerHTML,/Adressübersicht/);
  assert.match(root.innerHTML,/Musterstraße 12/);

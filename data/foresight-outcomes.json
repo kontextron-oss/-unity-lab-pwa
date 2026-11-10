@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T09:26:12Z",
+  "generatedAt": "2026-11-10T09:05:53Z",
   "source": "Source-checked annual SEC companyfacts with original pre-committed issuer guidance",
-  "secGeneratedAt": "2026-11-09T09:26:11Z",
+  "secGeneratedAt": "2026-11-10T09:05:52Z",
   "scope": "Public precommitted management guidance outcomes only; no price forecast, model tuning or trade orders.",
   "counts": {
     "awaiting-audited-FY2026": 3,
@@ -26,7 +26,7 @@
         "high": 10.49
       },
       "forecastFingerprint": "a3c1d5b24fe35b45aef3c3d252faf233a655fac63a711db816f6f49201e6177c",
-      "lastCheckedAt": "2026-11-09T09:26:12Z",
+      "lastCheckedAt": "2026-11-10T09:05:53Z",
       "status": "awaiting-audited-FY2026",
       "verified": null,
       "observedCandidate": null
@@ -46,7 +46,7 @@
         "high": 14850000000
       },
       "forecastFingerprint": "3192ba510ce63f92fa0e85a770c9081b6a27addb4c148d7a9c6cb52a6f54926c",
-      "lastCheckedAt": "2026-11-09T09:26:12Z",
+      "lastCheckedAt": "2026-11-10T09:05:53Z",
       "status": "awaiting-audited-FY2026",
       "verified": null,
       "observedCandidate": null
@@ -65,7 +65,7 @@
         "value": 6.29
       },
       "forecastFingerprint": "6e5291f23f4b9962fc81cd4aa3817db71fee6e0b10c52038ac44a1b510ec3a7e",
-      "lastCheckedAt": "2026-11-09T09:26:12Z",
+      "lastCheckedAt": "2026-11-10T09:05:53Z",
       "status": "awaiting-audited-FY2026",
       "verified": null,
       "observedCandidate": null

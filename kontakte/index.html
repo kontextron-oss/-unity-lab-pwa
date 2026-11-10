@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090909">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Kontakte">
+<meta name="description" content="Einfaches, barrierearmes und lokal gespeichertes Kontaktverzeichnis.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<title>Kontakte</title>
+<style>
+:root{color-scheme:dark;--bg:#090909;--fg:#fff;--focus:#82b2ff}
+*{box-sizing:border-box}
+html{height:100%;background:var(--bg)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+:focus-visible{outline:4px solid var(--focus)!important;outline-offset:3px}
+#app{max-width:550px;margin:0 auto}
+.main{padding:calc(env(safe-area-inset-top) + 36px) 24px calc(env(safe-area-inset-bottom) + 24px);min-height:100svh}
+.home{display:flex;flex-direction:column;align-items:stretch}
+.brand{display:flex;align-items:center;flex-direction:column;margin:16px 0 clamp(46px,8vh,80px);gap:15px}
+.logo{width:96px;height:96px;border-radius:22px;background:#fff;display:grid;place-items:center}
+.logo svg{width:79px;height:79px}
+h1{font-size:clamp(42px,10vw,53px);line-height:1.1;letter-spacing:-.7px;margin:0;font-weight:800}
+.large{width:100%;min-height:112px;border:0;border-radius:20px;background:#fff;color:#000;font-size:clamp(29px,7.1vw,36px);font-weight:780;padding:18px;margin-bottom:20px}
+.new{margin-top:22px;min-height:80px;border:2.5px solid #fff;background:transparent;color:#fff;border-radius:20px;font-size:25px;font-weight:750;width:100%}
+.foot{text-align:center;font-size:14px;color:#d3d3d3;margin:auto 0 0;padding-top:32px}
+.back{color:#fff;background:none;border:0;min-height:55px;font-size:20px;font-weight:650;padding:4px 0;text-align:left}
+h2{font-size:clamp(35px,8.2vw,43px);line-height:1.13;letter-spacing:-.6px;margin:24px 0 14px;font-weight:800}
+.muted{color:#d4d4d4;font-size:19px;line-height:1.4}
+input{display:block;width:100%;min-height:64px;border-radius:13px;border:2px solid #fff;background:#fff;color:#000;font-size:22px;padding:13px 14px}
+input::placeholder{color:#575757}
+label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
+.row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr);gap:12px}
+.row.equal{grid-template-columns:1fr 1fr}
+.item{display:block;width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}
+.value{background:#fff;color:#000;border-radius:16px;white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(26px,6vw,33px);font-weight:740;line-height:1.43;padding:20px;min-height:115px}
+.name{font-size:28px;font-weight:750;margin:18px 0}
+.primary{width:100%;min-height:76px;background:#fff;color:#000;border:0;border-radius:16px;padding:14px;font-size:27px;font-weight:750;margin-top:18px}
+.outline{width:100%;min-height:74px;border:2.5px solid #fff;border-radius:16px;background:transparent;color:#fff;font-size:26px;font-weight:750;margin-top:15px}
+.quiet{display:block;margin:20px auto 0;padding:12px 16px;border:0;color:#fff;background:transparent;text-decoration:underline;font-size:19px;min-height:55px}
+.smaller{font-size:19px}
+.tip{color:#d4d4d4;font-size:17px;line-height:1.5;margin-top:22px}
+.admin{border-top:1px solid #555;margin-top:36px;padding-top:16px}
+.admin button{display:block;border:1.5px solid #aaa;border-radius:12px;background:transparent;color:#fff;font-weight:650;font-size:18px;padding:15px;width:100%;min-height:60px;margin:12px 0}
+#status{position:relative;font-size:16px;color:#e5e5e5;line-height:1.4;min-height:1px;margin-top:14px}
+[hidden]{display:none!important}
+@media (max-width:370px){.main{padding-left:16px;padding-right:16px}.large{font-size:27px}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+(()=>{
+const app=document.getElementById("app"),DB_NAME="kontakte-lokal-v1",STORE="kontakte",KEY="kontakte-lokal-fallback-v1";
+const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="address",selected=null,term="",editing=null,message="";
+const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
+const all=()=>[demo,...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
+const get=id=>all().find(c=>c.id===id);
+const stamp=()=>new Date().toISOString();
+function valid(x){
+ if(!x||typeof x!=="object"||typeof x.name!=="string"||!x.name.trim()||x.id==="__beispiel__")return null;
+ const str=(k,m)=>String(x[k]??"").trim().slice(0,m);
+ return {id:str("id",90)||("k-"+crypto.randomUUID()),name:str("name",110),phone:str("phone",70),street:str("street",120),house:str("house",22),zip:str("zip",16),city:str("city",100),updatedAt:str("updatedAt",35)||stamp()};
+}
+function reqPromise(req){return new Promise((ok,no)=>{req.onsuccess=()=>ok(req.result);req.onerror=()=>no(req.error);});}
+async function initStorage(){
+ try{
+  if(!("indexedDB" in window))throw Error("IndexedDB fehlt");
+  db=await new Promise((ok,no)=>{
+   const r=indexedDB.open(DB_NAME,1);
+   r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:"id"});};
+   r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);
+   r.onblocked=()=>no(Error("Datenbank gesperrt"));
+  });
+  const tx=db.transaction(STORE,"readonly");
+  records=(await reqPromise(tx.objectStore(STORE).getAll())).map(valid).filter(Boolean);
+  storage="IndexedDB";
+ }catch(e){
+  db=null;
+  try{records=JSON.parse(localStorage.getItem(KEY)||"[]").map(valid).filter(Boolean);localStorage.setItem(KEY,JSON.stringify(records));storage="Browser-Lokalspeicher";}
+  catch(_){records=[];storage="nicht verfügbar";}
+ }
+}
+async function put(c){
+ if(db){await new Promise((ok,no)=>{const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).put(c);t.oncomplete=ok;t.onerror=()=>no(t.error);t.onabort=()=>no(t.error);});}
+ else if(storage==="Browser-Lokalspeicher"){localStorage.setItem(KEY,JSON.stringify([...records.filter(x=>x.id!==c.id),c]));}
+ else throw Error("Lokale Speicherung nicht verfügbar");
+ records=[...records.filter(x=>x.id!==c.id),c];
+}
+async function erase(id){
+ if(db){await new Promise((ok,no)=>{const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).delete(id);t.oncomplete=ok;t.onerror=()=>no(t.error);});}
+ else if(storage==="Browser-Lokalspeicher"){localStorage.setItem(KEY,JSON.stringify(records.filter(x=>x.id!==id)));}
+ else throw Error("Lokale Speicherung nicht verfügbar");
+ records=records.filter(x=>x.id!==id);
+}
+const digits={"0":"null","1":"eins","2":"zwei","3":"drei","4":"vier","5":"fünf","6":"sechs","7":"sieben","8":"acht","9":"neun"};
+const units=["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"];
+const tens=["","","zwanzig","dreißig","vierzig","fünfzig","sechzig","siebzig","achtzig","neunzig"];
+function word(n){
+ n=Number(n);
+ if(!Number.isInteger(n)||n<0||n>99999)return String(n);
+ if(n<20)return units[n];
+ if(n<100){const t=Math.floor(n/10),r=n%10;return r?(r===1?"ein":units[r])+"und"+tens[t]:tens[t];}
+ if(n<1000){const h=Math.floor(n/100),r=n%100;return (h===1?"ein":word(h))+"hundert"+(r?word(r):"");}
+ const t=Math.floor(n/1000),r=n%1000;
+ return (t===1?"ein":word(t))+"tausend"+(r?word(r):"");
+}
+function houseVoice(s){return String(s).replace(/(\d{1,5})([a-zA-Z]?)/g,(_,n,l)=>word(parseInt(n,10))+(l?" "+l:"")).replace(/\s*[-–]\s*/g," bis ").replace(/\s*\/\s*/g," Schrägstrich ");}
+function digitVoice(s,group=5){const v=(String(s).match(/\d/g)||[]).map(x=>digits[x]);let result=[];for(let i=0;i<v.length;i+=group)result.push(v.slice(i,i+group).join(", "));return result.join(". "); }
+function addressText(c){return [c.street+(c.house?" "+c.house:""),[c.zip,c.city].filter(Boolean).join(" ")].filter(x=>x.trim()).join("\n");}
+function spoken(c){const name=c.name.replace(" (Beispiel)","");if(mode==="address"){
+ const s=[c.street,houseVoice(c.house)].filter(Boolean).join(" ");
+ return ["Die Adresse von "+name+" lautet:",s?s+".":"",c.zip?"Postleitzahl: "+digitVoice(c.zip)+".":"",c.city?"Ort: "+c.city+".":""].filter(Boolean).join(" ");
+ }
+ return "Die Telefonnummer von "+name+" lautet: "+(c.phone.trim().startsWith("+")?"plus ":"")+digitVoice(c.phone,4)+".";
+}
+function speak(text){
+ try{
+  if(!("speechSynthesis" in window)){status("Sprachausgabe ist hier nicht verfügbar.");return;}
+  speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(text);utterance.lang="de-DE";utterance.rate=.83;
+  const voices=speechSynthesis.getVoices(),german=voices.find(x=>x.lang.toLowerCase()==="de-de")||voices.find(x=>x.lang.toLowerCase().startsWith("de"));
+  if(german)utterance.voice=german;
+  utterance.onerror=()=>status("Die Sprachausgabe wurde vom Browser nicht ausgeführt.");
+  speechSynthesis.speak(utterance);
+ }catch(e){status("Die Sprachausgabe ist fehlgeschlagen.");}
+}
+function status(txt){message=txt;const el=app.querySelector("#status");if(el)el.textContent=message;}
+const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#000"/><circle cx="50" cy="50" r="35" fill="#fff"/><circle cx="50" cy="50" r="9" fill="#000"/></svg>';
+const back='<button class="back" data-a="back" aria-label="Zurück">‹ Zurück</button>';
+function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
+function items(){
+ const match=all().filter(c=>N(c.name).includes(N(term)));
+ return match.length?match.map(c=>'<button class="item" data-a="select" data-id="'+E(c.id)+'">'+E(c.name)+'</button>').join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
+}
+function render(){
+ if(view==="home"){
+  app.innerHTML='<main class="main home"><div class="brand"><div class="logo">'+logo+'</div><h1>Kontakte</h1></div><button class="large" data-a="address">Adresse</button><button class="large" data-a="phone">Telefonnummer</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Einfache Bedienung · Lokale Speicherung</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
+ }
+ if(view==="list"){
+  screen(back+'<h2>'+(mode==="address"?"Adresse":"Telefonnummer")+'</h2><p class="muted">Kontakt auswählen</p><label for="q">Name suchen</label><input id="q" type="search" autocomplete="off" placeholder="Name eingeben oder diktieren" value="'+E(term)+'"><div id="list">'+items()+'</div><p class="tip">Der Kontakt wird nach dem Antippen vorgelesen. Du kannst auch die Diktierfunktion der iPhone-Tastatur verwenden.</p>');return;
+ }
+ if(view==="detail"){
+  const c=get(selected);if(!c){view="list";render();return;}
+  const val=mode==="address"?addressText(c):c.phone;
+  screen(back+'<h2>'+(mode==="address"?"Adresse":"Telefonnummer")+'</h2><p class="name">'+E(c.name)+'</p><div class="value">'+E(val||"Keine Angabe vorhanden")+'</div><button class="primary" data-a="speak">Vorlesen</button>'+(mode==="phone"&&!c.demo&&c.phone?'<button class="outline" data-a="call">Anrufen</button>':"")+(c.demo?'<p class="tip">Beispielkontakt. Keine echte Anruffunktion.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button>');return;
+ }
+ if(view==="form"){
+  const c=editing?get(editing):null, v=c||{name:"",phone:"",street:"",house:"",zip:"",city:""};
+  screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'"><label for="phone">Telefonnummer</label><input id="phone" name="phone" type="tel" maxlength="70" autocomplete="tel" value="'+E(v.phone)+'"><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><button class="primary" type="submit">Speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="admin" aria-label="Datensicherung"><p class="tip">Speicherort: '+E(storage)+'. Die Einträge bleiben auf diesem Gerät. Bei Löschen der App oder ihrer Websitedaten können sie verloren gehen.</p><button data-a="export">Kontakte sichern</button><button data-a="import">Sicherung einlesen</button><input id="importfile" type="file" accept="application/json,.json" hidden aria-label="Sicherungsdatei auswählen"></section>');
+ }
+}
+function nav(to){view=to;message="";render();}
+app.addEventListener("input",e=>{if(e.target.id==="q"){term=e.target.value;const list=app.querySelector("#list");if(list)list.innerHTML=items();}});
+app.addEventListener("click",async e=>{
+ const b=e.target.closest("button[data-a]");if(!b)return;
+ const a=b.dataset.a;
+ if(a==="address"||a==="phone"){mode=a;term="";selected=null;nav("list");return;}
+ if(a==="new"){editing=null;nav("form");return;}
+ if(a==="back"){if(view==="detail")nav("list");else nav("home");return;}
+ if(a==="select"){
+  selected=b.dataset.id;nav("detail");const c=get(selected);
+  if(c&&((mode==="address"&&addressText(c))||(mode==="phone"&&c.phone)))speak(spoken(c));
+  return;
+ }
+ if(a==="speak"){const c=get(selected);if(!c)return;
+  if(mode==="address"&&!addressText(c)||mode==="phone"&&!c.phone){status("Für diesen Kontakt ist keine Angabe gespeichert.");return;}
+  speak(spoken(c));return;
+ }
+ if(a==="call"){const c=get(selected);if(!c||c.demo)return;const phone=c.phone.replace(/[^0-9+]/g,"").replace(/(?!^)\+/g,"");
+  if(phone.replace(/\D/g,"").length<3){status("Keine gültige Telefonnummer hinterlegt.");return;}
+  if(confirm(c.name+" jetzt anrufen?"))location.href="tel:"+phone;return;
+ }
+ if(a==="edit"){editing=selected;nav("form");return;}
+ if(a==="delete"){
+  if(!editing||!confirm("Kontakt unwiderruflich löschen?"))return;
+  try{await erase(editing);editing=null;selected=null;nav("home");status("Kontakt gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}return;
+ }
+ if(a==="export"){
+  const payload={application:"Kontakte",version:1,exportedAt:stamp(),contacts:records};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const u=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=u;link.download="Kontakte-Sicherung-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);
+  status("Die Sicherung wurde zum Speichern bereitgestellt.");return;
+ }
+ if(a==="import"){app.querySelector("#importfile")?.click();return;}
+});
+app.addEventListener("submit",async e=>{
+ if(e.target.id!=="form")return;
+ e.preventDefault();const f=new FormData(e.target);
+ const data={id:editing||"k-"+crypto.randomUUID(),name:String(f.get("name")||"").trim(),phone:String(f.get("phone")||"").trim(),street:String(f.get("street")||"").trim(),house:String(f.get("house")||"").trim(),zip:String(f.get("zip")||"").trim(),city:String(f.get("city")||"").trim(),updatedAt:stamp()};
+ if(!data.name){status("Bitte Namen eingeben.");return;}
+ try{await put(data);editing=null;selected=null;nav("home");status("Kontakt lokal gespeichert.");}catch(err){status("Konnte nicht gespeichert werden. Speicherplatz und Browser-Einstellungen prüfen.");}
+});
+app.addEventListener("change",async e=>{
+ if(e.target.id!=="importfile"||!e.target.files?.[0])return;
+ try{
+  const file=e.target.files[0];if(file.size>3000000)throw Error("Datei zu groß.");
+  const obj=JSON.parse(await file.text()),list=Array.isArray(obj)?obj:obj.contacts;
+  if(!Array.isArray(list))throw Error("Kein Kontaktarchiv.");
+  let added=0,skipped=0;
+  for(const raw of list.slice(0,3000)){
+   const c=valid(raw);if(!c)continue;
+   if(records.some(x=>x.id===c.id||(N(x.name)===N(c.name)&&x.phone===c.phone))){skipped++;continue;}
+   await put(c);added++;
+  }
+  status(added+" Kontakte ergänzt; "+skipped+" vorhandene übersprungen. Bestehende Einträge nicht überschrieben.");
+ }catch(err){status("Sicherung konnte nicht eingelesen werden: "+err.message);}
+ finally{e.target.value="";}
+});
+(async()=>{await initStorage();if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{});render();})();
+})();
+</script>
+</body>
+</html>

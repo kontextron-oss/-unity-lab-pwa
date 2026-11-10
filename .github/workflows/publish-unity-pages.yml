@@ -13,6 +13,7 @@ on:
       - '*.js'
       - 'data/**'
       - 'hoerblick/**'
+      - 'kontakte/**'
       - 'hoerblick-05-release/**'
       - 'hoerblick-original-release/**'
       - 'hoerblick-06-release/**'
@@ -147,6 +148,18 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/dist/hoerblick-08"
           cp -R dist/. "$GITHUB_WORKSPACE/dist/hoerblick-08/"
           echo "HÖRBLICK 0.8 with OCR text reconciliation built."
+      - name: Include isolated Kontakte offline PWA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/kontakte
+          for file in index.html sw.js manifest.webmanifest icon.svg apple-touch-icon.png; do
+            test -s "kontakte/$file"
+            cp "kontakte/$file" "dist/kontakte/$file"
+          done
+          grep -Fq '<title>Kontakte</title>' dist/kontakte/index.html
+          grep -Fq 'kontakte-pwa-v04' dist/kontakte/sw.js
+          echo 'Kontakte offline PWA included as public-only app; no contact data uploaded.'
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload only allowlisted production PWA assets

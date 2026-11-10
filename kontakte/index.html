@@ -54,7 +54,7 @@ label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app"><main class="main" role="status" aria-live="polite"><h1>Kontakte</h1><p class="muted">Kontakte werden geöffnet …</p></main></div>
 <script>
 "use strict";
 (()=>{
@@ -152,7 +152,7 @@ function render(){
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
   const val=mode==="address"?addressText(c):c.phone;
-  screen(back+'<h2>'+(mode==="address"?"Adresse":"Telefonnummer")+'</h2><p class="name">'+E(c.name)+'</p><div class="value">'+E(val||"Keine Angabe vorhanden")+'</div><button class="primary" data-a="speak">Vorlesen</button>'+(mode==="phone"&&!c.demo&&c.phone?'<button class="outline" data-a="call">Anrufen</button>':"")+(c.demo?'<p class="tip">Beispielkontakt. Keine echte Anruffunktion.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button>');return;
+  screen(back+'<h2>'+(mode==="address"?"Adresse":"Telefonnummer")+'</h2><p class="name">'+E(c.name)+'</p><div class="value">'+E(val||"Keine Angabe vorhanden")+'</div><button class="primary" data-a="speak">Vorlesen</button>'+(mode==="phone"&&!c.demo&&c.phone?'<button class="outline" data-a="call">Anrufen</button>':"")+(c.demo?'<p class="tip">Beispielkontakt. Keine echte Anruffunktion.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button>'));return;
  }
  if(view==="form"){
   const c=editing?get(editing):null, v=c||{name:"",phone:"",street:"",house:"",zip:"",city:""};

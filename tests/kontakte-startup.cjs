@@ -89,7 +89,8 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
   street:'Testweg',house:'8',zip:'01067',city:'Dresden',
   email:'test@example.org',website:'example.org',notes:'Am Wochenende'
  }},preventDefault(){}});
- assert.match(root.innerHTML,/Kontakt lokal gespeichert/);
+ assert.match(localStorage.getItem('kontakte-lokal-fallback-v1'),/Mehrfach-Test/,
+  'Saved contact persisted in local storage');
  await click('phone');
  assert.match(root.innerHTML,/Mehrfach-Test/);
  assert.match(root.innerHTML,/Mobil: 0176 555/);

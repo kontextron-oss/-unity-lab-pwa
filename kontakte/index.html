@@ -38,7 +38,7 @@ input::placeholder{color:#575757}
 label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 .row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr);gap:12px}
 .row.equal{grid-template-columns:1fr 1fr}
-.item{display:block;width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
+.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.item{display:block;width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
 .value{background:#fff;color:#000;border-radius:16px;white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(26px,6vw,33px);font-weight:740;line-height:1.43;padding:20px;min-height:115px}
 .name{font-size:28px;font-weight:750;margin:18px 0}
 .primary{width:100%;min-height:76px;background:#fff;color:#000;border:0;border-radius:16px;padding:14px;font-size:27px;font-weight:750;margin-top:18px}
@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0;
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false;
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
@@ -272,19 +272,18 @@ function runVoiceCommand(text){
  if(/\b(rufe|rufen|anrufen)\b/.test(command)){status("Kontaktkarte geöffnet. Bitte die gewünschte Nummer prüfen und „Anrufen“ bestätigen.");return;}
  status("Kontaktkarte von "+c.name+" geöffnet.");
 }
-function startBrowserVoice(){
- const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!Recognition){
-  status("Direkte Browser-Spracherkennung ist hier nicht verfügbar. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");
-  app.querySelector("#voice-command")?.focus();return;
- }
+function startBrowserVoice(targetId="voice-command"){
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition,isSearch=targetId==="q";
+ const input=()=>app.querySelector("#"+targetId);
+ const fallback=()=>{status(isSearch?"Bitte Namen sprechen oder eingeben. Das Mikrofon der iPhone-Tastatur ist bereit.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");input()?.focus();};
+ if(!Recognition){fallback();return;}
  try{
   const recognition=new Recognition();recognition.lang="de-DE";recognition.interimResults=false;recognition.maxAlternatives=1;
-  recognition.onstart=()=>status("Ich höre zu. Sprechen Sie Ihren Befehl.");
-  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"";const input=app.querySelector("#voice-command");if(input)input.value=text;runVoiceCommand(text);};
-  recognition.onerror=()=>{status("Sprache wurde nicht erkannt. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");app.querySelector("#voice-command")?.focus();};
+  recognition.onstart=()=>status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");
+  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
+  recognition.onerror=fallback;
   recognition.start();
- }catch(err){status("Sprachsteuerung konnte nicht gestartet werden. Bitte das Mikrofon der iPhone-Tastatur verwenden.");app.querySelector("#voice-command")?.focus();}
+ }catch(err){fallback();}
 }
 const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#000"/><circle cx="50" cy="50" r="35" fill="#fff"/><circle cx="50" cy="50" r="9" fill="#000"/></svg>';
 const back='<button class="back" data-a="back" aria-label="Zur Startseite">Zur Startseite</button>';
@@ -301,7 +300,8 @@ function render(){
   screen(back+'<h2>Sprachsteuerung</h2><p class="muted">Sage zum Beispiel: „Suche Anna Müller“, „Adresse Anna Müller“, „Telefonnummer Anna Müller“ oder „Rufe Anna Müller“.</p><button class="primary" data-a="listen">Jetzt sprechen</button><label for="voice-command">Sprachbefehl</label><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Befehl sprechen oder eingeben"><button class="outline" data-a="voice-run">Befehl ausführen</button><button class="quiet" data-a="voice-help">Hilfe vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><p class="tip">Nach dem Diktat wird der Befehl automatisch ausgeführt. Falls das direkte Zuhören nicht startet: Das Mikrofon der eingeblendeten iPhone-Tastatur verwenden.</p>');return;
  }
  if(view==="list"){
-  screen(back+'<h2>Kontakte</h2><p class="muted">Automatisch alphabetisch von A bis Z sortiert. Kontakt auswählen: Adresse und Telefonnummern stehen zusammen auf einer Karte.</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
+  const search=searchOpen?'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Name sprechen oder eingeben" value="'+E(term)+'" aria-label="Kontakt suchen">':'<button class="search-card" data-a="search-voice" aria-label="Kontakt suchen, sprechen oder schreiben">Kontakt suchen</button>';
+  screen(back+'<h2>Kontakte</h2>'+search+'<div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
@@ -336,7 +336,8 @@ app.addEventListener("click",async e=>{
  if(a==="voice-run"){runVoiceCommand(app.querySelector("#voice-command")?.value);return;}
  if(a==="voice-help"){runVoiceCommand("hilfe");return;}
  if(a==="stop-speaking"){stopSpeaking();return;}
- if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";selected=null;nav("list");return;}
+ if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";selected=null;searchOpen=false;nav("list");return;}
+ if(a==="search-voice"){searchOpen=true;render();startBrowserVoice("q");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){selected=null;editing=null;term="";nav("home");return;}
  if(a==="select"){

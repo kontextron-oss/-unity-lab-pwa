@@ -43,6 +43,9 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Sprachsteuerung/);
  assert.match(root.innerHTML,/Suche Anna Müller/);
  assert.match(root.innerHTML,/Jetzt sprechen/);
+ assert.match(root.innerHTML,/Vorlesen stoppen/,'Voice help can be stopped immediately');
+ assert.match(root.innerHTML,/automatisch ausgeführt/,'Dictated commands run without a second confirmation button');
+ assert.match(html,/voiceTimer=setTimeout\\(\\(\\)=>runVoiceCommand\\(command\\),900\\)/,'Dictated keyboard input runs automatically');
  await click('back');
  await click('contacts');
  assert.match(root.innerHTML,/Kontakt suchen/);
@@ -55,6 +58,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Musterstraße 12/);
  assert.match(root.innerHTML,/Postleitzahl|01234/);
  assert.match(root.innerHTML,/Beispielkontakt löschen/,'Example contact can be removed directly');
+ assert.match(root.innerHTML,/Vorlesen stoppen/,'Contact reading can be stopped immediately');
  await click('delete');
  assert.equal(localStorage.getItem('kontakte-kontakte-beispiel-ausgeblendet'),'1','Example contact removal persists locally');
  await click('contacts');

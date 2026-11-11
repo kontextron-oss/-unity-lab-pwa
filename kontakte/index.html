@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false;
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0;
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
@@ -228,6 +228,10 @@ function speak(text){
   speechSynthesis.speak(utterance);
  }catch(e){status("Die Sprachausgabe ist fehlgeschlagen.");}
 }
+function stopSpeaking(){
+ try{if("speechSynthesis" in window)speechSynthesis.cancel();status("Vorlesen gestoppt.");}
+ catch(e){status("Vorlesen konnte nicht gestoppt werden.");}
+}
 function status(txt){message=txt;const el=app.querySelector("#status");if(el)el.textContent=message;}
 async function provideFile(blob,filename,title){
  const file=typeof File!=="undefined"?new File([blob],filename,{type:blob.type}):null;
@@ -294,14 +298,14 @@ function render(){
   app.innerHTML='<main class="main home"><div class="brand"><button class="logo" data-a="voice" aria-label="Sprachsteuerung starten">'+logo+'</button><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Punkt antippen: Sprachsteuerung · Beim Speichern bleiben Kontakte lokal auf diesem iPhone.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
  }
  if(view==="voice"){
-  screen(back+'<h2>Sprachsteuerung</h2><p class="muted">Sage zum Beispiel: „Suche Anna Müller“, „Adresse Anna Müller“, „Telefonnummer Anna Müller“ oder „Rufe Anna Müller“.</p><button class="primary" data-a="listen">Jetzt sprechen</button><label for="voice-command">Sprachbefehl</label><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Befehl sprechen oder eingeben"><button class="outline" data-a="voice-run">Befehl ausführen</button><button class="quiet" data-a="voice-help">Hilfe vorlesen</button><p class="tip">Falls das direkte Zuhören nicht startet: Befehlsfeld antippen und das Mikrofon der iPhone-Tastatur verwenden.</p>');return;
+  screen(back+'<h2>Sprachsteuerung</h2><p class="muted">Sage zum Beispiel: „Suche Anna Müller“, „Adresse Anna Müller“, „Telefonnummer Anna Müller“ oder „Rufe Anna Müller“.</p><button class="primary" data-a="listen">Jetzt sprechen</button><label for="voice-command">Sprachbefehl</label><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Befehl sprechen oder eingeben"><button class="outline" data-a="voice-run">Befehl ausführen</button><button class="quiet" data-a="voice-help">Hilfe vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><p class="tip">Nach dem Diktat wird der Befehl automatisch ausgeführt. Falls das direkte Zuhören nicht startet: Das Mikrofon der eingeblendeten iPhone-Tastatur verwenden.</p>');return;
  }
  if(view==="list"){
   screen(back+'<h2>Kontakte</h2><p class="muted">Automatisch alphabetisch von A bis Z sortiert. Kontakt auswählen: Adresse und Telefonnummern stehen zusammen auf einer Karte.</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
-  const inner='<p class="fieldhead">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><button class="outline" data-a="speak-address">Adresse vorlesen</button><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c)+'<button class="outline" data-a="speak-phones">Telefonnummern vorlesen</button><button class="primary" data-a="speak">Kontakt vollständig vorlesen</button>';
+  const inner='<p class="fieldhead">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><button class="outline" data-a="speak-address">Adresse vorlesen</button><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c)+'<button class="outline" data-a="speak-phones">Telefonnummern vorlesen</button><button class="primary" data-a="speak">Kontakt vollständig vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button>';
   screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){
@@ -315,7 +319,15 @@ function render(){
 
 }
 function nav(to){view=to;message="";render();}
-app.addEventListener("input",e=>{if(e.target.id==="q"){term=e.target.value;const list=app.querySelector("#list");if(list)list.innerHTML=items();}});
+app.addEventListener("input",e=>{
+ if(e.target.id==="q"){term=e.target.value;const list=app.querySelector("#list");if(list)list.innerHTML=items();return;}
+ if(e.target.id==="voice-command"){
+  clearTimeout(voiceTimer);
+  const command=String(e.target.value||"").trim();
+  if(command.length<3)return;
+  voiceTimer=setTimeout(()=>runVoiceCommand(command),900);
+ }
+});
 app.addEventListener("click",async e=>{
  const b=e.target.closest("button[data-a]");if(!b)return;
  const a=b.dataset.a;
@@ -323,6 +335,7 @@ app.addEventListener("click",async e=>{
  if(a==="listen"){startBrowserVoice();return;}
  if(a==="voice-run"){runVoiceCommand(app.querySelector("#voice-command")?.value);return;}
  if(a==="voice-help"){runVoiceCommand("hilfe");return;}
+ if(a==="stop-speaking"){stopSpeaking();return;}
  if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";selected=null;nav("list");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){if(view==="detail")nav("list");else nav("home");return;}

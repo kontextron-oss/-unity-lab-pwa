@@ -3,6 +3,8 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync('kontakte/index.html','utf8');
+const sw=fs.readFileSync('kontakte/sw.js','utf8');
+assert.match(sw,/const CACHE="kontakte-pwa-v08"/,'Expected Kontakte 0.8 offline cache');
 const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 assert.equal(scripts.length,1,'Expected one inline app script');
 new vm.Script(scripts[0],{filename:'kontakte/index.html:inline'});
@@ -23,7 +25,7 @@ class FakeFormData{
  get(k){return this.fields[k]||'';}
  getAll(k){return this.fields[k]||[];}
 }
-const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken};})();');
+const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken,importPlan};})();');
 assert.notEqual(testScript,scripts[0],'Test helper injection must work');
 new Function('window','document','navigator','localStorage','crypto','FormData','confirm','location',testScript)(
  window,document,navigator,localStorage,{randomUUID:()=> 'test-id'},FakeFormData,()=>{confirmed++;return true;},location
@@ -56,7 +58,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/vCard exportieren/);
  assert.match(root.innerHTML,/Kontakte importieren/);
  assert.doesNotMatch(html,/data-a="sms"|data-a="message"/);
- const {valid,phoneList,toVcard,parseVcard}=window.__contactsTest;
+ const {valid,phoneList,toVcard,parseVcard,importPlan}=window.__contactsTest;
  const legacy=valid({id:'a',name:'Altbestand',phone:'012 3456'});
  assert.equal(legacy.phone,'012 3456');
  assert.deepEqual(phoneList(legacy),[{label:'Mobil',number:'012 3456'}],
@@ -75,6 +77,14 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.equal(parsed.notes,sample.notes,'vCard notes');
  assert.equal(parsed.house,sample.house,'vCard house');
  assert.equal(parsed.zip,sample.zip,'vCard ZIP');
+ const plan=importPlan([
+  sample,
+  {...sample,id:'duplicate-id'},
+  {id:'missing-name',phone:'0123'}
+ ]);
+ assert.equal(plan.add.length,1,'Import preview keeps one new contact');
+ assert.equal(plan.duplicates,1,'Import preview identifies duplicate contacts');
+ assert.equal(plan.invalid,1,'Import preview identifies incomplete contacts');
  await click('phone');
  assert.match(root.innerHTML,/Frühere Nummer/,'Existing legacy contact remains available');
  await click('select','legacy-1');

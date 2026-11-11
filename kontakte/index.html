@@ -313,7 +313,7 @@ function render(){
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
   const inner='<button class="primary" data-a="speak">Kontakt vollständig vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><p class="fieldhead" style="margin-top:28px">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c);
-  screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
+  screen(back+'<h2>Kontaktkarte</h2><button class="outline" data-a="search-again">Anderen Kontakt suchen</button><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){
   const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:""};
@@ -345,6 +345,7 @@ app.addEventListener("click",async e=>{
  if(a==="stop-speaking"){stopSpeaking();return;}
  if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";selected=null;searchOpen=false;nav("list");return;}
  if(a==="search-voice"){searchOpen=true;render();startBrowserVoice("q");return;}
+ if(a==="search-again"){selected=null;term="";searchOpen=true;nav("list");startBrowserVoice("q");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){selected=null;editing=null;term="";nav("home");return;}
  if(a==="select"){

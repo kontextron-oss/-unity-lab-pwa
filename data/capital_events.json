@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T07:51:08+00:00",
+  "generatedAt": "2026-11-11T07:54:09+00:00",
   "source": "Amtliche EU-Veröffentlichungen · TED Search API v3",
   "sourceUrl": "https://docs.ted.europa.eu/api/latest/search.html",
   "sourceFailures": 0,
@@ -13,14 +13,35 @@
       "cpv": "31170000",
       "context": "Europäische Netztechnik und Transformatoren",
       "status": "available",
-      "checkedAt": "2026-11-10T07:51:08+00:00",
-      "querySince": "20260926",
+      "checkedAt": "2026-11-11T07:54:09+00:00",
+      "querySince": "20260927",
       "noticeType": "award-notice",
       "sampleSize": 41,
-      "newSincePreviousScan": 0,
-      "totalMatchingNotices": 77,
+      "newSincePreviousScan": 1,
+      "totalMatchingNotices": 78,
       "isComplete": false,
       "events": [
+        {
+          "id": "783162-2026",
+          "publishedAt": "2026-11-11",
+          "title": "Deutschland – Bauleistungen im Hochbau – Jülich - Neubau Brainergy HUB - Starkstrom und FMT, PV-Anlage - VE 440",
+          "titleLanguage": "deu",
+          "buyer": "Brainergy Park Jülich GmbH",
+          "buyerCountry": "DEU",
+          "winner": "Apleona Wolfferts GmbH",
+          "winnerIdentityVerified": false,
+          "noticeType": "award-notice",
+          "winnerSelectedForAtLeastOneLot": true,
+          "lotResultCode": "selec-w",
+          "cpv": "31170000",
+          "publishedValue": 4119350.26,
+          "currency": "EUR",
+          "source": "EU TED · amtliche Bekanntmachung",
+          "url": "https://ted.europa.eu/en/notice/-/detail/783162-2026",
+          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
+          "firstSeenAt": "2026-11-11T07:54:09+00:00",
+          "newSincePreviousScan": true
+        },
         {
           "id": "778594-2026",
           "publishedAt": "2026-11-09",
@@ -524,27 +545,6 @@
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-03T09:30:43+00:00",
           "newSincePreviousScan": false
-        },
-        {
-          "id": "739360-2026",
-          "publishedAt": "2026-10-26",
-          "title": "Slovenija – Električna oprema in aparati – Material in oprema za izgradnjo elektrodistribucijskega omrežja",
-          "titleLanguage": "slv",
-          "buyer": "ELEKTRO LJUBLJANA, podjetje za distribucijo električne energije, d.d.",
-          "buyerCountry": "SVN",
-          "winner": "",
-          "winnerIdentityVerified": false,
-          "noticeType": "result-notice-unconfirmed",
-          "winnerSelectedForAtLeastOneLot": false,
-          "lotResultCode": "not-confirmed",
-          "cpv": "31170000",
-          "publishedValue": null,
-          "currency": "",
-          "source": "EU TED · amtliche Bekanntmachung",
-          "url": "https://ted.europa.eu/en/notice/-/detail/739360-2026",
-          "interpretation": "TED: Ergebnisbekanntmachung; Vergabe/Zuschlag nicht bestätigt.",
-          "firstSeenAt": "2026-11-03T09:30:43+00:00",
-          "newSincePreviousScan": false
         }
       ],
       "warning": "Begrenzter Stichprobenausschnitt jüngster Vergaben. Keine vollständige Branchenstatistik, keine Investmentzuflüsse, keine gesicherte Zuordnung zu börsennotierten Unternehmen."
@@ -554,12 +554,12 @@
       "cpv": "31320000",
       "context": "Europäische Kabel- und Netzbeschaffung",
       "status": "available",
-      "checkedAt": "2026-11-10T07:51:08+00:00",
-      "querySince": "20260926",
+      "checkedAt": "2026-11-11T07:54:09+00:00",
+      "querySince": "20260927",
       "noticeType": "award-notice",
       "sampleSize": 13,
-      "newSincePreviousScan": 1,
-      "totalMatchingNotices": 114,
+      "newSincePreviousScan": 0,
+      "totalMatchingNotices": 117,
       "isComplete": false,
       "events": [
         {
@@ -581,7 +581,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/780243-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-10T07:51:08+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "769181-2026",
@@ -843,12 +843,12 @@
       "cpv": "42510000",
       "context": "Gebäude- und technische Kühl-/Wärmetechnik; nicht automatisch Rechenzentren",
       "status": "available",
-      "checkedAt": "2026-11-10T07:51:08+00:00",
-      "querySince": "20260926",
+      "checkedAt": "2026-11-11T07:54:09+00:00",
+      "querySince": "20260927",
       "noticeType": "award-notice",
       "sampleSize": 3,
       "newSincePreviousScan": 0,
-      "totalMatchingNotices": 195,
+      "totalMatchingNotices": 198,
       "isComplete": false,
       "events": [
         {

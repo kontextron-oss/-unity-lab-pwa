@@ -160,6 +160,8 @@ jobs:
               test -s "kontakte/$file"
               cp "kontakte/$file" "dist/$app/$file"
             done
+            printf '%s\n' 'Kontakte-App-Paket' 'Enthält ausschließlich öffentlichen App-Code. Private Kontaktlisten sind nicht enthalten.' > "dist/$app/README.txt"
+            zip -jq "dist/$app/$app-app-paket.zip" "dist/$app/index.html" "dist/$app/sw.js" "dist/$app/manifest.webmanifest" "dist/$app/icon.svg" "dist/$app/apple-touch-icon.png" "dist/$app/README.txt"
           done
           sed -i 's/"name": "Kontakte"/"name": "Klaus – Kontakte"/; s/"short_name": "Kontakte"/"short_name": "Klaus – Kontakte"/' dist/klaus-kontakte/manifest.webmanifest
           sed -i 's/"name": "Kontakte"/"name": "Jan – Kontakte"/; s/"short_name": "Kontakte"/"short_name": "Jan – Kontakte"/' dist/jan-kontakte/manifest.webmanifest
@@ -167,6 +169,9 @@ jobs:
           grep -Fq 'kontakte-pwa-v09' dist/kontakte/sw.js
           grep -Fq 'Klaus – Kontakte' dist/klaus-kontakte/manifest.webmanifest
           grep -Fq 'Jan – Kontakte' dist/jan-kontakte/manifest.webmanifest
+          test -s dist/kontakte/kontakte-app-paket.zip
+          test -s dist/klaus-kontakte/klaus-kontakte-app-paket.zip
+          test -s dist/jan-kontakte/jan-kontakte-app-paket.zip
           echo 'Kontakte 0.9 with separate Klaus and Jan local profiles included; no contact data uploaded.'
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

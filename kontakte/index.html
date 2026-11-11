@@ -256,7 +256,7 @@ function render(){
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
   const inner='<p class="fieldhead">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><button class="outline" data-a="speak-address">Adresse vorlesen</button><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c)+'<button class="outline" data-a="speak-phones">Telefonnummern vorlesen</button><button class="primary" data-a="speak">Kontakt vollständig vorlesen</button>';
-  screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Zum Testen eigene Kontakte anlegen.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button>'));return;
+  screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Zum Testen eigene Kontakte anlegen.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){
   const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:""};
@@ -310,8 +310,9 @@ app.addEventListener("click",async e=>{
  }
  if(a==="edit"){editing=selected;nav("form");return;}
  if(a==="delete"){
-  if(!editing||!confirm("Kontakt unwiderruflich löschen?"))return;
-  try{await erase(editing);editing=null;selected=null;nav("home");status("Kontakt gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}return;
+  const targetId=editing||selected,c=get(targetId);
+  if(!targetId||c?.demo||!confirm((c?.name||"Dieser Kontakt")+" wird unwiderruflich gelöscht. Fortfahren?"))return;
+  try{await erase(targetId);editing=null;selected=null;nav("home");status("Kontakt gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}return;
  }
  if(a==="delete-all"){
   const count=records.length;

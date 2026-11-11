@@ -322,7 +322,7 @@ function render(){
   screen(back+'<h2>Sprachsteuerung</h2><p class="muted">Sage zum Beispiel: „Suche Anna Müller“, „Adresse Anna Müller“, „Telefonnummer Anna Müller“ oder „Rufe Anna Müller“.</p><button class="primary" data-a="listen">Jetzt sprechen</button><label for="voice-command">Sprachbefehl</label><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Befehl sprechen oder eingeben"><button class="outline" data-a="voice-run">Befehl ausführen</button><button class="quiet" data-a="voice-help">Hilfe vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><p class="tip">Nach dem Diktat wird der Befehl automatisch ausgeführt. Falls das direkte Zuhören nicht startet: Das Mikrofon der eingeblendeten iPhone-Tastatur verwenden.</p>');return;
  }
  if(view==="list"){
-  const search=searchOpen?'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Sprechen oder schreiben" value="'+E(term)+'" aria-label="Kontakt suchen">':'<button class="search-card" data-a="search-voice" aria-label="Suche, sprechen oder schreiben">Suche</button>';
+  const search=searchOpen?'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Sprechen" value="'+E(term)+'" aria-label="Kontakt suchen">':'<button class="search-card" data-a="search-voice" aria-label="Suche">Suche</button>';
   const alphabet=alphabetOpen?alphabetPicker():'<button class="outline" data-a="alphabet">A–Z</button>';
   screen(back+'<h2>Kontakte</h2>'+search+alphabet+'<div id="list">'+items()+'</div>');return;
  }

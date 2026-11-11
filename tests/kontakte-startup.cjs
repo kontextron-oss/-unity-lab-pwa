@@ -48,6 +48,11 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('select','__beispiel__');
  assert.match(root.innerHTML,/Musterstraße 12/);
  assert.match(root.innerHTML,/Postleitzahl|01234/);
+ assert.match(root.innerHTML,/Beispielkontakt löschen/,'Example contact can be removed directly');
+ await click('delete');
+ assert.equal(localStorage.getItem('kontakte-kontakte-beispiel-ausgeblendet'),'1','Example contact removal persists locally');
+ await click('contacts');
+ assert.doesNotMatch(root.innerHTML,/Anna Müller \(Beispiel\)/,'Removed example no longer appears');
  await click('new');
  assert.match(root.innerHTML,/Kontakt(e)? bearbeiten|Neuer Kontakt/);
  assert.match(root.innerHTML,/id="name"/);
@@ -60,6 +65,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/vCard exportieren/);
  assert.match(root.innerHTML,/In pCloud sichern · Teilen/);
  assert.match(root.innerHTML,/Sicherung in Dateien speichern/);
+ assert.match(html,/App-Paket mit Quellcode sichern/,'Public app package action included');
  assert.match(root.innerHTML,/Kontakte importieren/);
  assert.doesNotMatch(html,/data-a="sms"|data-a="message"/);
  const {valid,phoneList,toVcard,parseVcard,importPlan}=window.__contactsTest;
@@ -96,7 +102,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Anrufen/,'Call button on selected number');
  await click('call',undefined,0);
  assert.equal(location.href,'tel:035112345','Native telephone handoff');
- assert.equal(confirmed,1,'User must confirm call');
+ assert.equal(confirmed,2,'User must confirm both example deletion and call');
  await click('new');
  await root.events.submit({target:{id:'form',fields:{
   name:'Mehrfach-Test',phoneType:['Mobil','Arbeit'],phoneNumber:['0176 555','0351 999'],

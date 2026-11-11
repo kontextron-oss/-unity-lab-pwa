@@ -60,14 +60,14 @@ label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 (()=>{
 const route=location.pathname;
 const PROFILE=route.includes("/klaus-kontakte/")?{id:"klaus",title:"Klaus – Kontakte"}:route.includes("/jan-kontakte/")?{id:"jan",title:"Jan – Kontakte"}:{id:"kontakte",title:"Kontakte"};
-const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontakte-lokal-v1":PROFILE.id+"-kontakte-lokal-v1",STORE="kontakte",KEY=PROFILE.id==="kontakte"?"kontakte-lokal-fallback-v1":PROFILE.id+"-kontakte-lokal-fallback-v1";
+const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontakte-lokal-v1":PROFILE.id+"-kontakte-lokal-v1",STORE="kontakte",KEY=PROFILE.id==="kontakte"?"kontakte-lokal-fallback-v1":PROFILE.id+"-kontakte-lokal-fallback-v1",DEMO_KEY=PROFILE.id+"-kontakte-beispiel-ausgeblendet";
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0;
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false;
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
-const all=()=>[demo,...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
+const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
 const get=id=>all().find(c=>c.id===id);
 const stamp=()=>new Date().toISOString();
 function valid(x){
@@ -140,6 +140,7 @@ function parseVcard(data){
 }
 function reqPromise(req){return new Promise((ok,no)=>{req.onsuccess=()=>ok(req.result);req.onerror=()=>no(req.error);});}
 async function initStorage(){
+ try{demoHidden=localStorage.getItem(DEMO_KEY)==="1";}catch(_){}
  try{
   if(!("indexedDB" in window))throw Error("IndexedDB fehlt");
   db=await new Promise((ok,no)=>{
@@ -239,6 +240,14 @@ async function provideFile(blob,filename,title){
  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),5000);
  status("Datei bereitgestellt – bitte in Dateien sichern.");
 }
+function appPackageName(){return PROFILE.id==="klaus"?"klaus-kontakte-app-paket.zip":PROFILE.id==="jan"?"jan-kontakte-app-paket.zip":"kontakte-app-paket.zip";}
+async function shareAppPackage(){
+ try{
+  const filename=appPackageName(),response=await fetch("./"+filename,{cache:"no-store"});
+  if(!response.ok)throw Error("App-Paket ist noch nicht verfügbar.");
+  await provideFile(await response.blob(),filename,"Kontakte-App-Paket mit Quellcode");
+ }catch(err){status("App-Paket konnte nicht bereitgestellt werden: "+err.message);}
+}
 const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#000"/><circle cx="50" cy="50" r="35" fill="#fff"/><circle cx="50" cy="50" r="9" fill="#000"/></svg>';
 const back='<button class="back" data-a="back" aria-label="Zurück">‹ Zurück</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
@@ -251,18 +260,19 @@ function render(){
   app.innerHTML='<main class="main home"><div class="brand"><div class="logo">'+logo+'</div><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Beim Speichern bleiben Kontakte lokal auf diesem iPhone.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
  }
  if(view==="list"){
-  screen(back+'<h2>Kontakte</h2><p class="muted">Kontakt auswählen. Adresse und Telefonnummern stehen zusammen auf einer Karte.</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
+  screen(back+'<h2>Kontakte</h2><p class="muted">Automatisch alphabetisch von A bis Z sortiert. Kontakt auswählen: Adresse und Telefonnummern stehen zusammen auf einer Karte.</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
   const inner='<p class="fieldhead">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><button class="outline" data-a="speak-address">Adresse vorlesen</button><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c)+'<button class="outline" data-a="speak-phones">Telefonnummern vorlesen</button><button class="primary" data-a="speak">Kontakt vollständig vorlesen</button>';
-  screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Zum Testen eigene Kontakte anlegen.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
+  screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){
   const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:""};
   const numbers=phoneList(v);
   const fields=(numbers.length?numbers:[{label:"Mobil",number:""}]).map(phoneField).join("");
   screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><p class="tip">Der Kontakt wird mit „Kontakt lokal speichern“ am Ende dieses Formulars auf diesem iPhone abgelegt.</p><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'"><p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><label for="website">Webseite</label><input id="website" name="website" type="text" inputmode="text" maxlength="250" autocomplete="url" placeholder="www.beispiel.de" value="'+E(v.website)+'"><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt lokal speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte sichern, importieren und exportieren"><h3>Sicherung und Übertragung</h3><p class="backup-note">Der laufende Kontaktbestand bleibt lokal auf diesem iPhone. Eine Sicherung wird als eigene Datei bereitgestellt; sie wird nicht automatisch in pCloud abgelegt.</p><button data-a="export-pcloud" type="button">In pCloud sichern · Teilen</button><button data-a="export-json" type="button">Sicherung in Dateien speichern (JSON)</button><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"><button data-a="delete-all" type="button">Alle eigenen Kontakte löschen</button></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
+  app.querySelector(".backup")?.insertAdjacentHTML("beforeend",'<button data-a="download-app" type="button">App-Paket mit Quellcode sichern</button>');
   return;
  }
 
@@ -311,7 +321,11 @@ app.addEventListener("click",async e=>{
  if(a==="edit"){editing=selected;nav("form");return;}
  if(a==="delete"){
   const targetId=editing||selected,c=get(targetId);
-  if(!targetId||c?.demo||!confirm((c?.name||"Dieser Kontakt")+" wird unwiderruflich gelöscht. Fortfahren?"))return;
+  if(!targetId||!c||!confirm((c.name||"Dieser Kontakt")+" wird unwiderruflich gelöscht. Fortfahren?"))return;
+  if(c.demo){
+   try{demoHidden=true;localStorage.setItem(DEMO_KEY,"1");editing=null;selected=null;nav("home");status("Beispielkontakt gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}
+   return;
+  }
   try{await erase(targetId);editing=null;selected=null;nav("home");status("Kontakt gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}return;
  }
  if(a==="delete-all"){
@@ -329,6 +343,7 @@ app.addEventListener("click",async e=>{
   const filename=PROFILE.id+"-kontakte-"+today+(vcard?".vcf":".json");
   await provideFile(blob,filename,a==="export-pcloud"?"Kontakte-Sicherung für pCloud":"Kontakte-Sicherung");return;
  }
+ if(a==="download-app"){await shareAppPackage();return;}
  if(a==="import"){app.querySelector("#importfile")?.click();return;}
 });
 app.addEventListener("submit",async e=>{

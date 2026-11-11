@@ -42,6 +42,8 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('voice');
  assert.match(root.innerHTML,/Sprachsteuerung/);
  assert.match(root.innerHTML,/Suche Anna Müller/);
+ assert.match(root.innerHTML,/Zur Startseite/,'Every subpage has a large, direct return to the app start');
+ assert.match(html,/min-height:92px/,'Start navigation is a large touch target');
  assert.match(root.innerHTML,/Jetzt sprechen/);
  assert.match(root.innerHTML,/Vorlesen stoppen/,'Voice help can be stopped immediately');
  assert.match(root.innerHTML,/automatisch ausgeführt/,'Dictated commands run without a second confirmation button');

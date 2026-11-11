@@ -45,7 +45,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Jetzt sprechen/);
  assert.match(root.innerHTML,/Vorlesen stoppen/,'Voice help can be stopped immediately');
  assert.match(root.innerHTML,/automatisch ausgeführt/,'Dictated commands run without a second confirmation button');
- assert.match(html,/voiceTimer=setTimeout\\(\\(\\)=>runVoiceCommand\\(command\\),900\\)/,'Dictated keyboard input runs automatically');
+ assert.match(html,/voiceTimer=setTimeout\(\(\)=>runVoiceCommand\(command\),900\)/,'Dictated keyboard input runs automatically');
  await click('back');
  await click('contacts');
  assert.match(root.innerHTML,/Kontakt suchen/);

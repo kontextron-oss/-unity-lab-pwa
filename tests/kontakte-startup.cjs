@@ -27,7 +27,7 @@ class FakeFormData{
  get(k){return this.fields[k]||'';}
  getAll(k){return this.fields[k]||[];}
 }
-const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken,importPlan};})();');
+const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken,importPlan,voiceQuery};})();');
 assert.notEqual(testScript,scripts[0],'Test helper injection must work');
 new Function('window','document','navigator','localStorage','crypto','FormData','confirm','location',testScript)(
  window,document,navigator,localStorage,{randomUUID:()=> 'test-id'},FakeFormData,()=>{confirmed++;return true;},location
@@ -36,8 +36,14 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await new Promise(resolve=>setImmediate(resolve));
  assert.match(root.innerHTML,/>Kontakte öffnen<\/button>/);
  assert.match(root.innerHTML,/>Neuer Kontakt<\/button>/);
- assert.equal((root.innerHTML.match(/data-a="/g)||[]).length,2,'Home has exactly two clear actions');
+ assert.match(root.innerHTML,/Sprachsteuerung starten/,'Circular logo starts voice control');
+ assert.equal((root.innerHTML.match(/data-a="/g)||[]).length,3,'Home has two main actions plus voice control');
  const click=async(a,id,index)=>root.events.click({target:{closest:()=>({dataset:{a,id,index}})}});
+ await click('voice');
+ assert.match(root.innerHTML,/Sprachsteuerung/);
+ assert.match(root.innerHTML,/Suche Anna Müller/);
+ assert.match(root.innerHTML,/Jetzt sprechen/);
+ await click('back');
  await click('contacts');
  assert.match(root.innerHTML,/Kontakt suchen/);
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
@@ -68,7 +74,8 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(html,/App-Paket mit Quellcode sichern/,'Public app package action included');
  assert.match(root.innerHTML,/Kontakte importieren/);
  assert.doesNotMatch(html,/data-a="sms"|data-a="message"/);
- const {valid,phoneList,toVcard,parseVcard,importPlan}=window.__contactsTest;
+ const {valid,phoneList,toVcard,parseVcard,importPlan,voiceQuery}=window.__contactsTest;
+ assert.equal(voiceQuery('Rufe Anna Müller auf dem Handy an'),'anna muller','Voice commands extract the contact name');
  const legacy=valid({id:'a',name:'Altbestand',phone:'012 3456'});
  assert.equal(legacy.phone,'012 3456');
  assert.deepEqual(phoneList(legacy),[{label:'Mobil',number:'012 3456'}],

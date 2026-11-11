@@ -24,7 +24,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manip
 .main{padding:calc(env(safe-area-inset-top) + 36px) 24px calc(env(safe-area-inset-bottom) + 24px);min-height:100svh}
 .home{display:flex;flex-direction:column;align-items:stretch}
 .brand{display:flex;align-items:center;flex-direction:column;margin:16px 0 clamp(46px,8vh,80px);gap:15px}
-.logo{width:96px;height:96px;border-radius:22px;background:#fff;display:grid;place-items:center}
+.logo{width:96px;height:96px;border:0;padding:0;border-radius:22px;background:#fff;display:grid;place-items:center}
 .logo svg{width:79px;height:79px}
 h1{font-size:clamp(42px,10vw,53px);line-height:1.1;letter-spacing:-.7px;margin:0;font-weight:800}
 .large{width:100%;min-height:112px;border:0;border-radius:20px;background:#fff;color:#000;font-size:clamp(29px,7.1vw,36px);font-weight:780;padding:18px;margin-bottom:20px}
@@ -248,6 +248,40 @@ async function shareAppPackage(){
   await provideFile(await response.blob(),filename,"Kontakte-App-Paket mit Quellcode");
  }catch(err){status("App-Paket konnte nicht bereitgestellt werden: "+err.message);}
 }
+function voiceQuery(text){
+ return N(text).replace(/[.,!?]/g," ").replace(/\b(wie|lautet|ist|mir|bitte|den|die|das|kontakt|von|fuer|für|suche|zeige|offne|oeffne|adresse|anschrift|telefonnummer|telefon|nummer|rufe|rufen|anrufen|lies|vor|auf|dem|handy|mobil|an)\b/g," ").replace(/\s+/g," ").trim();
+}
+function runVoiceCommand(text){
+ const raw=String(text||"").trim(),command=N(raw),query=voiceQuery(raw);
+ if(!raw){status("Bitte einen Namen oder Sprachbefehl eingeben.");return;}
+ if(command==="hilfe"){
+  const help="Sagen Sie zum Beispiel: Suche Anna Müller. Adresse Anna Müller. Telefonnummer Anna Müller. Oder: Rufe Anna Müller.";
+  status(help);speak(help);return;
+ }
+ if(!query){status("Name nicht verstanden. Sagen Sie zum Beispiel: Suche Anna Müller.");return;}
+ const found=all().filter(c=>N(c.name).includes(query));
+ if(!found.length){term=query;view="list";render();status("Kein Kontakt mit diesem Namen gefunden.");return;}
+ if(found.length>1){term=query;view="list";render();status(found.length+" Kontakte gefunden. Bitte Kontakt auswählen.");return;}
+ const c=found[0];selected=c.id;view="detail";render();
+ if(/\b(adresse|anschrift)\b/.test(command)){speak(spoken(c,"address"));return;}
+ if(/\b(telefonnummer|telefon|nummer)\b/.test(command)){speak(spoken(c,"phones"));return;}
+ if(/\b(rufe|rufen|anrufen)\b/.test(command)){status("Kontaktkarte geöffnet. Bitte die gewünschte Nummer prüfen und „Anrufen“ bestätigen.");return;}
+ status("Kontaktkarte von "+c.name+" geöffnet.");
+}
+function startBrowserVoice(){
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Recognition){
+  status("Direkte Browser-Spracherkennung ist hier nicht verfügbar. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");
+  app.querySelector("#voice-command")?.focus();return;
+ }
+ try{
+  const recognition=new Recognition();recognition.lang="de-DE";recognition.interimResults=false;recognition.maxAlternatives=1;
+  recognition.onstart=()=>status("Ich höre zu. Sprechen Sie Ihren Befehl.");
+  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"";const input=app.querySelector("#voice-command");if(input)input.value=text;runVoiceCommand(text);};
+  recognition.onerror=()=>{status("Sprache wurde nicht erkannt. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");app.querySelector("#voice-command")?.focus();};
+  recognition.start();
+ }catch(err){status("Sprachsteuerung konnte nicht gestartet werden. Bitte das Mikrofon der iPhone-Tastatur verwenden.");app.querySelector("#voice-command")?.focus();}
+}
 const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#000"/><circle cx="50" cy="50" r="35" fill="#fff"/><circle cx="50" cy="50" r="9" fill="#000"/></svg>';
 const back='<button class="back" data-a="back" aria-label="Zurück">‹ Zurück</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
@@ -257,7 +291,10 @@ function items(){
 }
 function render(){
  if(view==="home"){
-  app.innerHTML='<main class="main home"><div class="brand"><div class="logo">'+logo+'</div><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Beim Speichern bleiben Kontakte lokal auf diesem iPhone.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
+  app.innerHTML='<main class="main home"><div class="brand"><button class="logo" data-a="voice" aria-label="Sprachsteuerung starten">'+logo+'</button><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Punkt antippen: Sprachsteuerung · Beim Speichern bleiben Kontakte lokal auf diesem iPhone.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
+ }
+ if(view==="voice"){
+  screen(back+'<h2>Sprachsteuerung</h2><p class="muted">Sage zum Beispiel: „Suche Anna Müller“, „Adresse Anna Müller“, „Telefonnummer Anna Müller“ oder „Rufe Anna Müller“.</p><button class="primary" data-a="listen">Jetzt sprechen</button><label for="voice-command">Sprachbefehl</label><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Befehl sprechen oder eingeben"><button class="outline" data-a="voice-run">Befehl ausführen</button><button class="quiet" data-a="voice-help">Hilfe vorlesen</button><p class="tip">Falls das direkte Zuhören nicht startet: Befehlsfeld antippen und das Mikrofon der iPhone-Tastatur verwenden.</p>');return;
  }
  if(view==="list"){
   screen(back+'<h2>Kontakte</h2><p class="muted">Automatisch alphabetisch von A bis Z sortiert. Kontakt auswählen: Adresse und Telefonnummern stehen zusammen auf einer Karte.</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
@@ -282,6 +319,10 @@ app.addEventListener("input",e=>{if(e.target.id==="q"){term=e.target.value;const
 app.addEventListener("click",async e=>{
  const b=e.target.closest("button[data-a]");if(!b)return;
  const a=b.dataset.a;
+ if(a==="voice"){nav("voice");startBrowserVoice();return;}
+ if(a==="listen"){startBrowserVoice();return;}
+ if(a==="voice-run"){runVoiceCommand(app.querySelector("#voice-command")?.value);return;}
+ if(a==="voice-help"){runVoiceCommand("hilfe");return;}
  if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";selected=null;nav("list");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){if(view==="detail")nav("list");else nav("home");return;}

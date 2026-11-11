@@ -69,6 +69,17 @@ const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
 const nameMatches=(name,query)=>{const plain=N(name),asked=N(query),key=nameKey(name),wanted=nameKey(query);return plain.includes(asked)||key.includes(wanted)||wanted.includes(key);};
+function editDistance(a,b){
+ const rows=Array.from({length:a.length+1},(_,i)=>[i]);
+ for(let j=1;j<=b.length;j++)rows[0][j]=j;
+ for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)rows[i][j]=a[i-1]===b[j-1]?rows[i-1][j-1]:1+Math.min(rows[i-1][j],rows[i][j-1],rows[i-1][j-1]);
+ return rows[a.length][b.length];
+}
+const fuzzyNameMatches=(name,query)=>{
+ if(nameMatches(name,query))return true;
+ const wanted=nameKey(query).split(/\s+/).filter(x=>x.length>=3),parts=nameKey(name).split(/\s+/).filter(x=>x.length>=3);
+ return wanted.length>0&&wanted.every(word=>parts.some(part=>{const longest=Math.max(word.length,part.length);return longest>=5&&editDistance(word,part)<=((longest>=8)?2:1);}));
+};
 const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
 const get=id=>all().find(c=>c.id===id);
 const stamp=()=>new Date().toISOString();
@@ -265,7 +276,7 @@ function runVoiceCommand(text){
   status(help);speak(help);return;
  }
  if(!query){status("Name nicht verstanden. Sagen Sie zum Beispiel: Suche Anna Müller.");return;}
- const found=all().filter(c=>nameMatches(c.name,query));
+ const found=all().filter(c=>fuzzyNameMatches(c.name,query));
  if(!found.length){term=query;view="list";render();status("Kein Kontakt mit diesem Namen gefunden.");return;}
  if(found.length>1){term=query;view="list";render();status(found.length+" Kontakte gefunden. Bitte Kontakt auswählen.");return;}
  const c=found[0];selected=c.id;view="detail";render();
@@ -296,7 +307,7 @@ const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50
 const back='<button class="back" data-a="back" aria-label="Zur Startseite">Zur Startseite</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
 function items(){
- const match=all().filter(c=>nameMatches(c.name,term));
+ const match=all().filter(c=>fuzzyNameMatches(c.name,term));
  return match.length?match.map(c=>{const info=[addressText(c),phoneList(c).map(p=>p.label+": "+p.number).join("\n")].filter(Boolean).join("\n");return '<button class="item" data-a="select" data-id="'+E(c.id)+'"><span class="item-title">'+E(c.name)+'</span><span class="item-detail">'+E(info||"Keine Adresse oder Telefonnummer hinterlegt")+'</span></button>';}).join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
 }
 function render(){
@@ -307,7 +318,7 @@ function render(){
   screen(back+'<h2>Sprachsteuerung</h2><p class="muted">Sage zum Beispiel: „Suche Anna Müller“, „Adresse Anna Müller“, „Telefonnummer Anna Müller“ oder „Rufe Anna Müller“.</p><button class="primary" data-a="listen">Jetzt sprechen</button><label for="voice-command">Sprachbefehl</label><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Befehl sprechen oder eingeben"><button class="outline" data-a="voice-run">Befehl ausführen</button><button class="quiet" data-a="voice-help">Hilfe vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><p class="tip">Nach dem Diktat wird der Befehl automatisch ausgeführt. Falls das direkte Zuhören nicht startet: Das Mikrofon der eingeblendeten iPhone-Tastatur verwenden.</p>');return;
  }
  if(view==="list"){
-  const search=searchOpen?'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Name sprechen oder eingeben" value="'+E(term)+'" aria-label="Kontakt suchen">':'<button class="search-card" data-a="search-voice" aria-label="Kontakt suchen, sprechen oder schreiben">Kontakt suchen</button>';
+  const search=searchOpen?'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Name sprechen oder eingeben" value="'+E(term)+'" aria-label="Kontakt suchen">':'<button class="search-card" data-a="search-voice" aria-label="Suche, sprechen oder schreiben">Suche</button>';
   screen(back+'<h2>Kontakte</h2>'+search+'<div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){

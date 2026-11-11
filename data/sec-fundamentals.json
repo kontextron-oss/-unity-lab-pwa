@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T09:05:52Z",
+  "generatedAt": "2026-11-11T09:10:22Z",
   "source": "SEC EDGAR Company Facts · XBRL",
   "scope": "US/SEC issuer universe; annual XBRL facts only, no estimated valuation",
   "items": {
@@ -273,7 +273,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 133,
+        "ageDays": 134,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -292,7 +292,7 @@
       "priorFiling": {
         "periodEnd": "2025-06-30"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     },
@@ -565,7 +565,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 45,
+        "ageDays": 46,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -584,7 +584,7 @@
       "priorFiling": {
         "periodEnd": "2025-09-27"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     },
@@ -839,7 +839,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 347,
+        "ageDays": 348,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -858,7 +858,7 @@
       "priorFiling": {
         "periodEnd": "2024-11-29"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     },
@@ -1149,7 +1149,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 318,
+        "ageDays": 319,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -1168,7 +1168,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-28"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     },
@@ -1441,7 +1441,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 314,
+        "ageDays": 315,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -1460,7 +1460,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     },
@@ -1687,7 +1687,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 314,
+        "ageDays": 315,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -1706,7 +1706,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     },
@@ -1979,7 +1979,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 314,
+        "ageDays": 315,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -1998,7 +1998,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     },
@@ -2289,7 +2289,7 @@
       },
       "periodQuality": {
         "status": "current",
-        "ageDays": 314,
+        "ageDays": 315,
         "maxAgeDays": 540
       },
       "valuationInputs": {
@@ -2308,7 +2308,7 @@
       "priorFiling": {
         "periodEnd": "2024-12-31"
       },
-      "checkedAt": "2026-11-10T09:05:52Z",
+      "checkedAt": "2026-11-11T09:10:22Z",
       "source": "SEC EDGAR Company Facts · annual XBRL",
       "errors": []
     }

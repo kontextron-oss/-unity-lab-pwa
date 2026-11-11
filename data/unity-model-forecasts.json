@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T09:05:53Z",
+  "generatedAt": "2026-11-11T09:10:23Z",
   "source": "SEC annual companyfacts; prospectively locked baseline forecasts",
   "methodology": "unity-revenue-momentum-shrink-v1",
   "modelCalibrated": false,

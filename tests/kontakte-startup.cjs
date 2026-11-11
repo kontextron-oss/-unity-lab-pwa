@@ -59,6 +59,8 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Postleitzahl|01234/);
  assert.match(root.innerHTML,/Beispielkontakt löschen/,'Example contact can be removed directly');
  assert.match(root.innerHTML,/Vorlesen stoppen/,'Contact reading can be stopped immediately');
+ assert.match(root.innerHTML,/Kontakt vollständig vorlesen/,'One clear read action is immediately available');
+ assert.doesNotMatch(root.innerHTML,/Adresse vorlesen|Telefonnummern vorlesen/,'Separate reading actions are removed from the contact card');
  await click('delete');
  assert.equal(localStorage.getItem('kontakte-kontakte-beispiel-ausgeblendet'),'1','Example contact removal persists locally');
  await click('contacts');

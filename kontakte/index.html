@@ -305,7 +305,7 @@ function render(){
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
-  const inner='<p class="fieldhead">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><button class="outline" data-a="speak-address">Adresse vorlesen</button><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c)+'<button class="outline" data-a="speak-phones">Telefonnummern vorlesen</button><button class="primary" data-a="speak">Kontakt vollständig vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button>';
+  const inner='<button class="primary" data-a="speak">Kontakt vollständig vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><p class="fieldhead" style="margin-top:28px">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c);
   screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){

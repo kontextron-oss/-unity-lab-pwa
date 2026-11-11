@@ -109,6 +109,11 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Mehrfach-Test/);
  assert.match(root.innerHTML,/Mobil: 0176 555/);
  assert.match(root.innerHTML,/Arbeit: 0351 999/);
+ await click('select','k-test-id');
+ assert.match(root.innerHTML,/Kontakt löschen/,'Individual delete is available directly on the contact card');
+ await click('delete');
+ await click('contacts');
+ assert.doesNotMatch(root.innerHTML,/Mehrfach-Test/,'Directly deleted contact no longer appears');
  await click('new');
  assert.match(root.innerHTML,/Alle eigenen Kontakte löschen/,'Bulk-delete action is available in contact management');
  await click('delete-all');

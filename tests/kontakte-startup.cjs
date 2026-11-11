@@ -67,7 +67,11 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Beispielkontakt löschen/,'Example contact can be removed directly');
  assert.match(root.innerHTML,/Vorlesen stoppen/,'Contact reading can be stopped immediately');
  assert.match(root.innerHTML,/Kontakt vollständig vorlesen/,'One clear read action is immediately available');
+ assert.match(root.innerHTML,/Anderen Kontakt suchen/,'Another search is directly available from the contact card');
  assert.doesNotMatch(root.innerHTML,/Adresse vorlesen|Telefonnummern vorlesen/,'Separate reading actions are removed from the contact card');
+ await click('search-again');
+ assert.match(root.innerHTML,/id="q"/,'Another search returns directly to the large search field');
+ await click('select','__beispiel__');
  await click('delete');
  assert.equal(localStorage.getItem('kontakte-kontakte-beispiel-ausgeblendet'),'1','Example contact removal persists locally');
  await click('contacts');

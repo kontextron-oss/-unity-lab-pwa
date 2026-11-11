@@ -51,11 +51,15 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('back');
  await click('contacts');
  assert.match(root.innerHTML,/Kontakt suchen/);
+ assert.match(root.innerHTML,/search-card/,'Search begins as a large contact-card-sized action');
+ assert.doesNotMatch(root.innerHTML,/Automatisch alphabetisch/,'Explanatory sorting text is removed');
+ await click('search-voice');
+ assert.match(root.innerHTML,/id="q"/,'Tapping search opens the field for speaking or typing');
+ assert.match(root.innerHTML,/Name sprechen oder eingeben/);
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
  assert.match(root.innerHTML,/<h2>Kontakte<\/h2>/);
  assert.match(root.innerHTML,/Musterstraße 12/);
- assert.match(root.innerHTML,/01234 Dresden/);
- assert.match(root.innerHTML,/iPhone-Tastatur/);
+ assert.match(root.innerHTML,/032?19 Dresden|01234 Dresden/);
  await click('select','__beispiel__');
  assert.match(root.innerHTML,/Musterstraße 12/);
  assert.match(root.innerHTML,/Postleitzahl|01234/);

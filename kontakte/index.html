@@ -67,6 +67,8 @@ const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 1234567
 let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false;
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
+const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
+const nameMatches=(name,query)=>{const plain=N(name),asked=N(query),key=nameKey(name),wanted=nameKey(query);return plain.includes(asked)||key.includes(wanted)||wanted.includes(key);};
 const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
 const get=id=>all().find(c=>c.id===id);
 const stamp=()=>new Date().toISOString();
@@ -253,7 +255,7 @@ async function shareAppPackage(){
  }catch(err){status("App-Paket konnte nicht bereitgestellt werden: "+err.message);}
 }
 function voiceQuery(text){
- return N(text).replace(/[.,!?]/g," ").replace(/\b(wie|lautet|ist|mir|bitte|den|die|das|kontakt|von|fuer|für|suche|zeige|offne|oeffne|adresse|anschrift|telefonnummer|telefon|nummer|rufe|rufen|anrufen|lies|vor|auf|dem|handy|mobil|an)\b/g," ").replace(/\s+/g," ").trim();
+ return N(text).replace(/[.,!?]/g," ").replace(/\b(wie|lautet|ist|mir|bitte|den|die|das|kontakt|von|fuer|für|suche|zeige|offne|oeffne|adresse|anschrift|telefonnummer|telefon|nummer|rufe|rufen|anrufen|lies|vor|auf|dem|handy|mobil|an|frau|herr|herrn)\b/g," ").replace(/\s+/g," ").trim();
 }
 function runVoiceCommand(text){
  const raw=String(text||"").trim(),command=N(raw),query=voiceQuery(raw);
@@ -263,7 +265,7 @@ function runVoiceCommand(text){
   status(help);speak(help);return;
  }
  if(!query){status("Name nicht verstanden. Sagen Sie zum Beispiel: Suche Anna Müller.");return;}
- const found=all().filter(c=>N(c.name).includes(query));
+ const found=all().filter(c=>nameMatches(c.name,query));
  if(!found.length){term=query;view="list";render();status("Kein Kontakt mit diesem Namen gefunden.");return;}
  if(found.length>1){term=query;view="list";render();status(found.length+" Kontakte gefunden. Bitte Kontakt auswählen.");return;}
  const c=found[0];selected=c.id;view="detail";render();
@@ -294,7 +296,7 @@ const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50
 const back='<button class="back" data-a="back" aria-label="Zur Startseite">Zur Startseite</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
 function items(){
- const match=all().filter(c=>N(c.name).includes(N(term)));
+ const match=all().filter(c=>nameMatches(c.name,term));
  return match.length?match.map(c=>{const info=[addressText(c),phoneList(c).map(p=>p.label+": "+p.number).join("\n")].filter(Boolean).join("\n");return '<button class="item" data-a="select" data-id="'+E(c.id)+'"><span class="item-title">'+E(c.name)+'</span><span class="item-detail">'+E(info||"Keine Adresse oder Telefonnummer hinterlegt")+'</span></button>';}).join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
 }
 function render(){

@@ -56,6 +56,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('search-voice');
  assert.match(root.innerHTML,/id="q"/,'Tapping search opens the field for speaking or typing');
  assert.match(root.innerHTML,/Name sprechen oder eingeben/);
+ assert.match(html,/navigator\.mediaDevices\?\.getUserMedia\(\{audio:true\}\)/,'Search requests microphone permission before recognition starts');
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
  assert.match(root.innerHTML,/<h2>Kontakte<\/h2>/);
  assert.match(root.innerHTML,/Musterstraße 12/);

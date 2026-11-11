@@ -52,7 +52,10 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('contacts');
  assert.match(root.innerHTML,/>Suche<\/button>/,'Large search card uses the short label');
  assert.match(root.innerHTML,/search-card/,'Search begins as a large contact-card-sized action');
+ assert.match(root.innerHTML,/>A–Z<\/button>/,'Alphabet filter is available');
  assert.doesNotMatch(root.innerHTML,/Automatisch alphabetisch/,'Explanatory sorting text is removed');
+ await click('alphabet');
+ assert.match(root.innerHTML,/data-letter="A"/,'Alphabet letters appear after opening A–Z');
  await click('search-voice');
  assert.match(root.innerHTML,/id="q"/,'Tapping search opens the field for speaking or typing');
  assert.match(root.innerHTML,/Name sprechen oder eingeben/);

@@ -272,12 +272,17 @@ function runVoiceCommand(text){
  if(/\b(rufe|rufen|anrufen)\b/.test(command)){status("Kontaktkarte geöffnet. Bitte die gewünschte Nummer prüfen und „Anrufen“ bestätigen.");return;}
  status("Kontaktkarte von "+c.name+" geöffnet.");
 }
-function startBrowserVoice(targetId="voice-command"){
+async function startBrowserVoice(targetId="voice-command"){
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition,isSearch=targetId==="q";
  const input=()=>app.querySelector("#"+targetId);
- const fallback=()=>{status(isSearch?"Bitte Namen sprechen oder eingeben. Das Mikrofon der iPhone-Tastatur ist bereit.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");input()?.focus();};
+ const fallback=()=>{status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar. Bitte den Namen sprechen oder eingeben.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");input()?.focus();};
  if(!Recognition){fallback();return;}
  try{
+  if(navigator.mediaDevices?.getUserMedia){
+   status("Mikrofon wird aktiviert.");
+   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+   stream.getTracks().forEach(track=>track.stop());
+  }
   const recognition=new Recognition();recognition.lang="de-DE";recognition.interimResults=false;recognition.maxAlternatives=1;
   recognition.onstart=()=>status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");
   recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};

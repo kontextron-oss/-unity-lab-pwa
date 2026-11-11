@@ -1,7 +1,10 @@
-const CACHE="kontakte-pwa-v08";
+const path=new URL(self.registration.scope).pathname;
+const PROFILE=path.includes("/klaus-kontakte/")?"klaus":path.includes("/jan-kontakte/")?"jan":"all";
+const CACHE=PROFILE==="all"?"kontakte-pwa-v09":"kontakte-"+PROFILE+"-pwa-v09";
+const PREFIX=PROFILE==="all"?"kontakte-pwa-":"kontakte-"+PROFILE+"-pwa-";
 const SHELL=["./","./index.html","./manifest.webmanifest","./icon.svg","./apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("kontakte-pwa-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(PREFIX)&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener("fetch",e=>{
  const req=e.request;
  if(req.method!=="GET"||new URL(req.url).origin!==self.location.origin)return;

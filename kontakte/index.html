@@ -58,9 +58,13 @@ label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 <script>
 "use strict";
 (()=>{
-const app=document.getElementById("app"),DB_NAME="kontakte-lokal-v1",STORE="kontakte",KEY="kontakte-lokal-fallback-v1";
+const route=location.pathname;
+const PROFILE=route.includes("/klaus-kontakte/")?{id:"klaus",title:"Klaus – Kontakte"}:route.includes("/jan-kontakte/")?{id:"jan",title:"Jan – Kontakte"}:{id:"kontakte",title:"Kontakte"};
+const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontakte-lokal-v1":PROFILE.id+"-kontakte-lokal-v1",STORE="kontakte",KEY=PROFILE.id==="kontakte"?"kontakte-lokal-fallback-v1":PROFILE.id+"-kontakte-lokal-fallback-v1";
+document.title=PROFILE.title;
+document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="address",selected=null,term="",editing=null,message="",phoneSeed=0;
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0;
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const all=()=>[demo,...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
@@ -166,6 +170,12 @@ async function erase(id){
  else throw Error("Lokale Speicherung nicht verfügbar");
  records=records.filter(x=>x.id!==id);
 }
+async function eraseAll(){
+ if(db){await new Promise((ok,no)=>{const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).clear();t.oncomplete=ok;t.onerror=()=>no(t.error);t.onabort=()=>no(t.error);});}
+ else if(storage!=="Browser-Lokalspeicher")throw Error("Lokale Speicherung nicht verfügbar");
+ localStorage.setItem(KEY,"[]");
+ records=[];
+}
 const digits={"0":"null","1":"eins","2":"zwei","3":"drei","4":"vier","5":"fünf","6":"sechs","7":"sieben","8":"acht","9":"neun"};
 const units=["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"];
 const tens=["","","zwanzig","dreißig","vierzig","fünfzig","sechzig","siebzig","achtzig","neunzig"];
@@ -181,14 +191,15 @@ function word(n){
 function houseVoice(s){return String(s).replace(/(\d{1,5})([a-zA-Z]?)/g,(_,n,l)=>word(parseInt(n,10))+(l?" "+l:"")).replace(/\s*[-–]\s*/g," bis ").replace(/\s*\/\s*/g," Schrägstrich ");}
 function digitVoice(s,group=5){const v=(String(s).match(/\d/g)||[]).map(x=>digits[x]);let result=[];for(let i=0;i<v.length;i+=group)result.push(v.slice(i,i+group).join(", "));return result.join(". "); }
 function addressText(c){return [c.street+(c.house?" "+c.house:""),[c.zip,c.city].filter(Boolean).join(" ")].filter(x=>x.trim()).join("\n");}
-function spoken(c){
+function spoken(c,section="all"){
  const name=c.name.replace(" (Beispiel)","");
- if(mode==="address"){
-  const s=[c.street,houseVoice(c.house)].filter(Boolean).join(" ");
-  return ["Die Adresse von "+name+" lautet:",s?s+".":"",c.zip?"Postleitzahl: "+digitVoice(c.zip)+".":"",c.city?"Ort: "+c.city+".":""].filter(Boolean).join(" ");
- }
+ const s=[c.street,houseVoice(c.house)].filter(Boolean).join(" ");
+ const address=["Die Adresse von "+name+" lautet:",s?s+".":"",c.zip?"Postleitzahl: "+digitVoice(c.zip)+".":"",c.city?"Ort: "+c.city+".":""].filter(Boolean).join(" ");
  const p=phoneList(c);
- return "Telefonnummern von "+name+": "+p.map(x=>x.label+": "+(x.number.trim().startsWith("+")?"plus ":"")+digitVoice(x.number,4)+".").join(" ");
+ const phones="Telefonnummern von "+name+": "+p.map(x=>x.label+": "+(x.number.trim().startsWith("+")?"plus ":"")+digitVoice(x.number,4)+".").join(" ");
+ if(section==="address")return address;
+ if(section==="phones")return p.length?phones:"Für "+name+" ist keine Telefonnummer gespeichert.";
+ return ["Kontakt "+name+".",address,p.length?phones:""] .filter(Boolean).join(" ");
 }
 function phoneField(p){
  const n=++phoneSeed;
@@ -222,26 +233,25 @@ const back='<button class="back" data-a="back" aria-label="Zurück">‹ Zurück<
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
 function items(){
  const match=all().filter(c=>N(c.name).includes(N(term)));
- return match.length?match.map(c=>{const info=mode==="address"?addressText(c):phoneList(c).map(p=>p.label+": "+p.number).join("\n");const empty=mode==="address"?"Keine Adresse hinterlegt":"Keine Telefonnummer hinterlegt";return '<button class="item" data-a="select" data-id="'+E(c.id)+'"><span class="item-title">'+E(c.name)+'</span><span class="item-detail">'+E(info||empty)+'</span></button>';}).join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
+ return match.length?match.map(c=>{const info=[addressText(c),phoneList(c).map(p=>p.label+": "+p.number).join("\n")].filter(Boolean).join("\n");return '<button class="item" data-a="select" data-id="'+E(c.id)+'"><span class="item-title">'+E(c.name)+'</span><span class="item-detail">'+E(info||"Keine Adresse oder Telefonnummer hinterlegt")+'</span></button>';}).join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
 }
 function render(){
  if(view==="home"){
-  app.innerHTML='<main class="main home"><div class="brand"><div class="logo">'+logo+'</div><h1>Kontakte</h1></div><button class="large" data-a="address">Adresse</button><button class="large" data-a="phone">Telefonnummer</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Einfache Bedienung · Lokale Speicherung</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
+  app.innerHTML='<main class="main home"><div class="brand"><div class="logo">'+logo+'</div><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Einfache Bedienung · Lokale Speicherung</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
  }
  if(view==="list"){
-  screen(back+'<h2>'+(mode==="address"?"Adressübersicht":"Telefonnummern")+'</h2><p class="muted">Kontakt auswählen und vorlesen lassen</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
+  screen(back+'<h2>Kontakte</h2><p class="muted">Kontakt auswählen. Adresse und Telefonnummern stehen zusammen auf einer Karte.</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
-  const inner=mode==="address"?'<div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><button class="primary" data-a="speak">Vorlesen</button>'+(phoneList(c).length?'<button class="outline" data-a="show-phones">Telefonnummern anzeigen</button>':''):
-   phoneCards(c)+'<button class="primary" data-a="speak">Telefonnummern vorlesen</button>';
-  screen(back+'<h2>'+(mode==="address"?"Adresse":"Telefonnummern")+'</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Zum Testen eigene Kontakte anlegen.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button>'));return;
+  const inner='<p class="fieldhead">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><button class="outline" data-a="speak-address">Adresse vorlesen</button><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c)+'<button class="outline" data-a="speak-phones">Telefonnummern vorlesen</button><button class="primary" data-a="speak">Kontakt vollständig vorlesen</button>';
+  screen(back+'<h2>Kontaktkarte</h2><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Zum Testen eigene Kontakte anlegen.</p>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button>'));return;
  }
  if(view==="form"){
   const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:""};
   const numbers=phoneList(v);
   const fields=(numbers.length?numbers:[{label:"Mobil",number:""}]).map(phoneField).join("");
-  screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'"><p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><label for="website">Webseite</label><input id="website" name="website" type="text" inputmode="url" maxlength="250" autocomplete="url" value="'+E(v.website)+'"><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte importieren und exportieren"><h3>Import und Export</h3><p class="backup-note">Alle Daten bleiben lokal. Der Import ergänzt Kontakte, ohne vorhandene Einträge zu überschreiben. Sicherungen bitte selbst geschützt aufbewahren.</p><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="export-json" type="button">Vollständige JSON-Sicherung</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
+  screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'"><p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><label for="website">Webseite</label><input id="website" name="website" type="text" inputmode="url" maxlength="250" autocomplete="url" value="'+E(v.website)+'"><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte importieren und exportieren"><h3>Import und Export</h3><p class="backup-note">Alle Daten bleiben lokal. Der Import ergänzt Kontakte, ohne vorhandene Einträge zu überschreiben. Sicherungen bitte selbst geschützt aufbewahren.</p><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="export-json" type="button">Vollständige JSON-Sicherung</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"><button data-a="delete-all" type="button">Alle eigenen Kontakte löschen</button></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
   return;
  }
 
@@ -251,19 +261,19 @@ app.addEventListener("input",e=>{if(e.target.id==="q"){term=e.target.value;const
 app.addEventListener("click",async e=>{
  const b=e.target.closest("button[data-a]");if(!b)return;
  const a=b.dataset.a;
- if(a==="address"||a==="phone"){mode=a;term="";selected=null;nav("list");return;}
+ if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";selected=null;nav("list");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){if(view==="detail")nav("list");else nav("home");return;}
  if(a==="select"){
-  selected=b.dataset.id;nav("detail");const c=get(selected);
-  if(c&&((mode==="address"&&addressText(c))||(mode==="phone"&&phoneList(c).length)))speak(spoken(c));
+  selected=b.dataset.id;nav("detail");
   return;
  }
- if(a==="speak"){const c=get(selected);if(!c)return;
-  if(mode==="address"&&!addressText(c)||mode==="phone"&&!phoneList(c).length){status("Für diesen Kontakt ist keine Angabe gespeichert.");return;}
-  speak(spoken(c));return;
+ if(a==="speak"||a==="speak-address"||a==="speak-phones"){const c=get(selected);if(!c)return;
+  const section=a==="speak-address"?"address":a==="speak-phones"?"phones":"all";
+  if(section==="address"&&!addressText(c)){status("Für diesen Kontakt ist keine Adresse gespeichert.");return;}
+  if(section==="phones"&&!phoneList(c).length){status("Für diesen Kontakt ist keine Telefonnummer gespeichert.");return;}
+  speak(spoken(c,section));return;
  }
- if(a==="show-phones"){mode="phone";render();return;}
  if(a==="call"){
   const c=get(selected);if(!c||c.demo)return;
   const i=Number(b.dataset.index),entry=phoneList(c)[i];
@@ -291,6 +301,13 @@ app.addEventListener("click",async e=>{
  if(a==="delete"){
   if(!editing||!confirm("Kontakt unwiderruflich löschen?"))return;
   try{await erase(editing);editing=null;selected=null;nav("home");status("Kontakt gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}return;
+ }
+ if(a==="delete-all"){
+  const count=records.length;
+  if(!count){status("Es sind keine eigenen Kontakte gespeichert.");return;}
+  if(!confirm("Wirklich alle "+count+" eigenen Kontakte aus "+PROFILE.title+" löschen? Der Beispielkontakt bleibt erhalten."))return;
+  if(!confirm("Letzte Sicherheitsfrage: "+count+" Kontakte werden unwiderruflich gelöscht. Fortfahren?")){status("Löschen abgebrochen. Es wurde nichts verändert.");return;}
+  try{await eraseAll();editing=null;selected=null;nav("home");status(count+" Kontakte gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}return;
  }
  if(a==="export-vcf"||a==="export-json"){
   const today=new Date().toISOString().slice(0,10);

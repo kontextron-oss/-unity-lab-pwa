@@ -4,7 +4,9 @@ const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync('kontakte/index.html','utf8');
 const sw=fs.readFileSync('kontakte/sw.js','utf8');
-assert.match(sw,/const CACHE="kontakte-pwa-v08"/,'Expected Kontakte 0.8 offline cache');
+assert.match(sw,/kontakte-pwa-v09/,'Expected Kontakte 0.9 offline cache');
+assert.match(sw,/klaus-kontakte/,'Expected separate Klaus profile cache');
+assert.match(sw,/jan-kontakte/,'Expected separate Jan profile cache');
 const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 assert.equal(scripts.length,1,'Expected one inline app script');
 new vm.Script(scripts[0],{filename:'kontakte/index.html:inline'});
@@ -15,10 +17,10 @@ const localStorage={getItem:k=>local.has(k)?local.get(k):null,setItem:(k,v)=>loc
 localStorage.setItem('kontakte-lokal-fallback-v1',JSON.stringify([
  {id:'legacy-1',name:'Frühere Nummer',phone:'0351 12345',street:'Altweg',house:'5',zip:'01067',city:'Dresden'}
 ]));
-const document={getElementById:id=>id==='app'?root:null};
+const document={getElementById:id=>id==='app'?root:null,querySelector:()=>({setAttribute(){}})};
 const window={};
 const navigator={};
-const location={href:''};
+const location={href:'',pathname:'/kontakte/'};
 let confirmed=0;
 class FakeFormData{
  constructor(form){this.fields=form.fields;}
@@ -32,15 +34,14 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
 );
 (async()=>{
  await new Promise(resolve=>setImmediate(resolve));
- assert.match(root.innerHTML,/>Adresse<\/button>/);
- assert.match(root.innerHTML,/>Telefonnummer<\/button>/);
+ assert.match(root.innerHTML,/>Kontakte öffnen<\/button>/);
  assert.match(root.innerHTML,/>Neuer Kontakt<\/button>/);
- assert.equal((root.innerHTML.match(/data-a="/g)||[]).length,3,'Home has exactly three actions');
+ assert.equal((root.innerHTML.match(/data-a="/g)||[]).length,2,'Home has exactly two clear actions');
  const click=async(a,id,index)=>root.events.click({target:{closest:()=>({dataset:{a,id,index}})}});
- await click('address');
+ await click('contacts');
  assert.match(root.innerHTML,/Kontakt suchen/);
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
- assert.match(root.innerHTML,/Adressübersicht/);
+ assert.match(root.innerHTML,/<h2>Kontakte<\/h2>/);
  assert.match(root.innerHTML,/Musterstraße 12/);
  assert.match(root.innerHTML,/01234 Dresden/);
  assert.match(root.innerHTML,/iPhone-Tastatur/);
@@ -85,7 +86,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.equal(plan.add.length,1,'Import preview keeps one new contact');
  assert.equal(plan.duplicates,1,'Import preview identifies duplicate contacts');
  assert.equal(plan.invalid,1,'Import preview identifies incomplete contacts');
- await click('phone');
+ await click('contacts');
  assert.match(root.innerHTML,/Frühere Nummer/,'Existing legacy contact remains available');
  await click('select','legacy-1');
  assert.match(root.innerHTML,/0351 12345/,'Legacy number in detail');
@@ -101,9 +102,17 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  }},preventDefault(){}});
  assert.match(localStorage.getItem('kontakte-lokal-fallback-v1'),/Mehrfach-Test/,
   'Saved contact persisted in local storage');
- await click('phone');
+ await click('contacts');
  assert.match(root.innerHTML,/Mehrfach-Test/);
  assert.match(root.innerHTML,/Mobil: 0176 555/);
  assert.match(root.innerHTML,/Arbeit: 0351 999/);
+ await click('new');
+ assert.match(root.innerHTML,/Alle eigenen Kontakte löschen/,'Bulk-delete action is available in contact management');
+ await click('delete-all');
+ assert.equal(localStorage.getItem('kontakte-lokal-fallback-v1'),'[]','Bulk delete clears only the current profile storage');
+ await click('contacts');
+ assert.doesNotMatch(root.innerHTML,/Mehrfach-Test/,'Bulk-deleted contact no longer appears');
+ assert.match(html,/Klaus – Kontakte/,'Klaus profile title included');
+ assert.match(html,/Jan – Kontakte/,'Jan profile title included');
  console.log('Kontakte: startup, legacy migration, multi-number save, phone-call handoff and vCard roundtrip passed.');
 })().catch(err=>{console.error(err);process.exitCode=1;});

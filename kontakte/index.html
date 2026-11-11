@@ -38,7 +38,7 @@ input::placeholder{color:#575757}
 label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 .row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr);gap:12px}
 .row.equal{grid-template-columns:1fr 1fr}
-.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.item{display:block;width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
+.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.alphabet{margin:-8px 0 22px}.alphabet-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.alphabet-grid button{min-height:62px;border:0;border-radius:12px;background:#fff;color:#000;font-size:25px;font-weight:780}.alphabet-grid .allletters{grid-column:span 2;font-size:20px}.item{display:block;width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
 .value{background:#fff;color:#000;border-radius:16px;white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(26px,6vw,33px);font-weight:740;line-height:1.43;padding:20px;min-height:115px}
 .name{font-size:28px;font-weight:750;margin:18px 0}
 .primary{width:100%;min-height:76px;background:#fff;color:#000;border:0;border-radius:16px;padding:14px;font-size:27px;font-weight:750;margin-top:18px}
@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false;
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,letter="",alphabetOpen=false;
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
@@ -298,7 +298,7 @@ async function startBrowserVoice(targetId="voice-command"){
   }
   const recognition=new Recognition();recognition.lang="de-DE";recognition.interimResults=false;recognition.maxAlternatives=1;
   recognition.onstart=()=>status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");
-  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
+  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
   recognition.onerror=fallback;
   recognition.start();
  }catch(err){fallback();}
@@ -307,8 +307,12 @@ const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50
 const back='<button class="back" data-a="back" aria-label="Zur Startseite">Zur Startseite</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
 function items(){
- const match=all().filter(c=>fuzzyNameMatches(c.name,term));
+ const match=all().filter(c=>(!letter||N(c.name).startsWith(N(letter)))&&fuzzyNameMatches(c.name,term));
  return match.length?match.map(c=>{const info=[addressText(c),phoneList(c).map(p=>p.label+": "+p.number).join("\n")].filter(Boolean).join("\n");return '<button class="item" data-a="select" data-id="'+E(c.id)+'"><span class="item-title">'+E(c.name)+'</span><span class="item-detail">'+E(info||"Keine Adresse oder Telefonnummer hinterlegt")+'</span></button>';}).join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
+}
+function alphabetPicker(){
+ const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+ return '<section class="alphabet" aria-label="Anfangsbuchstabe wählen"><div class="alphabet-grid"><button class="allletters" data-a="letter" data-letter="">Alle</button>'+letters.map(x=>'<button data-a="letter" data-letter="'+x+'" aria-label="Kontakte mit '+x+' anzeigen">'+x+'</button>').join("")+'</div></section>';
 }
 function render(){
  if(view==="home"){
@@ -319,7 +323,8 @@ function render(){
  }
  if(view==="list"){
   const search=searchOpen?'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Name sprechen oder eingeben" value="'+E(term)+'" aria-label="Kontakt suchen">':'<button class="search-card" data-a="search-voice" aria-label="Suche, sprechen oder schreiben">Suche</button>';
-  screen(back+'<h2>Kontakte</h2>'+search+'<div id="list">'+items()+'</div>');return;
+  const alphabet=alphabetOpen?alphabetPicker():'<button class="outline" data-a="alphabet">A–Z</button>';
+  screen(back+'<h2>Kontakte</h2>'+search+alphabet+'<div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
@@ -338,7 +343,7 @@ function render(){
 }
 function nav(to){view=to;message="";render();}
 app.addEventListener("input",e=>{
- if(e.target.id==="q"){term=e.target.value;const list=app.querySelector("#list");if(list)list.innerHTML=items();return;}
+ if(e.target.id==="q"){term=e.target.value;letter="";const list=app.querySelector("#list");if(list)list.innerHTML=items();return;}
  if(e.target.id==="voice-command"){
   clearTimeout(voiceTimer);
   const command=String(e.target.value||"").trim();
@@ -354,9 +359,11 @@ app.addEventListener("click",async e=>{
  if(a==="voice-run"){runVoiceCommand(app.querySelector("#voice-command")?.value);return;}
  if(a==="voice-help"){runVoiceCommand("hilfe");return;}
  if(a==="stop-speaking"){stopSpeaking();return;}
- if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";selected=null;searchOpen=false;nav("list");return;}
- if(a==="search-voice"){searchOpen=true;render();startBrowserVoice("q");return;}
- if(a==="search-again"){selected=null;term="";searchOpen=true;nav("list");startBrowserVoice("q");return;}
+ if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";letter="";alphabetOpen=false;selected=null;searchOpen=false;nav("list");return;}
+ if(a==="search-voice"){letter="";alphabetOpen=false;searchOpen=true;render();startBrowserVoice("q");return;}
+ if(a==="search-again"){selected=null;term="";letter="";alphabetOpen=false;searchOpen=true;nav("list");startBrowserVoice("q");return;}
+ if(a==="alphabet"){alphabetOpen=!alphabetOpen;render();return;}
+ if(a==="letter"){letter=b.dataset.letter||"";term="";alphabetOpen=false;render();status(letter?"Kontakte mit "+letter+".":"Alle Kontakte.");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){selected=null;editing=null;term="";nav("home");return;}
  if(a==="select"){

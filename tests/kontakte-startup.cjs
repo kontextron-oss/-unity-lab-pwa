@@ -27,7 +27,7 @@ class FakeFormData{
  get(k){return this.fields[k]||'';}
  getAll(k){return this.fields[k]||[];}
 }
-const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken,importPlan,voiceQuery,nameMatches};})();');
+const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken,importPlan,voiceQuery,nameMatches,fuzzyNameMatches};})();');
 assert.notEqual(testScript,scripts[0],'Test helper injection must work');
 new Function('window','document','navigator','localStorage','crypto','FormData','confirm','location',testScript)(
  window,document,navigator,localStorage,{randomUUID:()=> 'test-id'},FakeFormData,()=>{confirmed++;return true;},location
@@ -50,7 +50,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(html,/voiceTimer=setTimeout\(\(\)=>runVoiceCommand\(command\),900\)/,'Dictated keyboard input runs automatically');
  await click('back');
  await click('contacts');
- assert.match(root.innerHTML,/Kontakt suchen/);
+ assert.match(root.innerHTML,/>Suche<\/button>/,'Large search card uses the short label');
  assert.match(root.innerHTML,/search-card/,'Search begins as a large contact-card-sized action');
  assert.doesNotMatch(root.innerHTML,/Automatisch alphabetisch/,'Explanatory sorting text is removed');
  await click('search-voice');
@@ -91,11 +91,13 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(html,/App-Paket mit Quellcode sichern/,'Public app package action included');
  assert.match(root.innerHTML,/Kontakte importieren/);
  assert.doesNotMatch(html,/data-a="sms"|data-a="message"/);
- const {valid,phoneList,toVcard,parseVcard,importPlan,voiceQuery,nameMatches}=window.__contactsTest;
+ const {valid,phoneList,toVcard,parseVcard,importPlan,voiceQuery,nameMatches,fuzzyNameMatches}=window.__contactsTest;
  assert.equal(voiceQuery('Rufe Anna Müller auf dem Handy an'),'anna muller','Voice commands extract the contact name');
  assert.equal(voiceQuery('Suche Frau Christine'),'christine','Voice commands ignore forms of address');
  assert.equal(nameMatches('Christine Müller','Christin'),true,'Name search accepts a missing final e');
  assert.equal(nameMatches('Christine Müller','Kristine'),true,'Name search accepts common C/K recognition variants');
+ assert.equal(fuzzyNameMatches('Christine Müller','Christian'),true,'Name search tolerates a close recognition result');
+ assert.equal(fuzzyNameMatches('Christine Müller','Wolfgang'),false,'Name search avoids unrelated contacts');
  const legacy=valid({id:'a',name:'Altbestand',phone:'012 3456'});
  assert.equal(legacy.phone,'012 3456');
  assert.deepEqual(phoneList(legacy),[{label:'Mobil',number:'012 3456'}],

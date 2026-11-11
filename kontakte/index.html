@@ -89,6 +89,13 @@ function safeSite(raw){
  const s=String(raw||"").trim();if(!s)return "";
  try{const url=new URL(/^https?:\/\//i.test(s)?s:"https://"+s);return url.protocol==="https:"||url.protocol==="http:"?url.href:"";}catch(e){return "";}
 }
+function samePhone(a,b){const x=String(a||"").replace(/\D/g,""),y=String(b||"").replace(/\D/g,"");return x.length>=3&&x===y;}
+function isDuplicate(c,list=records){return list.some(x=>x.id===c.id||(N(x.name)===N(c.name)&&phoneList(x).some(p=>phoneList(c).some(y=>samePhone(y.number,p.number)))));}
+function importPlan(list){
+ let duplicates=0,invalid=0;const add=[];
+ for(const raw of list.slice(0,3000)){const c=valid(raw);if(!c){invalid++;continue;}if(isDuplicate(c,[...records,...add])){duplicates++;continue;}add.push(c);}
+ return {add,duplicates,invalid,limited:list.length>3000};
+}
 function vEscape(s){return String(s||"").replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");}
 function vUnescape(s){return String(s||"").replace(/\\n/gi,"\n").replace(/\\([,;\\])/g,"$1");}
 function toVcard(list){
@@ -139,6 +146,7 @@ async function initStorage(){
   });
   const tx=db.transaction(STORE,"readonly");
   records=(await reqPromise(tx.objectStore(STORE).getAll())).map(valid).filter(Boolean);
+  if(!records.length){try{for(const c of JSON.parse(localStorage.getItem(KEY)||"[]").map(valid).filter(Boolean))await put(c);}catch(_){}}
   storage="IndexedDB";
  }catch(e){
   db=null;
@@ -316,14 +324,12 @@ app.addEventListener("change",async e=>{
   const obj=vcf?parseVcard(raw):JSON.parse(raw);
   const list=vcf?obj:(Array.isArray(obj)?obj:obj.contacts);
   if(!Array.isArray(list))throw Error("Unbekanntes Kontaktformat.");
-  let added=0,skipped=0;
-  for(const rawContact of list.slice(0,3000)){
-   const c=valid(rawContact);if(!c)continue;
-   const duplicate=records.some(x=>x.id===c.id||(N(x.name)===N(c.name)&&phoneList(x).some(p=>phoneList(c).some(y=>y.number.replace(/\D/g,"")===p.number.replace(/\D/g,"")&&y.number.replace(/\D/g,"").length>=3))));
-   if(duplicate){skipped++;continue;}
-   await put(c);added++;
-  }
-  status(added+" Kontakte importiert, "+skipped+" vorhandene übersprungen. Keine Daten überschrieben.");
+  const plan=importPlan(list),preview=plan.add.slice(0,3).map(c=>c.name).join(", ");
+  if(!plan.add.length){status("Import geprüft: keine neuen Kontakte. "+plan.duplicates+" vorhandene und "+plan.invalid+" unvollständige Einträge wurden nicht verändert.");return;}
+  const limit=plan.limited?" Es werden höchstens 3.000 Einträge verarbeitet.":"";
+  if(!confirm("Import-Vorschau: "+plan.add.length+" neue Kontakte"+(preview?" (zum Beispiel: "+preview+")":"")+". "+plan.duplicates+" vorhandene und "+plan.invalid+" unvollständige Einträge werden übersprungen. Es wird nichts überschrieben oder gelöscht."+limit+" Jetzt importieren?")){status("Import abgebrochen. Es wurde nichts verändert.");return;}
+  for(const c of plan.add)await put(c);
+  status(plan.add.length+" Kontakte importiert, "+plan.duplicates+" vorhandene und "+plan.invalid+" unvollständige Einträge übersprungen. Keine Daten überschrieben.");
  }catch(err){status("Import fehlgeschlagen: "+err.message);}
  finally{e.target.value="";}
 });

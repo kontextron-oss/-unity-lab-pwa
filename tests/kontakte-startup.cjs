@@ -55,7 +55,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Weitere Telefonnummer/);
  assert.match(root.innerHTML,/E-Mail-Adresse/);
  assert.match(root.innerHTML,/Webseite/);
- assert.match(root.innerHTML,/type="url"/,'Website field supports the iPhone URL keyboard');
+ assert.match(root.innerHTML,/id="website" name="website" type="text" inputmode="text"/,'Website field keeps the iPhone dictation keyboard');
  assert.match(root.innerHTML,/Kommentare \/ Notizen/);
  assert.match(root.innerHTML,/vCard exportieren/);
  assert.match(root.innerHTML,/In pCloud sichern · Teilen/);

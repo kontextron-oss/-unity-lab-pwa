@@ -55,8 +55,11 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/Weitere Telefonnummer/);
  assert.match(root.innerHTML,/E-Mail-Adresse/);
  assert.match(root.innerHTML,/Webseite/);
+ assert.match(root.innerHTML,/type="url"/,'Website field supports the iPhone URL keyboard');
  assert.match(root.innerHTML,/Kommentare \/ Notizen/);
  assert.match(root.innerHTML,/vCard exportieren/);
+ assert.match(root.innerHTML,/In pCloud sichern · Teilen/);
+ assert.match(root.innerHTML,/Sicherung in Dateien speichern/);
  assert.match(root.innerHTML,/Kontakte importieren/);
  assert.doesNotMatch(html,/data-a="sms"|data-a="message"/);
  const {valid,phoneList,toVcard,parseVcard,importPlan}=window.__contactsTest;

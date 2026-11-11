@@ -228,6 +228,17 @@ function speak(text){
  }catch(e){status("Die Sprachausgabe ist fehlgeschlagen.");}
 }
 function status(txt){message=txt;const el=app.querySelector("#status");if(el)el.textContent=message;}
+async function provideFile(blob,filename,title){
+ const file=typeof File!=="undefined"?new File([blob],filename,{type:blob.type}):null;
+ if(file&&navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+  try{await navigator.share({title,files:[file]});status("Sicherung bereitgestellt. In der Freigabe bitte „In Dateien sichern“ oder pCloud wählen.");return;}
+  catch(err){if(err?.name==="AbortError"){status("Sicherung nicht abgelegt.");return;}}
+ }
+ const uri=URL.createObjectURL(blob),link=document.createElement("a");
+ link.href=uri;link.download=filename;
+ document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),5000);
+ status("Datei bereitgestellt – bitte in Dateien sichern.");
+}
 const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#000"/><circle cx="50" cy="50" r="35" fill="#fff"/><circle cx="50" cy="50" r="9" fill="#000"/></svg>';
 const back='<button class="back" data-a="back" aria-label="Zurück">‹ Zurück</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
@@ -237,7 +248,7 @@ function items(){
 }
 function render(){
  if(view==="home"){
-  app.innerHTML='<main class="main home"><div class="brand"><div class="logo">'+logo+'</div><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Einfache Bedienung · Lokale Speicherung</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
+  app.innerHTML='<main class="main home"><div class="brand"><div class="logo">'+logo+'</div><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Beim Speichern bleiben Kontakte lokal auf diesem iPhone.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
  }
  if(view==="list"){
   screen(back+'<h2>Kontakte</h2><p class="muted">Kontakt auswählen. Adresse und Telefonnummern stehen zusammen auf einer Karte.</p><label for="q">Kontakt suchen</label><input id="q" type="search" autocomplete="name" placeholder="Namen eingeben oder diktieren" value="'+E(term)+'" aria-describedby="dictation-tip"><p id="dictation-tip" class="tip">Spracheingabe: Suchfeld antippen, dann das Mikrofon auf der iPhone-Tastatur wählen.</p><div id="list">'+items()+'</div>');return;
@@ -251,7 +262,7 @@ function render(){
   const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:""};
   const numbers=phoneList(v);
   const fields=(numbers.length?numbers:[{label:"Mobil",number:""}]).map(phoneField).join("");
-  screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'"><p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><label for="website">Webseite</label><input id="website" name="website" type="text" inputmode="url" maxlength="250" autocomplete="url" value="'+E(v.website)+'"><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte importieren und exportieren"><h3>Import und Export</h3><p class="backup-note">Alle Daten bleiben lokal. Der Import ergänzt Kontakte, ohne vorhandene Einträge zu überschreiben. Sicherungen bitte selbst geschützt aufbewahren.</p><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="export-json" type="button">Vollständige JSON-Sicherung</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"><button data-a="delete-all" type="button">Alle eigenen Kontakte löschen</button></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
+  screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><p class="tip">Der Kontakt wird mit „Kontakt lokal speichern“ am Ende dieses Formulars auf diesem iPhone abgelegt.</p><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'"><p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><label for="website">Webseite</label><input id="website" name="website" type="url" inputmode="url" maxlength="250" autocomplete="url" placeholder="www.beispiel.de" value="'+E(v.website)+'"><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt lokal speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte sichern, importieren und exportieren"><h3>Sicherung und Übertragung</h3><p class="backup-note">Der laufende Kontaktbestand bleibt lokal auf diesem iPhone. Eine Sicherung wird als eigene Datei bereitgestellt; sie wird nicht automatisch in pCloud abgelegt.</p><button data-a="export-pcloud" type="button">In pCloud sichern · Teilen</button><button data-a="export-json" type="button">Sicherung in Dateien speichern (JSON)</button><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"><button data-a="delete-all" type="button">Alle eigenen Kontakte löschen</button></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
   return;
  }
 
@@ -309,15 +320,13 @@ app.addEventListener("click",async e=>{
   if(!confirm("Letzte Sicherheitsfrage: "+count+" Kontakte werden unwiderruflich gelöscht. Fortfahren?")){status("Löschen abgebrochen. Es wurde nichts verändert.");return;}
   try{await eraseAll();editing=null;selected=null;nav("home");status(count+" Kontakte gelöscht.");}catch(err){status("Löschen fehlgeschlagen.");}return;
  }
- if(a==="export-vcf"||a==="export-json"){
+ if(a==="export-vcf"||a==="export-json"||a==="export-pcloud"){
   const today=new Date().toISOString().slice(0,10);
   const vcard=a==="export-vcf",blob=new Blob([
    vcard?toVcard(records):JSON.stringify({application:"Kontakte",version:2,exportedAt:stamp(),contacts:records},null,2)
   ],{type:vcard?"text/vcard;charset=utf-8":"application/json"});
-  const uri=URL.createObjectURL(blob),link=document.createElement("a");
-  link.href=uri;link.download="Kontakte-"+today+(vcard?".vcf":".json");
-  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),5000);
-  status("Export bereitgestellt – bitte in Dateien sichern.");return;
+  const filename=PROFILE.id+"-kontakte-"+today+(vcard?".vcf":".json");
+  await provideFile(blob,filename,a==="export-pcloud"?"Kontakte-Sicherung für pCloud":"Kontakte-Sicherung");return;
  }
  if(a==="import"){app.querySelector("#importfile")?.click();return;}
 });
@@ -330,7 +339,7 @@ app.addEventListener("submit",async e=>{
  const phones=values.map((v,i)=>({label:String(labels[i]||"Mobil"),number:String(v||"").trim()})).filter(p=>p.number).slice(0,30);
  const data=valid({id:editing||"k-"+newId(),name:field("name"),phone:phones[0]?.number||"",phones,street:field("street"),house:field("house"),zip:field("zip"),city:field("city"),email:field("email"),website:field("website"),notes:field("notes"),updatedAt:stamp()});
  if(!data){status("Bitte Namen eingeben.");return;}
- try{await put(data);editing=null;selected=null;nav("home");status("Kontakt lokal gespeichert.");}
+ try{await put(data);editing=null;selected=null;nav("home");status("Kontakt lokal gespeichert · "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr.");}
  catch(err){status("Konnte nicht gespeichert werden. Bitte Browserspeicher prüfen.");}
 });
 app.addEventListener("change",async e=>{

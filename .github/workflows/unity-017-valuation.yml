@@ -18,6 +18,8 @@ on:
       - sw.js
       - tests/rc17-offline-safety.cjs
       - tests/live-market-cache.cjs
+      - .github/workflows/market-data.yml
+      - .github/workflows/fx-rates.yml
       - tests/market-sw-freshness-20261112.cjs
       - home.js
       - intraday.js
@@ -57,6 +59,8 @@ on:
       - sw.js
       - tests/rc17-offline-safety.cjs
       - tests/live-market-cache.cjs
+      - .github/workflows/market-data.yml
+      - .github/workflows/fx-rates.yml
       - tests/market-sw-freshness-20261112.cjs
       - home.js
       - intraday.js

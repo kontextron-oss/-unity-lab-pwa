@@ -59,10 +59,11 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('alphabet');
  assert.match(root.innerHTML,/data-letter="A"/,'Alphabet letters appear after opening A–Z');
  await click('search-voice');
- assert.match(root.innerHTML,/>Sprechen<\/button>/,'Speaking remains the immediate primary action');
- assert.match(root.innerHTML,/data-a="search-write">Schreiben/,'Writing is an explicit secondary action');
+ assert.match(root.innerHTML,/id="q"/,'Tapping search opens the large search field');
+ assert.match(root.innerHTML,/placeholder="Sprechen"/,'The large field clearly invites keyboard dictation');
+ assert.doesNotMatch(root.innerHTML,/data-a="search-write"|>Schreiben<\/button>/,'No second action or explanatory button is added');
  assert.doesNotMatch(html,/getUserMedia\(\{audio:true\}\)/,'No repeated microphone permission probe is made');
-assert.match(html,/if\(a==="search-write"\)\{manualSearch=true;render\(\);app\.querySelector\("#q"\)\?\.focus\(\);return;\}/,'Keyboard opens only after the explicit writing action');
+assert.match(html,/if\(a==="search-voice"\)\{letter="";alphabetOpen=false;searchOpen=true;render\(\);app\.querySelector\("#q"\)\?\.focus\(\);return;\}/,'The keyboard opens immediately after tapping search');
 assert.match(html,/if\(voiceListening\)\{voiceRestart=true;voiceTarget=targetId;/,'A second speaking request is queued while the previous one ends');
 assert.match(html,/activeRecognition\?\.stop\(\)/,'The prior recognizer is stopped before a new request starts');
 assert.match(html,/recognition\.onend=\(\)=>\{const restart=voiceRestart/,'The queued speaking request starts as soon as the first one ends');
@@ -81,7 +82,7 @@ assert.match(html,/recognition\.onend=\(\)=>\{const restart=voiceRestart/,'The q
  assert.match(root.innerHTML,/Anderen Kontakt suchen/,'Another search is directly available from the contact card');
  assert.doesNotMatch(root.innerHTML,/Adresse vorlesen|Telefonnummern vorlesen/,'Separate reading actions are removed from the contact card');
  await click('search-again');
- assert.match(root.innerHTML,/>Sprechen<\/button>/,'Another search returns directly to speaking without opening the keyboard');
+ assert.match(root.innerHTML,/id="q"/,'Another search immediately returns to the large dictation field');
  await click('select','__beispiel__');
  await click('delete');
  assert.equal(localStorage.getItem('kontakte-kontakte-beispiel-ausgeblendet'),'1','Example contact removal persists locally');

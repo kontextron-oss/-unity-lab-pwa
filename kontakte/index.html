@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,manualSearch=false,letter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,letter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
@@ -326,7 +326,7 @@ function render(){
   screen(back+'<h2>Kontakt sprechen</h2><p class="muted">Sprechen Sie nur den Namen.</p><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Sprechen" aria-label="Kontakt sprechen"><button class="primary" data-a="listen">Erneut sprechen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button>');return;
  }
  if(view==="list"){
-  const search=!searchOpen?'<button class="search-card" data-a="search-voice" aria-label="Suche">Suche</button>':manualSearch?'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Name schreiben" value="'+E(term)+'" aria-label="Kontakt schreiben">':'<button class="search-card" data-a="search-voice" aria-label="Kontakt sprechen">Sprechen</button><button class="quiet" data-a="search-write">Schreiben</button>';
+  const search=!searchOpen?'<button class="search-card" data-a="search-voice" aria-label="Suche">Suche</button>':'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Sprechen" value="'+E(term)+'" aria-label="Kontakt suchen">';
   const alphabet=alphabetOpen?alphabetPicker():'<button class="outline" data-a="alphabet">A–Z</button>';
   screen(back+'<h2>Kontakte</h2>'+search+alphabet+'<div id="list">'+items()+'</div>');return;
  }
@@ -363,10 +363,9 @@ app.addEventListener("click",async e=>{
  if(a==="voice-run"){runVoiceCommand(app.querySelector("#voice-command")?.value);return;}
  if(a==="voice-help"){runVoiceCommand("hilfe");return;}
  if(a==="stop-speaking"){stopSpeaking();return;}
- if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";manualSearch=false;letter="";alphabetOpen=false;selected=null;searchOpen=false;nav("list");return;}
- if(a==="search-voice"){letter="";alphabetOpen=false;manualSearch=false;searchOpen=true;render();startBrowserVoice("q");return;}
- if(a==="search-write"){manualSearch=true;render();app.querySelector("#q")?.focus();return;}
- if(a==="search-again"){selected=null;term="";manualSearch=false;letter="";alphabetOpen=false;searchOpen=true;nav("list");startBrowserVoice("q");return;}
+ if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";letter="";alphabetOpen=false;selected=null;searchOpen=false;nav("list");return;}
+ if(a==="search-voice"){letter="";alphabetOpen=false;searchOpen=true;render();app.querySelector("#q")?.focus();return;}
+ if(a==="search-again"){selected=null;term="";letter="";alphabetOpen=false;searchOpen=true;nav("list");app.querySelector("#q")?.focus();return;}
  if(a==="alphabet"){alphabetOpen=!alphabetOpen;render();return;}
  if(a==="letter"){letter=b.dataset.letter||"";term="";alphabetOpen=false;render();status(letter?"Kontakte mit "+letter+".":"Alle Kontakte.");return;}
  if(a==="new"){editing=null;nav("form");return;}

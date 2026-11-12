@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,manualSearch=false,letter="",alphabetOpen=false,voiceListening=false;
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,manualSearch=false,letter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
@@ -293,15 +293,16 @@ function runVoiceCommand(text){
 async function startBrowserVoice(targetId="voice-command"){
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition,isSearch=targetId==="q";
  const input=()=>app.querySelector("#"+targetId);
- if(voiceListening)return;
+ if(voiceListening){voiceRestart=true;voiceTarget=targetId;status("Neue Suche wird gestartet.");try{activeRecognition?.stop();}catch(_){}return;}
  voiceListening=true;
- const fallback=()=>{voiceListening=false;status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar. Für die iPhone-Tastatur bitte „Schreiben“ wählen.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
+ voiceTarget=targetId;
+ const fallback=()=>{voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar. Für die iPhone-Tastatur bitte „Schreiben“ wählen.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
  if(!Recognition){fallback();return;}
  try{
-  const recognition=new Recognition();recognition.lang="de-DE";recognition.interimResults=false;recognition.maxAlternatives=1;
+  const recognition=new Recognition();activeRecognition=recognition;recognition.lang="de-DE";recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=1;
   recognition.onstart=()=>status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");
-  recognition.onresult=e=>{voiceListening=false;const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
-  recognition.onend=()=>{voiceListening=false;};
+  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
+  recognition.onend=()=>{const restart=voiceRestart,next=voiceTarget||targetId;voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";if(restart)startBrowserVoice(next);};
   recognition.onerror=fallback;
   recognition.start();
  }catch(err){fallback();}

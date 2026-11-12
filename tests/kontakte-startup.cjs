@@ -132,9 +132,13 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('select','legacy-1');
  assert.match(root.innerHTML,/0351 12345/,'Legacy number in detail');
  assert.match(root.innerHTML,/Anrufen/,'Call button on selected number');
+ assert.match(root.innerHTML,/Zu Favoriten/,'A contact can be marked as a favorite');
+ await click('favorite');
+ assert.match(root.innerHTML,/Aus Favoriten entfernen/,'Marked favorites can be removed again');
  await click('call',undefined,0);
  assert.equal(location.href,'tel:035112345','Native telephone handoff');
  assert.equal(confirmed,2,'User must confirm both example deletion and call');
+ assert.match(localStorage.getItem('kontakte-lokal-fallback-v1'),/"favorite":true/,'Favorite marking is saved locally');
  await click('new');
  await root.events.submit({target:{id:'form',fields:{
   name:'Mehrfach-Test',phoneType:['Mobil','Arbeit'],phoneNumber:['0176 555','0351 999'],

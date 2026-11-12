@@ -7,7 +7,7 @@ const base={schemaVersion:1,generatedAt:new Date().toISOString(),items:{
  [stock.isin]:{name:'Eaton',ticker:'ETN',status:'metrics-partial',checkedAt:new Date().toISOString(),
  source:'SEC EDGAR',
  metrics:{revenue:{value:1000000000,unit:'USD',period:'FY',end:'2025-12-31',filed:date}},
- events:[{form:'8-K',label:'Unternehmensmeldung',filedAt:date,source:'SEC EDGAR',
+ events:[{form:'8-K',label:'Führungswechsel / Management',eventClass:'leadership',decisionImpact:'review',filedAt:date,source:'SEC EDGAR',
  url:'https://www.sec.gov/Archives/edgar/data/1234/000001234526000001/report.htm'},
  {form:'10-Q',label:'Quartalsbericht',filedAt:'2025-01-01',source:'SEC EDGAR',
  url:'https://www.sec.gov/Archives/edgar/data/1234/000001234525000001/q.htm'}]}
@@ -26,7 +26,9 @@ vm.runInContext(source,ctx);
  assert.match(panel,/Original öffnen/);
  assert.match(panel,/keine Handelsfreigabe/i);
  const badge=vm.runInContext('unityResearchBadge(stock)',ctx);
- assert.match(badge,/Neue Pflichtmeldung/);
+ assert.match(badge,/Führungswechsel/);
+ assert.match(panel,/Prüfung erforderlich/);
+ assert.match(vm.runInContext("unityResearchEventLabel({eventClass:'cybersecurity'})",ctx),/Cybersecurity/);
  ctx.stock={...stock,isin:'GB9999999999',providerSymbol:'ETN'};
  assert.equal(vm.runInContext('unityResearchItem(stock)',ctx),null);
  ctx.stock=stock;vm.runInContext("unityResearch.generatedAt='2019-01-01T00:00:00Z'",ctx);

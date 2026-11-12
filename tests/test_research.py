@@ -47,6 +47,17 @@ class ResearchTests(unittest.TestCase):
         self.assertNotIn("positive",str(x).lower())
         self.assertTrue(all(e["filedAt"]==RECENT for e in x))
 
+    def test_material_filing_categories_require_review_without_directional_score(self):
+        label, event_class, impact=research.filing_event_metadata("8-K","5.02,9.01")
+        self.assertEqual(label,"Führungswechsel / Management")
+        self.assertEqual(event_class,"leadership")
+        self.assertEqual(impact,"review")
+        label, event_class, impact=research.filing_event_metadata("8-K","")
+        self.assertEqual(label,"Unternehmensmeldung")
+        self.assertEqual(event_class,"filing")
+        self.assertEqual(impact,"review")
+        self.assertEqual(research.VERIFIED_CIK_FALLBACK["NVDA"][0],1045810)
+
     def test_reject_conflicting_values_same_original_period(self):
         facts=companyfacts(1234)
         facts["facts"]["us-gaap"]["Revenues"]["units"]["USD"].append(

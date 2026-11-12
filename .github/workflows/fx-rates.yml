@@ -6,7 +6,7 @@ on:
       - scripts/refresh_fx.py
       - .github/workflows/fx-rates.yml
   schedule:
-    - cron: '45 15 * * 1-5'
+    - cron: '45 15,17 * * 1-5'
   workflow_dispatch:
 concurrency:
   group: unity-ecb-fx

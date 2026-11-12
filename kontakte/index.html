@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,letter="",alphabetOpen=false;
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,letter="",alphabetOpen=false,voiceListening=false;
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
@@ -293,7 +293,9 @@ function runVoiceCommand(text){
 async function startBrowserVoice(targetId="voice-command"){
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition,isSearch=targetId==="q";
  const input=()=>app.querySelector("#"+targetId);
- const fallback=()=>{status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar. Bitte den Namen sprechen oder eingeben.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");input()?.focus();};
+ if(voiceListening)return;
+ voiceListening=true;
+ const fallback=()=>{voiceListening=false;status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar. Bitte den Namen sprechen oder eingeben.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar. Bitte das Mikrofon der iPhone-Tastatur im Befehlsfeld verwenden.");input()?.focus();};
  if(!Recognition){fallback();return;}
  try{
   if(navigator.mediaDevices?.getUserMedia){
@@ -304,6 +306,7 @@ async function startBrowserVoice(targetId="voice-command"){
   const recognition=new Recognition();recognition.lang="de-DE";recognition.interimResults=false;recognition.maxAlternatives=1;
   recognition.onstart=()=>status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");
   recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
+  recognition.onend=()=>{voiceListening=false;};
   recognition.onerror=fallback;
   recognition.start();
  }catch(err){fallback();}
@@ -357,6 +360,7 @@ app.addEventListener("input",e=>{
  }
 });
 app.addEventListener("click",async e=>{
+ if(e.target.id==="q"){startBrowserVoice("q");return;}
  const b=e.target.closest("button[data-a]");if(!b)return;
  const a=b.dataset.a;
  if(a==="voice"){nav("voice");startBrowserVoice();return;}

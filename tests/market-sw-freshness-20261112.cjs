@@ -30,7 +30,7 @@ const caches={
    addAll:async()=>{}
   };
  },
- async match(req){return get(previous,req)||get(active,req)}
+ async match(req,opts){return get(previous,req,opts)||get(active,req,opts)}
 };
 const fetcher=async(req,init)=>{
  fetchCount++;assert.equal(init?.cache,'no-store');

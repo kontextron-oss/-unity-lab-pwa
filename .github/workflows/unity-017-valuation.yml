@@ -18,6 +18,7 @@ on:
       - sw.js
       - tests/rc17-offline-safety.cjs
       - tests/live-market-cache.cjs
+      - tests/market-sw-freshness-20261112.cjs
       - home.js
       - intraday.js
       - tests/live-pages-assets.cjs
@@ -56,6 +57,7 @@ on:
       - sw.js
       - tests/rc17-offline-safety.cjs
       - tests/live-market-cache.cjs
+      - tests/market-sw-freshness-20261112.cjs
       - home.js
       - intraday.js
       - tests/live-pages-assets.cjs
@@ -116,6 +118,7 @@ jobs:
           node tests/financial-metrics.cjs
           node tests/rc17-offline-safety.cjs
           node tests/live-market-cache.cjs
+          node tests/market-sw-freshness-20261112.cjs
       - name: Test pCloud/PC safe comparison and immutable local data contracts
         run: |
           node --check sync-plan.js

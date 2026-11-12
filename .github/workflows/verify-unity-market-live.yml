@@ -1,0 +1,32 @@
+name: Verify deployed UNITY market refresh
+on:
+  pull_request:
+    paths: [.github/workflows/verify-unity-market-live.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check live GitHub Pages directly (no iPhone cache)
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://kontextron-oss.github.io/-unity-lab-pwa"
+          for attempt in {1..12}; do
+            echo "Attempt ${attempt}/12"
+            if curl -fsSL --max-time 20 "${URL}/sw.js?version=20261112-${GITHUB_SHA}" -o /tmp/unity-sw.js \
+              && curl -fsSL --max-time 20 "${URL}/home.js?version=20261112-${GITHUB_SHA}" -o /tmp/unity-home.js \
+              && grep -Fq "unity-lab-v0.17.0-rc1-datafix-20261112" /tmp/unity-sw.js \
+              && grep -Fq "dataNetworkFirst(request)" /tmp/unity-sw.js \
+              && grep -Fq "assetPaths.has(url.pathname)" /tmp/unity-sw.js \
+              && ! grep -Fq "badge.textContent=" /tmp/unity-home.js; then
+              echo "VERIFIED: public UNITY cache fix and correct release label"
+              exit 0
+            fi
+            sleep 8
+          done
+          echo "::error::Live GitHub Pages has not yet deployed the market cache fix"
+          exit 1

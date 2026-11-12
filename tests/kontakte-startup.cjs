@@ -40,13 +40,13 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.equal((root.innerHTML.match(/data-a="/g)||[]).length,3,'Home has two main actions plus voice control');
  const click=async(a,id,index)=>root.events.click({target:{closest:()=>({dataset:{a,id,index}})}});
  await click('voice');
- assert.match(root.innerHTML,/Sprachsteuerung/);
- assert.match(root.innerHTML,/Suche Anna Müller/);
+ assert.match(root.innerHTML,/Kontakt sprechen/);
+ assert.match(root.innerHTML,/Sprechen Sie nur den Namen/);
  assert.match(root.innerHTML,/Zur Startseite/,'Every subpage has a large, direct return to the app start');
  assert.match(html,/min-height:92px/,'Start navigation is a large touch target');
- assert.match(root.innerHTML,/Jetzt sprechen/);
+ assert.match(root.innerHTML,/Erneut sprechen/);
  assert.match(root.innerHTML,/Vorlesen stoppen/,'Voice help can be stopped immediately');
- assert.match(root.innerHTML,/automatisch ausgeführt/,'Dictated commands run without a second confirmation button');
+ assert.match(root.innerHTML,/placeholder="Sprechen"/,'Voice search has one clear prompt');
  assert.match(html,/voiceTimer=setTimeout\(\(\)=>runVoiceCommand\(command\),900\)/,'Dictated keyboard input runs automatically');
  await click('back');
  await click('contacts');
@@ -67,6 +67,8 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('select','__beispiel__');
  assert.match(root.innerHTML,/Musterstraße 12/);
  assert.match(root.innerHTML,/Postleitzahl|01234/);
+ assert.ok(root.innerHTML.indexOf('Anna Müller')<root.innerHTML.indexOf('Musterstraße 12'),'Name and address appear together on the contact card');
+ assert.match(root.innerHTML,/contact-card/,'Contact details use one clear card');
  assert.match(root.innerHTML,/Beispielkontakt löschen/,'Example contact can be removed directly');
  assert.match(root.innerHTML,/Vorlesen stoppen/,'Contact reading can be stopped immediately');
  assert.match(root.innerHTML,/Kontakt vollständig vorlesen/,'One clear read action is immediately available');

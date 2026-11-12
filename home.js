@@ -1043,8 +1043,10 @@ function unityHomeRefreshVisibleIfDue(){
   if(typeof unityLoadFx==='function')void unityLoadFx();
 }
 document.addEventListener('visibilitychange',unityHomeRefreshVisibleIfDue);
-window.addEventListener('focus',unityHomeRefreshVisibleIfDue);
-window.setInterval(unityHomeRefreshVisibleIfDue,60000);
+if(typeof window!=='undefined'){
+  window.addEventListener('focus',unityHomeRefreshVisibleIfDue);
+  window.setInterval(unityHomeRefreshVisibleIfDue,60000);
+}
 
 /* Pull down at the top of the depot to recheck available reference data. */
 let unityPullStartY=0,unityPullActive=false,unityPullRefreshing=false;

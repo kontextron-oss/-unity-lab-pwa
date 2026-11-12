@@ -63,6 +63,7 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/placeholder="Sprechen"/,'The visible search prompt only says Sprechen');
  assert.match(html,/getUserMedia\(\{audio:true\}\)/,'Search requests microphone permission before recognition starts');
 assert.match(html,/if\(e\.target\.id==="q"\)\{startBrowserVoice\("q"\);return;\}/,'Tapping the open search field starts a new voice search');
+assert.match(html,/recognition\.onresult=e=>\{voiceListening=false;/,'Speech recognition is released immediately after a name is heard');
 assert.match(html,/recognition\.onend=\(\)=>\{voiceListening=false;\}/,'A completed search can be started again');
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
  assert.match(root.innerHTML,/<h2>Kontakte<\/h2>/);

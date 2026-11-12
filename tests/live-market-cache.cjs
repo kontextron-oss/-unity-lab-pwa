@@ -38,7 +38,7 @@ const cached={
  async addAll(){},
 };
 const fakeCaches={
- async open(name){assert.equal(name,'unity-lab-v0.17.0-rc1');return cached},
+ async open(name){assert.equal(name,'unity-lab-v0.17.0-rc1-datafix-20261112');return cached},
  async match(req){return matching(oldCache,req)||matching(currentCache,req)}
 };
 const fakeFetch=async(request,opts)=>{
@@ -50,7 +50,8 @@ const fakeFetch=async(request,opts)=>{
 };
 const context={URL,Request,Response,Promise,caches:fakeCaches,fetch:fakeFetch,
  location:{origin:new URL(host).origin},
- self:{addEventListener(type,fn){events[type]=fn},skipWaiting(){},
+
+ self:{registration:{scope:host},addEventListener(type,fn){events[type]=fn},skipWaiting(){},
   clients:{claim(){return Promise.resolve()}}}};
 vm.runInNewContext(sw,context);
 function request(url){
@@ -61,7 +62,7 @@ function request(url){
  return answer;
 }
 (async()=>{
- assert.match(sw,/url\.pathname\.includes\('\/data\/'\)/);
+ assert.match(sw,/url\.pathname\.startsWith\(dataPath\)/);
  assert.match(sw,/dataNetworkFirst\(request\)/);
  assert.match(sw,/canonical\.search=''/);
  const fresh=await request('./data/market.json?t=111');

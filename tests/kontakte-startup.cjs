@@ -63,8 +63,9 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  assert.match(root.innerHTML,/data-a="search-write">Schreiben/,'Writing is an explicit secondary action');
  assert.doesNotMatch(html,/getUserMedia\(\{audio:true\}\)/,'No repeated microphone permission probe is made');
 assert.match(html,/if\(a==="search-write"\)\{manualSearch=true;render\(\);app\.querySelector\("#q"\)\?\.focus\(\);return;\}/,'Keyboard opens only after the explicit writing action');
-assert.match(html,/recognition\.onresult=e=>\{voiceListening=false;/,'Speech recognition is released immediately after a name is heard');
-assert.match(html,/recognition\.onend=\(\)=>\{voiceListening=false;\}/,'A completed search can be started again');
+assert.match(html,/if\(voiceListening\)\{voiceRestart=true;voiceTarget=targetId;/,'A second speaking request is queued while the previous one ends');
+assert.match(html,/activeRecognition\?\.stop\(\)/,'The prior recognizer is stopped before a new request starts');
+assert.match(html,/recognition\.onend=\(\)=>\{const restart=voiceRestart/,'The queued speaking request starts as soon as the first one ends');
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
  assert.match(root.innerHTML,/<h2>Kontakte<\/h2>/);
  assert.match(root.innerHTML,/Musterstraße 12/);

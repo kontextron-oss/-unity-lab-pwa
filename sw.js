@@ -75,6 +75,11 @@ self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;
   const url=new URL(request.url);
+  // GitHub Pages also hosts HÖRBLICK and KONTAKTE under this origin.
+  // Never intercept another app's files using UNITY's cache.
+  const scope=self.registration?.scope||location.origin+'/';
+  const assetPaths=new Set(ASSETS.map(asset=>new URL(asset,scope).pathname));
+  if(!assetPaths.has(url.pathname))return;
   if(request.mode==='navigate'||url.pathname.endsWith('/index.html')){
     event.respondWith(navigateNetworkFirst(request));
     return;

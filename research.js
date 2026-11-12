@@ -95,7 +95,7 @@ function unityResearchPanel(stock){
     }
     html+='</div>';
   }else html+='<p class="tiny muted">Keine passende neue Pflichtveröffentlichung in dieser Quelle.</p>';
-  html+='<p class="tiny muted">Wichtig: Führungswechsel, Governance-, Cyber-, Rechnungslegungs-, Finanzierungs- oder Vertragsmeldungen markieren eine verpflichtende Neubewertung. Sie sagen allein weder etwas Positives noch Negatives über die Aktie aus und lösen keine automatische Handelsfreigabe aus.</p>';
+  html+='<p class="tiny muted">Wichtig: Führungswechsel, Governance-, Cyber-, Rechnungslegungs-, Finanzierungs- oder Vertragsmeldungen markieren eine verpflichtende Neubewertung. Sie sagen allein weder etwas Positives noch Negatives über die Aktie aus und ergeben keine Handelsfreigabe; eine automatische Handelsfreigabe ist ausgeschlossen.</p>';
   return html+'</section>';
 }
 async function unityLoadResearch(){

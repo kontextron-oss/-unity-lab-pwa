@@ -1,12 +1,11 @@
 'use strict';
 /* Home-first selected watchlist. Source: delayed market.json daily closes.
    This is not a live broker account, nor a real-time trading signal. */
+// The release label belongs to the delivered HTML. Never overwrite 0.17
+// with an older version string baked into a reused 0.16 home module.
 function unitySetReleaseLabel(){
-  if(typeof document==='undefined'||typeof document.querySelector!=='function')return;
-  const badge=document.querySelector('header h1 span');if(badge)badge.textContent='0.16.5';
-  const footer=document.querySelector('.footer');if(footer)footer.textContent=footer.textContent.replace(/Unity Lab 0\.13\.97|Unity Lab 0\.13\.98/,'Unity Lab 0.16.5');
+  return document.querySelector('header h1 span')?.textContent||'';
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',unitySetReleaseLabel,{once:true});else unitySetReleaseLabel();
 let unityHomeRange='1D',unityHomeSelected='',unityHomeTradeMode='',unityHomeDrag=null,unityHomeSort='observe';
 let unityHomeSortLoaded=false;
 const UNITY_HOME_SORT_SETTING='watchlist-sort-preference';
@@ -714,7 +713,7 @@ function unityHome(){
   const blockedPullbacks=pullbackResults.filter(x=>x.signal.kind==='blocked');
   const pilotCount=selected.filter(s=>typeof unityDisplayQuote==='function'&&unityDisplayQuote(s)?.precision==='15m-bar').length;
   h+='<div class="home-hero-summary"><span>↗ '+nUp+' Aufwärtstrend</span><span>↘ '+nDown+' Abwärtstrend</span><span>'+selected.length+' beobachtet</span></div>'+
-    '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Datenabruf '+esc(unityMarket?.generatedAt?.slice(0,16).replace('T',' ')||'noch nicht geladen')+'</p><details class="home-status-fold"><summary>Kursdaten & Analysefortschritt anzeigen</summary>'+unityHomeAnalysisStatus(selected)+'</details>'+
+    '<p class="home-feed-note">'+(pilotCount?'Pilot: '+pilotCount+' zeitgestempelte 15-Minuten-Kursbalken · ':'')+'Automatische Tageskurse · <b>keine garantierten Echtzeitkurse</b> · Quellenstand '+esc(unityMarket?.generatedAt?new Date(unityMarket.generatedAt).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):'noch nicht geladen')+' · '+esc(unityMarket?.generatedAt?Math.max(0,Math.floor((Date.now()-Date.parse(unityMarket.generatedAt))/60000))+' Min. alt':'–')+'</p><details class="home-status-fold"><summary>Kursdaten & Analysefortschritt anzeigen</summary>'+unityHomeAnalysisStatus(selected)+'</details>'+
     (capital?'<details class="home-capital-fold"><summary>'+(capital.configured?'Startkapital ändern':'Startkapital festlegen')+'</summary><form class="home-capital-entry" id="home-capital-form"><label for="home-capital-input">Fiktives Grundkapital in EUR<input id="home-capital-input" name="capital" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 10.000" value="'+(capital.configured?String(Number(capital.opening).toFixed(2)):'')+'"></label><button type="submit">Speichern</button></form><small>Ändert nur das fiktive Startkapital, nicht deine bisherigen Käufe und Verkäufe.</small></details>':'')+'</section>';
   h+=unityAutoOrdersSummary();
   if(typeof unityReadinessOverview==='function')h+=unityReadinessOverview(typeof stocks==='function'?stocks():selected);
@@ -1032,11 +1031,22 @@ document.addEventListener('click',e=>{
 // Recheck the published EOD snapshot when the user returns to the app.
 // A refreshed snapshot is not a live quote stream.
 let unityHomeLastCheck=Date.now();
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&Date.now()-unityHomeLastCheck>15*60000){
-    unityHomeLastCheck=Date.now();unityLoadMarket();if(typeof unityLoadIntraday==='function')unityLoadIntraday();if(typeof unityLoadFx==='function')unityLoadFx();
-  }
-});
+const UNITY_HOME_REFRESH_INTERVAL_MS=15*60000;
+function unityHomeRefreshVisibleIfDue(){
+  if(document.visibilityState!=='visible'||
+     Date.now()-unityHomeLastCheck<UNITY_HOME_REFRESH_INTERVAL_MS)return;
+  unityHomeLastCheck=Date.now();
+  // These functions read versioned public reference snapshots, not live
+  // exchange feeds. Do not run recurring history reconstruction or orders.
+  if(typeof unityLoadMarket==='function')void unityLoadMarket();
+  if(typeof unityLoadIntraday==='function')void unityLoadIntraday();
+  if(typeof unityLoadFx==='function')void unityLoadFx();
+}
+document.addEventListener('visibilitychange',unityHomeRefreshVisibleIfDue);
+if(typeof window!=='undefined'){
+  window.addEventListener('focus',unityHomeRefreshVisibleIfDue);
+  window.setInterval(unityHomeRefreshVisibleIfDue,60000);
+}
 
 /* Pull down at the top of the depot to recheck available reference data. */
 let unityPullStartY=0,unityPullActive=false,unityPullRefreshing=false;

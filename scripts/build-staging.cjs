@@ -16,7 +16,7 @@ const obj=vm.runInNewContext(worker+';({CACHE,ASSETS})',{
  self:{addEventListener(){}},
  URL,location:{origin:'https://staging.invalid'}
 },{timeout:3000});
-if(obj.CACHE!=='unity-lab-v0.17.0-rc1'||
+if(obj.CACHE!=='unity-lab-v0.17.0-rc1-datafix-20261112'||
    !index.includes('Unity Lab 0.17.0 RC1')||
    !index.includes('valuation-scenarios.js?v=0.17.0-rc1')||
    manifest.short_name!=='UNITY RC1')

@@ -10,7 +10,7 @@ const build=cp.spawnSync(process.execPath,['scripts/build-staging.cjs'],
 assert.equal(build.status,0,'Preview build failed: '+build.stderr);
 assert.match(build.stdout,/public assets/);
 const sw=fs.readFileSync(path.join(out,'sw.js'),'utf8');
-assert.match(sw,/const CACHE='unity-lab-v0\.17\.0-rc1'/);
+assert.match(sw,/const CACHE='unity-lab-v0\.17\.0-rc1-datafix-20261112'/);
 assert.match(fs.readFileSync(path.join(out,'index.html'),'utf8'),/0\.17\.0 RC1/);
 const direct=fs.readFileSync(path.join(out,'unity-017.html'),'utf8');
 assert.match(direct,/Unity Lab 0\.17\.0 RC1 · Direktstart/);

@@ -16,7 +16,13 @@ function unityIntradayItem(isin){
 }
 function unityDisplayQuote(s){
   const fullDaily=typeof unityMarketForStock==='function'?unityMarketForStock(s):unityMarketItem(s.isin),daily=fullDaily||(typeof unityReferenceQuoteItem==='function'?unityReferenceQuoteItem(s):null),pilot=unityIntradayItem(s.isin);
-  if(pilot&&(!daily||pilot.quotedAt.slice(0,10)>daily.date)){
+  // A newer 15-minute observation on the SAME trading day must not be
+  // suppressed by an earlier dated daily-chart snapshot.
+  const lastDailyFetch=Date.parse(daily?.lastSuccessfulFetchAt||(typeof unityMarket!=='undefined'?unityMarket?.generatedAt:'')||'');
+  const pilotNewer=pilot&&(!daily||pilot.quotedAt.slice(0,10)>daily.date||
+    pilot.quotedAt.slice(0,10)===daily.date&&
+    Number.isFinite(lastDailyFetch)&&Date.parse(pilot.quotedAt)>lastDailyFetch);
+  if(pilotNewer){
     return {price:pilot.price,currency:pilot.currency,exchange:pilot.exchange||s.exchange,
       date:pilot.quotedAt.slice(0,10),quotedAt:pilot.quotedAt,precision:'15m-bar',
       source:pilot.source,ageMinutes:Math.max(0,Math.floor((Date.now()-Date.parse(pilot.quotedAt))/60000)),

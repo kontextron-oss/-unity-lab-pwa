@@ -80,7 +80,7 @@ const fuzzyNameMatches=(name,query)=>{
  const wanted=nameKey(query).split(/\s+/).filter(x=>x.length>=3),parts=nameKey(name).split(/\s+/).filter(x=>x.length>=3);
  return wanted.length>0&&wanted.every(word=>parts.some(part=>{const longest=Math.max(word.length,part.length);return longest>=5&&editDistance(word,part)<=((longest>=8)?2:1);}));
 };
-const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
+const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>Number(Boolean(b.favorite))-Number(Boolean(a.favorite))||a.name.localeCompare(b.name,"de"));
 const get=id=>all().find(c=>c.id===id);
 const stamp=()=>new Date().toISOString();
 function valid(x){
@@ -97,7 +97,7 @@ function valid(x){
   phone:phones[0]?.number||"",phones,
   email:str("email",180),website:str("website",250),notes:str("notes",4000),
   street:str("street",120),house:str("house",22),zip:str("zip",16),
-  city:str("city",100),updatedAt:str("updatedAt",35)||stamp()
+  city:str("city",100),favorite:x.favorite===true,updatedAt:str("updatedAt",35)||stamp()
  };
 }
 function newId(){return crypto?.randomUUID?.()||("id-"+Date.now()+"-"+Math.random().toString(36).slice(2));}
@@ -329,7 +329,7 @@ function render(){
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
   const inner='<button class="primary" data-a="speak">Kontakt vollständig vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><p class="fieldhead" style="margin-top:28px">Adresse</p><div class="value">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><p class="fieldhead" style="margin-top:24px">Telefonnummern</p>'+phoneCards(c);
-  screen(back+'<h2>Kontaktkarte</h2><button class="outline" data-a="search-again">Anderen Kontakt suchen</button><p class="name">'+E(c.name)+'</p>'+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
+  screen(back+'<h2>Kontaktkarte</h2><button class="outline" data-a="search-again">Anderen Kontakt suchen</button><p class="name">'+E(c.name)+'</p>'+(c.demo?'':'<button class="outline" data-a="favorite">'+(c.favorite?'Aus Favoriten entfernen':'Zu Favoriten')+'</button>')+inner+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){
   const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:""};
@@ -399,6 +399,13 @@ app.addEventListener("click",async e=>{
   }
   return;
  }
+ if(a==="favorite"){
+  const c=get(selected);if(!c||c.demo)return;
+  const nowFavorite=!c.favorite;
+  try{await put({...c,favorite:nowFavorite,updatedAt:stamp()});render();status(nowFavorite?c.name+" ist jetzt ein Favorit.":c.name+" ist kein Favorit mehr.");}
+  catch(err){status("Favorit konnte nicht gespeichert werden.");}
+  return;
+ }
  if(a==="edit"){editing=selected;nav("form");return;}
  if(a==="delete"){
   const targetId=editing||selected,c=get(targetId);
@@ -434,7 +441,7 @@ app.addEventListener("submit",async e=>{
  const field=n=>String(f.get(n)||"").trim();
  const labels=f.getAll("phoneType"),values=f.getAll("phoneNumber");
  const phones=values.map((v,i)=>({label:String(labels[i]||"Mobil"),number:String(v||"").trim()})).filter(p=>p.number).slice(0,30);
- const data=valid({id:editing||"k-"+newId(),name:field("name"),phone:phones[0]?.number||"",phones,street:field("street"),house:field("house"),zip:field("zip"),city:field("city"),email:field("email"),website:field("website"),notes:field("notes"),updatedAt:stamp()});
+ const data=valid({id:editing||"k-"+newId(),name:field("name"),phone:phones[0]?.number||"",phones,street:field("street"),house:field("house"),zip:field("zip"),city:field("city"),email:field("email"),website:field("website"),notes:field("notes"),favorite:editing?get(editing)?.favorite===true:false,updatedAt:stamp()});
  if(!data){status("Bitte Namen eingeben.");return;}
  try{await put(data);editing=null;selected=null;nav("home");status("Kontakt lokal gespeichert · "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr.");}
  catch(err){status("Konnte nicht gespeichert werden. Bitte Browserspeicher prüfen.");}

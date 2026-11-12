@@ -59,10 +59,10 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
  await click('alphabet');
  assert.match(root.innerHTML,/data-letter="A"/,'Alphabet letters appear after opening A–Z');
  await click('search-voice');
- assert.match(root.innerHTML,/id="q"/,'Tapping search opens the field for speaking or typing');
- assert.match(root.innerHTML,/placeholder="Sprechen"/,'The visible search prompt only says Sprechen');
- assert.match(html,/getUserMedia\(\{audio:true\}\)/,'Search requests microphone permission before recognition starts');
-assert.match(html,/if\(e\.target\.id==="q"\)\{startBrowserVoice\("q"\);return;\}/,'Tapping the open search field starts a new voice search');
+ assert.match(root.innerHTML,/>Sprechen<\/button>/,'Speaking remains the immediate primary action');
+ assert.match(root.innerHTML,/data-a="search-write">Schreiben/,'Writing is an explicit secondary action');
+ assert.doesNotMatch(html,/getUserMedia\(\{audio:true\}\)/,'No repeated microphone permission probe is made');
+assert.match(html,/if\(a==="search-write"\)\{manualSearch=true;render\(\);app\.querySelector\("#q"\)\?\.focus\(\);return;\}/,'Keyboard opens only after the explicit writing action');
 assert.match(html,/recognition\.onresult=e=>\{voiceListening=false;/,'Speech recognition is released immediately after a name is heard');
 assert.match(html,/recognition\.onend=\(\)=>\{voiceListening=false;\}/,'A completed search can be started again');
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
@@ -80,7 +80,7 @@ assert.match(html,/recognition\.onend=\(\)=>\{voiceListening=false;\}/,'A comple
  assert.match(root.innerHTML,/Anderen Kontakt suchen/,'Another search is directly available from the contact card');
  assert.doesNotMatch(root.innerHTML,/Adresse vorlesen|Telefonnummern vorlesen/,'Separate reading actions are removed from the contact card');
  await click('search-again');
- assert.match(root.innerHTML,/id="q"/,'Another search returns directly to the large search field');
+ assert.match(root.innerHTML,/>Sprechen<\/button>/,'Another search returns directly to speaking without opening the keyboard');
  await click('select','__beispiel__');
  await click('delete');
  assert.equal(localStorage.getItem('kontakte-kontakte-beispiel-ausgeblendet'),'1','Example contact removal persists locally');

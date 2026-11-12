@@ -163,7 +163,7 @@ assert.match(detail,/Daten/);
 const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
 assert.match(index,/readiness-audit\.js\?v=0\.16\.5/);
 assert.match(sw,/readiness-audit\.js\?v=0\.16\.5/);
-assert.match(index,/home\.js\?v=0\.16\.5/);
+assert.match(index,/home\.js\?v=0\.17\.0-rc1-datafix-20261112/);
 assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
 const source=fs.readFileSync('home.js','utf8');
 assert.match(source,/unityReadinessOverview/);

@@ -96,7 +96,7 @@ const ctx={URL,Request,Response,caches:cacheAPI,fetch:mockFetch,
   clients:{async claim(){record.claimed++}}
  }};
 const config=vm.runInNewContext(sw+'\n;({CACHE,ASSETS})',ctx);
-assert.equal(config.CACHE,'unity-lab-v'+rc);
+assert.equal(config.CACHE,'unity-lab-v'+rc+'-datafix-20261112');
 assert.equal(new Set(config.ASSETS).size,config.ASSETS.length,'no duplicate entries');
 for(const asset of evidence)assert.ok(config.ASSETS.includes(asset),'missing offline source '+asset);
 assert.ok(config.ASSETS.includes('./valuation-scenarios.js?v='+rc));

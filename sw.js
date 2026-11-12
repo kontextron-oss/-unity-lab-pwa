@@ -23,7 +23,13 @@ self.addEventListener('activate',event=>{
 async function latestCache(){return caches.open(CACHE)}
 async function cacheNetworkResponse(request,response){
   if(response.ok){
-    try{await (await latestCache()).put(request,response.clone())}catch(_){}
+    try{
+      // Persist under the canonical URL: timestamped ?t= requests must
+      // update the offline snapshot, not create an unbounded cache entry.
+      const canonical=new URL(request.url);
+      canonical.search='';canonical.hash='';
+      await (await latestCache()).put(canonical.href,response.clone());
+    }catch(_){}
   }
   return response;
 }
@@ -34,6 +40,24 @@ async function currentThenPrevious(request){
   return await current.match(request,{ignoreSearch:true})||
     await caches.match(request)||
     new Response('Offline',{status:503,statusText:'Offline'});
+}
+async function dataNetworkFirst(request){
+  // Public market/FX/filing files change on GitHub. A cache-first handler
+  // intercepted fetch(...,{cache:'no-store'}) and froze iPhone quotes.
+  // Always try the network first; offline retains the newest verified cache.
+  try{
+    const response=await fetch(request,{cache:'no-store'});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    const type=(response.headers.get('content-type')||'').toLowerCase();
+    if(new URL(request.url).pathname.endsWith('.json')&&type.includes('text/html'))
+      throw Error('HTML statt Kursdaten');
+    return await cacheNetworkResponse(request,response);
+  }catch(_){
+    const current=await latestCache();
+    return await current.match(request,{ignoreSearch:true})||
+      await caches.match(request)||
+      new Response('Offline',{status:503,statusText:'Offline'});
+  }
 }
 async function navigateNetworkFirst(request){
   try{
@@ -55,8 +79,8 @@ self.addEventListener('fetch',event=>{
     event.respondWith(navigateNetworkFirst(request));
     return;
   }
-  if(url.pathname.endsWith('/data/crypto-market.js')){
-    event.respondWith(navigateNetworkFirst(request));
+  if(url.pathname.includes('/data/')){
+    event.respondWith(dataNetworkFirst(request));
     return;
   }
   event.respondWith(currentThenPrevious(request));

@@ -37,9 +37,16 @@ function unityResearchRecent(stock){
   });
   return ev||null;
 }
+function unityResearchEventLabel(event){
+  const kind=String(event?.eventClass||'filing');
+  const allowed={leadership:'Führungswechsel / Management',cybersecurity:'Cybersecurity-Ereignis',
+    accounting:'Rechnungslegung überprüfen',impairment:'Wertminderung / Abschreibung',
+    contract:'Wesentlicher Vertragsverlust',financing:'Fälligkeit / Finanzierung prüfen'};
+  return allowed[kind]||String(event?.label||'Amtliche Pflichtmeldung');
+}
 function unityResearchBadge(stock){
   const e=unityResearchRecent(stock);
-  return e?'<span class="unity-issuer-event-flag" title="Amtliche Veröffentlichung: kein automatisch positives Kaufsignal">◆ Neue Pflichtmeldung · '+esc(e.filedAt)+'</span>':'';
+  return e?'<span class="unity-issuer-event-flag" title="Amtliche, entscheidungsrelevante Meldung: Original prüfen; kein automatisches Kauf- oder Verkaufssignal">◆ '+esc(unityResearchEventLabel(e))+' · Prüfung nötig</span>':'';
 }
 function unityResearchPanel(stock){
   const item=unityResearchItem(stock);
@@ -80,13 +87,15 @@ function unityResearchPanel(stock){
   if(events.length){
     html+='<h4>Amtliche Veröffentlichungen</h4><div class="unity-issuer-events">';
     for(const ev of events){
-      html+='<div class="unity-issuer-event"><span><strong>'+esc(ev.label||ev.form)+'</strong>'+
-        '<small>'+esc(ev.filedAt)+' · '+esc(ev.source||'')+' · '+esc(ev.form||'')+'</small></span>'+
+      const eventLabel=unityResearchEventLabel(ev);
+      const review=ev.decisionImpact==='review'?' · Prüfung erforderlich':'';
+      html+='<div class="unity-issuer-event"><span><strong>'+esc(eventLabel)+'</strong>'+
+        '<small>'+esc(ev.filedAt)+' · '+esc(ev.source||'')+' · '+esc(ev.form||'')+esc(review)+'</small></span>'+
         '<a href="'+esc(unityResearchSourceLink(ev.url))+'" target="_blank" rel="noopener noreferrer">Original öffnen</a></div>';
     }
     html+='</div>';
   }else html+='<p class="tiny muted">Keine passende neue Pflichtveröffentlichung in dieser Quelle.</p>';
-  html+='<p class="tiny muted">Wichtig: Die Einreichung einer 8-K-, 6-K- oder Quartalsmeldung allein sagt nichts über die Qualität oder Kurswirkung aus. Keine automatische Earnings-Bestätigung, kein Sentiment-Score und keine Handelsfreigabe.</p>';
+  html+='<p class="tiny muted">Wichtig: Führungswechsel, Governance-, Cyber-, Rechnungslegungs-, Finanzierungs- oder Vertragsmeldungen markieren eine verpflichtende Neubewertung. Sie sagen allein weder etwas Positives noch Negatives über die Aktie aus und lösen keine automatische Handelsfreigabe aus.</p>';
   return html+'</section>';
 }
 async function unityLoadResearch(){

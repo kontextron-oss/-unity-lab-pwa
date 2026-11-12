@@ -138,3 +138,24 @@ jobs:
         run: node tests/rc17-staging-bundle.cjs
       - name: Check that GitHub Pages delivers ALL mandatory PWA files
         run: node tests/live-pages-assets.cjs
+
+      - name: Confirm fixed market cache is actually deployed to GitHub Pages (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://kontextron-oss.github.io/-unity-lab-pwa"
+          for n in {1..12}; do
+            echo "Live market-fix check ${n}/12"
+            if curl -fsSL --max-time 20 "${BASE}/sw.js?probe=20261112-${GITHUB_SHA}" -o /tmp/unity-sw-live.js \
+              && curl -fsSL --max-time 20 "${BASE}/home.js?probe=20261112-${GITHUB_SHA}" -o /tmp/unity-home-live.js \
+              && grep -Fq "unity-lab-v0.17.0-rc1-datafix-20261112" /tmp/unity-sw-live.js \
+              && grep -Fq "dataNetworkFirst(request)" /tmp/unity-sw-live.js \
+              && grep -Fq "assetPaths.has(url.pathname)" /tmp/unity-sw-live.js \
+              && ! grep -Fq "badge.textContent=" /tmp/unity-home-live.js; then
+                echo "SUCCESS: current UNITY quote-cache fix and corrected version label are publicly served"
+                exit 0
+            fi
+            sleep 8
+          done
+          echo "::error::Public GitHub Pages still serves old UNITY market cache or version header"
+          exit 1

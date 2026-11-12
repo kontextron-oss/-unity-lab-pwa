@@ -11,6 +11,8 @@ const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 assert.equal(scripts.length,1,'Expected one inline app script');
 new vm.Script(scripts[0],{filename:'kontakte/index.html:inline'});
 assert.match(html,/Kontakte werden geöffnet/,'Accessible initial loading message required');
+assert.match(html,/#app\{width:100%;max-width:550px;margin:0 auto;overflow-x:clip\}/,'The app is held in one centered, fixed-width column');
+assert.match(html,/#list\{width:100%;max-width:100%;overflow-x:clip\}/,'Contact lists cannot expand sideways');
 const root={innerHTML:'',events:{},addEventListener(type,fn){this.events[type]=fn;},querySelector(){return null;}};
 const local=new Map();
 const localStorage={getItem:k=>local.has(k)?local.get(k):null,setItem:(k,v)=>local.set(k,v),removeItem:k=>local.delete(k)};

@@ -38,7 +38,7 @@ async function currentThenPrevious(request){
   // keep returning 0.16.5 when offline even after 0.17 has activated.
   const current=await latestCache();
   return await current.match(request,{ignoreSearch:true})||
-    await caches.match(request)||
+    await caches.match(request,{ignoreSearch:true})||
     new Response('Offline',{status:503,statusText:'Offline'});
 }
 async function dataNetworkFirst(request){
@@ -55,7 +55,7 @@ async function dataNetworkFirst(request){
   }catch(_){
     const current=await latestCache();
     return await current.match(request,{ignoreSearch:true})||
-      await caches.match(request)||
+      await caches.match(request,{ignoreSearch:true})||
       new Response('Offline',{status:503,statusText:'Offline'});
   }
 }
@@ -66,7 +66,7 @@ async function navigateNetworkFirst(request){
     const current=await latestCache();
     return await current.match(request,{ignoreSearch:true})||
       await current.match('./index.html')||
-      await caches.match(request)||
+      await caches.match(request,{ignoreSearch:true})||
       await caches.match('./index.html')||
       new Response('Offline',{status:503,statusText:'Offline'});
   }

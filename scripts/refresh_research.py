@@ -50,6 +50,22 @@ FORM_LABELS = {
     "8-K": "Unternehmensmeldung", "20-F": "Ausländischer Jahresbericht",
     "6-K": "Mitteilung ausländischer Emittenten"
 }
+# SEC item codes classify the filing topic, never its economic direction.
+# They are an explicit instruction to review the original document, not a trade signal.
+EVENT_RULES = {
+    "5.02": ("Führungswechsel / Management", "leadership"),
+    "1.05": ("Cybersecurity-Ereignis", "cybersecurity"),
+    "4.02": ("Rechnungslegung überprüfen", "accounting"),
+    "2.06": ("Wertminderung / Abschreibung", "impairment"),
+    "1.02": ("Wesentlicher Vertragsverlust", "contract"),
+    "2.04": ("Fälligkeit / Finanzierung prüfen", "financing"),
+}
+def filing_event_metadata(form, item_codes):
+    codes = {part.strip() for part in str(item_codes or "").replace(";", ",").split(",") if part.strip()}
+    for code, (label, event_class) in EVENT_RULES.items():
+        if code in codes:
+            return label, event_class, "review"
+    return FORM_LABELS.get(form, "Pflichtveröffentlichung"), "filing", "review"
 DURATION = {
     "revenue": ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax",
                 "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueNet"),
@@ -99,6 +115,7 @@ def filing_events(subs, cik):
     recent = (subs.get("filings") or {}).get("recent") or {}
     forms = recent.get("form") or []
     keys = ("accessionNumber", "filingDate", "primaryDocument")
+    item_codes = recent.get("items") or []
     rows = []
     for i, form in enumerate(forms):
         if form not in ALLOWED_FORMS or form.endswith("/A"):
@@ -114,8 +131,9 @@ def filing_events(subs, cik):
             if not (digits.isdigit() and len(digits) == 18):
                 continue
             url = "https://www.sec.gov/Archives/edgar/data/{}/{}/{}".format(cik, digits, doc)
-            rows.append({"form":form, "label":FORM_LABELS.get(form, "Pflichtveröffentlichung"),
-                         "filedAt":date, "url":url, "source":"SEC EDGAR"})
+            label, event_class, decision_impact = filing_event_metadata(form, item_codes[i] if i < len(item_codes) else "")
+            rows.append({"form":form, "label":label, "eventClass":event_class,
+                         "decisionImpact":decision_impact, "filedAt":date, "url":url, "source":"SEC EDGAR"})
         except (IndexError, KeyError, TypeError, ValueError):
             continue
     rows.sort(key=lambda x: x["filedAt"], reverse=True)

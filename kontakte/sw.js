@@ -1,6 +1,6 @@
 const path=new URL(self.registration.scope).pathname;
 const PROFILE=path.includes("/klaus-kontakte/")?"klaus":path.includes("/jan-kontakte/")?"jan":"all";
-const CACHE=PROFILE==="all"?"kontakte-pwa-v11":"kontakte-"+PROFILE+"-pwa-v11";
+const CACHE=PROFILE==="all"?"kontakte-pwa-v12":"kontakte-"+PROFILE+"-pwa-v12";
 const PREFIX=PROFILE==="all"?"kontakte-pwa-":"kontakte-"+PROFILE+"-pwa-";
 const SHELL=["./","./index.html","./manifest.webmanifest","./icon.svg","./apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});

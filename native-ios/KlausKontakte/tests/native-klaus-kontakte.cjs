@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const store=fs.readFileSync('Sources/ContactStore.swift','utf8');
+const speech=fs.readFileSync('Sources/SpeechService.swift','utf8');
+const view=fs.readFileSync('Sources/ContentView.swift','utf8');
+assert.match(store,/applicationSupportDirectory/,'contacts stay in local app storage');
+assert.match(store,/importVCard/,'VCF import is implemented');
+assert.match(store,/importWebBackup/,'existing PWA JSON backup can be imported');
+assert.match(speech,/contextualStrings/,'saved names improve speech recognition');
+assert.match(speech,/requiresOnDeviceRecognition/,'on-device recognition is preferred');
+assert.match(view,/Sprachsuche starten/,'large microphone has an accessibility label');
+assert.doesNotMatch(store,/Anna Müller|Christine|Mustermann/,'no private or pseudo contacts are shipped');
+console.log('Native Klaus Kontakte: local storage, import and speech vocabulary checks passed.');

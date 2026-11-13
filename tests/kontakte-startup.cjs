@@ -101,6 +101,9 @@ assert.match(html,/recognition\.maxAlternatives=3/,'Several recognition alternat
  assert.match(html,/App-Paket mit Quellcode sichern/,'Public app package action included');
  assert.match(root.innerHTML,/Kontakte importieren/);
  assert.doesNotMatch(html,/data-a="sms"|data-a="message"/);
+assert.match(html,/PROFILE\.id==="jan"\?'<button type="button" class="whatsapp-btn" data-a="whatsapp"/,'WhatsApp opening is offered only in Jan Kontakte');
+assert.match(html,/function whatsappNumber\(raw\)/,'German and international phone formats are prepared for WhatsApp');
+assert.match(html,/location\.href="https:\/\/wa\.me\//,'WhatsApp opens through the official click-to-chat URL');
  const {valid,phoneList,toVcard,parseVcard,importPlan,voiceQuery,nameMatches,fuzzyNameMatches}=window.__contactsTest;
  assert.equal(voiceQuery('Rufe Anna Müller auf dem Handy an'),'anna muller','Voice commands extract the contact name');
  assert.equal(voiceQuery('Suche Frau Christine'),'christine','Voice commands ignore forms of address');

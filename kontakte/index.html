@@ -38,7 +38,7 @@ input::placeholder{color:#575757}
 label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 .row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr);gap:12px}
 .row.equal{grid-template-columns:1fr 1fr}
-.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.alphabet{margin:8px 0 24px}.alphabet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.alphabet-grid button{min-height:78px;border:0;border-radius:14px;background:#fff;color:#000;font-size:30px;font-weight:780}.alphabet-grid button.is-selected{background:#000;color:#fff;box-shadow:0 0 0 4px #fff}.alphabet-grid .allletters{grid-column:span 2;font-size:23px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
+.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.category-picker{margin:8px 0 24px}.category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.category-grid button{min-height:68px;border:2px solid #fff;border-radius:14px;background:#090909;color:#fff;font-size:21px;font-weight:750;padding:10px}.category-grid button.is-selected{background:#fff;color:#000}.category-grid .allcategories{grid-column:span 2}.alphabet{margin:8px 0 24px}.alphabet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.alphabet-grid button{min-height:78px;border:0;border-radius:14px;background:#fff;color:#000;font-size:30px;font-weight:780}.alphabet-grid button.is-selected{background:#000;color:#fff;box-shadow:0 0 0 4px #fff}.alphabet-grid .allletters{grid-column:span 2;font-size:23px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
 .value{background:#fff;color:#000;border-radius:16px;white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(26px,6vw,33px);font-weight:740;line-height:1.43;padding:20px;min-height:115px}
 .name{font-size:28px;font-weight:750;margin:18px 0}
 .primary{width:100%;min-height:76px;background:#fff;color:#000;border:0;border-radius:16px;padding:14px;font-size:27px;font-weight:750;margin-top:18px}
@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,voiceWatchdog=0,voiceRetryTimer=0,searchOpen=false,letter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,voiceWatchdog=0,voiceRetryTimer=0,searchOpen=false,letter="",categoryFilter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
@@ -97,11 +97,13 @@ function valid(x){
   phone:phones[0]?.number||"",phones,
   email:str("email",180),website:str("website",250),notes:str("notes",4000),
   street:str("street",120),house:str("house",22),zip:str("zip",16),
-  city:str("city",100),favorite:x.favorite===true,updatedAt:str("updatedAt",35)||stamp()
+  city:str("city",100),category:str("category",60),favorite:x.favorite===true,updatedAt:str("updatedAt",35)||stamp()
  };
 }
 function newId(){return crypto?.randomUUID?.()||("id-"+Date.now()+"-"+Math.random().toString(36).slice(2));}
 function phoneList(c){return c.phones?.length?c.phones:(c.phone?[{label:"Mobil",number:c.phone}]:[]);}
+function contactCategory(c){return String(c?.category||"").trim()||"Ohne Rubrik";}
+function knownCategories(){return [...new Set(["Privat","Beruflich",...records.map(contactCategory).filter(x=>x!=="Ohne Rubrik")])].sort((a,b)=>a.localeCompare(b,"de"));}
 function safeSite(raw){
  const s=String(raw||"").trim();if(!s)return "";
  try{const url=new URL(/^https?:\/\//i.test(s)?s:"https://"+s);return url.protocol==="https:"||url.protocol==="http:"?url.href:"";}catch(e){return "";}
@@ -121,6 +123,7 @@ function toVcard(list){
   for(const p of phoneList(c))lines.push("TEL;TYPE="+({Mobil:"CELL",Privat:"HOME",Arbeit:"WORK",Andere:"VOICE"}[p.label]||"VOICE")+":"+vEscape(p.number));
   if(c.email)lines.push("EMAIL:"+vEscape(c.email));
   if(c.website)lines.push("URL:"+vEscape(c.website));
+  if(c.category)lines.push("CATEGORIES:"+vEscape(c.category));
   if(c.street||c.house||c.zip||c.city)lines.push("ADR;TYPE=HOME:;;"+vEscape([c.street,c.house].filter(Boolean).join(" "))+";"+vEscape(c.city)+";;"+vEscape(c.zip)+";");
   if(c.notes)lines.push("NOTE:"+vEscape(c.notes));
   lines.push("END:VCARD");return lines.join("\r\n");
@@ -130,7 +133,7 @@ function parseVcard(data){
  const unfolded=String(data).replace(/\r\n/g,"\n").replace(/\n[ \t]/g,"").split("\n");
  const list=[];let c=null;
  for(const line of unfolded){
-  if(/^BEGIN:VCARD$/i.test(line.trim())){c={id:"",name:"",phones:[],email:"",website:"",notes:"",street:"",house:"",zip:"",city:""};continue;}
+  if(/^BEGIN:VCARD$/i.test(line.trim())){c={id:"",name:"",phones:[],email:"",website:"",notes:"",street:"",house:"",zip:"",city:"",category:""};continue;}
   if(/^END:VCARD$/i.test(line.trim())){if(c?.name){const item=valid(c);if(item)list.push(item);}c=null;continue;}
   if(!c)continue;
   const pos=line.indexOf(":");if(pos<0)continue;
@@ -141,6 +144,7 @@ function parseVcard(data){
   else if(type==="TEL"){const label=/CELL|IPHONE|MOBILE/.test(header)?"Mobil":/WORK/.test(header)?"Arbeit":/HOME/.test(header)?"Privat":"Andere";c.phones.push({label,number:value.replace(/^tel:/i,"")});}
   else if(type==="EMAIL"&&!c.email)c.email=value;
   else if(type==="URL"&&!c.website)c.website=value;
+  else if(type==="CATEGORIES"&&!c.category)c.category=value.split(",")[0].trim();
   else if(type==="NOTE"&&!c.notes)c.notes=value;
   else if(type==="ADR"){
    const v=line.slice(pos+1).split(";").map(vUnescape),street=v[2]||"";
@@ -235,7 +239,7 @@ function whatsappNumber(raw){
 function contactCard(c){
  const phones=phoneList(c);
  const telephone=phones.length?phones.map((p,i)=>'<div class="contact-card-phone"><div class="contact-card-label">'+E(p.label)+'</div><div class="contact-card-number">'+E(p.number)+'</div>'+(c.demo?'':'<button type="button" class="call-btn" data-a="call" data-index="'+i+'" aria-label="'+E(c.name+': '+p.label+' '+p.number+' anrufen')+'">Anrufen</button>'+(PROFILE.id==="jan"?'<button type="button" class="whatsapp-btn" data-a="whatsapp" data-index="'+i+'" aria-label="'+E(c.name+' über WhatsApp öffnen')+'">WhatsApp öffnen</button>':''))+'</div>').join(""):'<div class="contact-card-phone"><div class="contact-card-number">Keine Telefonnummer hinterlegt</div></div>';
- return '<section class="contact-card" aria-label="Kontakt von '+E(c.name)+'"><div class="contact-card-name">'+E(c.name)+'</div><div class="contact-card-address">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><div class="contact-card-heading">Telefonnummern</div>'+telephone+'</section>';
+ return '<section class="contact-card" aria-label="Kontakt von '+E(c.name)+'"><div class="contact-card-name">'+E(c.name)+'</div>'+(PROFILE.id==="jan"&&!c.demo?'<div class="contact-card-label">Rubrik: '+E(contactCategory(c))+'</div>':'')+'<div class="contact-card-address">'+E(addressText(c)||"Keine Adresse hinterlegt")+'</div><div class="contact-card-heading">Telefonnummern</div>'+telephone+'</section>';
 }
 function extra(c){
  if(!c.email&&!c.website&&!c.notes)return "";
@@ -332,8 +336,13 @@ const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50
 const back='<button class="back" data-a="back" aria-label="Zur Startseite">Zur Startseite</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
 function items(){
- const match=all().filter(c=>(!letter||N(c.name).startsWith(N(letter)))&&fuzzyNameMatches(c.name,term));
+ const match=all().filter(c=>(!letter||N(c.name).startsWith(N(letter)))&&(!categoryFilter||contactCategory(c)===categoryFilter)&&fuzzyNameMatches(c.name,term));
  return match.length?match.map(c=>{const info=[addressText(c),phoneList(c).map(p=>p.label+": "+p.number).join("\n")].filter(Boolean).join("\n");return '<button class="item" data-a="select" data-id="'+E(c.id)+'"><span class="item-title">'+E(c.name)+'</span><span class="item-detail">'+E(info||"Keine Adresse oder Telefonnummer hinterlegt")+'</span></button>';}).join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
+}
+function categoryPicker(){
+ if(PROFILE.id!=="jan")return "";
+ const categories=knownCategories();
+ return '<section class="category-picker" aria-label="Kontakt-Rubrik wählen"><div class="category-grid"><button class="allcategories'+(!categoryFilter?' is-selected':'')+'" data-a="category" data-category="" aria-pressed="'+(!categoryFilter)+'">Alle Kontakte</button>'+categories.map(x=>'<button class="'+(categoryFilter===x?'is-selected':'')+'" data-a="category" data-category="'+E(x)+'" aria-pressed="'+(categoryFilter===x)+'">'+E(x)+'</button>').join("")+'</div></section>';
 }
 function alphabetPicker(){
  const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -347,7 +356,7 @@ function render(){
   screen(back+'<h2>Sprachsuche</h2><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Sprechen" aria-label="Kontakt sprechen">');return;
  }
  if(view==="list"){
-  screen(back+'<h2>Kontakte</h2>'+alphabetPicker()+'<div id="list">'+items()+'</div>');return;
+  screen(back+'<h2>Kontakte</h2>'+categoryPicker()+alphabetPicker()+'<div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
@@ -355,10 +364,10 @@ function render(){
   screen(back+contactCard(c)+controls+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){
-  const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:""};
+  const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:"",category:PROFILE.id==="jan"?"Privat":""};
   const numbers=phoneList(v);
   const fields=(numbers.length?numbers:[{label:"Mobil",number:""}]).map(phoneField).join("");
-  screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><p class="tip">Der Kontakt wird mit „Kontakt lokal speichern“ am Ende dieses Formulars auf diesem iPhone abgelegt.</p><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'"><p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><label for="website">Webseite</label><input id="website" name="website" type="text" inputmode="text" maxlength="250" autocomplete="url" placeholder="www.beispiel.de" value="'+E(v.website)+'"><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt lokal speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte sichern, importieren und exportieren"><h3>Sicherung und Übertragung</h3><p class="backup-note">Der laufende Kontaktbestand bleibt lokal auf diesem iPhone. Eine Sicherung wird als eigene Datei bereitgestellt; sie wird nicht automatisch in pCloud abgelegt.</p><button data-a="export-pcloud" type="button">In pCloud sichern · Teilen</button><button data-a="export-json" type="button">Sicherung in Dateien speichern (JSON)</button><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"><button data-a="delete-all" type="button">Alle eigenen Kontakte löschen</button></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
+  screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><p class="tip">Der Kontakt wird mit „Kontakt lokal speichern“ am Ende dieses Formulars auf diesem iPhone abgelegt.</p><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'">'+(PROFILE.id==="jan"?'<label for="category">Rubrik</label><input id="category" name="category" list="categories" maxlength="60" value="'+E(v.category||"Ohne Rubrik")+'"><datalist id="categories">'+knownCategories().map(x=>'<option value="'+E(x)+'"></option>').join("")+'</datalist>':'')+'<p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><label for="website">Webseite</label><input id="website" name="website" type="text" inputmode="text" maxlength="250" autocomplete="url" placeholder="www.beispiel.de" value="'+E(v.website)+'"><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt lokal speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte sichern, importieren und exportieren"><h3>Sicherung und Übertragung</h3><p class="backup-note">Der laufende Kontaktbestand bleibt lokal auf diesem iPhone. Eine Sicherung wird als eigene Datei bereitgestellt; sie wird nicht automatisch in pCloud abgelegt.</p><button data-a="export-pcloud" type="button">In pCloud sichern · Teilen</button><button data-a="export-json" type="button">Sicherung in Dateien speichern (JSON)</button><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"><button data-a="delete-all" type="button">Alle eigenen Kontakte löschen</button></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
   app.querySelector(".backup")?.insertAdjacentHTML("beforeend",'<button data-a="download-app" type="button">App-Paket mit Quellcode sichern</button>');
   return;
  }
@@ -381,9 +390,10 @@ app.addEventListener("click",async e=>{
  if(a==="voice-run"){runVoiceCommand(app.querySelector("#voice-command")?.value);return;}
  if(a==="voice-help"){runVoiceCommand("hilfe");return;}
  if(a==="stop-speaking"){stopSpeaking();return;}
- if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";letter="";selected=null;nav("list");return;}
+ if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";letter="";categoryFilter="";selected=null;nav("list");return;}
  if(a==="search-again"){selected=null;term="";letter="";nav("list");return;}
  if(a==="letter"){letter=b.dataset.letter||"";term="";render();status(letter?"Kontakte mit "+letter+".":"Alle Kontakte.");return;}
+ if(a==="category"){categoryFilter=b.dataset.category||"";letter="";term="";render();status(categoryFilter?"Rubrik "+categoryFilter+".":"Alle Kontakte.");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){selected=null;editing=null;term="";nav("home");return;}
  if(a==="select"){
@@ -468,7 +478,7 @@ app.addEventListener("submit",async e=>{
  const field=n=>String(f.get(n)||"").trim();
  const labels=f.getAll("phoneType"),values=f.getAll("phoneNumber");
  const phones=values.map((v,i)=>({label:String(labels[i]||"Mobil"),number:String(v||"").trim()})).filter(p=>p.number).slice(0,30);
- const data=valid({id:editing||"k-"+newId(),name:field("name"),phone:phones[0]?.number||"",phones,street:field("street"),house:field("house"),zip:field("zip"),city:field("city"),email:field("email"),website:field("website"),notes:field("notes"),favorite:editing?get(editing)?.favorite===true:false,updatedAt:stamp()});
+ const data=valid({id:editing||"k-"+newId(),name:field("name"),phone:phones[0]?.number||"",phones,street:field("street"),house:field("house"),zip:field("zip"),city:field("city"),email:field("email"),website:field("website"),notes:field("notes"),category:PROFILE.id==="jan"?field("category"):"",favorite:editing?get(editing)?.favorite===true:false,updatedAt:stamp()});
  if(!data){status("Bitte Namen eingeben.");return;}
  try{await put(data);editing=null;selected=null;nav("home");status("Kontakt lokal gespeichert · "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr.");}
  catch(err){status("Konnte nicht gespeichert werden. Bitte Browserspeicher prüfen.");}

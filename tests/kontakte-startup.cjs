@@ -29,7 +29,7 @@ class FakeFormData{
  get(k){return this.fields[k]||'';}
  getAll(k){return this.fields[k]||[];}
 }
-const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken,importPlan,voiceQuery,nameMatches,fuzzyNameMatches};})();');
+const testScript=scripts[0].replace(/\}\)\(\);\s*$/, 'window.__contactsTest={valid,phoneList,toVcard,parseVcard,spoken,importPlan,voiceQuery,nameMatches,fuzzyNameMatches,contactCategory};})();');
 assert.notEqual(testScript,scripts[0],'Test helper injection must work');
 new Function('window','document','navigator','localStorage','crypto','FormData','confirm','location',testScript)(
  window,document,navigator,localStorage,{randomUUID:()=> 'test-id'},FakeFormData,()=>{confirmed++;return true;},location
@@ -104,7 +104,10 @@ assert.match(html,/recognition\.maxAlternatives=3/,'Several recognition alternat
 assert.match(html,/PROFILE\.id==="jan"\?'<button type="button" class="whatsapp-btn" data-a="whatsapp"/,'WhatsApp opening is offered only in Jan Kontakte');
 assert.match(html,/function whatsappNumber\(raw\)/,'German and international phone formats are prepared for WhatsApp');
 assert.match(html,/location\.href="https:\/\/wa\.me\//,'WhatsApp opens through the official click-to-chat URL');
- const {valid,phoneList,toVcard,parseVcard,importPlan,voiceQuery,nameMatches,fuzzyNameMatches}=window.__contactsTest;
+assert.match(html,/PROFILE\.id!=="jan"\)return ""/,'Rubric filters are intentionally limited to Jan Kontakte');
+assert.match(html,/data-a="category"/,'Jan Kontakte offers selectable rubric filters');
+assert.match(html,/name="category"/,'Jan Kontakte can store an individual rubric on each contact');
+ const {valid,phoneList,toVcard,parseVcard,importPlan,voiceQuery,nameMatches,fuzzyNameMatches,contactCategory}=window.__contactsTest;
  assert.equal(voiceQuery('Rufe Anna Müller auf dem Handy an'),'anna muller','Voice commands extract the contact name');
  assert.equal(voiceQuery('Suche Frau Christine'),'christine','Voice commands ignore forms of address');
  assert.equal(nameMatches('Christine Müller','Christin'),true,'Name search accepts a missing final e');
@@ -120,6 +123,7 @@ assert.match(html,/location\.href="https:\/\/wa\.me\//,'WhatsApp opens through t
    {label:'Arbeit',number:'0351 678'}],
   street:'Ringstraße',house:'12',zip:'01234',city:'Dresden',
   email:'max@example.org',website:'example.org',notes:'Bitte abends anrufen.'
+ ,category:'Beruflich'
  });
  const parsed=parseVcard(toVcard([sample]))[0];
  assert.equal(parsed.name,sample.name,'vCard name');
@@ -127,8 +131,10 @@ assert.match(html,/location\.href="https:\/\/wa\.me\//,'WhatsApp opens through t
  assert.equal(parsed.email,sample.email,'vCard email');
  assert.equal(parsed.website,sample.website,'vCard website');
  assert.equal(parsed.notes,sample.notes,'vCard notes');
+ assert.equal(parsed.category,sample.category,'vCard rubric');
  assert.equal(parsed.house,sample.house,'vCard house');
  assert.equal(parsed.zip,sample.zip,'vCard ZIP');
+ assert.equal(contactCategory(valid({id:'c',name:'Ohne Auswahl'})),'Ohne Rubrik','Contacts without a rubric stay available');
  const plan=importPlan([
   sample,
   {...sample,id:'duplicate-id'},

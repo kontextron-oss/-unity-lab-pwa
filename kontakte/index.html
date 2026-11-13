@@ -38,7 +38,7 @@ input::placeholder{color:#575757}
 label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 .row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr);gap:12px}
 .row.equal{grid-template-columns:1fr 1fr}
-.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.alphabet{margin:8px 0 24px}.alphabet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.alphabet-grid button{min-height:78px;border:0;border-radius:14px;background:#fff;color:#000;font-size:30px;font-weight:780}.alphabet-grid .allletters{grid-column:span 2;font-size:23px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
+.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.alphabet{margin:8px 0 24px}.alphabet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.alphabet-grid button{min-height:78px;border:0;border-radius:14px;background:#fff;color:#000;font-size:30px;font-weight:780}.alphabet-grid button.is-selected{background:#000;color:#fff;box-shadow:0 0 0 4px #fff}.alphabet-grid .allletters{grid-column:span 2;font-size:23px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
 .value{background:#fff;color:#000;border-radius:16px;white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(26px,6vw,33px);font-weight:740;line-height:1.43;padding:20px;min-height:115px}
 .name{font-size:28px;font-weight:750;margin:18px 0}
 .primary{width:100%;min-height:76px;background:#fff;color:#000;border:0;border-radius:16px;padding:14px;font-size:27px;font-weight:750;margin-top:18px}
@@ -64,7 +64,7 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,searchOpen=false,letter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
+let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,voiceWatchdog=0,voiceRetryTimer=0,searchOpen=false,letter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
@@ -290,25 +290,33 @@ function runVoiceCommand(text){
  if(/\b(rufe|rufen|anrufen)\b/.test(command)){status("Kontaktkarte geöffnet. Bitte die gewünschte Nummer prüfen und „Anrufen“ bestätigen.");return;}
  status("Kontaktkarte von "+c.name+" geöffnet.");
 }
+function clearVoiceTimers(){clearTimeout(voiceWatchdog);clearTimeout(voiceRetryTimer);voiceWatchdog=0;voiceRetryTimer=0;}
 function resetBrowserVoice(recognition){
  if(recognition&&activeRecognition!==recognition)return false;
- voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";
+ clearVoiceTimers();voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";
  return true;
 }
-async function startBrowserVoice(targetId="voice-command"){
+function retryBrowserVoice(targetId,retry,input){
+ if(retry>=3){if(targetId==="voice-command"){input()?.focus();status("Sprachsuche bitte erneut starten.");}return;}
+ const delays=[300,1000,2200];
+ status("Sprachsuche wird erneut gestartet.");
+ voiceRetryTimer=setTimeout(()=>startBrowserVoice(targetId,retry+1),delays[retry]);
+}
+async function startBrowserVoice(targetId="voice-command",retry=0){
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition,isSearch=targetId==="q";
  const input=()=>app.querySelector("#"+targetId);
  if(voiceListening){voiceRestart=true;voiceTarget=targetId;status("Neue Suche wird gestartet.");try{activeRecognition?.stop();}catch(_){}return;}
+ clearTimeout(voiceRetryTimer);voiceRetryTimer=0;
  voiceListening=true;
  voiceTarget=targetId;
  let recognition=null;
- const fallback=()=>{if(!resetBrowserVoice(recognition))return;if(targetId==="voice-command"){input()?.focus();status("");return;}status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
+ const fallback=()=>{if(!resetBrowserVoice(recognition))return;try{recognition?.abort();}catch(_){}if(recognition&&targetId==="voice-command"){retryBrowserVoice(targetId,retry,input);return;}if(targetId==="voice-command"){input()?.focus();status("");return;}status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
  if(!Recognition){fallback();return;}
  try{
-  recognition=new Recognition();activeRecognition=recognition;recognition.lang="de-DE";recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=1;
-  recognition.onstart=()=>status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");
-  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();resetBrowserVoice(recognition);try{recognition.stop();}catch(_){}if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
-  recognition.onend=()=>{if(activeRecognition!==recognition)return;const restart=voiceRestart,next=voiceTarget||targetId;resetBrowserVoice(recognition);if(restart)startBrowserVoice(next);};
+  recognition=new Recognition();activeRecognition=recognition;recognition.lang="de-DE";recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=3;
+  recognition.onstart=()=>{status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");voiceWatchdog=setTimeout(fallback,7000);};
+  recognition.onresult=e=>{const candidates=Array.from(e.results?.[0]||[]).map(x=>x.transcript||"");const text=candidates.find(x=>all().some(c=>fuzzyNameMatches(c.name,voiceQuery(x))))||candidates[0]||"",field=input();resetBrowserVoice(recognition);try{recognition.stop();}catch(_){}if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
+  recognition.onend=()=>{if(activeRecognition!==recognition)return;const restart=voiceRestart,next=voiceTarget||targetId;resetBrowserVoice(recognition);if(restart)startBrowserVoice(next);else if(targetId==="voice-command")retryBrowserVoice(targetId,retry,input);};
   recognition.onerror=fallback;
   recognition.start();
  }catch(err){fallback();}
@@ -322,7 +330,7 @@ function items(){
 }
 function alphabetPicker(){
  const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
- return '<section class="alphabet" aria-label="Anfangsbuchstabe wählen"><div class="alphabet-grid"><button class="allletters" data-a="letter" data-letter="">Alle</button>'+letters.map(x=>'<button data-a="letter" data-letter="'+x+'" aria-label="Kontakte mit '+x+' anzeigen">'+x+'</button>').join("")+'</div></section>';
+ return '<section class="alphabet" aria-label="Anfangsbuchstabe wählen"><div class="alphabet-grid"><button class="allletters'+(!letter?' is-selected':'')+'" data-a="letter" data-letter="" aria-pressed="'+(!letter)+'">Alle</button>'+letters.map(x=>'<button class="'+(letter===x?'is-selected':'')+'" data-a="letter" data-letter="'+x+'" aria-pressed="'+(letter===x)+'" aria-label="Kontakte mit '+x+' anzeigen">'+x+'</button>').join("")+'</div></section>';
 }
 function render(){
  if(view==="home"){

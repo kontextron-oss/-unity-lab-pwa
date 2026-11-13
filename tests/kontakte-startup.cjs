@@ -57,7 +57,9 @@ new Function('window','document','navigator','localStorage','crypto','FormData',
 assert.match(html,/if\(a==="voice"\)\{selected=null;term="";letter="";nav\("voice"\);app\.querySelector\("#voice-command"\)\?\.focus\(\);startBrowserVoice\(\);return;\}/,'The circular microphone immediately starts voice search');
 assert.match(html,/if\(voiceListening\)\{voiceRestart=true;voiceTarget=targetId;/,'A second speaking request is queued while the previous one ends');
 assert.match(html,/activeRecognition\?\.stop\(\)/,'The prior recognizer is stopped before a new request starts');
-assert.match(html,/recognition\.onend=\(\)=>\{const restart=voiceRestart/,'The queued speaking request starts as soon as the first one ends');
+assert.match(html,/function resetBrowserVoice\(recognition\)/,'Voice state is explicitly reset after every result');
+assert.match(html,/recognition\.onresult=e=>\{const text=.*resetBrowserVoice\(recognition\);/,'A recognized name releases the microphone for the next search immediately');
+assert.match(html,/recognition\.onend=\(\)=>\{if\(activeRecognition!==recognition\)return;/,'An old speech session cannot block a later search');
  assert.match(root.innerHTML,/Anna Müller \(Beispiel\)/);
  assert.match(root.innerHTML,/<h2>Kontakte<\/h2>/);
  assert.match(root.innerHTML,/Musterstraße 12/);

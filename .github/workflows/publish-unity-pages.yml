@@ -166,13 +166,13 @@ jobs:
           sed -i 's/"name": "Kontakte"/"name": "Klaus – Kontakte"/; s/"short_name": "Kontakte"/"short_name": "Klaus – Kontakte"/' dist/klaus-kontakte/manifest.webmanifest
           sed -i 's/"name": "Kontakte"/"name": "Jan – Kontakte"/; s/"short_name": "Kontakte"/"short_name": "Jan – Kontakte"/' dist/jan-kontakte/manifest.webmanifest
           grep -Fq '<title>Kontakte</title>' dist/kontakte/index.html
-          grep -Fq 'kontakte-pwa-v10' dist/kontakte/sw.js
+          grep -Fq 'kontakte-pwa-v11' dist/kontakte/sw.js
           grep -Fq 'Klaus – Kontakte' dist/klaus-kontakte/manifest.webmanifest
           grep -Fq 'Jan – Kontakte' dist/jan-kontakte/manifest.webmanifest
           test -s dist/kontakte/kontakte-app-paket.zip
           test -s dist/klaus-kontakte/klaus-kontakte-app-paket.zip
           test -s dist/jan-kontakte/jan-kontakte-app-paket.zip
-          echo 'Kontakte 0.10 with separate Klaus and Jan local profiles included; no contact data uploaded.'
+          echo 'Kontakte 0.11 with separate Klaus and Jan local profiles included; no contact data uploaded.'
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload only allowlisted production PWA assets

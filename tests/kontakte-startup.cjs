@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync('kontakte/index.html','utf8');
 const sw=fs.readFileSync('kontakte/sw.js','utf8');
-assert.match(sw,/kontakte-pwa-v12/,'Expected Kontakte 0.12 offline cache');
+assert.match(sw,/kontakte-pwa-v13/,'Expected Kontakte 0.13 offline cache');
 assert.match(sw,/klaus-kontakte/,'Expected separate Klaus profile cache');
 assert.match(sw,/jan-kontakte/,'Expected separate Jan profile cache');
 const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
@@ -106,6 +106,7 @@ assert.match(html,/function whatsappNumber\(raw\)/,'German and international pho
 assert.match(html,/location\.href="https:\/\/wa\.me\//,'WhatsApp opens through the official click-to-chat URL');
 assert.match(html,/PROFILE\.id!=="jan"\)return ""/,'Rubric filters are intentionally limited to Jan Kontakte');
 assert.match(html,/data-a="category"/,'Jan Kontakte offers selectable rubric filters');
+assert.match(html,/<details class="category-picker"/,'Jan rubric filters are collapsed until explicitly opened');
 assert.match(html,/select id="category" name="category"/,'Jan Kontakte offers a rubric selection list');
 assert.match(html,/Eigene Rubrik benennen/,'Jan Kontakte allows a separately named custom rubric');
 assert.match(html,/"Privat","Beruflich","Familie","Freunde","Ärzte","Behörden","Kunst"/,'Jan Kontakte has useful preset rubrics');

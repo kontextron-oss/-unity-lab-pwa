@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync('kontakte/index.html','utf8');
 const sw=fs.readFileSync('kontakte/sw.js','utf8');
-assert.match(sw,/kontakte-pwa-v10/,'Expected Kontakte 0.10 offline cache');
+assert.match(sw,/kontakte-pwa-v11/,'Expected Kontakte 0.11 offline cache');
 assert.match(sw,/klaus-kontakte/,'Expected separate Klaus profile cache');
 assert.match(sw,/jan-kontakte/,'Expected separate Jan profile cache');
 const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);

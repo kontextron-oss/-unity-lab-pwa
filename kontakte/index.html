@@ -290,19 +290,25 @@ function runVoiceCommand(text){
  if(/\b(rufe|rufen|anrufen)\b/.test(command)){status("Kontaktkarte geöffnet. Bitte die gewünschte Nummer prüfen und „Anrufen“ bestätigen.");return;}
  status("Kontaktkarte von "+c.name+" geöffnet.");
 }
+function resetBrowserVoice(recognition){
+ if(recognition&&activeRecognition!==recognition)return false;
+ voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";
+ return true;
+}
 async function startBrowserVoice(targetId="voice-command"){
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition,isSearch=targetId==="q";
  const input=()=>app.querySelector("#"+targetId);
  if(voiceListening){voiceRestart=true;voiceTarget=targetId;status("Neue Suche wird gestartet.");try{activeRecognition?.stop();}catch(_){}return;}
  voiceListening=true;
  voiceTarget=targetId;
- const fallback=()=>{voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";if(targetId==="voice-command"){input()?.focus();status("");return;}status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
+ let recognition=null;
+ const fallback=()=>{if(!resetBrowserVoice(recognition))return;if(targetId==="voice-command"){input()?.focus();status("");return;}status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
  if(!Recognition){fallback();return;}
  try{
-  const recognition=new Recognition();activeRecognition=recognition;recognition.lang="de-DE";recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=1;
+  recognition=new Recognition();activeRecognition=recognition;recognition.lang="de-DE";recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=1;
   recognition.onstart=()=>status(isSearch?"Ich höre zu. Sprechen Sie den Namen.":"Ich höre zu. Sprechen Sie Ihren Befehl.");
-  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
-  recognition.onend=()=>{const restart=voiceRestart,next=voiceTarget||targetId;voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";if(restart)startBrowserVoice(next);};
+  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"",field=input();resetBrowserVoice(recognition);try{recognition.stop();}catch(_){}if(field)field.value=text;if(isSearch){letter="";term=text;const list=app.querySelector("#list");if(list)list.innerHTML=items();status("Suche nach "+text+".");}else runVoiceCommand(text);};
+  recognition.onend=()=>{if(activeRecognition!==recognition)return;const restart=voiceRestart,next=voiceTarget||targetId;resetBrowserVoice(recognition);if(restart)startBrowserVoice(next);};
   recognition.onerror=fallback;
   recognition.start();
  }catch(err){fallback();}

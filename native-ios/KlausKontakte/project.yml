@@ -1,0 +1,17 @@
+name: KlausKontakte
+options:
+  bundleIdPrefix: de.kontextron
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  KlausKontakte:
+    type: application
+    platform: iOS
+    sources: [Sources]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.kontextron.klauskontakte
+        INFOPLIST_KEY_CFBundleDisplayName: Klaus Kontakte
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: Klaus Kontakte verwendet das Mikrofon nur für die lokale Sprachsuche.
+        INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: Klaus Kontakte erkennt gesprochene Kontaktnamen auf diesem iPhone.
+        SWIFT_VERSION: "5.0"

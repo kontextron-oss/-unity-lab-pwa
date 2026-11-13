@@ -64,7 +64,8 @@ const app=document.getElementById("app"),DB_NAME=PROFILE.id==="kontakte"?"kontak
 document.title=PROFILE.title;
 document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute("content",PROFILE.title);
 const demo={id:"__beispiel__",name:"Anna Müller (Beispiel)",phone:"0176 12345678",phones:[{label:"Mobil",number:"0176 12345678"}],email:"",website:"",notes:"",street:"Musterstraße",house:"12",zip:"01234",city:"Dresden",demo:true};
-let records=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,voiceWatchdog=0,voiceRetryTimer=0,searchOpen=false,letter="",categoryFilter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
+let records=[],categories=[],db=null,storage="nicht verfügbar",view="home",mode="contact",selected=null,term="",editing=null,message="",phoneSeed=0,demoHidden=false,voiceTimer=0,voiceWatchdog=0,voiceRetryTimer=0,searchOpen=false,letter="",categoryFilter="",alphabetOpen=false,voiceListening=false,voiceRestart=false,activeRecognition=null,voiceTarget="";
+const CS="rubriken",CK=PROFILE.id+"-kontakte-rubriken-v2",STD=[{id:"standard-privat",name:"Privat",standard:true},{id:"standard-beruflich",name:"Beruflich",standard:true}];
 const E=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=x=>String(x||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss");
 const nameKey=x=>N(x).replace(/sch/g,"s").replace(/ch/g,"k").replace(/ph/g,"f").replace(/th/g,"t").replace(/(.)\1+/g,"$1").replace(/e\b/g,"");
@@ -97,14 +98,12 @@ function valid(x){
   phone:phones[0]?.number||"",phones,
   email:str("email",180),website:str("website",250),notes:str("notes",4000),
   street:str("street",120),house:str("house",22),zip:str("zip",16),
-  city:str("city",100),category:str("category",60),favorite:x.favorite===true,updatedAt:str("updatedAt",35)||stamp()
+  city:str("city",100),categoryId:str("categoryId",90),category:str("category",60),favorite:x.favorite===true,updatedAt:str("updatedAt",35)||stamp()
  };
 }
 function newId(){return crypto?.randomUUID?.()||("id-"+Date.now()+"-"+Math.random().toString(36).slice(2));}
 function phoneList(c){return c.phones?.length?c.phones:(c.phone?[{label:"Mobil",number:c.phone}]:[]);}
-function contactCategory(c){return String(c?.category||"").trim()||"Ohne Rubrik";}
-function knownCategories(){return [...new Set(["Privat","Beruflich","Familie","Freunde","Ärzte","Behörden","Kunst",...records.map(contactCategory).filter(x=>x!=="Ohne Rubrik")])].sort((a,b)=>a.localeCompare(b,"de"));}
-function usedCategories(){return [...new Set(records.map(contactCategory).filter(x=>x!=="Ohne Rubrik"))].sort((a,b)=>a.localeCompare(b,"de"));}
+function cat(id){return categories.find(x=>x.id===id)||null;}function catName(c){return cat(String(c?.categoryId||""))?.name||"";}function contactCategory(c){return catName(c)||"Ohne Rubrik";}function catKey(x){return N(String(x||"").trim());}function allCats(){return [...categories].sort((a,b)=>Number(b.standard)-Number(a.standard)||a.name.localeCompare(b.name,"de"));}function visibleCats(){const u=new Set(records.map(x=>x.categoryId).filter(Boolean));return [...STD.map(x=>cat(x.id)).filter(Boolean),...categories.filter(x=>!x.standard&&u.has(x.id)).sort((a,b)=>a.name.localeCompare(b.name,"de"))];}async function putCat(x){const c={id:String(x.id||"cat-"+newId()),name:String(x.name||"").trim().slice(0,60),standard:x.standard===true};if(!c.name)throw Error();if(db){await new Promise((ok,no)=>{const t=db.transaction(CS,"readwrite");t.objectStore(CS).put(c);t.oncomplete=ok;t.onerror=()=>no(t.error);});}else localStorage.setItem(CK,JSON.stringify([...categories.filter(y=>y.id!==c.id),c]));categories=[...categories.filter(y=>y.id!==c.id),c];return c;}async function delCat(id){if(db){await new Promise((ok,no)=>{const t=db.transaction(CS,"readwrite");t.objectStore(CS).delete(id);t.oncomplete=ok;t.onerror=()=>no(t.error);});}else localStorage.setItem(CK,JSON.stringify(categories.filter(x=>x.id!==id)));categories=categories.filter(x=>x.id!==id);}async function migrateCats(){for(const b of STD)if(!cat(b.id))await putCat(b);for(const c of [...records]){let id=c.categoryId||"",old=String(c.category||"").trim();if(!cat(id)&&old){let x=categories.find(z=>catKey(z.name)===catKey(old));if(!x)x=await putCat({name:old});id=x.id;}if(!cat(id))id="";if(c.categoryId!==id||c.category)await put({...c,categoryId:id,category:"",updatedAt:c.updatedAt||stamp()});}}
 function safeSite(raw){
  const s=String(raw||"").trim();if(!s)return "";
  try{const url=new URL(/^https?:\/\//i.test(s)?s:"https://"+s);return url.protocol==="https:"||url.protocol==="http:"?url.href:"";}catch(e){return "";}
@@ -124,7 +123,7 @@ function toVcard(list){
   for(const p of phoneList(c))lines.push("TEL;TYPE="+({Mobil:"CELL",Privat:"HOME",Arbeit:"WORK",Andere:"VOICE"}[p.label]||"VOICE")+":"+vEscape(p.number));
   if(c.email)lines.push("EMAIL:"+vEscape(c.email));
   if(c.website)lines.push("URL:"+vEscape(c.website));
-  if(c.category)lines.push("CATEGORIES:"+vEscape(c.category));
+  if(catName(c))lines.push("CATEGORIES:"+vEscape(catName(c)));
   if(c.street||c.house||c.zip||c.city)lines.push("ADR;TYPE=HOME:;;"+vEscape([c.street,c.house].filter(Boolean).join(" "))+";"+vEscape(c.city)+";;"+vEscape(c.zip)+";");
   if(c.notes)lines.push("NOTE:"+vEscape(c.notes));
   lines.push("END:VCARD");return lines.join("\r\n");
@@ -162,18 +161,18 @@ async function initStorage(){
  try{
   if(!("indexedDB" in window))throw Error("IndexedDB fehlt");
   db=await new Promise((ok,no)=>{
-   const r=indexedDB.open(DB_NAME,1);
-   r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:"id"});};
+   const r=indexedDB.open(DB_NAME,2);
+   r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:"id"});if(!r.result.objectStoreNames.contains(CS))r.result.createObjectStore(CS,{keyPath:"id"});};
    r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);
    r.onblocked=()=>no(Error("Datenbank gesperrt"));
   });
   const tx=db.transaction(STORE,"readonly");
-  records=(await reqPromise(tx.objectStore(STORE).getAll())).map(valid).filter(Boolean);
+  records=(await reqPromise(tx.objectStore(STORE).getAll())).map(valid).filter(Boolean);const ct=db.transaction(CS,"readonly");categories=(await reqPromise(ct.objectStore(CS).getAll())).filter(x=>x&&x.id&&x.name);
   if(!records.length){try{for(const c of JSON.parse(localStorage.getItem(KEY)||"[]").map(valid).filter(Boolean))await put(c);}catch(_){}}
-  storage="IndexedDB";
+  storage="IndexedDB";await migrateCats();
  }catch(e){
   db=null;
-  try{records=JSON.parse(localStorage.getItem(KEY)||"[]").map(valid).filter(Boolean);localStorage.setItem(KEY,JSON.stringify(records));storage="Browser-Lokalspeicher";}
+  try{records=JSON.parse(localStorage.getItem(KEY)||"[]").map(valid).filter(Boolean);categories=JSON.parse(localStorage.getItem(CK)||"[]").filter(x=>x&&x.id&&x.name);localStorage.setItem(KEY,JSON.stringify(records));storage="Browser-Lokalspeicher";await migrateCats();}
   catch(_){records=[];storage="nicht verfügbar";}
  }
 }
@@ -340,13 +339,7 @@ function items(){
  const match=all().filter(c=>(!letter||N(c.name).startsWith(N(letter)))&&(!categoryFilter||contactCategory(c)===categoryFilter)&&fuzzyNameMatches(c.name,term));
  return match.length?match.map(c=>{const info=[addressText(c),phoneList(c).map(p=>p.label+": "+p.number).join("\n")].filter(Boolean).join("\n");return '<button class="item" data-a="select" data-id="'+E(c.id)+'"><span class="item-title">'+E(c.name)+'</span><span class="item-detail">'+E(info||"Keine Adresse oder Telefonnummer hinterlegt")+'</span></button>';}).join(""):'<p class="muted">Kein Kontakt gefunden.</p>';
 }
-function categoryPicker(){
- if(PROFILE.id!=="jan")return "";
- const categories=usedCategories();if(!categories.length)return "";
- const title=categoryFilter?"Rubrik: "+categoryFilter:"Rubrik auswählen";
- return '<details class="category-picker" aria-label="Kontakt-Rubrik wählen"><summary>'+E(title)+'</summary><div class="category-grid"><button class="allcategories'+(!categoryFilter?' is-selected':'')+'" data-a="category" data-category="" aria-pressed="'+(!categoryFilter)+'">Alle Kontakte</button>'+categories.map(x=>'<button class="'+(categoryFilter===x?'is-selected':'')+'" data-a="category" data-category="'+E(x)+'" aria-pressed="'+(categoryFilter===x)+'">'+E(x)+'</button>').join("")+'<button class="manage-categories" data-a="manage-categories">Rubriken verwalten</button></div></details>';
-}
-function alphabetPicker(){
+function categoryPicker(){if(PROFILE.id!=="jan")return "";const xs=visibleCats();return '<section class="category-picker" aria-label="Kontakt-Rubrik wählen"><div class="category-grid"><button class="allcategories'+(!categoryFilter?' is-selected':'')+'" data-a="category" data-category="">Alle</button>'+xs.map(x=>'<button class="'+(categoryFilter===x.id?'is-selected':'')+'" data-a="category" data-category="'+E(x.id)+'">'+E(x.name)+'</button>').join("")+'<button class="manage-categories" data-a="manage-categories">Rubriken verwalten</button></div></section>';}function alphabetPicker(){
  const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
  return '<section class="alphabet" aria-label="Anfangsbuchstabe wählen"><div class="alphabet-grid"><button class="allletters'+(!letter?' is-selected':'')+'" data-a="letter" data-letter="" aria-pressed="'+(!letter)+'">Alle</button>'+letters.map(x=>'<button class="'+(letter===x?'is-selected':'')+'" data-a="letter" data-letter="'+x+'" aria-pressed="'+(letter===x)+'" aria-label="Kontakte mit '+x+' anzeigen">'+x+'</button>').join("")+'</div></section>';
 }
@@ -360,21 +353,14 @@ function render(){
  if(view==="list"){
   screen(back+'<h2>Kontakte</h2>'+categoryPicker()+alphabetPicker()+'<div id="list">'+items()+'</div>');return;
  }
- if(view==="manage-categories"){
-  const categories=usedCategories();
-  screen(back+'<h2>Rubriken verwalten</h2><p class="muted">Beim Löschen bleiben alle Kontakte erhalten. Sie erhalten nur keine Rubrik mehr.</p>'+categories.map(x=>{const count=records.filter(c=>contactCategory(c)===x).length;return '<button class="category-delete" data-a="delete-category" data-category="'+E(x)+'">'+E(x)+' löschen · '+count+' Kontakt'+(count===1?"":"e")+'</button>';}).join(""));return;
- }
+ if(view==="manage-categories"){const xs=allCats().filter(x=>!x.standard);screen(back+'<h2>Rubriken verwalten</h2><form id="category-admin-form"><label for="new-category">Neue Rubrik</label><input id="new-category" name="newCategory" maxlength="60" required><button class="primary" type="submit">Rubrik hinzufügen</button></form><div class="admin">'+(xs.length?xs.map(x=>'<section class="category-admin-row"><strong>'+E(x.name)+'</strong><div class="row equal"><button class="outline smaller" data-a="rename-category" data-category="'+E(x.id)+'">Umbenennen</button><button class="outline smaller" data-a="delete-category" data-category="'+E(x.id)+'">Löschen</button></div></section>').join(""):'<p class="muted">Noch keine eigenen Rubriken.</p>')+'</div><p class="tip">Beim Löschen bleiben Kontakte erhalten und erhalten keine Rubrik.</p>');return;} 
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
   const controls='<button class="primary" data-a="speak">Kontakt vollständig vorlesen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button><button class="outline" data-a="search-again">Anderen Kontakt suchen</button>'+(c.demo?'':'<button class="outline" data-a="favorite">'+(c.favorite?'Aus Favoriten entfernen':'Zu Favoriten')+'</button>');
   screen(back+contactCard(c)+controls+extra(c)+(c.demo?'<p class="tip">Beispielkontakt. Er kann gelöscht werden.</p><button class="outline" data-a="delete">Beispielkontakt löschen</button>':'<button class="quiet" data-a="edit">Kontakt bearbeiten</button><button class="outline" data-a="delete">Kontakt löschen</button>'));return;
  }
  if(view==="form"){
-  const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:"",category:PROFILE.id==="jan"?"Privat":""};
-  const numbers=phoneList(v);
-  const fields=(numbers.length?numbers:[{label:"Mobil",number:""}]).map(phoneField).join("");
-  const categories=knownCategories(),currentCategory=v.category||"Privat",preset=categories.includes(currentCategory)?currentCategory:"__custom__";
-  const categoryControl=PROFILE.id==="jan"?'<label for="category">Rubrik</label><select id="category" name="category" aria-label="Rubrik auswählen">'+categories.map(x=>'<option value="'+E(x)+'"'+(preset===x?' selected':'')+'>'+E(x)+'</option>').join("")+'<option value="__custom__"'+(preset==="__custom__"?' selected':'')+'>Eigene Rubrik</option></select><div id="custom-category-wrap"'+(preset==="__custom__"?"":" hidden")+'><label for="custom-category">Eigene Rubrik benennen</label><input id="custom-category" name="customCategory" maxlength="60" value="'+E(preset==="__custom__"?currentCategory:"")+'"></div>':'';
+  const c=editing?get(editing):null,v=c||{name:"",phone:"",phones:[],street:"",house:"",zip:"",city:"",email:"",website:"",notes:"",categoryId:""};const numbers=phoneList(v),fields=(numbers.length?numbers:[{label:"Mobil",number:""}]).map(phoneField).join(""),xs=allCats(),selectedCat=String(v.categoryId||"");const categoryControl=PROFILE.id==="jan"?'<label for="category-id">Rubrik</label><select id="category-id" name="categoryId"><option value="">Keine Rubrik</option>'+xs.map(x=>'<option value="'+E(x.id)+'"'+(selectedCat===x.id?' selected':'')+'>'+E(x.name)+'</option>').join("")+'</select><p class="tip">Neue Rubriken werden über „Rubriken verwalten“ angelegt.</p>':'';
   screen(back+'<h2>'+(editing?"Kontakt bearbeiten":"Neuer Kontakt")+'</h2><p class="tip">Der Kontakt wird mit „Kontakt lokal speichern“ am Ende dieses Formulars auf diesem iPhone abgelegt.</p><form id="form"><label for="name">Name</label><input id="name" name="name" maxlength="110" required autocomplete="name" value="'+E(v.name)+'">'+categoryControl+'<p class="tip">Telefonnummern</p><div id="phone-fields">'+fields+'</div><button class="add-phone" type="button" data-a="add-phone">+ Weitere Telefonnummer</button><label for="website">Webseite</label><input id="website" name="website" type="text" inputmode="text" maxlength="250" autocomplete="url" placeholder="www.beispiel.de" value="'+E(v.website)+'"><label for="email">E-Mail-Adresse</label><input id="email" type="email" name="email" autocomplete="email" maxlength="180" value="'+E(v.email)+'"><div class="row"><div><label for="street">Straße</label><input id="street" name="street" maxlength="120" autocomplete="address-line1" value="'+E(v.street)+'"></div><div><label for="house">Hausnummer</label><input id="house" name="house" maxlength="22" value="'+E(v.house)+'"></div></div><div class="row equal"><div><label for="zip">Postleitzahl</label><input id="zip" name="zip" inputmode="numeric" maxlength="16" autocomplete="postal-code" value="'+E(v.zip)+'"></div><div><label for="city">Ort</label><input id="city" name="city" maxlength="100" autocomplete="address-level2" value="'+E(v.city)+'"></div></div><label for="notes">Kommentare / Notizen</label><textarea id="notes" name="notes" maxlength="4000" rows="4">'+E(v.notes)+'</textarea><p class="tip">Zum Diktieren ein Eingabefeld und anschließend das Mikrofon der iPhone-Tastatur antippen.</p><button class="primary" type="submit">Kontakt lokal speichern</button></form>'+(editing?'<button class="quiet" data-a="delete">Kontakt löschen</button>':'')+'<section class="backup" aria-label="Kontakte sichern, importieren und exportieren"><h3>Sicherung und Übertragung</h3><p class="backup-note">Der laufende Kontaktbestand bleibt lokal auf diesem iPhone. Eine Sicherung wird als eigene Datei bereitgestellt; sie wird nicht automatisch in pCloud abgelegt.</p><button data-a="export-pcloud" type="button">In pCloud sichern · Teilen</button><button data-a="export-json" type="button">Sicherung in Dateien speichern (JSON)</button><button data-a="export-vcf" type="button">Kontakte als vCard exportieren</button><button data-a="import" type="button">Kontakte importieren (VCF oder JSON)</button><input id="importfile" type="file" accept=".vcf,text/vcard,.json,application/json" hidden aria-label="Kontaktdatei auswählen"><button data-a="delete-all" type="button">Alle eigenen Kontakte löschen</button></section><p class="backup-note">Speicher: '+E(storage)+'. Beim Löschen der App oder Website-Daten können die Kontakte verloren gehen.</p>');
   app.querySelector(".backup")?.insertAdjacentHTML("beforeend",'<button data-a="download-app" type="button">App-Paket mit Quellcode sichern</button>');
   return;
@@ -401,16 +387,9 @@ app.addEventListener("click",async e=>{
  if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";letter="";categoryFilter="";selected=null;nav("list");return;}
  if(a==="search-again"){selected=null;term="";letter="";nav("list");return;}
  if(a==="letter"){letter=b.dataset.letter||"";term="";render();status(letter?"Kontakte mit "+letter+".":"Alle Kontakte.");return;}
- if(a==="category"){categoryFilter=b.dataset.category||"";letter="";term="";render();status(categoryFilter?"Rubrik "+categoryFilter+".":"Alle Kontakte.");return;}
+ if(a==="category"){categoryFilter=b.dataset.category||"";letter="";term="";render();status(categoryFilter?"Rubrik "+(cat(categoryFilter)?.name||"")+"." :"Alle Kontakte.");return;}
  if(a==="manage-categories"){nav("manage-categories");return;}
- if(a==="delete-category"){
-  const category=b.dataset.category||"",affected=records.filter(c=>contactCategory(c)===category);
-  if(!category||!affected.length)return;
-  if(!confirm("Rubrik „"+category+"“ bei "+affected.length+" Kontakt"+(affected.length===1?"":"en")+" entfernen? Die Kontakte bleiben erhalten.")){status("Rubrik nicht gelöscht.");return;}
-  try{for(const c of affected)await put({...c,category:"",updatedAt:stamp()});categoryFilter="";nav("list");status("Rubrik „"+category+"“ gelöscht. Kontakte bleiben erhalten.");}
-  catch(err){status("Rubrik konnte nicht vollständig gelöscht werden.");}
-  return;
- }
+ if(a==="rename-category"){const c=cat(b.dataset.category||"");if(!c||c.standard)return;const n=String(prompt("Neuer Name für die Rubrik",c.name)||"").trim();if(!n||categories.some(x=>x.id!==c.id&&catKey(x.name)===catKey(n))){status("Diese Rubrik gibt es bereits.");return;}await putCat({...c,name:n});render();status("Rubrik umbenannt.");return;}if(a==="delete-category"){const c=cat(b.dataset.category||"");if(!c||c.standard)return;const affected=records.filter(x=>x.categoryId===c.id);if(!confirm("Rubrik „"+c.name+"“ löschen? Kontakte bleiben erhalten und erhalten keine Rubrik."))return;for(const x of affected)await put({...x,categoryId:"",category:"",updatedAt:stamp()});await delCat(c.id);categoryFilter="";nav("list");status("Rubrik gelöscht. Kontakte bleiben erhalten.");return;} 
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){selected=null;editing=null;term="";nav("home");return;}
  if(a==="select"){
@@ -480,7 +459,7 @@ app.addEventListener("click",async e=>{
  if(a==="export-vcf"||a==="export-json"||a==="export-pcloud"){
   const today=new Date().toISOString().slice(0,10);
   const vcard=a==="export-vcf",blob=new Blob([
-   vcard?toVcard(records):JSON.stringify({application:"Kontakte",version:2,exportedAt:stamp(),contacts:records},null,2)
+   vcard?toVcard(records):JSON.stringify({application:"Kontakte",version:3,exportedAt:stamp(),categories,contacts:records},null,2)
   ],{type:vcard?"text/vcard;charset=utf-8":"application/json"});
   const filename=PROFILE.id+"-kontakte-"+today+(vcard?".vcf":".json");
   await provideFile(blob,filename,a==="export-pcloud"?"Kontakte-Sicherung für pCloud":"Kontakte-Sicherung");return;
@@ -495,19 +474,12 @@ app.addEventListener("submit",async e=>{
  const field=n=>String(f.get(n)||"").trim();
  const labels=f.getAll("phoneType"),values=f.getAll("phoneNumber");
  const phones=values.map((v,i)=>({label:String(labels[i]||"Mobil"),number:String(v||"").trim()})).filter(p=>p.number).slice(0,30);
- const chosenCategory=field("category"),customCategory=field("customCategory");
- const data=valid({id:editing||"k-"+newId(),name:field("name"),phone:phones[0]?.number||"",phones,street:field("street"),house:field("house"),zip:field("zip"),city:field("city"),email:field("email"),website:field("website"),notes:field("notes"),category:PROFILE.id==="jan"?(chosenCategory==="__custom__"?customCategory:chosenCategory):"",favorite:editing?get(editing)?.favorite===true:false,updatedAt:stamp()});
+ const categoryId=field("categoryId");const data=valid({id:editing||"k-"+newId(),name:field("name"),phone:phones[0]?.number||"",phones,street:field("street"),house:field("house"),zip:field("zip"),city:field("city"),email:field("email"),website:field("website"),notes:field("notes"),categoryId:PROFILE.id==="jan"&&cat(categoryId)?categoryId:"",category:"",favorite:editing?get(editing)?.favorite===true:false,updatedAt:stamp()});
  if(!data){status("Bitte Namen eingeben.");return;}
  try{await put(data);editing=null;selected=null;nav("home");status("Kontakt lokal gespeichert · "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr.");}
  catch(err){status("Konnte nicht gespeichert werden. Bitte Browserspeicher prüfen.");}
 });
-app.addEventListener("change",async e=>{
- if(e.target.id==="category"){
-  const own=e.target.value==="__custom__",wrap=app.querySelector("#custom-category-wrap");
-  if(wrap)wrap.hidden=!own;
-  if(own)app.querySelector("#custom-category")?.focus();
-  return;
- }
+app.addEventListener("submit",async e=>{if(e.target.id!=="category-admin-form")return;e.preventDefault();const n=String(new FormData(e.target).get("newCategory")||"").trim();if(!n||categories.some(x=>catKey(x.name)===catKey(n))){status("Diese Rubrik gibt es bereits oder ist leer.");return;}await putCat({name:n});e.target.reset();render();status("Rubrik hinzugefügt.");});app.addEventListener("change",async e=>{
  if(e.target.id!=="importfile"||!e.target.files?.[0])return;
  try{
   const file=e.target.files[0];if(file.size>3000000)throw Error("Datei zu groß (maximal 3 MB).");
@@ -519,7 +491,7 @@ app.addEventListener("change",async e=>{
   if(!plan.add.length){status("Import geprüft: keine neuen Kontakte. "+plan.duplicates+" vorhandene und "+plan.invalid+" unvollständige Einträge wurden nicht verändert.");return;}
   const limit=plan.limited?" Es werden höchstens 3.000 Einträge verarbeitet.":"";
   if(!confirm("Import-Vorschau: "+plan.add.length+" neue Kontakte"+(preview?" (zum Beispiel: "+preview+")":"")+". "+plan.duplicates+" vorhandene und "+plan.invalid+" unvollständige Einträge werden übersprungen. Es wird nichts überschrieben oder gelöscht."+limit+" Jetzt importieren?")){status("Import abgebrochen. Es wurde nichts verändert.");return;}
-  for(const c of plan.add)await put(c);
+  for(const c of plan.add)await put(c);await migrateCats();
   status(plan.add.length+" Kontakte importiert, "+plan.duplicates+" vorhandene und "+plan.invalid+" unvollständige Einträge übersprungen. Keine Daten überschrieben.");
  }catch(err){status("Import fehlgeschlagen: "+err.message);}
  finally{e.target.value="";}

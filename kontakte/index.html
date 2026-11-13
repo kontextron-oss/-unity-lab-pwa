@@ -81,7 +81,7 @@ const fuzzyNameMatches=(name,query)=>{
  const wanted=nameKey(query).split(/\s+/).filter(x=>x.length>=3),parts=nameKey(name).split(/\s+/).filter(x=>x.length>=3);
  return wanted.length>0&&wanted.every(word=>parts.some(part=>{const longest=Math.max(word.length,part.length);return longest>=5&&editDistance(word,part)<=((longest>=8)?2:1);}));
 };
-const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>Number(Boolean(b.favorite))-Number(Boolean(a.favorite))||a.name.localeCompare(b.name,"de"));
+const all=()=>[...(demoHidden?[]:[demo]),...records].sort((a,b)=>a.name.localeCompare(b.name,"de"));
 const get=id=>all().find(c=>c.id===id);
 const stamp=()=>new Date().toISOString();
 function valid(x){

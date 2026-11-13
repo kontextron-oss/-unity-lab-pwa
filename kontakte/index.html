@@ -24,8 +24,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manip
 .main{width:100%;max-width:550px;padding:calc(env(safe-area-inset-top) + 36px) 24px calc(env(safe-area-inset-bottom) + 24px);min-height:100svh;overflow-x:clip}
 .home{display:flex;flex-direction:column;align-items:stretch}
 .brand{display:flex;align-items:center;flex-direction:column;margin:16px 0 clamp(46px,8vh,80px);gap:15px}
-.logo{width:96px;height:96px;border:0;padding:0;border-radius:22px;background:#fff;display:grid;place-items:center}
-.logo svg{width:79px;height:79px}
+.logo{width:108px;height:108px;border:0;padding:0;border-radius:54px;background:#fff;display:grid;place-items:center}
+.logo svg{width:90px;height:90px}
 h1{font-size:clamp(42px,10vw,53px);line-height:1.1;letter-spacing:-.7px;margin:0;font-weight:800}
 .large{width:100%;min-height:112px;border:0;border-radius:20px;background:#fff;color:#000;font-size:clamp(29px,7.1vw,36px);font-weight:780;padding:18px;margin-bottom:20px}
 .new{margin-top:22px;min-height:80px;border:2.5px solid #fff;background:transparent;color:#fff;border-radius:20px;font-size:25px;font-weight:750;width:100%}
@@ -38,7 +38,7 @@ input::placeholder{color:#575757}
 label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 .row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr);gap:12px}
 .row.equal{grid-template-columns:1fr 1fr}
-.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.alphabet{margin:-8px 0 22px}.alphabet-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.alphabet-grid button{min-height:62px;border:0;border-radius:12px;background:#fff;color:#000;font-size:25px;font-weight:780}.alphabet-grid .allletters{grid-column:span 2;font-size:20px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
+.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.alphabet{margin:8px 0 24px}.alphabet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.alphabet-grid button{min-height:78px;border:0;border-radius:14px;background:#fff;color:#000;font-size:30px;font-weight:780}.alphabet-grid .allletters{grid-column:span 2;font-size:23px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
 .value{background:#fff;color:#000;border-radius:16px;white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(26px,6vw,33px);font-weight:740;line-height:1.43;padding:20px;min-height:115px}
 .name{font-size:28px;font-weight:750;margin:18px 0}
 .primary{width:100%;min-height:76px;background:#fff;color:#000;border:0;border-radius:16px;padding:14px;font-size:27px;font-weight:750;margin-top:18px}
@@ -296,7 +296,7 @@ async function startBrowserVoice(targetId="voice-command"){
  if(voiceListening){voiceRestart=true;voiceTarget=targetId;status("Neue Suche wird gestartet.");try{activeRecognition?.stop();}catch(_){}return;}
  voiceListening=true;
  voiceTarget=targetId;
- const fallback=()=>{voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar. Für die iPhone-Tastatur bitte „Schreiben“ wählen.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
+ const fallback=()=>{voiceListening=false;voiceRestart=false;activeRecognition=null;voiceTarget="";if(targetId==="voice-command"){input()?.focus();status("");return;}status(isSearch?"Direkte Sprachsuche ist hier nicht verfügbar.":"Direkte Browser-Spracherkennung ist hier nicht verfügbar.");};
  if(!Recognition){fallback();return;}
  try{
   const recognition=new Recognition();activeRecognition=recognition;recognition.lang="de-DE";recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=1;
@@ -307,7 +307,7 @@ async function startBrowserVoice(targetId="voice-command"){
   recognition.start();
  }catch(err){fallback();}
 }
-const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#000"/><circle cx="50" cy="50" r="35" fill="#fff"/><circle cx="50" cy="50" r="9" fill="#000"/></svg>';
+const logo='<svg aria-hidden="true" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#000"/><circle cx="50" cy="50" r="35" fill="#fff"/><rect x="43" y="25" width="14" height="31" rx="7" fill="#000"/><path d="M34 48a16 16 0 0 0 32 0M50 64v10M39 74h22" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/></svg>';
 const back='<button class="back" data-a="back" aria-label="Zur Startseite">Zur Startseite</button>';
 function screen(inner){app.innerHTML='<main class="main">'+inner+'<div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';}
 function items(){
@@ -320,15 +320,13 @@ function alphabetPicker(){
 }
 function render(){
  if(view==="home"){
-  app.innerHTML='<main class="main home"><div class="brand"><button class="logo" data-a="voice" aria-label="Sprachsteuerung starten">'+logo+'</button><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Punkt antippen: Sprachsteuerung · Beim Speichern bleiben Kontakte lokal auf diesem iPhone.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
+  app.innerHTML='<main class="main home"><div class="brand"><button class="logo" data-a="voice" aria-label="Sprachsuche starten">'+logo+'</button><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Mikrofon antippen: Sprachsuche · Kontakte bleiben lokal auf diesem iPhone.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
  }
  if(view==="voice"){
-  screen(back+'<h2>Kontakt sprechen</h2><p class="muted">Sprechen Sie nur den Namen.</p><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Sprechen" aria-label="Kontakt sprechen"><button class="primary" data-a="listen">Erneut sprechen</button><button class="outline" data-a="stop-speaking">Vorlesen stoppen</button>');return;
+  screen(back+'<h2>Sprachsuche</h2><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Sprechen" aria-label="Kontakt sprechen">');return;
  }
  if(view==="list"){
-  const search=!searchOpen?'<button class="search-card" data-a="search-voice" aria-label="Suche">Suche</button>':'<input class="search-card" id="q" type="search" autocomplete="name" placeholder="Sprechen" value="'+E(term)+'" aria-label="Kontakt suchen">';
-  const alphabet=alphabetOpen?alphabetPicker():'<button class="outline" data-a="alphabet">A–Z</button>';
-  screen(back+'<h2>Kontakte</h2>'+search+alphabet+'<div id="list">'+items()+'</div>');return;
+  screen(back+'<h2>Kontakte</h2>'+alphabetPicker()+'<div id="list">'+items()+'</div>');return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
@@ -358,16 +356,13 @@ app.addEventListener("input",e=>{
 app.addEventListener("click",async e=>{
  const b=e.target.closest("button[data-a]");if(!b)return;
  const a=b.dataset.a;
- if(a==="voice"){nav("voice");startBrowserVoice();return;}
- if(a==="listen"){startBrowserVoice();return;}
+ if(a==="voice"){selected=null;term="";letter="";nav("voice");app.querySelector("#voice-command")?.focus();startBrowserVoice();return;}
  if(a==="voice-run"){runVoiceCommand(app.querySelector("#voice-command")?.value);return;}
  if(a==="voice-help"){runVoiceCommand("hilfe");return;}
  if(a==="stop-speaking"){stopSpeaking();return;}
- if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";letter="";alphabetOpen=false;selected=null;searchOpen=false;nav("list");return;}
- if(a==="search-voice"){letter="";alphabetOpen=false;searchOpen=true;render();app.querySelector("#q")?.focus();return;}
- if(a==="search-again"){selected=null;term="";letter="";alphabetOpen=false;searchOpen=true;nav("list");app.querySelector("#q")?.focus();return;}
- if(a==="alphabet"){alphabetOpen=!alphabetOpen;render();return;}
- if(a==="letter"){letter=b.dataset.letter||"";term="";alphabetOpen=false;render();status(letter?"Kontakte mit "+letter+".":"Alle Kontakte.");return;}
+ if(a==="contacts"||a==="address"||a==="phone"){mode="contact";term="";letter="";selected=null;nav("list");return;}
+ if(a==="search-again"){selected=null;term="";letter="";nav("list");return;}
+ if(a==="letter"){letter=b.dataset.letter||"";term="";render();status(letter?"Kontakte mit "+letter+".":"Alle Kontakte.");return;}
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){selected=null;editing=null;term="";nav("home");return;}
  if(a==="select"){

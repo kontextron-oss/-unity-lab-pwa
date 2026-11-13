@@ -38,7 +38,7 @@ input::placeholder{color:#575757}
 label{display:block;font-size:19px;font-weight:700;margin:20px 0 8px}
 .row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr);gap:12px}
 .row.equal{grid-template-columns:1fr 1fr}
-.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.category-picker{margin:8px 0 24px}.category-picker summary{list-style:none;display:flex;align-items:center;justify-content:center;text-align:center;min-height:76px;border:2px solid #fff;border-radius:14px;background:#090909;color:#fff;font-size:24px;font-weight:750;padding:12px;cursor:pointer}.category-picker summary::-webkit-details-marker{display:none}.category-picker[open] summary{background:#fff;color:#000}.category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.category-grid button{min-height:68px;border:2px solid #fff;border-radius:14px;background:#090909;color:#fff;font-size:21px;font-weight:750;padding:10px}.category-grid button.is-selected{background:#fff;color:#000}.category-grid .allcategories{grid-column:span 2}.alphabet{margin:8px 0 24px}.alphabet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.alphabet-grid button{min-height:78px;border:0;border-radius:14px;background:#fff;color:#000;font-size:30px;font-weight:780}.alphabet-grid button.is-selected{background:#000;color:#fff;box-shadow:0 0 0 4px #fff}.alphabet-grid .allletters{grid-column:span 2;font-size:23px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
+.search-card{display:block;width:100%;min-height:150px;border:0;border-radius:16px;background:#fff;color:#000;text-align:center;font-size:clamp(29px,7vw,37px);font-weight:780;padding:18px;margin:8px 0 24px}.search-card::placeholder{color:#555;opacity:1}.category-picker{margin:8px 0 24px}.category-picker summary{list-style:none;display:flex;align-items:center;justify-content:center;text-align:center;min-height:76px;border:2px solid #fff;border-radius:14px;background:#090909;color:#fff;font-size:24px;font-weight:750;padding:12px;cursor:pointer}.category-picker summary::-webkit-details-marker{display:none}.category-picker[open] summary{background:#fff;color:#000}.category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.category-grid button{min-height:68px;border:2px solid #fff;border-radius:14px;background:#090909;color:#fff;font-size:21px;font-weight:750;padding:10px}.category-grid button.is-selected{background:#fff;color:#000}.category-grid .allcategories,.category-grid .manage-categories{grid-column:span 2}.category-grid .manage-categories{font-size:18px;min-height:56px}.category-delete{width:100%;min-height:76px;border:2px solid #fff;border-radius:16px;background:#090909;color:#fff;font-size:23px;font-weight:750;margin:12px 0;padding:14px}.alphabet{margin:8px 0 24px}.alphabet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.alphabet-grid button{min-height:78px;border:0;border-radius:14px;background:#fff;color:#000;font-size:30px;font-weight:780}.alphabet-grid button.is-selected{background:#000;color:#fff;box-shadow:0 0 0 4px #fff}.alphabet-grid .allletters{grid-column:span 2;font-size:23px}#list{width:100%;max-width:100%;overflow-x:clip}.item{display:block;width:100%;max-width:100%;border:0;border-radius:14px;background:#fff;color:#000;text-align:left;font-size:25px;font-weight:750;min-height:76px;padding:16px 18px;margin:12px 0}.item-title{display:block;font-size:25px;font-weight:770}.item-detail{display:block;font-size:19px;font-weight:570;line-height:1.4;white-space:pre-line;margin-top:9px;overflow-wrap:anywhere}
 .value{background:#fff;color:#000;border-radius:16px;white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(26px,6vw,33px);font-weight:740;line-height:1.43;padding:20px;min-height:115px}
 .name{font-size:28px;font-weight:750;margin:18px 0}
 .primary{width:100%;min-height:76px;background:#fff;color:#000;border:0;border-radius:16px;padding:14px;font-size:27px;font-weight:750;margin-top:18px}
@@ -104,6 +104,7 @@ function newId(){return crypto?.randomUUID?.()||("id-"+Date.now()+"-"+Math.rando
 function phoneList(c){return c.phones?.length?c.phones:(c.phone?[{label:"Mobil",number:c.phone}]:[]);}
 function contactCategory(c){return String(c?.category||"").trim()||"Ohne Rubrik";}
 function knownCategories(){return [...new Set(["Privat","Beruflich","Familie","Freunde","Ärzte","Behörden","Kunst",...records.map(contactCategory).filter(x=>x!=="Ohne Rubrik")])].sort((a,b)=>a.localeCompare(b,"de"));}
+function usedCategories(){return [...new Set(records.map(contactCategory).filter(x=>x!=="Ohne Rubrik"))].sort((a,b)=>a.localeCompare(b,"de"));}
 function safeSite(raw){
  const s=String(raw||"").trim();if(!s)return "";
  try{const url=new URL(/^https?:\/\//i.test(s)?s:"https://"+s);return url.protocol==="https:"||url.protocol==="http:"?url.href:"";}catch(e){return "";}
@@ -341,9 +342,9 @@ function items(){
 }
 function categoryPicker(){
  if(PROFILE.id!=="jan")return "";
- const categories=knownCategories();
+ const categories=usedCategories();if(!categories.length)return "";
  const title=categoryFilter?"Rubrik: "+categoryFilter:"Rubrik auswählen";
- return '<details class="category-picker" aria-label="Kontakt-Rubrik wählen"><summary>'+E(title)+'</summary><div class="category-grid"><button class="allcategories'+(!categoryFilter?' is-selected':'')+'" data-a="category" data-category="" aria-pressed="'+(!categoryFilter)+'">Alle Kontakte</button>'+categories.map(x=>'<button class="'+(categoryFilter===x?'is-selected':'')+'" data-a="category" data-category="'+E(x)+'" aria-pressed="'+(categoryFilter===x)+'">'+E(x)+'</button>').join("")+'</div></details>';
+ return '<details class="category-picker" aria-label="Kontakt-Rubrik wählen"><summary>'+E(title)+'</summary><div class="category-grid"><button class="allcategories'+(!categoryFilter?' is-selected':'')+'" data-a="category" data-category="" aria-pressed="'+(!categoryFilter)+'">Alle Kontakte</button>'+categories.map(x=>'<button class="'+(categoryFilter===x?'is-selected':'')+'" data-a="category" data-category="'+E(x)+'" aria-pressed="'+(categoryFilter===x)+'">'+E(x)+'</button>').join("")+'<button class="manage-categories" data-a="manage-categories">Rubriken verwalten</button></div></details>';
 }
 function alphabetPicker(){
  const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -358,6 +359,10 @@ function render(){
  }
  if(view==="list"){
   screen(back+'<h2>Kontakte</h2>'+categoryPicker()+alphabetPicker()+'<div id="list">'+items()+'</div>');return;
+ }
+ if(view==="manage-categories"){
+  const categories=usedCategories();
+  screen(back+'<h2>Rubriken verwalten</h2><p class="muted">Beim Löschen bleiben alle Kontakte erhalten. Sie erhalten nur keine Rubrik mehr.</p>'+categories.map(x=>{const count=records.filter(c=>contactCategory(c)===x).length;return '<button class="category-delete" data-a="delete-category" data-category="'+E(x)+'">'+E(x)+' löschen · '+count+' Kontakt'+(count===1?"":"e")+'</button>';}).join(""));return;
  }
  if(view==="detail"){
   const c=get(selected);if(!c){view="list";render();return;}
@@ -397,6 +402,15 @@ app.addEventListener("click",async e=>{
  if(a==="search-again"){selected=null;term="";letter="";nav("list");return;}
  if(a==="letter"){letter=b.dataset.letter||"";term="";render();status(letter?"Kontakte mit "+letter+".":"Alle Kontakte.");return;}
  if(a==="category"){categoryFilter=b.dataset.category||"";letter="";term="";render();status(categoryFilter?"Rubrik "+categoryFilter+".":"Alle Kontakte.");return;}
+ if(a==="manage-categories"){nav("manage-categories");return;}
+ if(a==="delete-category"){
+  const category=b.dataset.category||"",affected=records.filter(c=>contactCategory(c)===category);
+  if(!category||!affected.length)return;
+  if(!confirm("Rubrik „"+category+"“ bei "+affected.length+" Kontakt"+(affected.length===1?"":"en")+" entfernen? Die Kontakte bleiben erhalten.")){status("Rubrik nicht gelöscht.");return;}
+  try{for(const c of affected)await put({...c,category:"",updatedAt:stamp()});categoryFilter="";nav("list");status("Rubrik „"+category+"“ gelöscht. Kontakte bleiben erhalten.");}
+  catch(err){status("Rubrik konnte nicht vollständig gelöscht werden.");}
+  return;
+ }
  if(a==="new"){editing=null;nav("form");return;}
  if(a==="back"){selected=null;editing=null;term="";nav("home");return;}
  if(a==="select"){

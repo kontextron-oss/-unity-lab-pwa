@@ -63,6 +63,16 @@ const assertContract=x=>{
  v=evaluate();
  assert.equal(v.action,'BLOCKED');assert.equal(v.reasonCode,'missing-data');
  assert.equal(v.testActionEligible,false);
+ // A confirmed technical opportunity is not discarded because a report field
+ // is still missing: UNITY proposes a deliberately smaller test position.
+ deep={...deep,kind:'technical',investmentReady:false,technicalEligible:true,
+   riskMultiplier:.25,riskTier:'Sehr kleine Testposition'};
+ autoOrder={mode:'strict',allocationEur:250};
+ v=evaluate();
+ assert.equal(v.action,'BUY');assert.equal(v.reasonCode,'risk-adjusted-entry');
+ assert.equal(v.riskMultiplier,.25);assert.equal(v.suggestedCapitalEur,62.5);
+ assert.match(v.why.join(' '),/25 %/);
+ deep={...deep,kind:'positive',investmentReady:true,technicalEligible:false,riskMultiplier:1,riskTier:'Normaler Einstieg'};
  assert.equal(evaluate('technical').action,'BUY','Technical simulation may remain a separate small test');
  miss=[];
  quotes={...quotes,valid:false,quality:{canCompare:false,level:'stale'}};
@@ -124,8 +134,8 @@ const assertContract=x=>{
  assert.equal(evaluate(),null,'Crypto uses its separate decision system');
  assert.equal(await vm.runInContext("unityDecisionLedgerCapture(stock,'strict')",sandbox),false);
  const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),home=fs.readFileSync('home.js','utf8');
- assert.match(html,/decision-engine\.js\?v=0\.16\.5/);
- assert.match(sw,/decision-engine\.js\?v=0\.16\.5/);
+ assert.match(html,/decision-engine\.js\?v=0\.16\.6-riskdecision-20261114/);
+ assert.match(sw,/decision-engine\.js\?v=0\.16\.6-riskdecision-20261114/);
  assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
  assert.match(home,/unityDecisionPanel\(s\)/);
  assert.match(home,/approval\.testActionEligible/);

@@ -107,9 +107,11 @@ async function unityPaperArmOrder(order,trigger){
       const current=e.target.result;
       if(!current||!current.active||current.executedAt||current.createdAt!==order.createdAt)return;
       if(current.triggerQuoteDate){result={status:'already-triggered'};return;}
+      const proposedAmount=Number(trigger.allocationEur);
       const at=new Date().toISOString(),next={...current,triggerQuoteDate:String(trigger.quoteDate),
         triggeredAt:at,triggerLimit:Number(trigger.limit)||null,
         triggerRefPrice:Number(trigger.price)||null,triggerMode:current.mode||'strict',
+        triggerAllocationEur:Number.isFinite(proposedAmount)&&proposedAmount>0?proposedAmount:null,
         state:'triggered'};
       os.put(next);
       logs.put({id:'paper-signal:'+unityPaperFillId(order)+':'+encodeURIComponent(trigger.quoteDate),
@@ -130,7 +132,7 @@ async function unityPaperClearTrigger(order,reason){
     os.get(order.id).onsuccess=e=>{
       const current=e.target.result;
       if(!current?.active||!current.triggerQuoteDate||current.createdAt!==order.createdAt)return;
-      const {triggerQuoteDate,triggeredAt,triggerLimit,triggerRefPrice,triggerMode,...base}=current;
+      const {triggerQuoteDate,triggeredAt,triggerLimit,triggerRefPrice,triggerMode,triggerAllocationEur,...base}=current;
       const next={...base,state:'waiting',lastBlockedReason:String(reason||'Limit verändert'),
         lastBlockedAt:new Date().toISOString()};
       os.put(next);tx.objectStore('audit').put({id:'paper-trigger-clear:'+unityPaperFillId(order)+':'+
@@ -179,7 +181,7 @@ async function unityPaperAtomicFill(order,s,side,quote,fx,approval){
       }
       const rate=Number(fx.rate),close=Number(quote.x.price),modelQty=side==='SELL'?
         unityPaperQtyFromRows(tradeRows,s.id):NaN;
-      const budget=Number(current.allocationEur),model=unityPaperFillModel(close,side,rate,policy,
+      const budget=Number(current.triggerAllocationEur||current.allocationEur),model=unityPaperFillModel(close,side,rate,policy,
         budget,modelQty);
       if(!model){
         result={status:'blocked',reason:'Fester Betrag/Bestand reicht nicht für modellierte Gebühr'};return;
@@ -214,6 +216,7 @@ async function unityPaperAtomicFill(order,s,side,quote,fx,approval){
           triggerQuoteDate:current.triggerQuoteDate,orderId:current.id,orderCreatedAt:current.createdAt,
           simulatedModel:true,spreadBps:model.spreadBps,slippageBps:model.slippageBps,
           modeledFeeEur:model.fee,modeledTotalEur:model.totalEur,
+          riskAdjustedAmountEur:side==='BUY'&&Number(current.triggerAllocationEur)>0?Number(current.triggerAllocationEur):null,
           unityDecision:{version:d.version||'',action:side,mode:current.mode||'strict',
             reasonCode:d.reasonCode||'',signalAt:d.signalAt||current.triggerQuoteDate,
             priceRef:d.priceRef||null,veto:d.veto||[],sourceRefs:d.sourceRefs||[]}}};

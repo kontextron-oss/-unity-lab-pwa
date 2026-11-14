@@ -2,7 +2,7 @@
 /* UNITY 0.15.1 – unified, reproducible paper-decision engine.
  * This module is deliberately read-only during evaluation.
  * No quote is a live executable market order; no broker approval exists. */
-const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.15.1';
+const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.15.2';
 const UNITY_DECISION_ACTIONS={BUY:'Kaufen',SELL:'Verkaufen',HOLD:'Halten / Abwarten',BLOCKED:'Blockiert'};
 const unityDecisionSafeNum=v=>v===null||v===undefined||v===''?NaN:Number(v);
 const unityDecisionCleanList=a=>[...new Set((Array.isArray(a)?a:[]).map(x=>String(x||'').trim()).filter(Boolean))];
@@ -14,6 +14,12 @@ function unityDecisionResolve(input){
   const missing=unityDecisionCleanList(input?.missing);
   const hard=unityDecisionCleanList(input?.hardVeto);
   const deep=input?.deep||null,signal=input?.technicalSignal||{kind:'data'};
+  const multiplier=Number.isFinite(unityDecisionSafeNum(input?.riskMultiplier))?
+    Math.max(0,Math.min(1,unityDecisionSafeNum(input.riskMultiplier))):0;
+  const configuredCapital=Number.isFinite(unityDecisionSafeNum(input?.capitalEur))&&unityDecisionSafeNum(input.capitalEur)>0?
+    Number(input.capitalEur):null;
+  const suggestedCapital=configuredCapital&&multiplier>0?
+    Math.floor(configuredCapital*multiplier*100+1e-7)/100:null;
   const base={version:UNITY_DECISION_ENGINE_VERSION,mode:m,action:'BLOCKED',label:UNITY_DECISION_ACTIONS.BLOCKED,
     dataStatus:input?.dataStatus||'missing',scoreBand:'–',
     confidence:'Datenlage eingeschränkt',veto:[],signalAt:String(input?.signalAt||ref?.date||''),
@@ -21,8 +27,8 @@ function unityDecisionResolve(input){
       date:String(ref.date),source:String(ref.source||'Tageskursreferenz')} : null,
     trigger:'',invalidation:'Bei neuer, verifizierter Datenlage erneut prüfen',
     capitalPct:null, // retained as a null compatibility field, no percent-based trading
-    capitalEur:Number.isFinite(unityDecisionSafeNum(input?.capitalEur))&&unityDecisionSafeNum(input.capitalEur)>0?
-      Number(input.capitalEur):null,
+    capitalEur:configuredCapital,suggestedCapitalEur:suggestedCapital,riskMultiplier:multiplier,
+    riskTier:String(input?.riskTier||''),
     why:[],reasonCode:'missing-data',sourceRefs:Array.isArray(input?.sourceRefs)?input.sourceRefs.map(e=>({
       key:String(e.key||''),status:String(e.status||''),stamp:String(e.stamp||''),source:String(e.source||'')})):[],
     positionQty:position,investmentReady:!!deep?.investmentReady,
@@ -84,8 +90,22 @@ function unityDecisionResolve(input){
       'Auf neues, validiertes technisches Signal warten',
       'Technische Lage oder bestätigte Unternehmensereignisse ändern sich');
   }
-  // Strict allocation cannot be approved by a technical signal. Confirmed
-  // issuer data, valuation, hard checks and 10 % margin remain higher gates.
+  // A verified technical setup with no hard/event veto can receive a small,
+  // explicitly risk-limited test allocation even while evidence is incomplete.
+  // Missing evidence remains visible and caps the size instead of being hidden.
+  const limit=unityDecisionSafeNum(input?.entryLimit);
+  const chanceEntry=m==='strict'&&!!deep&&!deep.investmentReady&&
+    deep.technicalEligible===true&&multiplier>0&&signal.kind==='reached'&&
+    Number.isFinite(limit)&&limit>0&&price<=limit;
+  if(chanceEntry)
+    return decide('BUY','risk-adjusted-entry',
+      ['Kalkulierter Chancen-Einstieg: technisches Signal und Kurszone sind bestätigt',
+       'Offene Fundamentaldaten begrenzen die Testposition auf '+Math.round(multiplier*100)+' % der eingestellten Größe',
+       ...missing],
+      'Referenzkurs bis '+limit.toFixed(2)+' '+ref.currency,
+      'Neues Hard-Veto, Ergebnisereignis, verletzte Schutzschwelle oder widerlegte These');
+  // Full allocation remains reserved for a complete valuation, issuer and
+  // earnings review. Lack of evidence blocks only the unscaled allocation.
   if(missing.length>0||!deep)
     return decide('BLOCKED','missing-data',
       ['Fundamentale Anlagefreigabe benötigt noch belegte Pflichtinformationen',...missing],
@@ -94,7 +114,6 @@ function unityDecisionResolve(input){
     ['Bestehender Bestand: kein bestätigtes Ausstiegsveto','Ein schwächeres Neuinvestitionssignal allein ist kein Verkaufsgrund'],
     'Bilanz, Guidance und Ausstiegskriterien weiter überwachen',
     'Quellengebundene Verschlechterung oder neue Schutzschwelle');
-  const limit=unityDecisionSafeNum(input?.entryLimit);
   if(deep.investmentReady===true&&signal.kind==='reached'&&Number.isFinite(limit)&&limit>0&&price<=limit){
     return decide('BUY','fundamentally-approved',
       ['Strenge UNITY-Freigabe einschließlich Bewertung, Sicherheitsmarge, Risiken und bestätigtem Earnings-Termin',
@@ -161,9 +180,11 @@ function unityDecisionForStock(s,mode='strict'){
     unityAutoEurAmount(currentBuy):NaN;
   const input={mode:chosen,positionQty:qty,quoteValid:valid,
     priceRef:ref,technicalReady,technicalSignal,technicalExit,exitLimit,
-    entryLimit:chosen==='technical'?technicalLimit:strictLimitOk?strictLimit:NaN,
+    entryLimit:chosen==='technical'?technicalLimit:strictLimitOk?strictLimit:upper,
     deep,nearEarnings,verifiedFundamentalExit:fundamentalExit,exitReason:issuerRisk?.label||'',
     capitalEur:Number.isFinite(euro)&&euro>0?euro:null,
+    riskMultiplier:chosen==='strict'?Number(deep?.riskMultiplier):1,
+    riskTier:chosen==='strict'?String(deep?.riskTier||''):'Technische Testsimulation',
     missing:unityDecisionCleanList(missing),hardVeto:blockers,
     sourceRefs:Object.values(readiness?.fields||{}).map(f=>({key:f.key,status:f.status,
       stamp:f.stamp,source:f.source})),
@@ -175,7 +196,7 @@ function unityDecisionLedgerKey(s,d){
   // Stable fingerprint of ACTUAL decision inputs: duplicate views do not create
   // a stream of redundant records or overwrite the first immutable snapshot.
   const state=JSON.stringify([s.id,d.mode,d.action,d.reasonCode,d.dataStatus,d.signalAt,
-    d.priceRef,d.scoreBand,d.veto,d.trigger,d.invalidation,d.why,d.positionQty,d.capitalPct,d.capitalEur,d.sourceRefs]);
+    d.priceRef,d.scoreBand,d.veto,d.trigger,d.invalidation,d.why,d.positionQty,d.capitalPct,d.capitalEur,d.suggestedCapitalEur,d.riskMultiplier,d.sourceRefs]);
   let hash=2166136261;
   for(let i=0;i<state.length;i++){hash^=state.charCodeAt(i);hash=Math.imul(hash,16777619)}
   return 'unity-decision-0151-'+String(s.id)+'-'+(hash>>>0).toString(16);
@@ -216,6 +237,10 @@ function unityDecisionPanel(s){
     '<h3>Entscheidung: <span class="unity-engine-action '+style(deep)+'">'+escf(label(deep))+'</span></h3>'+
     '<p class="tiny muted">Strenge Anlageprüfung · Datenstatus '+escf(deep.dataStatus)+' · Scoreband '+escf(deep.scoreBand)+
     ' · Konfidenz '+escf(deep.confidence)+'</p>'+renderReasons(deep)+
+    (deep.action==='BUY'&&deep.reasonCode==='risk-adjusted-entry'?'<p class="tiny muted"><b>'+escf(deep.riskTier||'Kalkulierte Testposition')+':</b> '+
+      escf(String(Math.round((Number(deep.riskMultiplier)||0)*100)))+' % der eingestellten Testgröße'+
+      (Number.isFinite(deep.suggestedCapitalEur)?' · maximal '+escf(depotMoney(deep.suggestedCapitalEur)):'')+
+      '. Fehlende Evidenz begrenzt die Position und bleibt als Prüfpunkt sichtbar.</p>':'')+
     '<p class="tiny muted">Kurs: '+(deep.priceRef?
       escf(Number(deep.priceRef.price).toFixed(2)+' '+deep.priceRef.currency+' · '+deep.priceRef.exchange+' · '+deep.priceRef.date):
       'kein belastbarer aktueller Referenzkurs')+'</p>'+

@@ -86,9 +86,9 @@ function request(url){
  assert.equal(intr.status,200,'intraday data uses network first');
  assert.equal(cachePuts.at(-1),key('./data/intraday.json'));
  const staticScript=new Response('/* precached */',{status:200});
- currentCache.set(key('./home.js?v=0.17.0-rc1-datafix-20261112'),staticScript);
+ currentCache.set(key('./home.js?v=0.16.6-riskdecision-20261114'),staticScript);
  const beforeStatic=networkFetchCount;
- const staticResult=await request('./home.js?v=0.17.0-rc1-datafix-20261112');
+ const staticResult=await request('./home.js?v=0.16.6-riskdecision-20261114');
  assert.match(await staticResult.text(),/precached/);
  assert.equal(networkFetchCount,beforeStatic,'unchanged scripts remain cache first');
  assert.doesNotMatch(home,/badge\.textContent\s*=\s*'0\.16\.5'/);
@@ -96,10 +96,10 @@ function request(url){
  assert.match(home,/window\.setInterval\(unityHomeRefreshVisibleIfDue,60000\)/);
  assert.match(home,/Quellenstand/);
  for(const page of [html,versioned]){
-  assert.match(page,/home\.js\?v=0\.17\.0-rc1-datafix-20261112/);
+  assert.match(page,/home\.js\?v=0\.16\.6-riskdecision-20261114/);
   assert.match(page,/intraday\.js\?v=0\.17\.0-rc1-datafix-20261112/);
  }
- assert.match(sw,/home\.js\?v=0\.17\.0-rc1-datafix-20261112/);
+ assert.match(sw,/home\.js\?v=0\.16\.6-riskdecision-20261114/);
  assert.match(sw,/intraday\.js\?v=0\.17\.0-rc1-datafix-20261112/);
  // Intraday data is allowed to outrank a less recent daily snapshot
  // even on the same calendar date; stock identity/currency unchanged.

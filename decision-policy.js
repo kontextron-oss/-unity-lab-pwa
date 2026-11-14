@@ -3,7 +3,7 @@
    a substitute for verified issuer disclosures and current bid/ask prices.
    Three independent layers: technical test-simulation, fundamental
    investment review, and real-order approval (always unavailable). */
-const UNITY_POLICY_VERSION='UNITY Decision Policy 1.0';
+const UNITY_POLICY_VERSION='UNITY Decision Policy 1.1';
 function unityPolicyNum(x){return x===null||x===undefined||x===''?NaN:Number(x)}
 function unityPolicyClamp(n){return Math.max(0,Math.min(100,n))}
 function unityPolicyFmt(n,d=1){return Number.isFinite(n)?n.toFixed(d).replace('.',','):'–'}
@@ -140,20 +140,25 @@ function unityDeepDecision(s,base=null,candidate=null){
     !!a?.f?.guidanceChecked&&confirmedEarnings&&
     Number.isFinite(earningsDays)&&earningsDays>Date.now()+7*86400000&&
     !!a?.f?.dataSource?.trim()&&!!a?.f?.thesis?.trim()&&!!a?.f?.risks?.trim();
-  let kind='data',decision='OFFEN – Daten prüfen',reason='Die Datenlage reicht für eine belastbare Entscheidung nicht aus.';
+  let kind='data',decision='OFFEN – Daten prüfen',reason='Die Datenlage reicht noch nicht einmal für eine kalkulierte Testentscheidung aus.';
   if(technical){
     if(Number.isFinite(rr)&&rr<2){kind='no';decision='NEIN – Chance/Risiko ungünstig';reason='UNITY-Hard-Rule unter 2:1.'}
     else if(nearEarnings){kind='wait';decision='ABWARTEN – Ergebnisrisiko';reason='Bestätigte Ergebnisveröffentlichung am '+String(earningsDate).slice(0,10)+'. Technische Signale überstimmen dieses Veto nicht.'}
     else if(c?.status==='candidate'&&!inZone){kind='wait';decision='NEIN – Einstiegskurs abwarten';reason='Der Kurs liegt derzeit außerhalb der definierten SMA50-Kaufzone.'}
     else if(!eligible){kind='no';decision='NEIN – derzeit kein Einstieg';reason='Mindestens eine technische Risiko- oder Trendbedingung ist nicht erfüllt.'}
     else if(investmentReady){kind='positive';decision='JA – geprüften Einstieg im Testdepot prüfen';reason='Technik, Bewertung, dokumentierte Unternehmenskennzahlen, Earnings und Risikoregeln erfüllen die hinterlegten Kriterien. Keine reale Orderfreigabe.'}
-    else {kind='technical';decision='JA – technischer Testkauf prüfenswert';reason='Die technischen Einstiegskriterien sind erfüllt. Eine fundamentale Kaufempfehlung bleibt wegen offener Quellen- und Bewertungsfragen ausdrücklich aus.'}
+    else {kind='technical';decision='JA – Chancen-Einstieg im Testdepot prüfen';reason='Die technischen Einstiegskriterien sind erfüllt. Offene Quellen- und Bewertungsfragen begrenzen die Positionsgröße; sie werden sichtbar nachgeführt.'}
   }
   const totalSources=[usable,filing.verified,valuationReady,
     confirmedEarnings&&Number.isFinite(earningsDays)&&earningsDays>Date.now()+7*86400000,
     Number.isFinite(rr)&&rr>=2,Number.isFinite(rs)];
   const coverage=totalSources.filter(Boolean).length;
   const confidence=coverage>=6?'Hoch (nur für die modellierten Bedingungen)':coverage>=4?'Mittel':'Eingeschränkt';
+  // Missing evidence is neither silently ignored nor automatically treated as a
+  // negative company verdict. It reduces the proposed test exposure. Explicit
+  // risk/event vetos above still prevent every fresh entry.
+  const riskMultiplier=investmentReady?1:eligible?(coverage>=4?.5:.25):0;
+  const riskTier=riskMultiplier>=1?'Normaler Einstieg':riskMultiplier>=.5?'Kleiner Einstieg':'Sehr kleine Testposition';
   return {version:UNITY_POLICY_VERSION,s,kind,decision,reason,positives,problems,missing,
     technicalEligible:eligible,investmentReady,realOrderApproved:false,simulationPossible:true,
     sourceDate:date||'–',vol20:stat?.vol20??NaN,drawdown:stat?.maxDrawdown??NaN,
@@ -162,7 +167,8 @@ function unityDeepDecision(s,base=null,candidate=null){
     scenarioRR:stat?.scenarioRR??NaN,
     entryLower:lower,entryUpper:upper,filing,investmentScore:a?.score??NaN,
     candidateScore:c?.score??NaN,rr,confidence,coverage,totalChecks:totalSources.length,
-    valuationReady,quoteVerified:usable,nearEarnings,earningsDate:earningsDate||''};
+    valuationReady,quoteVerified:usable,nearEarnings,earningsDate:earningsDate||'',
+    riskMultiplier,riskTier};
 }
 
 // Post-purchase monitor: compares the immutable test-buy snapshot with the
@@ -222,9 +228,10 @@ function unityDeepSimPosition(s,d){
   const rate=typeof unityEuroRate==='function'?unityEuroRate(s.currency):null;
   const px=Number(price),fx=Number(rate?.rate),diff=(px-d.scenarioStop)*fx;
   if(!(cap?.configured&&cap.total>0&&cap.free>0&&px>0&&fx>0&&diff>0))return null;
-  const atRisk=cap.total*.01,positionCap=cap.total*.05;
+  const multiplier=Number.isFinite(Number(d?.riskMultiplier))?Math.max(0,Math.min(1,Number(d.riskMultiplier))):0;
+  const atRisk=cap.total*.01*multiplier,positionCap=cap.total*.05*multiplier;
   const units=Math.floor(Math.min(atRisk/diff,positionCap/(px*fx),cap.free/(px*fx))*10000)/10000;
-  return units>0?{units,amount:units*px*fx,loss:units*diff,atRisk,positionCap}:null;
+  return units>0?{units,amount:units*px*fx,loss:units*diff,atRisk,positionCap,multiplier}:null;
 }
 function unityDeepDecisionPanel(s,base=null,candidate=null){
   const d=unityDeepDecision(s,base,candidate);
@@ -243,14 +250,15 @@ function unityDeepDecisionPanel(s,base=null,candidate=null){
     '<div><small>20-Tage-Volatilität, annualisiert</small><b>'+unityPolicyPercent(d.vol20)+'</b></div>'+
     '<div><small>Max. Rückgang (bis 252 Sitzungen)</small><b>'+unityPolicyPercent(d.drawdown)+'</b></div>'+
     '<div><small>Dokumentiertes Chance/Risiko</small><b>'+ (Number.isFinite(d.rr)?unityPolicyFmt(d.rr,2)+':1':'Nicht belegt')+'</b></div>'+
+    '<div><small>Risikostufe</small><b>'+escf(d.riskTier||'–')+'</b><small>'+unityPolicyFmt((Number(d.riskMultiplier)||0)*100,0)+' % der normalen Testgröße</small></div>'+
     '</div>'+
     '<details class="unity-policy-evidence" open><summary>Warum dieses Ergebnis?</summary>'+
     '<p><b>Positive Befunde</b></p><ul>'+(d.positives.length?d.positives.map(x=>'<li>'+escf(x)+'</li>').join(''):'<li>Keine ausreichend bestätigten positiven Befunde.</li>')+'</ul>'+
     '<p><b>Risiken / Gegenargumente</b></p><ul>'+(d.problems.length?d.problems.map(x=>'<li>'+escf(x)+'</li>').join(''):'<li>Keine zusätzliche technische Warnung erkannt.</li>')+'</ul>'+
     '<p><b>Noch fehlende Informationen</b></p><ul>'+(d.missing.length?d.missing.map(x=>'<li>'+escf(x)+'</li>').join(''):'<li>Keine Pflichtangaben aus diesem Prüfmodell offen.</li>')+'</ul></details>';
   if(size){
-    h+='<div class="unity-policy-sizing"><b>Konservatives Testdepot-Szenario: '+unityPolicyFmt(size.units,4)+' Stück</b>'+
-      '<small>Ca. '+unityPolicyFmt(size.amount,2)+' € Einsatz · modelliertes Risiko '+unityPolicyFmt(size.loss,2)+' €; Grenzen: 1 % Vermögensrisiko, 5 % Positionsanteil und freies Kapital.</small></div>';
+    h+='<div class="unity-policy-sizing"><b>'+escf(d.riskTier||'Kalkulierte Testposition')+': '+unityPolicyFmt(size.units,4)+' Stück</b>'+
+      '<small>Ca. '+unityPolicyFmt(size.amount,2)+' € Einsatz · modelliertes Risiko '+unityPolicyFmt(size.loss,2)+' €; '+unityPolicyFmt(size.multiplier*100,0)+' % der normalen Testgröße wegen Datenlage. Grenzen: 1 % Vermögensrisiko, 5 % Positionsanteil und freies Kapital.</small></div>';
   }
   if(d.kind==='positive'||d.kind==='technical')
     h+='<button type="button" class="unity-policy-testbuy" data-policy-testbuy="'+escf(s.id)+'">Fiktiven Kauf vorbereiten</button>';

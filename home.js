@@ -192,9 +192,10 @@ function unityAutoExitZone(s){
 function unityCalculatedEntry(s){
   const decision=typeof unityDeepDecision==='function'?unityDeepDecision(s):null,a=typeof unityCalc==='function'?unityCalc(s):null;
   const fair=Number(a?.f?.fairValue),technical=Number(decision?.entryUpper),stop=Number(a?.f?.stop);
-  if(!decision?.investmentReady||decision.kind!=='positive'||!(fair>0)||!(technical>0))return {ready:false,decision,a,price:NaN,stop:NaN};
+  if(!decision||!['positive','technical'].includes(decision.kind)||!(technical>0))return {ready:false,decision,a,price:NaN,stop:NaN};
   const lower=Number(decision?.entryLower),raw=Math.min(technical,fair*.90); // 10 % safety margin, then technical timing
-  const price=Number.isFinite(lower)?Math.max(lower,raw):raw;
+  const bounded=Number.isFinite(fair)&&fair>0?raw:technical;
+  const price=Number.isFinite(lower)?Math.max(lower,bounded):bounded;
   return {ready:Number.isFinite(price)&&price>0,decision,a,price,stop:stop>0?stop:NaN};
 }
 function unityTechnicalTestEntry(s){
@@ -518,12 +519,16 @@ async function unityRunAutoTestBuys(){
       const signal=unityPullbackAlert(s);
       if(signal.kind!=='reached'||Number(signal.close)>entry.price||!signal.date||
          signal.date<=String(order.createdAt||'').slice(0,10))continue;
-      const capital=depotCapital(),budget=unityAutoBudgetStatus(),euros=unityAutoEurAmount(order),
+      const capital=depotCapital(),budget=unityAutoBudgetStatus(),configuredEur=unityAutoEurAmount(order),
+        riskAdjustedEur=mode==='strict'&&approval?.reasonCode==='risk-adjusted-entry'?
+          Number(approval.suggestedCapitalEur):NaN,
+        euros=Number.isFinite(riskAdjustedEur)&&riskAdjustedEur>0?
+          Math.min(configuredEur,riskAdjustedEur):configuredEur,
         fee=unityPaperPolicy().feeEur;
       if(!capital.configured||!budget.configured||!(euros>=1)||!(euros>fee)||
          !(capital.free>=euros&&budget.remaining>=euros))continue;
       const result=await unityPaperArmOrder(order,{quoteDate:signal.date,
-        limit:entry.price,price:Number(signal.close)});
+        limit:entry.price,price:Number(signal.close),allocationEur:euros});
       if(result.status==='triggered')await refresh();
     }
     for(const s of stocks()){

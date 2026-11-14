@@ -30,7 +30,7 @@ vm.runInContext(fs.readFileSync('decision-policy.js','utf8'),box);
 const run=()=>vm.runInContext('unityDeepDecision(st)',Object.assign(box,{st:stock}));
 let d=run();
 assert.equal(d.kind,'technical');
-assert.match(d.decision,/JA – technischer Testkauf/);
+assert.match(d.decision,/JA – Chancen-Einstieg/);
 assert.equal(d.investmentReady,false);
 assert.equal(d.realOrderApproved,false);
 assert.equal(d.simulationPossible,true);
@@ -39,13 +39,16 @@ assert.ok(Number.isFinite(d.vol20));
 assert.ok(Number.isFinite(d.relativeStrength));
 assert.ok(d.peerCount>=5);
 assert.ok(d.scenarioStop<item.price&&d.scenarioTarget>item.price);
+assert.equal(d.riskMultiplier,.25);
+assert.match(d.riskTier,/Sehr kleine Testposition/);
 let p=vm.runInContext('unityDeepDecisionPanel(st)',box);
 assert.match(p,/Entscheidung jetzt/);
 assert.match(p,/Relative Stärke/);
 assert.match(p,/20-Tage-Volatilität/);
 assert.match(p,/Nicht vollständig/);
 assert.match(p,/data-policy-testbuy="s1"/);
-assert.match(p,/Konservatives Testdepot-Szenario/);
+assert.match(p,/Sehr kleine Testposition/);
+assert.match(p,/Risikostufe/);
 const r=vm.runInContext('unityDeepSimPosition(st,unityDeepDecision(st))',box);
 assert.ok(r&&r.units>0&&r.loss<=50.001&&r.amount<=250.001&&r.amount<=1600.001);
 // A reliable new filing with all needed ratios and source/provenance
@@ -86,8 +89,8 @@ item.date=date;item.points=item.points.slice(-40);d=run();assert.equal(d.kind,'d
 // No comparable peers -> no fabricated alpha; still a cautious technical evaluation.
 item.points=points();item.price=item.points.at(-1).close;model.t.last=item.price;
 market.items={};d=run();assert.ok(Number.isNaN(d.relativeStrength));assert.ok(d.missing.some(x=>/Relative Stärke/.test(x)));
-assert.match(fs.readFileSync('index.html','utf8'),/decision-policy\.js\?v=0\.13\.\d+/);
-assert.match(fs.readFileSync('sw.js','utf8'),/decision-policy\.js\?v=0\.13\.\d+/);
+assert.match(fs.readFileSync('index.html','utf8'),/decision-policy\.js\?v=0\.16\.6-riskdecision-20261114/);
+assert.match(fs.readFileSync('sw.js','utf8'),/decision-policy\.js\?v=0\.16\.6-riskdecision-20261114/);
 assert.match(fs.readFileSync('analysis.js','utf8'),/deepDecision:/);
 assert.match(fs.readFileSync('home.js','utf8'),/b\.dataset\.policyTestbuy/);
 // A negative new-entry condition must not be displayed as negative position status.

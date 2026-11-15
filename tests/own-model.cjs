@@ -92,5 +92,5 @@ assert.match(challengeOverview,/VRT/);
 const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
 assert.match(html,/own-model\.js\?v=0\.16\.5/);
 assert.match(sw,/data\/unity-model-forecasts\.json/);
-assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
+assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
 console.log('UNITY independent forecast lab: source identity, immutable research panel, comparison, unknown skill and no-trade passed.');

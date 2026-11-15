@@ -172,6 +172,36 @@ function unityReadinessStandardDataset(list){
     records
   };
 }
+/* UNITY 0.17.2: prioritize source work, never manufacture company facts.
+   Only technically analyzable equities without observed adverse signals qualify.
+   This ranks SOURCE CHECKS (not stocks, valuations or trade decisions). */
+const UNITY_GAP_PRIORITY=Object.freeze({
+  earnings:9,filing:8,valuation:7,guidance:6,risks:4,thesis:3,
+  fx:2,quote:2,history:2
+});
+function unityPrioritySourceGaps(readinessRecords,limit=3){
+  const records=(Array.isArray(readinessRecords)?readinessRecords:[]).filter(r=>
+    r?.technicalReady===true&&Array.isArray(r.adverse)&&r.adverse.length===0&&
+    Array.isArray(r.missing)&&r.missing.length>0);
+  const groups=new Map();
+  for(const r of records){
+    const seen=new Set();
+    for(const f of r.missing){
+      const key=String(f?.key||'');
+      if(!key||seen.has(key))continue;
+      seen.add(key);
+      if(!groups.has(key))groups.set(key,{key,label:String(f.label||key),count:0,names:[]});
+      const item=groups.get(key);
+      item.count++;
+      if(item.names.length<3)item.names.push(String(r.s?.name||r.s?.ticker||r.s?.isin||'Aktie'));
+    }
+  }
+  return [...groups.values()].map(g=>({
+    ...g,priority:UNITY_GAP_PRIORITY[g.key]||1,
+    impact:(UNITY_GAP_PRIORITY[g.key]||1)*g.count
+  })).sort((a,b)=>b.impact-a.impact||b.priority-a.priority||
+    a.key.localeCompare(b.key)).slice(0,Math.max(0,Math.min(3,Math.floor(Number(limit)||0))));
+}
 function unityReadinessOverview(list){
   const selected=Array.isArray(list)?list:typeof stocks==='function'?stocks():[];
   // Crypto has a separate 24/7 data and risk model, not issuer-filing readiness.
@@ -192,6 +222,14 @@ function unityReadinessOverview(list){
     '<span><b>'+adverse+'</b><small>zusätzlich negative Signale</small></span></div>'+
     '<p class="tiny muted">Datenmangel ist keine negative Aktienbewertung. Kategorien können sich überschneiden. Hinterlegte Prüffelder und Quellenvermerke sind noch keine unabhängige Verifizierung und keine Kauf-Freigabe.</p>'+
     '<details class="unity-readiness-pilots"><summary>Datenprüfung der vier Pilotaktien ansehen</summary><div class="unity-readiness-pilot-list">';
+  const priorities=unityPrioritySourceGaps(records,3);
+  h+='<div class="unity-readiness-priority"><h4>Wichtigste Datenlücken · automatisch priorisiert</h4>'+
+    '<p class="tiny muted">Nur technisch auswertbare Aktien ohne dokumentiertes Negativsignal. Reihenfolge nach möglichem Nutzen für die Entscheidungsprüfung, keine Kaufempfehlung.</p>';
+  if(priorities.length){
+    h+='<ol>'+priorities.map(g=>'<li><b>'+esc(g.label)+'</b> · '+g.count+
+      ' Aktien · zum Beispiel '+esc(g.names.join(', '))+'</li>').join('')+'</ol>';
+  }else h+='<p class="tiny muted">Derzeit keine qualifizierten Datenlücken zur Priorisierung.</p>';
+  h+='</div>';
   for(const p of pilots){
     const r=p.found;
     const note=!r?'Nicht in aktiver Masterliste':r.missing.length?

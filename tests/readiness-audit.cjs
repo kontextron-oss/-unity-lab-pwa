@@ -169,6 +169,21 @@ assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
 const source=fs.readFileSync('home.js','utf8');
 assert.match(source,/unityReadinessOverview/);
 assert.match(source,/unityReadinessDetail/);
+// UNITY 0.17.2: source-gap prioritization must never act as a buy signal.
+box.sourceGapFixtures=[
+ {s:{name:'ABB'},technicalReady:true,adverse:[],missing:[{key:'filing',label:'Abschluss'},{key:'earnings',label:'Earnings'}]},
+ {s:{name:'Schneider'},technicalReady:true,adverse:[],missing:[{key:'filing',label:'Abschluss'},{key:'earnings',label:'Earnings'}]},
+ {s:{name:'Risk case'},technicalReady:true,adverse:['verified-risk'],missing:[{key:'earnings',label:'Earnings'}]},
+ {s:{name:'No history'},technicalReady:false,adverse:[],missing:[{key:'filing',label:'Abschluss'}]}
+];
+const sourceGaps=vm.runInContext('unityPrioritySourceGaps(sourceGapFixtures,3)',box);
+assert.equal(sourceGaps.length,2);
+assert.equal(sourceGaps[0].key,'earnings');
+assert.equal(sourceGaps[0].count,2);
+assert.equal(sourceGaps[1].key,'filing');
+assert.equal(sourceGaps[1].count,2);
+assert.ok(!sourceGaps.some(g=>g.names.includes('Risk case')||g.names.includes('No history')));
+console.log('UNITY 0.17.2 source-gap ranking, negative-evidence exclusion and no fabricated approval passed.');
 console.log('UNITY readiness 0.15.0: missing facts, FX, earnings, negative signals, identity conflicts, pilot display and no order approval passed.');
 
 // UNITY 0.17.2: run the new deterministic source-gap, learning and version checks.

@@ -15,7 +15,7 @@ function unityDecisionReview(decision,stock){
   const reference=unityReviewNum(snapshot?.priceRef?.price),date=String(snapshot?.priceRef?.date||decision?.sourceAt||'');
   const plan=Array.isArray(snapshot.reviewPlan)&&snapshot.reviewPlan.length?snapshot.reviewPlan:
     [5,20,60].map(sessions=>({sessions,label:sessions+' Handelstage'}));
-  const day=/^\\d{4}-\\d{2}-\\d{2}/.exec(date)?.[0]||'';
+  const day=/^\d{4}-\d{2}-\d{2}/.exec(date)?.[0]||'';
   const valid=Number.isFinite(reference)&&reference>0&&!!day&&
     Number.isFinite(Date.parse(day));
   const points=valid?unityReviewPoints(stock):[],after=points.filter(p=>p.date>day);

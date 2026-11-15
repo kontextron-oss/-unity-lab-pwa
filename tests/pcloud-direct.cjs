@@ -72,7 +72,7 @@ const run=x=>vm.runInContext(x,box);
  assert.match(html,/id="unity-cloud-auto-status"/);
  assert.match(html,/cloud-direct-upload/);
  assert.match(sw,/pcloud-direct\.js\?v=0\.13\.\d+/);
- assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
+ assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
  assert.ok(requests.some(x=>x.url.endsWith('/backups/incremental')));
  console.log('Direct pCloud client: disabled without gateway, authenticated same-origin upload, remote receipt, CSRF, no silent cursor advancement and Safari frontend wiring passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

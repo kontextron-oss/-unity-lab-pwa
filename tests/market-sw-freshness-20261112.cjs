@@ -23,7 +23,7 @@ function get(map,req,opts){
 }
 const caches={
  async open(cacheName){
-  assert.match(cacheName,/^unity-lab-v0\.17\.0-rc1-datafix-20261112$/);
+  assert.match(cacheName,/^unity-lab-v0\.17\.2-gaps-20261115$/);
   return {
    match:async(req,opts)=>get(active,req,opts),
    put:async(req,response)=>{cacheWrites++;active.set(urlOf(req).href,response.clone())},

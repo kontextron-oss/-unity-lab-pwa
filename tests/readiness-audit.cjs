@@ -161,12 +161,15 @@ assert.match(detail,/Warum ist die UNITY-Freigabe offen/);
 assert.match(detail,/issuer-release-only/);
 assert.match(detail,/Daten/);
 const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
-assert.match(index,/readiness-audit\.js\?v=0\.16\.5/);
-assert.match(sw,/readiness-audit\.js\?v=0\.16\.5/);
+assert.match(index,/readiness-audit\.js\?v=0\.17\.2-gaps-20261115/);
+assert.match(sw,/readiness-audit\.js\?v=0\.17\.2-gaps-20261115/);
 // The risk-adjusted decision modules are independently versioned for iPhone cache refresh.
-assert.match(index,/home\.js\?v=0\.16\.6-riskdecision-20261114/);
-assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
+assert.match(index,/home\.js\?v=0\.17\.1-risklearn-20261115/);
+assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
 const source=fs.readFileSync('home.js','utf8');
 assert.match(source,/unityReadinessOverview/);
 assert.match(source,/unityReadinessDetail/);
 console.log('UNITY readiness 0.15.0: missing facts, FX, earnings, negative signals, identity conflicts, pilot display and no order approval passed.');
+
+// UNITY 0.17.2: run the new deterministic source-gap, learning and version checks.
+require('./unity-0172.cjs');

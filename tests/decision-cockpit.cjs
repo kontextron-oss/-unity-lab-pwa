@@ -1,7 +1,9 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const pendingVersionTests=fs.readdirSync('tests').filter(name=>name.endsWith('.cjs')&&
- /unity-lab-v0\\\\.17\\\\.0-rc1/.test(fs.readFileSync('tests/'+name,'utf8')));
+const pendingVersionTests=fs.readdirSync('tests').filter(name=>{
+ const source=fs.readFileSync('tests/'+name,'utf8');
+ return name.endsWith('.cjs')&&source.includes('unity-lab-v0')&&source.includes('17')&&source.includes('rc1')&&source.includes('assert.match');
+});
 if(pendingVersionTests.length)console.error('OLD_CACHE_TEST_REFERENCES',pendingVersionTests.join(', '));
 const source=fs.readFileSync('decision-cockpit.js','utf8');
 const html=fs.readFileSync('index.html','utf8');

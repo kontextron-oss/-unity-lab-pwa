@@ -34,13 +34,13 @@ assert.match(sw,/self\.skipWaiting\s*\(/,'user-initiated activation supported');
 assert.ok(fs.existsSync('update.html'),'non-destructive Safari update page exists');
 const helper=fs.readFileSync('update.html','utf8');
 assert.match(helper,/UNITY_ACTIVATE_UPDATE/);
-assert.match(helper,/sw\\.js\\?v=0\\.17\\.2-gaps-20261115-iosfix/,
+assert.match(helper,/sw\.js\?v=0\.17\.2-gaps-20261115-iosfix/,
  'Updater registers current 0.17.2 worker instead of 0.17.0');
-assert.match(helper,/index\\.html\\?unity_version_check=/,
+assert.match(helper,/index\.html\?unity_version_check=/,
  'Updater checks network-first release HTML, not stale cache-first direct launch');
-assert.match(helper,/Version 0\\.17\\.2 aktivieren/,
+assert.match(helper,/Version 0\.17\.2 aktivieren/,
  'Visible version must match the published release');
-assert.doesNotMatch(helper,/sw\\.js\\?v=0\\.17\\.0-rc1-update/,
+assert.doesNotMatch(helper,/sw\.js\?v=0\.17\.0-rc1-update/,
  'Do not reuse old 0.17.0 worker URL');
 assert.match(helper,/getRegistration\('\.\/'\)/);
 assert.doesNotMatch(helper,/deleteDatabase\s*\(|caches\.delete\s*\(|localStorage\.clear\s*\(|unregister\s*\(/);

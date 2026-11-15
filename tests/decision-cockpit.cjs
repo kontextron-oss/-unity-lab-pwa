@@ -1,9 +1,5 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const source=fs.readFileSync('tests/'+name,'utf8');
- return source.includes('unity-lab-v0')&&source.includes('17')&&source.includes('rc1')&&source.includes('assert.match');
-});
-if(pendingVersionTests.length)console.error('OLD_CACHE_TEST_REFERENCES',pendingVersionTests.join(', '));
 const source=fs.readFileSync('decision-cockpit.js','utf8');
 const html=fs.readFileSync('index.html','utf8');
 const sw=fs.readFileSync('sw.js','utf8');

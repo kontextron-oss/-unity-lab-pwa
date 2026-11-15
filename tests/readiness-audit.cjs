@@ -170,3 +170,6 @@ const source=fs.readFileSync('home.js','utf8');
 assert.match(source,/unityReadinessOverview/);
 assert.match(source,/unityReadinessDetail/);
 console.log('UNITY readiness 0.15.0: missing facts, FX, earnings, negative signals, identity conflicts, pilot display and no order approval passed.');
+
+// UNITY 0.17.2: run the new deterministic source-gap, learning and version checks.
+require('./unity-0172.cjs');

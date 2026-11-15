@@ -13,6 +13,18 @@ const {ASSETS}=vm.runInNewContext(code+'\n;({ASSETS})',{
 });
 assert.ok(Array.isArray(ASSETS)&&ASSETS.length>30);
 assert.ok(new Set(ASSETS).size===ASSETS.length);
+// A PR validates its local, versioned public bundle. Only deployed main
+// can be checked against GitHub Pages; checking a not-yet-deployed PR's
+// new asset versions would produce expected 404s rather than code failures.
+if(process.env.GITHUB_EVENT_NAME==='pull_request'||
+   (process.env.GITHUB_REF&&process.env.GITHUB_REF!=='refs/heads/main')){
+  for(const asset of ASSETS){
+    const pathname=new URL(asset,'https://check.invalid/').pathname.slice(1)||'index.html';
+    assert.ok(fs.existsSync(pathname),'Missing local PWA asset: '+pathname);
+  }
+  console.log('UNITY PR precache: all '+ASSETS.length+' assets present locally; live Pages check reserved for deployed main.');
+  process.exit(0);
+}
 const base='https://kontextron-oss.github.io/-unity-lab-pwa/';
 const errors=[],statusCounts={};
 async function probe(asset){

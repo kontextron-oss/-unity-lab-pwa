@@ -18,4 +18,17 @@ assert.equal(result.checkpoints[1].state,'pending');
 assert.equal(record.decisionSnapshot.reviewPlan.length,3,'Review must not change the immutable snapshot');
 assert.match(vm.runInContext('unityDecisionReviewPanel(stock,[record])',box),/Lernkontrolle · 5 \/ 20 \/ 60 Handelstage/);
 assert.match(vm.runInContext('unityDecisionReviewPanel(stock,[record])',box),/\+4\.0 %/);
+// UNITY 0.17.2: newest strict decision wins without modifying snapshots.
+const recent={mode:'strict',createdAt:'2026-02-01',decisionSnapshot:{priceRef:{price:null,date:'2026-02-01'}}};
+const older={...record,createdAt:'2026-01-01'};
+box.reviewRecords=[older,recent];
+assert.match(vm.runInContext('unityDecisionReviewPanel(stock,reviewRecords)',box),
+ /vollständige Kursreferenz/);
+assert.equal(vm.runInContext('unityDecisionReview(reviewRecords[1],stock)',box).available,false);
+assert.equal(older.decisionSnapshot.priceRef.price,100);
+assert.equal(recent.decisionSnapshot.priceRef.price,null);
+box.timestamped={...record,decisionSnapshot:{...record.decisionSnapshot,
+ priceRef:{...record.decisionSnapshot.priceRef,date:'2026-01-01T15:00:00Z'}}};
+assert.equal(vm.runInContext('unityDecisionReview(timestamped,stock)',box).checkpoints[0].point.close,104);
+console.log('UNITY 0.17.2 review latest-decision and timestamp safeguards passed.');
 console.log('UNITY decision review: 5/20/60-session checkpoints, pending state and immutable snapshots passed.');

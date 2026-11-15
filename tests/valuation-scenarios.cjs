@@ -90,5 +90,5 @@ assert.equal(Object.keys(empty.items).length,0,'Never deploy implicit growth/dis
 const ix=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
 assert.match(ix,/valuation-scenarios\.js\?v=0\.17\.0-rc1/);
 assert.match(sw,/valuation-scenarios\.js\?v=0\.17\.0-rc1/);
-assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
+assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
 console.log('Source-bound management guidance, 3-scenario owner-cashflow proxy, safety-margin band and strict no-trade vetos passed.');

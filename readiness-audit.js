@@ -172,6 +172,31 @@ function unityReadinessStandardDataset(list){
     records
   };
 }
+/* Show the smallest useful data-work queue.  It is deliberately based on
+   technically viable candidates without an observed adverse signal, so a
+   missing field is treated as a research task, never as a negative verdict. */
+function unityReadinessPriorities(list){
+  const selected=Array.isArray(list)?list:typeof stocks==='function'?stocks():[];
+  const candidates=selected.filter(s=>!(typeof unityIsCryptoAsset==='function'&&unityIsCryptoAsset(s)))
+    .map(s=>unityReadinessEvidence(s)).filter(r=>r.technicalReady&&r.adverse.length===0);
+  const weight={filing:100,earnings:90,valuation:80,guidance:70,thesis:60,risks:50,fx:40,quote:30,history:20};
+  const grouped=new Map();
+  for(const r of candidates)for(const gap of r.missing){
+    const key=String(gap.key||'');if(!key)continue;
+    if(!grouped.has(key))grouped.set(key,{key,label:gap.label||key,affected:0,names:[],priority:weight[key]||0});
+    const item=grouped.get(key);item.affected++;item.names.push(String(r.s?.name||r.s?.ticker||key));
+  }
+  return [...grouped.values()].sort((a,b)=>b.affected-a.affected||b.priority-a.priority||a.label.localeCompare(b.label))
+    .slice(0,3);
+}
+function unityReadinessPriorityPanel(list){
+  const gaps=unityReadinessPriorities(list);
+  if(!gaps.length)return '<section class="panel unity-readiness-priority"><h3>Nächste drei Datenlücken</h3><p class="tiny muted">Für die technisch auswertbaren Kandidaten ist derzeit keine gemeinsame Datenlücke offen. Die strenge UNITY-Entscheidung prüft trotzdem Bewertung, Risiken und Ereignisse separat.</p></section>';
+  return '<section class="panel unity-readiness-priority" aria-label="Priorisierte Datenlücken">'+
+    '<h3>Nächste drei Datenlücken</h3><p class="tiny muted">Priorisiert nur für technisch auswertbare Kandidaten ohne belegtes Risikosignal. Das ist eine Recherche-Reihenfolge, keine Kaufempfehlung.</p><ol>'+
+    gaps.map(g=>'<li><b>'+esc(g.label)+'</b> · '+g.affected+' Kandidat'+(g.affected===1?'':'en')+'<small>'+esc(g.names.join(' · '))+'</small></li>').join('')+
+    '</ol></section>';
+}
 function unityReadinessOverview(list){
   const selected=Array.isArray(list)?list:typeof stocks==='function'?stocks():[];
   // Crypto has a separate 24/7 data and risk model, not issuer-filing readiness.
@@ -213,7 +238,7 @@ function unityReadinessOverview(list){
     h+='<div class="unity-readiness-pilot"><b>'+esc(entry.instrument.name||entry.instrument.ticker||entry.instrument.isin)+'</b>'+
       '<span>'+esc(labels[entry.dataStatus]||entry.dataStatus)+'</span><small>'+esc(note)+'</small></div>';
   }
-  return h+'</div></details></section>';
+  return h+'</div></details></section>'+unityReadinessPriorityPanel(selected);
 }
 function unityReadinessDetail(s){
   const r=unityReadinessEvidence(s);

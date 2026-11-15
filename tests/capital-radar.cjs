@@ -63,6 +63,6 @@ const call=code=>vm.runInContext(code,box);
  assert.match(html,/capital-radar\.js\?v=0\.13\.\d+/);
  assert.match(sw,/capital-radar\.js\?v=0\.13\.\d+/);
  assert.match(sw,/capital_events\.json/);
- assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
+ assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
  console.log('Capital radar: official-only TED links, first-seen markers, separate data-readiness, stale evidence veto and mobile navigation passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

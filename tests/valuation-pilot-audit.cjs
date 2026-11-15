@@ -31,6 +31,7 @@ const byKey=(r,key)=>r.gates.find(g=>g.key===key);
 let audit=evalAudit();
 assert.equal(audit.kind,'unity-valuation-evidence-audit-v1');
 assert.equal(audit.total,7);
+if(audit.readyCount!==3)console.error('VALUATION_GATE_DIAGNOSTIC',JSON.stringify(audit.gates.map(g=>({key:g.key,ready:g.ready}))),{day});
 assert.equal(audit.readyCount,3);
 assert.deepEqual(Array.from(audit.gates.filter(g=>g.ready),g=>g.key),
  ['annual','cashflow','guidance']);

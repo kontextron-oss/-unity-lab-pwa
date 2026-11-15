@@ -10,7 +10,7 @@ assert.equal(manifest.scope,'./');
 const valuation=fs.readFileSync('valuation-scenarios.js','utf8');
 const originalStores=['instruments','quotes','transactions','strategies','audit',
  'fundamentals','histories','analyses','settings'];
-const rc='0.17.1-risklearn-20261115';
+const rc='0.17.2-gaps-20261115';
 const cacheRc='0.17.0-rc1';
 const evidence=[
  './data/issuer-guidance.json',
@@ -20,8 +20,8 @@ const evidence=[
  './data/financing-stress-evidence.json'
 ];
 const assertContains=(s,x,label)=>assert.ok(s.includes(x),label+': '+x);
-assertContains(html,'Unity Lab 0.17.1','visible release candidate label');
-assertContains(html,'0.17.1 · TESTDEPOT','version in app header');
+assertContains(html,'Unity Lab 0.17.2','visible release candidate label');
+assertContains(html,'0.17.2 · TESTDEPOT','version in app header');
 assertContains(html,"./sw.js?v="+rc,'registered worker');
 assertContains(html,'./valuation-scenarios.js?v='+cacheRc,'new valuation module');
 assertContains(html,"indexedDB.open('unity-lab',3)",'local schema unchanged');
@@ -97,13 +97,13 @@ const ctx={URL,Request,Response,caches:cacheAPI,fetch:mockFetch,
   clients:{async claim(){record.claimed++}}
  }};
 const config=vm.runInNewContext(sw+'\n;({CACHE,ASSETS})',ctx);
-assert.equal(config.CACHE,'unity-lab-v'+cacheRc+'-datafix-20261112');
+assert.equal(config.CACHE,'unity-lab-v0.17.2-gaps-20261115');
 assert.equal(new Set(config.ASSETS).size,config.ASSETS.length,'no duplicate entries');
 for(const asset of evidence)assert.ok(config.ASSETS.includes(asset),'missing offline source '+asset);
 assert.ok(config.ASSETS.includes('./valuation-scenarios.js?v='+cacheRc));
 assert.ok(config.ASSETS.includes('./update.html'),'update helper available offline');
 assert.ok(config.ASSETS.includes('./unity-017.html'),'versioned direct launch available offline');
-assert.match(fs.readFileSync('unity-017.html','utf8'),/Unity Lab 0\.17\.1 · Direktstart/);
+assert.match(fs.readFileSync('unity-017.html','utf8'),/Unity Lab 0\.17\.2 · Direktstart/);
 assert.match(fs.readFileSync('unity-017.html','utf8'),/indexedDB\.open\('unity-lab',3\)/);
 assert.match(helper,/unity-017\.html/);
 assert.ok(!config.ASSETS.includes('./valuation-scenarios.js?v=0.16.5'));
@@ -132,7 +132,7 @@ async function exercise(){
   assert.ok(answer,'offline navigation intercepted');
   const page=await answer;
   const content=await page.text();
-  assert.match(content,/Unity Lab 0\.17\.1/,
+  assert.match(content,/Unity Lab 0\.17\.2/,
    '0.17 current cache wins over stale 0.16.5 HTML');
  }
  // Actual offline fetch path of the service worker: all three new SEC

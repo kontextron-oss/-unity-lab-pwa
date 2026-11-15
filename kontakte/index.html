@@ -345,7 +345,7 @@ function categoryPicker(){if(PROFILE.id!=="jan")return "";const xs=visibleCats()
 }
 function render(){
  if(view==="home"){
-  app.innerHTML='<main class="main home"><div class="brand"><button class="logo" data-a="voice" aria-label="Sprachsuche starten">'+logo+'</button><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Mikrofon antippen: Sprachsuche · Kontakte bleiben lokal auf diesem iPhone. Version 0.17.2.</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
+  app.innerHTML='<main class="main home"><div class="brand"><button class="logo" data-a="voice" aria-label="Sprachsuche starten">'+logo+'</button><h1>'+E(PROFILE.title)+'</h1></div><button class="large" data-a="contacts">Kontakte öffnen</button><button class="new" data-a="new">Neuer Kontakt</button><p class="foot">Mikrofon antippen: Sprachsuche · Kontakte bleiben lokal auf diesem iPhone.'+(PROFILE.id==="jan"?' Version 0.17.2.':'')+'</p><div id="status" role="status" aria-live="polite">'+E(message)+'</div></main>';return;
  }
  if(view==="voice"){
   screen(back+'<h2>Sprachsuche</h2><input id="voice-command" type="text" inputmode="text" autocomplete="off" placeholder="Sprechen" aria-label="Kontakt sprechen">');return;

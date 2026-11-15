@@ -221,7 +221,7 @@ function unityReadinessOverview(list){
     '<span><b>'+missing+'</b><small>Daten unvollständig</small></span>'+
     '<span><b>'+adverse+'</b><small>zusätzlich negative Signale</small></span></div>'+
     '<p class="tiny muted">Datenmangel ist keine negative Aktienbewertung. Kategorien können sich überschneiden. Hinterlegte Prüffelder und Quellenvermerke sind noch keine unabhängige Verifizierung und keine Kauf-Freigabe.</p>'+
-    '<details class="unity-readiness-pilots"><summary>Datenprüfung der vier Pilotaktien ansehen</summary><div class="unity-readiness-pilot-list">';
+    '';
   const priorities=unityPrioritySourceGaps(records,3);
   h+='<div class="unity-readiness-priority"><h4>Wichtigste Datenlücken · automatisch priorisiert</h4>'+
     '<p class="tiny muted">Nur technisch auswertbare Aktien ohne dokumentiertes Negativsignal. Reihenfolge nach möglichem Nutzen für die Entscheidungsprüfung, keine Kaufempfehlung.</p>';
@@ -230,6 +230,7 @@ function unityReadinessOverview(list){
       ' Aktien · zum Beispiel '+esc(g.names.join(', '))+'</li>').join('')+'</ol>';
   }else h+='<p class="tiny muted">Derzeit keine qualifizierten Datenlücken zur Priorisierung.</p>';
   h+='</div>';
+  h+='<details class="unity-readiness-pilots"><summary>Datenprüfung der vier Pilotaktien ansehen</summary><div class="unity-readiness-pilot-list">';
   for(const p of pilots){
     const r=p.found;
     const note=!r?'Nicht in aktiver Masterliste':r.missing.length?

@@ -120,6 +120,6 @@ const cloneFile=async(file,transform)=>{
  assert.match(html,/incremental\.js\?v=0\.13\.\d+/);
  const sw=fs.readFileSync('sw.js','utf8');
  assert.match(sw,/incremental\.js\?v=0\.13\.\d+/);
- assert.match(sw,/unity-lab-v0\.17\.0-rc1/);
+ assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
  console.log('UNITY incremental backup: first base, only changed records, explicit cloud confirmation, chain-integrity restore and conflict veto passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

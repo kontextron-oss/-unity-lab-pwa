@@ -38,7 +38,7 @@ const cached={
  async addAll(){},
 };
 const fakeCaches={
- async open(name){assert.equal(name,'unity-lab-v0.17.0-rc1-datafix-20261112');return cached},
+ async open(name){assert.equal(name,'unity-lab-v0.17.2-gaps-20261115');return cached},
  async match(req){return matching(oldCache,req)||matching(currentCache,req)}
 };
 const fakeFetch=async(request,opts)=>{

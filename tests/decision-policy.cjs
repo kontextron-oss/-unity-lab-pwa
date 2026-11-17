@@ -121,6 +121,9 @@ assert.equal(run().kind,'wait','Near earnings blocks value opportunity');
 model=valueBase;item.dynamicExperimental=true;
 assert.notEqual(run().kind,'value','Experimental quote blocks value case');
 item.dynamicExperimental=false;
+// Reset the value-only fixture: the pre-existing position-monitor regression
+// verifies HOLD for a non-entry, not a newly confirmed value-entry signal.
+model={...valueBase,f:{...valueBase.f,fairValue:item.price*1.05}};
 // A negative new-entry condition must not be displayed as negative position status.
 box.depotPosition=()=>({qty:1,pnl:3.52,cost:100});
 box.cache={transactions:[{instrumentId:stock.id,type:'BUY',executedAt:'2026-11-01T12:00:00Z',decisionSnapshot:{action:'Technischer Kaufkandidat'}}]};

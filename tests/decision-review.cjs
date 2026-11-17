@@ -18,4 +18,14 @@ assert.equal(result.checkpoints[1].state,'pending');
 assert.equal(record.decisionSnapshot.reviewPlan.length,3,'Review must not change the immutable snapshot');
 assert.match(vm.runInContext('unityDecisionReviewPanel(stock,[record])',box),/Lernkontrolle · 5 \/ 20 \/ 60 Handelstage/);
 assert.match(vm.runInContext('unityDecisionReviewPanel(stock,[record])',box),/\+4\.0 %/);
+// 0.17.3: historical paper-buy outcomes (not strategy skill claims).
+for(let day=11;day<=30;day++)item.points.push({date:'2026-01-'+String(day).padStart(2,'0'),close:100+day});
+box.buys=[{...record,action:'BUY',createdAt:'2026-02-01'}];
+const summary=vm.runInContext('unityReviewOutcomeSummary(stock,buys)',box);
+assert.equal(summary.decisions,1);
+assert.equal(summary.evaluated,1);
+assert.equal(summary.positive,1);
+assert.ok(summary.average>0);
+assert.match(vm.runInContext('unityDecisionReviewPanel(stock,buys)',box),/Historische Lernkontrolle/);
+assert.equal(record.decisionSnapshot.priceRef.price,100,'Historical review never changes original source');
 console.log('UNITY decision review: 5/20/60-session checkpoints, pending state and immutable snapshots passed.');

@@ -254,9 +254,10 @@ function unityDecisionPanel(s){
     d.action==='BUY'?'Kaufen · nur Testdepot':'Verkaufen · nur Testdepot';
   const style=d=>d.action==='BUY'?'positive':d.action==='SELL'?'negative':
     d.action==='BLOCKED'?'blocked':'neutral';
-  const previous=(typeof cache!=='undefined'?cache.analyses||[]:[])
+  const archived=(typeof cache!=='undefined'?cache.analyses||[]:[])
     .filter(x=>x.kind==='unity-decision-ledger-v1'&&x.instrumentId===s.id)
-    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,3);
+    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  const previous=archived.slice(0,3);
   let h='<section class="panel unity-engine-panel" aria-label="Verbindliche UNITY-Entscheidung">'+
     '<small>UNITY 0.17.3 · Hierarchisches Entscheidungssystem</small>'+
     '<h3>Entscheidung: <span class="unity-engine-action '+style(deep)+'">'+escf(label(deep))+'</span></h3>'+
@@ -285,6 +286,6 @@ function unityDecisionPanel(s){
       ' · Kursstichtag '+escf(x.sourceAt||'–')+'</p>').join(''):
       '<p class="tiny muted">Noch kein Entscheidungsstand protokolliert. Beim Öffnen einer Aktie wird ein neuer Datenstand einmalig lokal erfasst.</p>')+
     '</details><p class="tiny muted">Kein Echtzeithandel, keine garantierte Rendite, keine Brokerorder. Automatik nur im Testdepot bei aktivierter Simulation.</p></section>';
-  if(typeof unityDecisionReviewPanel==='function')h+=unityDecisionReviewPanel(s,previous);
+  if(typeof unityDecisionReviewPanel==='function')h+=unityDecisionReviewPanel(s,archived);
   return h;
 }

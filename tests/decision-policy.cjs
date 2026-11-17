@@ -93,6 +93,37 @@ assert.match(fs.readFileSync('index.html','utf8'),/decision-policy\.js\?v=0\.17\
 assert.match(fs.readFileSync('sw.js','utf8'),/decision-policy\.js\?v=0\.17\.1-risklearn-20261115/);
 assert.match(fs.readFileSync('analysis.js','utf8'),/deepDecision:/);
 assert.match(fs.readFileSync('home.js','utf8'),/b\.dataset\.policyTestbuy/);
+// UNITY 0.17.3: a genuinely sourced value discount must not be vetoed
+// by an SMA50 condition alone, but still observes all other hard gates.
+candidate={...candidate,status:'wait',buy:'Abwarten'};
+const valueBase={...model,t:{...model.t,n:260,last:item.price,ma50:item.price/1.08,
+  ma200:item.price/1.11,rsi:35},score:82,
+  parts:{valuation:80,quality:81},rr:2.8,margin:25,
+  f:{...model.f,balanceChecked:true,guidanceChecked:true,
+    earningsConfirmed:true,earningsDate,
+    fairValue:item.price/.7,
+    dataSource:'https://investor.example.com/annual-report',
+    thesis:'Bewertungsreserve',risks:'Kursrückgang'}};
+model=valueBase;
+let valued=run();
+assert.equal(valued.kind,'value','Value-led research signal independent of SMA50');
+assert.equal(valued.fundamentalReady,true);
+assert.equal(valued.valueOpportunity,true);
+assert.ok(valued.valueDiscountPct>20);
+assert.equal(valued.riskMultiplier,.25,'Valuation-led paper opportunity is capped at 25 percent');
+assert.equal(valued.realOrderApproved,false);
+model={...valueBase,f:{...valueBase.f,fairValue:item.price*1.05}};
+assert.notEqual(run().kind,'value','No fabricated 20 percent discount');
+model={...valueBase,rr:1.2};
+assert.notEqual(run().kind,'value','Hard RR veto');
+model={...valueBase,f:{...valueBase.f,earningsDate:new Date(Date.now()+2*86400000).toISOString().slice(0,10)}};
+assert.equal(run().kind,'wait','Near earnings blocks value opportunity');
+model=valueBase;item.dynamicExperimental=true;
+assert.notEqual(run().kind,'value','Experimental quote blocks value case');
+item.dynamicExperimental=false;
+// Reset the value-only fixture: the pre-existing position-monitor regression
+// verifies HOLD for a non-entry, not a newly confirmed value-entry signal.
+model={...valueBase,f:{...valueBase.f,fairValue:item.price*1.05}};
 // A negative new-entry condition must not be displayed as negative position status.
 box.depotPosition=()=>({qty:1,pnl:3.52,cost:100});
 box.cache={transactions:[{instrumentId:stock.id,type:'BUY',executedAt:'2026-11-01T12:00:00Z',decisionSnapshot:{action:'Technischer Kaufkandidat'}}]};

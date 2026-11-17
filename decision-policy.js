@@ -134,16 +134,29 @@ function unityDeepDecision(s,base=null,candidate=null){
   const valuationReady=Number.isFinite(a?.parts?.valuation)&&Number.isFinite(a?.parts?.quality)&&
     Number.isFinite(a?.rr)&&a.rr>=2&&Number.isFinite(a?.score)&&a.score>=70&&
     Number.isFinite(a?.margin)&&a.margin>=10;
-  const investmentReady=eligible&&filing.verified&&valuationReady&&
+  // 0.17.3: value evidence is independent of SMA50 timing. This is still
+  // research evidence, NOT a real trade authorization or automatic order.
+  const fundamentalReady=usable&&filing.verified&&valuationReady&&
     a?.f?.balanceChecked===true&&
     !(a?.checks?.hard||[]).length&&!(a?.checks?.data||[]).length&&
     !!a?.f?.guidanceChecked&&confirmedEarnings&&
     Number.isFinite(earningsDays)&&earningsDays>Date.now()+7*86400000&&
     !!a?.f?.dataSource?.trim()&&!!a?.f?.thesis?.trim()&&!!a?.f?.risks?.trim();
+  const investmentReady=eligible&&fundamentalReady;
+  const fairValue=Number(a?.f?.fairValue);
+  const valueDiscountPct=technical&&Number.isFinite(fairValue)&&fairValue>0?
+    Math.round((1-Number(a.t.last)/fairValue)*1000)/10:NaN;
+  const valueOpportunity=technical&&fundamentalReady&&!eligible&&
+    Number.isFinite(valueDiscountPct)&&valueDiscountPct>=20&&
+    Number(a?.margin)>=20&&
+    stat.vol20<70&&stat.maxDrawdown<35&&
+    a.t.rsi>=30&&a.t.rsi<=70&&
+    Number.isFinite(rr)&&rr>=2&&!nearEarnings;
   let kind='data',decision='OFFEN – Daten prüfen',reason='Die Datenlage reicht noch nicht einmal für eine kalkulierte Testentscheidung aus.';
   if(technical){
     if(Number.isFinite(rr)&&rr<2){kind='no';decision='NEIN – Chance/Risiko ungünstig';reason='UNITY-Hard-Rule unter 2:1.'}
     else if(nearEarnings){kind='wait';decision='ABWARTEN – Ergebnisrisiko';reason='Bestätigte Ergebnisveröffentlichung am '+String(earningsDate).slice(0,10)+'. Technische Signale überstimmen dieses Veto nicht.'}
+    else if(valueOpportunity){kind='value';decision='JA – Bewertungschance im Testdepot prüfen';reason='Quellengeprüfte Unternehmens- und Bewertungsbasis, mindestens 20 % Abschlag zum hinterlegten fairen Wert und kein aktuelles Risikoveto. Nur kleine Testposition; der Trend kann noch schwach sein.'}
     else if(c?.status==='candidate'&&!inZone){kind='wait';decision='NEIN – Einstiegskurs abwarten';reason='Der Kurs liegt derzeit außerhalb der definierten SMA50-Kaufzone.'}
     else if(!eligible){kind='no';decision='NEIN – derzeit kein Einstieg';reason='Mindestens eine technische Risiko- oder Trendbedingung ist nicht erfüllt.'}
     else if(investmentReady){kind='positive';decision='JA – geprüften Einstieg im Testdepot prüfen';reason='Technik, Bewertung, dokumentierte Unternehmenskennzahlen, Earnings und Risikoregeln erfüllen die hinterlegten Kriterien. Keine reale Orderfreigabe.'}
@@ -157,10 +170,12 @@ function unityDeepDecision(s,base=null,candidate=null){
   // Missing evidence is neither silently ignored nor automatically treated as a
   // negative company verdict. It reduces the proposed test exposure. Explicit
   // risk/event vetos above still prevent every fresh entry.
-  const riskMultiplier=investmentReady?1:eligible?(coverage>=4?.5:.25):0;
+  const riskMultiplier=investmentReady?1:valueOpportunity?.25:eligible?(coverage>=4?.5:.25):0;
   const riskTier=riskMultiplier>=1?'Normaler Einstieg':riskMultiplier>=.5?'Kleiner Einstieg':'Sehr kleine Testposition';
   return {version:UNITY_POLICY_VERSION,s,kind,decision,reason,positives,problems,missing,
-    technicalEligible:eligible,investmentReady,realOrderApproved:false,simulationPossible:true,
+    technicalEligible:eligible,investmentReady,fundamentalReady,valueOpportunity,
+    valueDiscountPct,fairValue:Number.isFinite(fairValue)&&fairValue>0?fairValue:null,
+    realOrderApproved:false,simulationPossible:true,
     sourceDate:date||'–',vol20:stat?.vol20??NaN,drawdown:stat?.maxDrawdown??NaN,
     ret63:stat?.ret63??NaN,relativeStrength:rs,peerCount:peer.count,
     scenarioStop:stat?.scenarioStop??NaN,scenarioTarget:stat?.scenarioTarget??NaN,

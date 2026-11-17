@@ -72,7 +72,34 @@ const assertContract=x=>{
  assert.equal(v.action,'BUY');assert.equal(v.reasonCode,'risk-adjusted-entry');
  assert.equal(v.riskMultiplier,.25);assert.equal(v.suggestedCapitalEur,62.5);
  assert.match(v.why.join(' '),/25 %/);
- deep={...deep,kind:'positive',investmentReady:true,technicalEligible:false,riskMultiplier:1,riskTier:'Normaler Einstieg'};
+ // 0.17.3: a sourced 20%+ valuation discount may prompt a small paper
+ // opportunity before the SMA50 zone, without approving real orders.
+ const savedDeep=deep;
+ miss=[];signal={kind:'watch',high:103,low:97,date:today};
+ deep={...deep,kind:'value',investmentReady:false,technicalEligible:false,
+   fundamentalReady:true,valuationReady:true,quoteVerified:true,
+   valueOpportunity:true,valueDiscountPct:26,riskMultiplier:.25,
+   riskTier:'Sehr kleine Testposition'};
+ autoOrder={mode:'strict',allocationEur:250};
+ v=evaluate();
+ assert.equal(v.action,'BUY');assert.equal(v.reasonCode,'value-led-entry');
+ assert.equal(v.suggestedCapitalEur,62.5);
+ assert.equal(v.realOrderApproved,false);
+ assert.match(vm.runInContext('unityDecisionPanel(stock)',sandbox),/Bewertungs-Chance/);
+ deep={...deep,riskMultiplier:.5};
+ assert.notEqual(evaluate().reasonCode,'value-led-entry','Value entry capped to 25%');
+ deep={...deep,riskMultiplier:.25};
+ adverse=['Chance-Risiko-Verhältnis unter 2:1'];
+ assert.equal(evaluate().action,'BLOCKED','Hard risk veto still prevails');
+ adverse=[];
+ issuer={earnings:{confirmed:true,date:soon},positionRisk:null};
+ assert.equal(evaluate().reasonCode,'event-veto','Earnings veto still prevails');
+ issuer=null;
+ quotes={...quotes,valid:false};
+ assert.equal(evaluate().action,'BLOCKED','Stale quote still vetoes value signal');
+ quotes={...quotes,valid:true};
+ deep=savedDeep;signal={kind:'reached',high:103,low:97,date:today};
+ deep={...deep,kind:'positive',valueOpportunity:false,fundamentalReady:false,valuationReady:false,quoteVerified:false,investmentReady:true,technicalEligible:false,riskMultiplier:1,riskTier:'Normaler Einstieg'};
  assert.equal(evaluate('technical').action,'BUY','Technical simulation may remain a separate small test');
  miss=[];
  quotes={...quotes,valid:false,quality:{canCompare:false,level:'stale'}};
@@ -141,5 +168,10 @@ const assertContract=x=>{
  assert.match(home,/unityDecisionPanel\(s\)/);
  assert.match(home,/approval\.testActionEligible/);
  assert.match(home,/unityDecisionLedgerCapture/);
+ const preview=fs.readFileSync('unity-0173.html','utf8');
+ assert.match(preview,/Unity Lab 0\.17\.3/);
+ for(const source of ['decision-engine-0173.js','decision-policy-0173.js','decision-review-0173.js'])
+   assert.ok(preview.includes(source),'Direct preview missing '+source);
+ assert.ok(!sw.includes('unity-0173.html'),'Direct preview must not be intercepted by old offline-cache asset list');
  console.log('UNITY 0.15.1: reproducible BUY/HOLD/SELL/BLOCKED, hard veto, FX, issuer risk, position monitoring, local ledger and PWA cache passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

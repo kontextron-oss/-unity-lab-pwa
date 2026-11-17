@@ -2,7 +2,7 @@
 /* UNITY 0.15.1 – unified, reproducible paper-decision engine.
  * This module is deliberately read-only during evaluation.
  * No quote is a live executable market order; no broker approval exists. */
-const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.15.3';
+const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.17.3';
 const UNITY_DECISION_REVIEW_CHECKPOINTS=Object.freeze([5,20,60]);
 const UNITY_DECISION_ACTIONS={BUY:'Kaufen',SELL:'Verkaufen',HOLD:'Halten / Abwarten',BLOCKED:'Blockiert'};
 const unityDecisionSafeNum=v=>v===null||v===undefined||v===''?NaN:Number(v);
@@ -96,6 +96,22 @@ function unityDecisionResolve(input){
   // explicitly risk-limited test allocation even while evidence is incomplete.
   // Missing evidence remains visible and caps the size instead of being hidden.
   const limit=unityDecisionSafeNum(input?.entryLimit);
+  // A fully sourced valuation can identify a small paper opportunity before
+  // SMA50 pullback confirmation. This never overrides quote, issuer-event or
+  // hard-risk vetoes above, and is deliberately not an automatic paper order.
+  const valuationOpportunity=m==='strict'&&position===0&&
+    deep?.valueOpportunity===true&&deep?.fundamentalReady===true&&
+    deep?.valuationReady===true&&deep?.quoteVerified===true&&
+    Number(deep?.valueDiscountPct)>=20&&
+    input?.verifiedValuationDiscount===true&&multiplier>0&&multiplier<=.25&&
+    Number.isFinite(limit)&&limit>0&&price<=limit;
+  if(valuationOpportunity)
+    return decide('BUY','value-led-entry',
+      ['Bewertungsorientierter Chancen-Einstieg: belegte fundamentale Grundlage und mindestens 20 % Abschlag zum dokumentierten fairen Wert',
+       'Kein bestätigtes Earnings- oder Risikoveto; der SMA50-Trend muss noch nicht positiv sein',
+       'Nur '+Math.round(multiplier*100)+' % der eingestellten hypothetischen Testgröße'],
+      'Bewertungsgrenze maximal '+limit.toFixed(2)+' '+ref.currency,
+      'Ungültige Unternehmensbewertung, neue Ergebnisdaten, Risikoveto oder unterschrittene Schutzschwelle');
   const chanceEntry=m==='strict'&&!!deep&&!deep.investmentReady&&
     deep.technicalEligible===true&&multiplier>0&&signal.kind==='reached'&&
     Number.isFinite(limit)&&limit>0&&price<=limit;
@@ -158,6 +174,11 @@ function unityDecisionForStock(s,mode='strict'){
     Math.min(upper,fair*.9):NaN;
   const strictLimitOk=Number.isFinite(strictLimit)&&strictLimit>0&&
     (!Number.isFinite(lower)||strictLimit>=lower);
+  const valueLimit=deep?.valueOpportunity===true&&Number.isFinite(fair)&&fair>0?
+    Math.floor(fair*.8*100)/100:NaN;
+  const valueDiscountVerified=Number.isFinite(valueLimit)&&valueLimit>0&&
+    Number.isFinite(deep?.valueDiscountPct)&&deep.valueDiscountPct>=20&&
+    !!deep?.fundamentalReady;
   let issuerEvidence=null;
   try{issuerEvidence=typeof unityIssuerDecisionEvidence==='function'?unityIssuerDecisionEvidence(s):null}catch(_){}
   const issuerRisk=issuerEvidence?.positionRisk||null;
@@ -182,7 +203,9 @@ function unityDecisionForStock(s,mode='strict'){
     unityAutoEurAmount(currentBuy):NaN;
   const input={mode:chosen,positionQty:qty,quoteValid:valid,
     priceRef:ref,technicalReady,technicalSignal,technicalExit,exitLimit,
-    entryLimit:chosen==='technical'?technicalLimit:strictLimitOk?strictLimit:upper,
+    entryLimit:chosen==='technical'?technicalLimit:
+      valueDiscountVerified?valueLimit:strictLimitOk?strictLimit:upper,
+    verifiedValuationDiscount:chosen==='strict'&&valueDiscountVerified,
     deep,nearEarnings,verifiedFundamentalExit:fundamentalExit,exitReason:issuerRisk?.label||'',
     capitalEur:Number.isFinite(euro)&&euro>0?euro:null,
     riskMultiplier:chosen==='strict'?Number(deep?.riskMultiplier):1,
@@ -231,14 +254,18 @@ function unityDecisionPanel(s){
     d.action==='BUY'?'Kaufen · nur Testdepot':'Verkaufen · nur Testdepot';
   const style=d=>d.action==='BUY'?'positive':d.action==='SELL'?'negative':
     d.action==='BLOCKED'?'blocked':'neutral';
-  const previous=(typeof cache!=='undefined'?cache.analyses||[]:[])
+  const archived=(typeof cache!=='undefined'?cache.analyses||[]:[])
     .filter(x=>x.kind==='unity-decision-ledger-v1'&&x.instrumentId===s.id)
-    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,3);
+    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  const previous=archived.slice(0,3);
   let h='<section class="panel unity-engine-panel" aria-label="Verbindliche UNITY-Entscheidung">'+
-    '<small>UNITY 0.15.3 · Hierarchisches Entscheidungssystem</small>'+
+    '<small>UNITY 0.17.3 · Hierarchisches Entscheidungssystem</small>'+
     '<h3>Entscheidung: <span class="unity-engine-action '+style(deep)+'">'+escf(label(deep))+'</span></h3>'+
     '<p class="tiny muted">Strenge Anlageprüfung · Datenstatus '+escf(deep.dataStatus)+' · Scoreband '+escf(deep.scoreBand)+
     ' · Konfidenz '+escf(deep.confidence)+'</p>'+renderReasons(deep)+
+    (deep.action==='BUY'&&deep.reasonCode==='value-led-entry'?
+      '<p class="tiny muted"><b>Bewertungs-Chance:</b> Fundamentalbelege und ein Abschlag von mindestens 20 % eröffnen eine vorsichtige Testposition auch ohne SMA50-Bestätigung. '+ 
+      'Nur '+escf(String(Math.round((Number(deep.riskMultiplier)||0)*100)))+' % der eingestellten Testgröße. Kein automatischer Echtkauf.</p>':'')+
     (deep.action==='BUY'&&deep.reasonCode==='risk-adjusted-entry'?'<p class="tiny muted"><b>'+escf(deep.riskTier||'Kalkulierte Testposition')+':</b> '+
       escf(String(Math.round((Number(deep.riskMultiplier)||0)*100)))+' % der eingestellten Testgröße'+
       (Number.isFinite(deep.suggestedCapitalEur)?' · maximal '+escf(depotMoney(deep.suggestedCapitalEur)):'')+
@@ -259,6 +286,6 @@ function unityDecisionPanel(s){
       ' · Kursstichtag '+escf(x.sourceAt||'–')+'</p>').join(''):
       '<p class="tiny muted">Noch kein Entscheidungsstand protokolliert. Beim Öffnen einer Aktie wird ein neuer Datenstand einmalig lokal erfasst.</p>')+
     '</details><p class="tiny muted">Kein Echtzeithandel, keine garantierte Rendite, keine Brokerorder. Automatik nur im Testdepot bei aktivierter Simulation.</p></section>';
-  if(typeof unityDecisionReviewPanel==='function')h+=unityDecisionReviewPanel(s,previous);
+  if(typeof unityDecisionReviewPanel==='function')h+=unityDecisionReviewPanel(s,archived);
   return h;
 }

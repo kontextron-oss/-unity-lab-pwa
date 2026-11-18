@@ -1,25 +1,20 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-17T22:22:14Z",
+  "generatedAt": "2026-11-18T07:26:43Z",
   "refresh": "GitHub Actions · alle 2 Stunden",
   "source": "Kraken · USD-Spotmarkt",
   "assets": {
     "ADA": {
       "ticker": "ADA",
       "currency": "USD",
-      "price": 0.153831,
-      "volume24": 32218294.93144328,
+      "price": 0.154252,
+      "volume24": 29786428.01528441,
       "marketCap": 0,
-      "date": "2026-11-17",
-      "fetchedAt": "2026-11-17T22:22:14Z",
+      "date": "2026-11-18",
+      "fetchedAt": "2026-11-18T07:26:43Z",
       "source": "Kraken · USD-Spotmarkt",
       "venue": "Kraken Spot",
       "points": [
-        {
-          "date": "2024-11-27",
-          "close": 1.013642,
-          "volume": 21320451.79586546
-        },
         {
           "date": "2024-11-28",
           "close": 1.03181,
@@ -3617,27 +3612,27 @@
         },
         {
           "date": "2026-11-17",
-          "close": 0.153831,
-          "volume": 29645922.7303095
+          "close": 0.15517,
+          "volume": 32545827.8124917
+        },
+        {
+          "date": "2026-11-18",
+          "close": 0.154252,
+          "volume": 4690046.4646755
         }
       ]
     },
     "SOL": {
       "ticker": "SOL",
       "currency": "USD",
-      "price": 73.64,
-      "volume24": 325078.20022537,
+      "price": 75.04,
+      "volume24": 340394.16801802,
       "marketCap": 0,
-      "date": "2026-11-17",
-      "fetchedAt": "2026-11-17T22:22:14Z",
+      "date": "2026-11-18",
+      "fetchedAt": "2026-11-18T07:26:43Z",
       "source": "Kraken · USD-Spotmarkt",
       "venue": "Kraken Spot",
       "points": [
-        {
-          "date": "2024-11-27",
-          "close": 242.26,
-          "volume": 265621.87370685
-        },
         {
           "date": "2024-11-28",
           "close": 237.59,
@@ -7235,27 +7230,27 @@
         },
         {
           "date": "2026-11-17",
-          "close": 73.64,
-          "volume": 306943.65009519
+          "close": 75.11,
+          "volume": 343840.47708833
+        },
+        {
+          "date": "2026-11-18",
+          "close": 75.04,
+          "volume": 72399.57651284
         }
       ]
     },
     "ETC": {
       "ticker": "ETC",
       "currency": "USD",
-      "price": 5.926,
-      "volume24": 11826.34549055,
+      "price": 5.987,
+      "volume24": 10601.16090088,
       "marketCap": 0,
-      "date": "2026-11-17",
-      "fetchedAt": "2026-11-17T22:22:14Z",
+      "date": "2026-11-18",
+      "fetchedAt": "2026-11-18T07:26:43Z",
       "source": "Kraken · USD-Spotmarkt",
       "venue": "Kraken Spot",
       "points": [
-        {
-          "date": "2024-11-27",
-          "close": 33.008,
-          "volume": 25945.45405079
-        },
         {
           "date": "2024-11-28",
           "close": 31.936,
@@ -10853,8 +10848,13 @@
         },
         {
           "date": "2026-11-17",
-          "close": 5.926,
-          "volume": 11307.35896398
+          "close": 6.023,
+          "volume": 14210.45024788
+        },
+        {
+          "date": "2026-11-18",
+          "close": 5.987,
+          "volume": 835.13995433
         }
       ]
     }

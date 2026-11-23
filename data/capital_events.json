@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-20T15:45:32+00:00",
+  "generatedAt": "2026-11-23T18:44:09+00:00",
   "source": "Amtliche EU-Veröffentlichungen · TED Search API v3",
   "sourceUrl": "https://docs.ted.europa.eu/api/latest/search.html",
   "sourceFailures": 0,
@@ -13,12 +13,12 @@
       "cpv": "31170000",
       "context": "Europäische Netztechnik und Transformatoren",
       "status": "available",
-      "checkedAt": "2026-11-20T15:45:32+00:00",
-      "querySince": "20261006",
+      "checkedAt": "2026-11-23T18:44:09+00:00",
+      "querySince": "20261009",
       "noticeType": "award-notice",
-      "sampleSize": 38,
+      "sampleSize": 37,
       "newSincePreviousScan": 0,
-      "totalMatchingNotices": 81,
+      "totalMatchingNotices": 75,
       "isComplete": false,
       "events": [
         {
@@ -554,14 +554,35 @@
       "cpv": "31320000",
       "context": "Europäische Kabel- und Netzbeschaffung",
       "status": "available",
-      "checkedAt": "2026-11-20T15:45:32+00:00",
-      "querySince": "20261006",
+      "checkedAt": "2026-11-23T18:44:09+00:00",
+      "querySince": "20261009",
       "noticeType": "award-notice",
       "sampleSize": 20,
       "newSincePreviousScan": 1,
-      "totalMatchingNotices": 120,
+      "totalMatchingNotices": 89,
       "isComplete": false,
       "events": [
+        {
+          "id": "812842-2026",
+          "publishedAt": "2026-11-23",
+          "title": "España – Estructuras y materiales de construcción; productos auxiliares para la construcción (excepto aparatos eléctricos) – Suministro de materiales y de servicios para la obras de \"2ª Fase (S2.1) Adecuación de Parque Periurbano Vistalegre de Utrera",
+          "titleLanguage": "spa",
+          "buyer": "Alcaldía del Ayuntamiento de Utrera",
+          "buyerCountry": "ESP",
+          "winner": "ELECAM S.A.",
+          "winnerIdentityVerified": false,
+          "noticeType": "award-notice",
+          "winnerSelectedForAtLeastOneLot": true,
+          "lotResultCode": "selec-w",
+          "cpv": "31320000",
+          "publishedValue": 14864.46,
+          "currency": "EUR",
+          "source": "EU TED · amtliche Bekanntmachung",
+          "url": "https://ted.europa.eu/en/notice/-/detail/812842-2026",
+          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
+          "firstSeenAt": "2026-11-23T18:44:09+00:00",
+          "newSincePreviousScan": true
+        },
         {
           "id": "810771-2026",
           "publishedAt": "2026-11-20",
@@ -581,7 +602,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/810771-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-20T15:45:32+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "805130-2026",
@@ -960,27 +981,6 @@
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-03T09:30:43+00:00",
           "newSincePreviousScan": false
-        },
-        {
-          "id": "733709-2026",
-          "publishedAt": "2026-10-23",
-          "title": "Česko – Sloupy pouličního osvětlení – Nákup elektromateriálu 2025 – 2027",
-          "titleLanguage": "ces",
-          "buyer": "Technické sítě Brno, akciová společnost",
-          "buyerCountry": "CZE",
-          "winner": "ELEKTRO S.M.S., spol. s r.o.",
-          "winnerIdentityVerified": false,
-          "noticeType": "award-notice",
-          "winnerSelectedForAtLeastOneLot": true,
-          "lotResultCode": "selec-w",
-          "cpv": "31320000",
-          "publishedValue": null,
-          "currency": "",
-          "source": "EU TED · amtliche Bekanntmachung",
-          "url": "https://ted.europa.eu/en/notice/-/detail/733709-2026",
-          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
-          "firstSeenAt": "2026-11-03T09:30:43+00:00",
-          "newSincePreviousScan": false
         }
       ],
       "warning": "Begrenzter Stichprobenausschnitt jüngster Vergaben. Keine vollständige Branchenstatistik, keine Investmentzuflüsse, keine gesicherte Zuordnung zu börsennotierten Unternehmen."
@@ -990,12 +990,12 @@
       "cpv": "42510000",
       "context": "Gebäude- und technische Kühl-/Wärmetechnik; nicht automatisch Rechenzentren",
       "status": "available",
-      "checkedAt": "2026-11-20T15:45:32+00:00",
-      "querySince": "20261006",
+      "checkedAt": "2026-11-23T18:44:09+00:00",
+      "querySince": "20261009",
       "noticeType": "award-notice",
       "sampleSize": 5,
       "newSincePreviousScan": 0,
-      "totalMatchingNotices": 192,
+      "totalMatchingNotices": 174,
       "isComplete": false,
       "events": [
         {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T18:44:09+00:00",
+  "generatedAt": "2026-11-24T18:18:23+00:00",
   "source": "Amtliche EU-Veröffentlichungen · TED Search API v3",
   "sourceUrl": "https://docs.ted.europa.eu/api/latest/search.html",
   "sourceFailures": 0,
@@ -13,12 +13,12 @@
       "cpv": "31170000",
       "context": "Europäische Netztechnik und Transformatoren",
       "status": "available",
-      "checkedAt": "2026-11-23T18:44:09+00:00",
-      "querySince": "20261009",
+      "checkedAt": "2026-11-24T18:18:23+00:00",
+      "querySince": "20261010",
       "noticeType": "award-notice",
-      "sampleSize": 37,
+      "sampleSize": 36,
       "newSincePreviousScan": 0,
-      "totalMatchingNotices": 75,
+      "totalMatchingNotices": 74,
       "isComplete": false,
       "events": [
         {
@@ -554,12 +554,12 @@
       "cpv": "31320000",
       "context": "Europäische Kabel- und Netzbeschaffung",
       "status": "available",
-      "checkedAt": "2026-11-23T18:44:09+00:00",
-      "querySince": "20261009",
+      "checkedAt": "2026-11-24T18:18:23+00:00",
+      "querySince": "20261010",
       "noticeType": "award-notice",
       "sampleSize": 20,
-      "newSincePreviousScan": 1,
-      "totalMatchingNotices": 89,
+      "newSincePreviousScan": 0,
+      "totalMatchingNotices": 85,
       "isComplete": false,
       "events": [
         {
@@ -581,7 +581,7 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/812842-2026",
           "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
           "firstSeenAt": "2026-11-23T18:44:09+00:00",
-          "newSincePreviousScan": true
+          "newSincePreviousScan": false
         },
         {
           "id": "810771-2026",
@@ -990,12 +990,12 @@
       "cpv": "42510000",
       "context": "Gebäude- und technische Kühl-/Wärmetechnik; nicht automatisch Rechenzentren",
       "status": "available",
-      "checkedAt": "2026-11-23T18:44:09+00:00",
-      "querySince": "20261009",
+      "checkedAt": "2026-11-24T18:18:23+00:00",
+      "querySince": "20261010",
       "noticeType": "award-notice",
-      "sampleSize": 5,
+      "sampleSize": 4,
       "newSincePreviousScan": 0,
-      "totalMatchingNotices": 174,
+      "totalMatchingNotices": 166,
       "isComplete": false,
       "events": [
         {
@@ -1080,27 +1080,6 @@
           "url": "https://ted.europa.eu/en/notice/-/detail/802291-2026",
           "interpretation": "TED: Ergebnisbekanntmachung; Vergabe/Zuschlag nicht bestätigt.",
           "firstSeenAt": "2026-11-18T15:58:01+00:00",
-          "newSincePreviousScan": false
-        },
-        {
-          "id": "773588-2026",
-          "publishedAt": "2026-11-06",
-          "title": "Malta – Repair and maintenance services of central heating – CT2007/2026 - TENDER FOR THE MAINTENANCE AND UPKEEP OF AIR-CONDITIONING SYSTEMS FOR THREE(3) YEARS AT ST VINCENT DE PAUL",
-          "titleLanguage": "eng",
-          "buyer": "Department of Contracts",
-          "buyerCountry": "MLT",
-          "winner": "FM CORE LIMITED",
-          "winnerIdentityVerified": false,
-          "noticeType": "award-notice",
-          "winnerSelectedForAtLeastOneLot": true,
-          "lotResultCode": "selec-w",
-          "cpv": "42510000",
-          "publishedValue": 544205.0,
-          "currency": "EUR",
-          "source": "EU TED · amtliche Bekanntmachung",
-          "url": "https://ted.europa.eu/en/notice/-/detail/773588-2026",
-          "interpretation": "TED: Gewinner mindestens eines Loses ausgewählt; keine bestätigte Wirkung auf UNITY-Unternehmen.",
-          "firstSeenAt": "2026-11-06T07:52:57+00:00",
           "newSincePreviousScan": false
         }
       ],

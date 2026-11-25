@@ -162,6 +162,9 @@ async function unityLoadMarket(){
     if(!Number.isFinite(Date.parse(data.generatedAt)))throw Error('Fehlender Datenzeitpunkt');
     unityMarket=data;
     if(typeof unityRunAutoTestBuys==='function')await unityRunAutoTestBuys();
+    // Re-rendering is not a new decision. A new public snapshot must also
+    // re-evaluate the entire local watchlist and its immutable learning log.
+    if(typeof unityAutoAnalysisSchedule==='function')unityAutoAnalysisSchedule('market');
   }catch(e){unityMarketError=e.message||String(e);unityMarket=null}
   finally{unityMarketLoading=false;if(typeof db!=='undefined'&&db&&typeof render==='function')render()}
 }

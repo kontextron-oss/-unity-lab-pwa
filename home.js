@@ -1053,6 +1053,41 @@ if(typeof window!=='undefined'){
   window.setInterval(unityHomeRefreshVisibleIfDue,60000);
 }
 
+/* Automatic decision cycle. Public feed updates used to refresh the screen
+ * only; therefore local decision records and test-depot controls could remain
+ * inactive until a user opened an individual stock. This stays local-first:
+ * only changed decision inputs create one immutable local learning snapshot. */
+let unityAutoAnalysisTimer=null,unityAutoAnalysisRunning=false,unityAutoAnalysisQueued=false;
+const UNITY_AUTO_ANALYSIS_DEBOUNCE_MS=450;
+function unityAutoAnalysisSchedule(_reason='refresh'){
+  if(typeof window==='undefined')return;
+  clearTimeout(unityAutoAnalysisTimer);
+  unityAutoAnalysisTimer=setTimeout(()=>{void unityAutoAnalyseWatchlist();},UNITY_AUTO_ANALYSIS_DEBOUNCE_MS);
+}
+async function unityAutoAnalyseWatchlist(){
+  if(unityAutoAnalysisRunning){unityAutoAnalysisQueued=true;return;}
+  if(typeof db==='undefined'||!db||typeof stocks!=='function'||
+     typeof unityDecisionForStock!=='function'||typeof unityDecisionLedgerCapture!=='function')return;
+  unityAutoAnalysisRunning=true;
+  try{
+    for(const stock of stocks()){
+      if(!stock?.id)continue;
+      const strict=unityDecisionForStock(stock,'strict');
+      const technical=unityDecisionForStock(stock,'technical');
+      await unityDecisionLedgerCapture(stock,'strict',strict);
+      await unityDecisionLedgerCapture(stock,'technical',technical);
+    }
+    // The existing paper engine still validates dated closes, budget and the
+    // next-session rule; this can never create a real broker order.
+    if(typeof unityRunAutoTestBuys==='function')await unityRunAutoTestBuys();
+  }catch(error){console.warn('UNITY automatic analysis:',error);
+  }finally{
+    unityAutoAnalysisRunning=false;
+    if(unityAutoAnalysisQueued){unityAutoAnalysisQueued=false;unityAutoAnalysisSchedule('queued');}
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>unityAutoAnalysisSchedule('startup'),700));
+
 /* Pull down at the top of the depot to recheck available reference data. */
 let unityPullStartY=0,unityPullActive=false,unityPullRefreshing=false;
 function unityPullStatus(message,visible=true){

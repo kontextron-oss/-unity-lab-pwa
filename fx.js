@@ -22,6 +22,7 @@ async function unityLoadFx(){
     const data=await response.json();
     if(data.schemaVersion!==1||!data.rates||data.unit!=='EUR per 1 foreign currency unit')throw Error('Ungültige Wechselkursdaten');
     unityFx=data;unityFxError='';
+    if(typeof unityAutoAnalysisSchedule==='function')unityAutoAnalysisSchedule('fx');
   }catch(e){unityFx=null;unityFxError=e.message||String(e)}
   finally{unityFxLoading=false;if(typeof render==='function')render()}
 }

@@ -164,7 +164,7 @@ const assertContract=x=>{
  assert.match(html,/decision-engine\.js\?v=0\.17\.1-risklearn-20261115/);
  assert.match(sw,/decision-engine\.js\?v=0\.17\.1-risklearn-20261115/);
  assert.match(html,/decision-review\.js\?v=0\.17\.2-gaps-20261115/);
- assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
+ assert.match(sw,/unity-lab-v0\.17\.4-autoanalysis-20261125/);
  assert.match(home,/unityDecisionPanel\(s\)/);
  assert.match(home,/approval\.testActionEligible/);
  assert.match(home,/unityDecisionLedgerCapture/);

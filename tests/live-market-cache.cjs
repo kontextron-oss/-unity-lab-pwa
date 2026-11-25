@@ -38,7 +38,7 @@ const cached={
  async addAll(){},
 };
 const fakeCaches={
- async open(name){assert.equal(name,'unity-lab-v0.17.2-gaps-20261115');return cached},
+ async open(name){assert.equal(name,'unity-lab-v0.17.4-autoanalysis-20261125');return cached},
  async match(req){return matching(oldCache,req)||matching(currentCache,req)}
 };
 const fakeFetch=async(request,opts)=>{
@@ -86,21 +86,22 @@ function request(url){
  assert.equal(intr.status,200,'intraday data uses network first');
  assert.equal(cachePuts.at(-1),key('./data/intraday.json'));
  const staticScript=new Response('/* precached */',{status:200});
- currentCache.set(key('./home.js?v=0.17.1-risklearn-20261115'),staticScript);
+ currentCache.set(key('./home.js?v=0.17.4-autoanalysis-20261125'),staticScript);
  const beforeStatic=networkFetchCount;
- const staticResult=await request('./home.js?v=0.17.1-risklearn-20261115');
+ const staticResult=await request('./home.js?v=0.17.4-autoanalysis-20261125');
  assert.match(await staticResult.text(),/precached/);
  assert.equal(networkFetchCount,beforeStatic,'unchanged scripts remain cache first');
  assert.doesNotMatch(home,/badge\.textContent\s*=\s*'0\.16\.5'/);
  assert.match(home,/UNITY_HOME_REFRESH_INTERVAL_MS=15\*60000/);
  assert.match(home,/window\.setInterval\(unityHomeRefreshVisibleIfDue,60000\)/);
  assert.match(home,/Quellenstand/);
- for(const page of [html,versioned]){
-  assert.match(page,/home\.js\?v=0\.17\.1-risklearn-20261115/);
-  assert.match(page,/intraday\.js\?v=0\.17\.0-rc1-datafix-20261112/);
- }
- assert.match(sw,/home\.js\?v=0\.17\.1-risklearn-20261115/);
- assert.match(sw,/intraday\.js\?v=0\.17\.0-rc1-datafix-20261112/);
+ assert.match(html,/home\.js\?v=0\.17\.4-autoanalysis-20261125/);
+ assert.match(html,/intraday\.js\?v=0\.17\.4-autoanalysis-20261125/);
+ // The direct 0.17.2 fallback remains deliberately frozen and independent.
+ assert.match(versioned,/home\.js\?v=0\.17\.1-risklearn-20261115/);
+ assert.match(versioned,/intraday\.js\?v=0\.17\.0-rc1-datafix-20261112/);
+ assert.match(sw,/home\.js\?v=0\.17\.4-autoanalysis-20261125/);
+ assert.match(sw,/intraday\.js\?v=0\.17\.4-autoanalysis-20261125/);
  // Intraday data is allowed to outrank a less recent daily snapshot
  // even on the same calendar date; stock identity/currency unchanged.
  const now=Date.now(),minus=n=>new Date(now-n*60000).toISOString();
@@ -120,8 +121,10 @@ function request(url){
  vm.runInContext(intraday,intrCtx);
  vm.runInContext('unityIntraday={items:{[testPilot.isin]:testPilot}}',intrCtx);
  let displayed=vm.runInContext('unityDisplayQuote(CATALOG[0])',intrCtx);
- assert.equal(displayed.price,102,'newer same-day 15m bar must be visible');
- assert.equal(displayed.precision,'15m-bar');
+ const nowUtc=new Date(),marketOpen=nowUtc.getUTCDay()>=1&&nowUtc.getUTCDay()<=5&&
+  nowUtc.getUTCHours()+nowUtc.getUTCMinutes()/60>=8&&nowUtc.getUTCHours()+nowUtc.getUTCMinutes()/60<16.6;
+ assert.equal(displayed.price,marketOpen?102:100,'intraday is used only during the Swiss session');
+ assert.equal(displayed.precision,marketOpen?'15m-bar':'day');
  intrCtx.newerDaily=minus(5);
  vm.runInContext('unityMarketForStock=()=>({...CATALOG[0],price:100,date:testPilot.quotedAt.slice(0,10),lastSuccessfulFetchAt:newerDaily})',intrCtx);
  displayed=vm.runInContext('unityDisplayQuote(CATALOG[0])',intrCtx);

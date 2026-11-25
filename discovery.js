@@ -101,6 +101,7 @@ async function unityLoadDynamicStock(s,force=false){
       const item=await unityFetchWorldwideHistory(symbol);
       if(item.currency!==s.currency)throw Error('Währungsabweichung: '+item.currency+' statt '+s.currency);
       unityDynamicItems.set(symbol,item);await unityPersistDynamicHistory(s,item);unityDynamicErrors.delete(symbol);
+      if(typeof unityAutoAnalysisSchedule==='function')unityAutoAnalysisSchedule('history');
     }catch(e){unityDynamicErrors.set(symbol,String(e.message||e))}
     finally{unityDynamicPending.delete(symbol);if(!unityDynamicQueueQuiet&&typeof render==='function'&&typeof db!=='undefined'&&db)render()}
   })();

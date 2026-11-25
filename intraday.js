@@ -10,8 +10,14 @@ function unityIntradayItem(isin){
   if(!item||item.isin!==isin||!expected||item.currency!==expected.currency||
      !(Number(item.price)>0)||item.quotePrecision!=='15m-bar'||
      !Number.isFinite(Date.parse(item.quotedAt)))return null;
-  const age=(Date.now()-Date.parse(item.quotedAt))/60000;
+  const observed=Date.parse(item.quotedAt),age=(Date.now()-observed)/60000;
   if(age < -2||age>90)return null;
+  // After the relevant exchange has closed, use the dated daily close rather
+  // than showing a stale intraday bar as a continuing market observation.
+  const now=new Date(),day=now.getUTCDay(),hour=now.getUTCHours()+now.getUTCMinutes()/60;
+  const swiss=String(item.exchange||'').toLowerCase().includes('swiss');
+  const open=day>=1&&day<=5&&hour>=8&&(swiss?hour<16.6:hour<17.6);
+  if(!open)return null;
   return item;
 }
 function unityDisplayQuote(s){
@@ -45,6 +51,7 @@ async function unityLoadIntraday(){
     const data=await response.json();
     if(data.schemaVersion!==1||!data.items||!Number.isFinite(Date.parse(data.generatedAt)))throw Error('Pilotformat ungültig');
     unityIntraday=data;unityIntradayError='';
+    if(typeof unityAutoAnalysisSchedule==='function')unityAutoAnalysisSchedule('intraday');
   }catch(e){unityIntradayError=e.message||String(e);unityIntraday=null}
   finally{unityIntradayLoading=false;if(typeof render==='function')render()}
 }

@@ -164,7 +164,7 @@ const index=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf
 assert.match(index,/readiness-audit\.js\?v=0\.17\.2-gaps-20261115/);
 assert.match(sw,/readiness-audit\.js\?v=0\.17\.2-gaps-20261115/);
 // The risk-adjusted decision modules are independently versioned for iPhone cache refresh.
-assert.match(index,/home\.js\?v=0\.17\.1-risklearn-20261115/);
+assert.match(index,/home\.js\?v=0\.17\.4-autoanalysis-20261125/);
 assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
 const source=fs.readFileSync('home.js','utf8');
 assert.match(source,/unityReadinessOverview/);

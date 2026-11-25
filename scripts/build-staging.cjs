@@ -16,11 +16,11 @@ const obj=vm.runInNewContext(worker+';({CACHE,ASSETS})',{
  self:{addEventListener(){}},
  URL,location:{origin:'https://staging.invalid'}
 },{timeout:3000});
-if(obj.CACHE!=='unity-lab-v0.17.4-autoanalysis-20261125'||
-   !index.includes('Unity Lab 0.17.4')||
+if(obj.CACHE!=='unity-lab-v0.17.5-sixyear-chart-20261125'||
+   !index.includes('Unity Lab 0.17.5')||
    !index.includes('valuation-scenarios.js?v=0.17.0-rc1')||
    manifest.short_name!=='UNITY RC1')
- throw Error('Not the source-verified UNITY 0.17.4 candidate');
+ throw Error('Not the source-verified UNITY 0.17.5 candidate');
 const assets=new Set(['index.html','sw.js','manifest.webmanifest','icon.svg']);
 function assetPath(url) {
  if(typeof url!=='string'||!/^\.\//.test(url)||url.includes('\\'))throw Error('Invalid asset URL '+url);
@@ -84,7 +84,7 @@ for(const relative of hoerblickAssets){
 }
 fs.writeFileSync(path.join(output,'robots.txt'),'User-agent: *\nDisallow: /\n');
 fs.writeFileSync(path.join(output,'BUILD-INFO.txt'),
- 'UNITY 0.17.4 · separate-origin test only\n'+
+ 'UNITY 0.17.5 · separate-origin test only\n'+
  'No real orders. No private data included. Not a production release.\n');
 const included=new Set(fs.readdirSync(output));
 if(included.has('.git')||included.has('worker')||included.has('tests')||

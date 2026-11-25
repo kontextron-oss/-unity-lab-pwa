@@ -144,6 +144,6 @@ assert.match(ix,/foresight\.js\?v=0\.16\.5/);
 assert.match(sw,/foresight\.js\?v=0\.16\.5/);
 assert.match(sw,/data\/foresight-checkpoints\.json/);
 assert.match(sw,/unity-lab-v0\.17\.2-gaps-20261115/);
-assert.ok(ix.includes('<h1>UNITY LAB <span style="font-size:12px;font-weight:400">0.17.4 · TESTDEPOT</span>'));
-assert.ok(ix.includes('<p class="footer">Unity Lab 0.17.4'));
+assert.ok(ix.includes('<h1>UNITY LAB <span style="font-size:12px;font-weight:400">0.17.5 · TESTDEPOT</span>'));
+assert.ok(ix.includes('<p class="footer">Unity Lab 0.17.5'));
 console.log('UNITY 0.16.5 foresight: prospectively frozen management targets, FY2025 baselines, FY2026 outcome audit, no invented dates/learning scores or trades passed.');

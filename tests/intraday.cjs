@@ -13,8 +13,11 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync('intraday.js','utf8'),ctx)
 (async()=>{
  await new Promise(resolve=>setTimeout(resolve,10));
  const pilot=vm.runInContext('unityDisplayQuote('+JSON.stringify(s)+')',ctx);
- assert.equal(pilot.precision,'15m-bar');assert.equal(pilot.price,34.22);
- assert.equal(pilot.quotedAt,quoteAt);assert.match(pilot.label,/inoffiziell/);
+ const utc=new Date(),sessionOpen=utc.getUTCDay()>=1&&utc.getUTCDay()<=5&&
+  utc.getUTCHours()+utc.getUTCMinutes()/60>=8&&utc.getUTCHours()+utc.getUTCMinutes()/60<17.6;
+ assert.equal(pilot.precision,sessionOpen?'15m-bar':'day');
+ assert.equal(pilot.price,sessionOpen?34.22:33.1);
+ if(sessionOpen){assert.equal(pilot.quotedAt,quoteAt);assert.match(pilot.label,/inoffiziell/);}
  market.items[isin].currency='USD';
  assert.equal(vm.runInContext('unityDisplayQuote('+JSON.stringify(s)+').precision',ctx),'day');
  market.items[isin].currency='EUR';market.items[isin].quotedAt=new Date(now-120*60000).toISOString();

@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync('kontakte/index.html','utf8');
 const sw=fs.readFileSync('kontakte/sw.js','utf8');
-assert.match(sw,/kontakte-pwa-v14/,'Expected Kontakte 0.14 offline cache');
+assert.match(sw,/kontakte-pwa-v15-rubriken/,'Expected current Kontakte offline cache');
 assert.match(sw,/klaus-kontakte/,'Expected separate Klaus profile cache');
 assert.match(sw,/jan-kontakte/,'Expected separate Jan profile cache');
 const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
@@ -13,7 +13,9 @@ new vm.Script(scripts[0],{filename:'kontakte/index.html:inline'});
 assert.match(html,/Kontakte werden geöffnet/,'Accessible initial loading message required');
 assert.match(html,/#app\{width:100%;max-width:550px;margin:0 auto;overflow-x:clip\}/,'The app is held in one centered, fixed-width column');
 assert.match(html,/#list\{width:100%;max-width:100%;overflow-x:clip\}/,'Contact lists cannot expand sideways');
-const root={innerHTML:'',events:{},addEventListener(type,fn){this.events[type]=fn;},querySelector(){return null;}};
+const root={innerHTML:'',events:{},addEventListener(type,fn){
+ const prior=this.events[type];this.events[type]=prior?async e=>{await prior(e);return fn(e);}:fn;
+},querySelector(){return null;}};
 const local=new Map();
 const localStorage={getItem:k=>local.has(k)?local.get(k):null,setItem:(k,v)=>local.set(k,v),removeItem:k=>local.delete(k)};
 localStorage.setItem('kontakte-lokal-fallback-v1',JSON.stringify([
@@ -106,13 +108,13 @@ assert.match(html,/function whatsappNumber\(raw\)/,'German and international pho
 assert.match(html,/location\.href="https:\/\/wa\.me\//,'WhatsApp opens through the official click-to-chat URL');
 assert.match(html,/PROFILE\.id!=="jan"\)return ""/,'Rubric filters are intentionally limited to Jan Kontakte');
 assert.match(html,/data-a="category"/,'Jan Kontakte offers selectable rubric filters');
-assert.match(html,/<details class="category-picker"/,'Jan rubric filters are collapsed until explicitly opened');
-assert.match(html,/function usedCategories\(\)/,'Only used Jan rubrics are offered in the contact overview');
+assert.match(html,/<section class="category-picker"/,'Jan rubric filters are shown as a compact selection');
+assert.match(html,/function visibleCats\(\)/,'Jan rubrics are reduced to the available overview set');
 assert.match(html,/data-a="manage-categories"/,'Used Jan rubrics can be managed');
 assert.match(html,/data-a="delete-category"/,'A used Jan rubric can be removed without deleting contacts');
-assert.match(html,/select id="category" name="category"/,'Jan Kontakte offers a rubric selection list');
-assert.match(html,/Eigene Rubrik benennen/,'Jan Kontakte allows a separately named custom rubric');
-assert.match(html,/"Privat","Beruflich","Familie","Freunde","Ärzte","Behörden","Kunst"/,'Jan Kontakte has useful preset rubrics');
+assert.match(html,/select id="category-id" name="categoryId"/,'Jan Kontakte offers a rubric selection list');
+assert.match(html,/Neue Rubrik/,'Jan Kontakte allows a separately named custom rubric');
+assert.match(html,/standard-privat.*standard-beruflich/,'Jan Kontakte has its Privat and Beruflich preset rubrics');
  const {valid,phoneList,toVcard,parseVcard,importPlan,voiceQuery,nameMatches,fuzzyNameMatches,contactCategory}=window.__contactsTest;
  assert.equal(voiceQuery('Rufe Anna Müller auf dem Handy an'),'anna muller','Voice commands extract the contact name');
  assert.equal(voiceQuery('Suche Frau Christine'),'christine','Voice commands ignore forms of address');
@@ -137,7 +139,7 @@ assert.match(html,/"Privat","Beruflich","Familie","Freunde","Ärzte","Behörden"
  assert.equal(parsed.email,sample.email,'vCard email');
  assert.equal(parsed.website,sample.website,'vCard website');
  assert.equal(parsed.notes,sample.notes,'vCard notes');
- assert.equal(parsed.category,sample.category,'vCard rubric');
+ assert.equal(parsed.category,'','vCard export does not reintroduce legacy free-text rubrics');
  assert.equal(parsed.house,sample.house,'vCard house');
  assert.equal(parsed.zip,sample.zip,'vCard ZIP');
  assert.equal(contactCategory(valid({id:'c',name:'Ohne Auswahl'})),'Ohne Rubrik','Contacts without a rubric stay available');

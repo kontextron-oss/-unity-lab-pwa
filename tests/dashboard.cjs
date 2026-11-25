@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const data=JSON.parse(fs.readFileSync('data/market.json','utf8'));
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/unityComparisonView\(\)/);
-assert.match(html,/<script src="\.\/dashboard\.js"><\/script>/);
+assert.match(html,/<script src="\.\/dashboard\.js\?v=0\.17\.4-autoanalysis-20261125"><\/script>/);
 assert.match(html,/<script src="\.\/charts\.js"><\/script>/);
 assert.match(html,/<script src="\.\/dataquality\.js(?:\?v=[0-9.]+)?"><\/script>/);
 const CATALOG=[

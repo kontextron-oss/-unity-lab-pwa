@@ -122,11 +122,11 @@ const calendar=()=>vm.runInContext('unityForesightCalendar(stock)',ctx);
 ctx.stock=etn;
 assert.equal(calendar().confirmed,false);
 ctx.unityIssuerCalendarItem=()=>({
- status:'confirmed-future-earnings',nextEarnings:'2026-11-18',
+ status:'confirmed-future-earnings',nextEarnings:'2026-12-18',
  sourceUrl:'https://www.eaton.com/us/en-us/company/news-insights.html'
 });
 ctx.unityIssuerCalendarFresh=()=>true;
-assert.equal(calendar().date,'2026-11-18');
+assert.equal(calendar().date,'2026-12-18');
 ctx.unityIssuerCalendarFresh=()=>false;
 assert.equal(calendar().confirmed,false);
 ctx.unityIssuerCalendarItem=()=>null;

@@ -1,4 +1,6 @@
 name: Publish UNITY to GitHub Pages
+# UNITY 0.17.4: source changes use a new PWA cache identity; keep this
+# workflow revision with the release so the public Pages deployment is queued.
 
 on:
   push:

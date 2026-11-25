@@ -1,7 +1,9 @@
 'use strict';
 /* Lightweight, self-contained SVG charts from dated daily close history.
    No synthetic interpolation of missing trading days, no intraday claims. */
-let unityChartRange='1Y',unityChartMA=true;
+// The long horizon is the default context for every security detail. The
+// shorter ranges remain available for a focused timing view.
+let unityChartRange='6Y',unityChartMA=true;
 const unityRangeDays={'1D':2,'1W':5,'1M':22,'3M':66,'6M':132,'1Y':260,'3Y':780,'6Y':1600};
 function unityChartData(item,range){
   if(!item||!Array.isArray(item.points))return [];

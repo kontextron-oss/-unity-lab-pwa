@@ -2,7 +2,7 @@
 /* UNITY 0.15.1 – unified, reproducible paper-decision engine.
  * This module is deliberately read-only during evaluation.
  * No quote is a live executable market order; no broker approval exists. */
-const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.17.3';
+const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.18 RC1';
 const UNITY_DECISION_REVIEW_CHECKPOINTS=Object.freeze([5,20,60]);
 const UNITY_DECISION_ACTIONS={BUY:'Kaufen',SELL:'Verkaufen',HOLD:'Halten / Abwarten',BLOCKED:'Blockiert'};
 const unityDecisionSafeNum=v=>v===null||v===undefined||v===''?NaN:Number(v);
@@ -99,15 +99,17 @@ function unityDecisionResolve(input){
   // A fully sourced valuation can identify a small paper opportunity before
   // SMA50 pullback confirmation. This never overrides quote, issuer-event or
   // hard-risk vetoes above, and is deliberately not an automatic paper order.
+  const minDiscount=deep?.minValueDiscount===undefined?20:Number(deep.minValueDiscount);
   const valuationOpportunity=m==='strict'&&position===0&&
-    deep?.valueOpportunity===true&&deep?.fundamentalReady===true&&
-    deep?.valuationReady===true&&deep?.quoteVerified===true&&
-    Number(deep?.valueDiscountPct)>=20&&
+    deep?.valueOpportunity===true&&(deep?.valueEvidenceReady===true||
+      (deep?.valueEvidenceReady===undefined&&deep?.fundamentalReady===true&&deep?.valuationReady===true))&&
+    deep?.quoteVerified===true&&Number.isFinite(minDiscount)&&
+    Number(deep?.valueDiscountPct)+1e-8>=minDiscount&&
     input?.verifiedValuationDiscount===true&&multiplier>0&&multiplier<=.25&&
     Number.isFinite(limit)&&limit>0&&price<=limit;
   if(valuationOpportunity)
     return decide('BUY','value-led-entry',
-      ['Bewertungsorientierter Chancen-Einstieg: belegte fundamentale Grundlage und mindestens 20 % Abschlag zum dokumentierten fairen Wert',
+      ['Bewertungsorientierter Chancen-Einstieg: belegte fundamentale Grundlage und mindestens '+minDiscount+' % Abschlag zum dokumentierten fairen Wert',
        'Kein bestätigtes Earnings- oder Risikoveto; der SMA50-Trend muss noch nicht positiv sein',
        'Nur '+Math.round(multiplier*100)+' % der eingestellten hypothetischen Testgröße'],
       'Bewertungsgrenze maximal '+limit.toFixed(2)+' '+ref.currency,
@@ -142,7 +144,7 @@ function unityDecisionResolve(input){
   return decide('HOLD','no-entry',
     ['Strenge Kaufbedingungen nicht vollständig positiv; keine operative neue Position',
      String(deep?.reason||'Bewertung oder Einstiegssignal noch nicht freigegeben')],
-    'Bewertung und Einstiegslimit fortlaufend neu prüfen',
+    String(deep?.nextCondition||'Bewertung und Einstiegslimit fortlaufend neu prüfen'),
     'Kaufthese, Bewertung oder technisches Signal ändern sich');
 }
 function unityDecisionForStock(s,mode='strict'){
@@ -174,11 +176,12 @@ function unityDecisionForStock(s,mode='strict'){
     Math.min(upper,fair*.9):NaN;
   const strictLimitOk=Number.isFinite(strictLimit)&&strictLimit>0&&
     (!Number.isFinite(lower)||strictLimit>=lower);
-  const valueLimit=deep?.valueOpportunity===true&&Number.isFinite(fair)&&fair>0?
-    Math.floor(fair*.8*100)/100:NaN;
+  const minDiscount=deep?.minValueDiscount===undefined?20:Number(deep.minValueDiscount);
+  const valueLimit=deep?.valueOpportunity===true&&Number.isFinite(fair)&&fair>0&&Number.isFinite(minDiscount)?
+    Math.floor(fair*(1-minDiscount/100)*100+1e-7)/100:NaN;
   const valueDiscountVerified=Number.isFinite(valueLimit)&&valueLimit>0&&
-    Number.isFinite(deep?.valueDiscountPct)&&deep.valueDiscountPct>=20&&
-    !!deep?.fundamentalReady;
+    Number.isFinite(deep?.valueDiscountPct)&&deep.valueDiscountPct+1e-8>=minDiscount&&
+    (deep?.valueEvidenceReady===true||(deep?.valueEvidenceReady===undefined&&!!deep?.fundamentalReady));
   let issuerEvidence=null;
   try{issuerEvidence=typeof unityIssuerDecisionEvidence==='function'?unityIssuerDecisionEvidence(s):null}catch(_){}
   const issuerRisk=issuerEvidence?.positionRisk||null;
@@ -197,6 +200,7 @@ function unityDecisionForStock(s,mode='strict'){
     /Chance-Risiko-Verhältnis|Sicherheitsmarge/.test(v));
   const rr=unityDecisionSafeNum(deep?.rr);
   if(Number.isFinite(rr)&&rr<2)riskAdverse.push('Bestätigtes Chance-Risiko-Verhältnis unter 2:1');
+  if(deep?.adverseIssuer===true||fundamentalExit)riskAdverse.push('Belegte fundamentale Verschlechterung der Investmentthese');
   const blockers=unityDecisionCleanList(riskAdverse);
   const currentBuy=typeof unityAutoBuy==='function'?unityAutoBuy(s):null;
   const euro=currentBuy?.mode===chosen&&typeof unityAutoEurAmount==='function'?
@@ -259,17 +263,21 @@ function unityDecisionPanel(s){
     .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
   const previous=archived.slice(0,3);
   let h='<section class="panel unity-engine-panel" aria-label="Verbindliche UNITY-Entscheidung">'+
-    '<small>UNITY 0.17.3 · Hierarchisches Entscheidungssystem</small>'+
+    '<small>UNITY 0.18 RC1 · Hierarchisches Entscheidungssystem</small>'+
     '<h3>Entscheidung: <span class="unity-engine-action '+style(deep)+'">'+escf(label(deep))+'</span></h3>'+
     '<p class="tiny muted">Strenge Anlageprüfung · Datenstatus '+escf(deep.dataStatus)+' · Scoreband '+escf(deep.scoreBand)+
     ' · Konfidenz '+escf(deep.confidence)+'</p>'+renderReasons(deep)+
     (deep.action==='BUY'&&deep.reasonCode==='value-led-entry'?
-      '<p class="tiny muted"><b>Bewertungs-Chance:</b> Fundamentalbelege und ein Abschlag von mindestens 20 % eröffnen eine vorsichtige Testposition auch ohne SMA50-Bestätigung. '+ 
+      '<p class="tiny muted"><b>Bewertungs-Chance:</b> Fundamentalbelege und der eingestellte Bewertungsabschlag eröffnen eine vorsichtige Testposition auch ohne SMA50-Bestätigung. '+ 
       'Nur '+escf(String(Math.round((Number(deep.riskMultiplier)||0)*100)))+' % der eingestellten Testgröße. Kein automatischer Echtkauf.</p>':'')+
     (deep.action==='BUY'&&deep.reasonCode==='risk-adjusted-entry'?'<p class="tiny muted"><b>'+escf(deep.riskTier||'Kalkulierte Testposition')+':</b> '+
       escf(String(Math.round((Number(deep.riskMultiplier)||0)*100)))+' % der eingestellten Testgröße'+
       (Number.isFinite(deep.suggestedCapitalEur)?' · maximal '+escf(depotMoney(deep.suggestedCapitalEur)):'')+
       '. Fehlende Evidenz begrenzt die Position und bleibt als Prüfpunkt sichtbar.</p>':'')+
+    (typeof unityEntrySecurity==='function'?
+      '<label class="tiny">Sicherheitsanspruch (keine Erfolgswahrscheinlichkeit): <b>'+unityEntrySecurity()+' %</b><input type="range" min="70" max="100" step="5" value="'+unityEntrySecurity()+'" data-unity-entry-security="1" aria-label="Sicherheitsanspruch"></label><p class="tiny muted">70 = chancenorientiert · 100 = defensiv. Harte Vetos bleiben aktiv.</p>':'')+
+    '<p class="tiny"><b>Nächste Bedingung:</b> '+escf(deep.trigger||deep.invalidation)+'</p>'+
+    (deep.action==='BUY'&&Number.isFinite(deep.suggestedCapitalEur)?'<p class="tiny"><b>Vorgeschlagener Testeinsatz:</b> '+escf(depotMoney(deep.suggestedCapitalEur))+' ('+Math.round(deep.riskMultiplier*100)+' % des vorgesehenen Betrags)</p>':'')+
     '<p class="tiny muted">Kurs: '+(deep.priceRef?
       escf(Number(deep.priceRef.price).toFixed(2)+' '+deep.priceRef.currency+' · '+deep.priceRef.exchange+' · '+deep.priceRef.date):
       'kein belastbarer aktueller Referenzkurs')+'</p>'+

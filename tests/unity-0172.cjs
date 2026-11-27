@@ -48,8 +48,8 @@ assert.equal(sandbox.good.decisionSnapshot.priceRef.price,100);
 assert.equal(sandbox.bad.decisionSnapshot.priceRef.price,null);
 const html=fs.readFileSync('index.html','utf8');
 const worker=fs.readFileSync('sw.js','utf8');
-assert.match(html,/Unity Lab 0\.17\.6/);
-assert.match(worker,/unity-lab-v0\.17\.6/);
+assert.match(html,/Unity Lab 0\.18\.0/);
+assert.match(worker,/unity-lab-v0\.18\.0/);
 for(const asset of ['readiness-audit.js?v=0.17.2-gaps-20261115','decision-review.js?v=0.17.2-gaps-20261115']){
   assert.ok(html.includes(asset),'HTML missing '+asset);
   assert.ok(worker.includes(asset),'Offline precache missing '+asset);

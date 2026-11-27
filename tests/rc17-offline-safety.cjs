@@ -10,7 +10,7 @@ assert.equal(manifest.scope,'./');
 const valuation=fs.readFileSync('valuation-scenarios.js','utf8');
 const originalStores=['instruments','quotes','transactions','strategies','audit',
  'fundamentals','histories','analyses','settings'];
-const rc='0.17.6-sixyear-default-20261125';
+const rc='0.18.0-rc1-chancen-20261127';
 const cacheRc='0.17.0-rc1';
 const evidence=[
  './data/issuer-guidance.json',
@@ -20,8 +20,8 @@ const evidence=[
  './data/financing-stress-evidence.json'
 ];
 const assertContains=(s,x,label)=>assert.ok(s.includes(x),label+': '+x);
-assertContains(html,'Unity Lab 0.17.6','visible release candidate label');
-assertContains(html,'0.17.6 · TESTDEPOT','version in app header');
+assertContains(html,'Unity Lab 0.18.0 RC1','visible release candidate label');
+assertContains(html,'0.18.0 RC1 · TESTDEPOT','version in app header');
 assertContains(html,"./sw.js?v="+rc,'registered worker');
 assertContains(html,'./valuation-scenarios.js?v='+cacheRc,'new valuation module');
 assertContains(html,"indexedDB.open('unity-lab',3)",'local schema unchanged');
@@ -105,7 +105,7 @@ const ctx={URL,Request,Response,caches:cacheAPI,fetch:mockFetch,
   clients:{async claim(){record.claimed++}}
  }};
 const config=vm.runInNewContext(sw+'\n;({CACHE,ASSETS})',ctx);
-assert.equal(config.CACHE,'unity-lab-v0.17.6-sixyear-default-20261125');
+assert.equal(config.CACHE,'unity-lab-v0.18.0-rc1-chancen-20261127');
 assert.equal(new Set(config.ASSETS).size,config.ASSETS.length,'no duplicate entries');
 for(const asset of evidence)assert.ok(config.ASSETS.includes(asset),'missing offline source '+asset);
 assert.ok(config.ASSETS.includes('./valuation-scenarios.js?v='+cacheRc));

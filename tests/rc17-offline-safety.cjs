@@ -113,7 +113,7 @@ assert.ok(config.ASSETS.includes('./update.html'),'update helper available offli
 assert.ok(config.ASSETS.includes('./unity-017.html'),'versioned direct launch available offline');
 assert.match(fs.readFileSync('unity-017.html','utf8'),/Unity Lab 0\.17\.2 · Direktstart/);
 assert.match(fs.readFileSync('unity-017.html','utf8'),/indexedDB\.open\('unity-lab',3\)/);
-assert.match(helper,/unity-017\.html/);
+assert.match(helper,/index\.html\?unity_update=0180/);
 assert.ok(!config.ASSETS.includes('./valuation-scenarios.js?v=0.16.5'));
 for(const eventName of ['install','activate','fetch','message'])
  assert.equal(typeof events[eventName],'function','SW event missing: '+eventName);
@@ -140,7 +140,7 @@ async function exercise(){
   assert.ok(answer,'offline navigation intercepted');
   const page=await answer;
   const content=await page.text();
-  assert.match(content,/Unity Lab 0\.17\.6/,
+  assert.match(content,/Unity Lab 0\.18\.0/,
    '0.17 current cache wins over stale 0.16.5 HTML');
  }
  // Actual offline fetch path of the service worker: all three new SEC

@@ -192,11 +192,18 @@ function unityAutoExitZone(s){
 function unityCalculatedEntry(s){
   const decision=typeof unityDeepDecision==='function'?unityDeepDecision(s):null,a=typeof unityCalc==='function'?unityCalc(s):null;
   const fair=Number(a?.f?.fairValue),technical=Number(decision?.entryUpper),stop=Number(a?.f?.stop);
+  if(decision?.kind==='value'&&decision.valueOpportunity===true&&Number(decision.valueEntryLimit)>0){
+    const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,'strict'):null;
+    return {ready:approval?.action==='BUY'&&approval?.reasonCode==='value-led-entry'&&approval?.testActionEligible===true,
+      decision,a,price:Number(decision.valueEntryLimit),stop:stop>0?stop:NaN,valueLed:true};
+  }
   if(!decision||!['positive','technical'].includes(decision.kind)||!(technical>0))return {ready:false,decision,a,price:NaN,stop:NaN};
-  const lower=Number(decision?.entryLower),raw=Math.min(technical,fair*.90); // 10 % safety margin, then technical timing
+  const lower=Number(decision?.entryLower),raw=Math.min(technical,fair*.90);
   const bounded=Number.isFinite(fair)&&fair>0?raw:technical;
-  const price=Number.isFinite(lower)?Math.max(lower,bounded):bounded;
-  return {ready:Number.isFinite(price)&&price>0,decision,a,price,stop:stop>0?stop:NaN};
+  const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,'strict'):null;
+  const validLimit=Number.isFinite(bounded)&&bounded>0&&(!Number.isFinite(lower)||bounded>=lower);
+  const ready=validLimit&&(approval?approval.action==='BUY'&&approval.testActionEligible===true:true);
+  return {ready,decision,a,price:validLimit?bounded:NaN,stop:stop>0?stop:NaN};
 }
 function unityTechnicalTestEntry(s){
   const signal=unityPullbackAlert(s);
@@ -343,6 +350,7 @@ function unityAutoBuyControls(s,queued,mode){
 }
 function unityAutoBuyRecommendation(s){
   const entry=unityCalculatedEntry(s),decision=entry.decision;
+  if(entry.valueLed&&entry.ready)return {kind:'buy',title:'UNITY empfiehlt: Kleinen Chanceneinstieg prüfen',text:'Bewertungsgrenze '+number(entry.price,2)+' '+s.currency+' · '+Math.round((decision.riskMultiplier||0)*100)+' % der Testgröße; keine SMA50-Bestätigung nötig.'};
   if(entry.ready)return {kind:'buy',title:'UNITY empfiehlt: Auto-Testkauf möglich',text:'Berechneter Einstiegspreis bis '+number(entry.price,2)+' '+s.currency+'. Unternehmenswert, Sicherheitsmarge, Risiko und technisches Timing sind im Modell erfüllt.'};
   if(decision?.kind==='wait'||decision?.kind==='no')return {kind:'wait',title:'UNITY empfiehlt: Abwarten',text:decision.reason||'Die Voraussetzungen für einen Einstieg sind derzeit nicht erfüllt.'};
   return {kind:'open',title:'UNITY empfiehlt: Noch nicht entscheiden',text:decision?.reason||'Für eine belastbare Empfehlung fehlen noch Unternehmens-, Bewertungs-, Earnings- oder Risikodaten.'};
@@ -498,7 +506,7 @@ async function unityRunAutoTestBuys(){
         // real fill or a look-ahead purchase at the triggering day's close.
         const current=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,mode):null;
         if(!current||current.reasonCode==='missing-data'||current.reasonCode==='risk-veto'||
-           current.reasonCode==='event-veto'||current.action==='BLOCKED')continue;
+           current.reasonCode==='event-veto'||current.action==='BLOCKED'||(mode==='strict'&&current.action!=='BUY'))continue;
         const result=await unityPaperAtomicFill(order,s,'BUY',quote,fx,current);
         if(result.status==='limit-exceeded'){
           await unityPaperClearTrigger(order,result.reason);
@@ -516,14 +524,15 @@ async function unityRunAutoTestBuys(){
       const entry=unityAutoBuyEntry(s,mode);
       const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,mode):null;
       if(!entry.ready||approval?.action!=='BUY'||approval.testActionEligible!==true)continue;
-      const signal=unityPullbackAlert(s);
+      const signal=mode==='strict'&&approval.reasonCode==='value-led-entry'?
+        {kind:'reached',close:quote.x.price,date:quote.x.date}:unityPullbackAlert(s);
       if(signal.kind!=='reached'||Number(signal.close)>entry.price||!signal.date||
          signal.date<=String(order.createdAt||'').slice(0,10))continue;
       const capital=depotCapital(),budget=unityAutoBudgetStatus(),configuredEur=unityAutoEurAmount(order),
-        riskAdjustedEur=mode==='strict'&&approval?.reasonCode==='risk-adjusted-entry'?
-          Number(approval.suggestedCapitalEur):NaN,
+        riskAdjustedEur=mode==='strict'?
+          Number(approval.suggestedCapitalEur):configuredEur,
         euros=Number.isFinite(riskAdjustedEur)&&riskAdjustedEur>0?
-          Math.min(configuredEur,riskAdjustedEur):configuredEur,
+          Math.min(configuredEur,riskAdjustedEur):NaN,
         fee=unityPaperPolicy().feeEur;
       if(!capital.configured||!budget.configured||!(euros>=1)||!(euros>fee)||
          !(capital.free>=euros&&budget.remaining>=euros))continue;
@@ -902,6 +911,14 @@ function unityHomeManagePanel(){
   return h+'</section>';
 }
 
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(!el?.dataset?.unityEntrySecurity)return;
+  const value=Math.max(70,Math.min(100,Math.round(Number(el.value)/5)*5));
+  if(!Number.isFinite(value))return;
+  put('settings',{id:'unity-entry-security-v1',value,updatedAt:new Date().toISOString()})
+    .then(()=>refresh()).catch(err=>alert(err.message||String(err)));
+});
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.homeResetPosition){if(typeof depotResetPosition!=='function'){alert('Die Reset-Funktion wird noch geladen. Bitte kurz erneut versuchen.');return}depotResetPosition(b.dataset.homeResetPosition).catch(err=>alert(err.message||String(err)));return}

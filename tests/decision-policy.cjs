@@ -118,6 +118,26 @@ model={...valueBase,rr:1.2};
 assert.notEqual(run().kind,'value','Hard RR veto');
 model={...valueBase,f:{...valueBase.f,earningsDate:new Date(Date.now()+2*86400000).toISOString().slice(0,10)}};
 assert.equal(run().kind,'wait','Near earnings blocks value opportunity');
+// Schneider-inspired synthetic regression: 17% discount, weak trend,
+// valid core evidence but missing capital-flow/alternative score.
+const schneider={...valueBase,score:NaN,margin:17,checks:{data:['Unvollständiger Score'],hard:[]},
+  t:{...valueBase.t,rsi:28,ma50:item.price*1.1,ma200:item.price*1.05},
+  f:{...valueBase.f,fairValue:item.price/.83}};
+model=schneider;
+assert.equal(run().kind,'value','Early valuation opportunity without full trend or aggregate score');
+assert.equal(run().riskMultiplier,.1);
+box.cache={settings:[{id:'unity-entry-security-v1',value:95}]};
+assert.notEqual(run().kind,'value','Defensive preference raises threshold');
+box.cache={settings:[{id:'unity-entry-security-v1',value:70}]};
+assert.equal(run().kind,'value');
+box.cache={settings:[{id:'unity-entry-security-v1',value:100}]};
+assert.notEqual(run().kind,'value');
+delete box.cache;
+model={...schneider,checks:{data:['Fundamentaldaten / Bilanz nicht belegt'],hard:[]}};
+assert.notEqual(run().kind,'value','Missing critical balance evidence cannot be waived');
+model={...schneider,rr:1.5};assert.notEqual(run().kind,'value');
+model={...schneider,f:{...schneider.f,earningsConfirmed:false,earningsDate:''}};
+assert.notEqual(run().kind,'value','Unconfirmed next earnings blocks early value entry');
 model=valueBase;item.dynamicExperimental=true;
 assert.notEqual(run().kind,'value','Experimental quote blocks value case');
 item.dynamicExperimental=false;

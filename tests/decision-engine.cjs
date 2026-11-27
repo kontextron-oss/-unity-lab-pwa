@@ -86,6 +86,14 @@ const assertContract=x=>{
  assert.equal(v.suggestedCapitalEur,62.5);
  assert.equal(v.realOrderApproved,false);
  assert.match(vm.runInContext('unityDecisionPanel(stock)',sandbox),/Bewertungs-Chance/);
+ // Schneider-inspired weak-trend fixture: use explicit threshold and a small amount.
+ const previousValue=deep;
+ report.fairValue=120;
+ deep={...deep,valueEvidenceReady:true,fundamentalReady:false,valuationReady:false,minValueDiscount:15,
+   valueDiscountPct:100*(1-100/120),riskMultiplier:.1,riskTier:'Früher Chanceneinstieg'};
+ v=evaluate();assert.equal(v.reasonCode,'value-led-entry');assert.equal(v.suggestedCapitalEur,25);
+ deep={...deep,valueEvidenceReady:false};assert.notEqual(evaluate().reasonCode,'value-led-entry');
+ deep=previousValue;report.fairValue=135;
  deep={...deep,riskMultiplier:.5};
  assert.notEqual(evaluate().reasonCode,'value-led-entry','Value entry capped to 25%');
  deep={...deep,riskMultiplier:.25};
@@ -164,7 +172,7 @@ const assertContract=x=>{
  assert.match(html,/decision-engine\.js\?v=0\.17\.1-risklearn-20261115/);
  assert.match(sw,/decision-engine\.js\?v=0\.17\.1-risklearn-20261115/);
  assert.match(html,/decision-review\.js\?v=0\.17\.2-gaps-20261115/);
- assert.match(sw,/unity-lab-v0\.17\.6-sixyear-default-20261125/);
+ assert.match(sw,/unity-lab-v0\.18\.0-rc1-chancen-20261127/);
  assert.match(home,/unityDecisionPanel\(s\)/);
  assert.match(home,/approval\.testActionEligible/);
  assert.match(home,/unityDecisionLedgerCapture/);

@@ -193,7 +193,7 @@ jobs:
       - name: Deploy static UNITY to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify live UNITY 0.17 and update page on GitHub Pages
+      - name: Verify live UNITY release and safe update page on GitHub Pages
         shell: bash
         run: |
           set -euo pipefail
@@ -206,20 +206,21 @@ jobs:
           for n in {1..10}; do
             echo "Live-site verification attempt ${n}/10"
             if curl -fsSL --connect-timeout 8 --max-time 20 \
-              "${BASE}/unity-017.html?release=${GITHUB_SHA}" -o /tmp/unity-017.html \
+              "${BASE}/index.html?release=${GITHUB_SHA}" -o /tmp/unity-index.html \
               && curl -fsSL --connect-timeout 8 --max-time 20 \
               "${BASE}/update.html?release=${GITHUB_SHA}" -o /tmp/unity-update.html \
               && curl -fsSL --connect-timeout 8 --max-time 20 \
               "${BASE}/sw.js?release=${GITHUB_SHA}" -o /tmp/unity-sw.js \
               && grep -Fq "then(()=>self.skipWaiting())" /tmp/unity-sw.js \
-              && grep -Fq 'Unity Lab 0.17.0 RC1 · Direktstart' /tmp/unity-017.html \
+              && grep -Fq 'Unity Lab 0.18.0 RC1' /tmp/unity-index.html \
+              && grep -Fq 'unity-lab-v0.18.0-rc1-chancen-20261127' /tmp/unity-sw.js \
               && grep -Fq 'UNITY_ACTIVATE_UPDATE' /tmp/unity-update.html; then
-              echo 'Confirmed: UNITY 0.17 and the safe update helper are live.'
+              echo 'Confirmed: UNITY 0.18.0 RC1 and the safe update helper are live.'
               exit 0
             fi
             sleep 6
           done
-          echo '::error::Published website still missing UNITY 0.17 direct start or update page.'
+          echo '::error::Published website still missing UNITY 0.18.0 RC1 or update page.'
           exit 1
 
 

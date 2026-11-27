@@ -1,7 +1,7 @@
 'use strict';
 /* UNITY 0.17.1 – outcome checks for immutable paper-decision snapshots.
    This module never writes, re-scores or rewrites a prior decision. */
-const UNITY_REVIEW_VERSION='UNITY Review 0.17.3';
+const UNITY_REVIEW_VERSION='UNITY Review 0.18 RC1';
 const unityReviewNum=v=>v===null||v===undefined||v===''?NaN:Number(v);
 function unityReviewPoints(stock){
   let item=null;
@@ -37,6 +37,23 @@ function unityReviewOutcomeSummary(stock,records=[]){
   const average=n?outcomes.reduce((sum,p)=>sum+p.change,0)/n:null;
   return {decisions:buys.length,evaluated:n,positive:wins,average};
 }
+// Distinguish discretionary waiting from actual risk/data blocks and held positions.
+function unityWaitingOutcomeSummary(stock,records=[]){
+  const seen=new Set(),waits=[];
+  for(const r of [...(Array.isArray(records)?records:[])].sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')))){
+    const d=r?.decisionSnapshot||r;
+    if(r?.mode!=='strict'||(r.action||d.action)!=='HOLD'||(r.reasonCode||d.reasonCode)!=='no-entry'||Number(d.positionQty||0)>0)continue;
+    const review=unityDecisionReview(r,stock);
+    if(!review.available||seen.has(review.date))continue;
+    seen.add(review.date);waits.push(review);
+  }
+  return [5,20,60].map(sessions=>{
+    const outcomes=waits.slice(-60).map(r=>r.checkpoints.find(p=>p.sessions===sessions))
+      .filter(p=>p?.state==='completed'&&Number.isFinite(p.change));
+    return {sessions,evaluated:outcomes.length,higher:outcomes.filter(p=>p.change>0).length,
+      lower:outcomes.filter(p=>p.change<0).length,average:outcomes.length?outcomes.reduce((sum,p)=>sum+p.change,0)/outcomes.length:null};
+  });
+}
 function unityDecisionReviewPanel(stock,records=[]){
   const escf=typeof esc==='function'?esc:x=>String(x??'');
   const latest=[...(Array.isArray(records)?records:[])].filter(x=>x?.mode==='strict')
@@ -49,6 +66,10 @@ function unityDecisionReviewPanel(stock,records=[]){
       history.positive+' von '+history.evaluated+' ausgewerteten Testkauf-Signalen lagen nach 20 Handelstagen über dem Referenzkurs; durchschnittlich '+
       (history.average>=0?'+':'')+history.average.toFixed(1)+' %. Keine Kausalitäts- oder Erfolgsgarantie.</p>':
     '<p class="tiny muted">Noch keine auswertbaren 20-Handelstage-Ergebnisse für protokollierte Testkauf-Signale. Die Regeln werden nicht unkontrolliert verändert.</p>';
+  const waiting=unityWaitingOutcomeSummary(stock,records);
+  const waitText='<p class="tiny muted"><b>Lernkontrolle Abwarten (ohne Risiko-/Datensperren):</b> '+
+    waiting.map(w=>w.sessions+' Handelstage: '+(w.evaluated?w.higher+' teurere / '+w.lower+' günstigere Folgekurse von '+w.evaluated+'; Ø '+(w.average>=0?'+':'')+w.average.toFixed(1)+' %':'noch keine Auswertung')).join(' · ')+
+    '. Kursvergleich, keine nachgewiesene Fehlentscheidung oder Renditegarantie. Die ursprünglichen Regeln werden nicht rückwirkend verändert.</p>';
   const rows=review.checkpoints.map(c=>{
     if(c.state==='pending')return '<li><b>'+escf(c.label)+':</b> noch nicht vollständig in der verfügbaren Tageskursreihe</li>';
     const sign=c.change>=0?'+':'',tone=c.change>=0?'positive':'negative';
@@ -56,7 +77,7 @@ function unityDecisionReviewPanel(stock,records=[]){
   }).join('');
   return '<section class="panel unity-review-panel" aria-label="UNITY Lernkontrolle">'+
     '<small>'+UNITY_REVIEW_VERSION+' · Ergebnisabgleich</small><h3>Lernkontrolle · 5 / 20 / 60 Handelstage</h3>'+
-    summary+
+    summary+waitText+
     (review.available?'<p class="tiny muted">Vergleich mit dem eingefrorenen Entscheidungs-Kurs '+escf(review.reference.toFixed(2)+' '+String(latest.decisionSnapshot?.priceRef?.currency||''))+' vom '+escf(review.date)+'. Die ursprüngliche Entscheidung wird nicht umgeschrieben.</p><ul>'+rows+'</ul>':'<p class="tiny muted">Für diesen archivierten Entscheidungsstand fehlt die vollständige Kursreferenz. Er bleibt sichtbar, wird aber nicht nachträglich bewertet.</p>')+
     '</section>';
 }

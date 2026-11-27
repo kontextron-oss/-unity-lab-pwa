@@ -10,7 +10,7 @@ assert.equal(manifest.scope,'./');
 const valuation=fs.readFileSync('valuation-scenarios.js','utf8');
 const originalStores=['instruments','quotes','transactions','strategies','audit',
  'fundamentals','histories','analyses','settings'];
-const rc='0.17.6-sixyear-default-20261125';
+const rc='0.18.0-rc1-chancen-20261127';
 const cacheRc='0.17.0-rc1';
 const evidence=[
  './data/issuer-guidance.json',
@@ -20,8 +20,8 @@ const evidence=[
  './data/financing-stress-evidence.json'
 ];
 const assertContains=(s,x,label)=>assert.ok(s.includes(x),label+': '+x);
-assertContains(html,'Unity Lab 0.17.6','visible release candidate label');
-assertContains(html,'0.17.6 · TESTDEPOT','version in app header');
+assertContains(html,'Unity Lab 0.18.0 RC1','visible release candidate label');
+assertContains(html,'0.18.0 RC1 · TESTDEPOT','version in app header');
 assertContains(html,"./sw.js?v="+rc,'registered worker');
 assertContains(html,'./valuation-scenarios.js?v='+cacheRc,'new valuation module');
 assertContains(html,"indexedDB.open('unity-lab',3)",'local schema unchanged');
@@ -34,11 +34,11 @@ assert.match(sw,/self\.skipWaiting\s*\(/,'user-initiated activation supported');
 assert.ok(fs.existsSync('update.html'),'non-destructive Safari update page exists');
 const helper=fs.readFileSync('update.html','utf8');
 assert.match(helper,/UNITY_ACTIVATE_UPDATE/);
-assert.match(helper,/sw\.js\?v=0\.17\.2-gaps-20261115-iosfix/,
+assert.match(helper,/sw\.js\?v=0\.18\.0-rc1-chancen-20261127/,
  'Updater registers current 0.17.5 worker instead of 0.17.0');
 assert.match(helper,/index\.html\?unity_version_check=/,
  'Updater checks network-first release HTML, not stale cache-first direct launch');
-assert.match(helper,/Version 0\.17\.2 aktivieren/,
+assert.match(helper,/Version 0\.18\.0 RC1 aktivieren/,
  'Visible version must match the published release');
 assert.doesNotMatch(helper,/sw\.js\?v=0\.17\.0-rc1-update/,
  'Do not reuse old 0.17.0 worker URL');
@@ -105,7 +105,7 @@ const ctx={URL,Request,Response,caches:cacheAPI,fetch:mockFetch,
   clients:{async claim(){record.claimed++}}
  }};
 const config=vm.runInNewContext(sw+'\n;({CACHE,ASSETS})',ctx);
-assert.equal(config.CACHE,'unity-lab-v0.17.6-sixyear-default-20261125');
+assert.equal(config.CACHE,'unity-lab-v0.18.0-rc1-chancen-20261127');
 assert.equal(new Set(config.ASSETS).size,config.ASSETS.length,'no duplicate entries');
 for(const asset of evidence)assert.ok(config.ASSETS.includes(asset),'missing offline source '+asset);
 assert.ok(config.ASSETS.includes('./valuation-scenarios.js?v='+cacheRc));
@@ -113,7 +113,7 @@ assert.ok(config.ASSETS.includes('./update.html'),'update helper available offli
 assert.ok(config.ASSETS.includes('./unity-017.html'),'versioned direct launch available offline');
 assert.match(fs.readFileSync('unity-017.html','utf8'),/Unity Lab 0\.17\.2 · Direktstart/);
 assert.match(fs.readFileSync('unity-017.html','utf8'),/indexedDB\.open\('unity-lab',3\)/);
-assert.match(helper,/unity-017\.html/);
+assert.match(helper,/index\.html\?unity_update=0180/);
 assert.ok(!config.ASSETS.includes('./valuation-scenarios.js?v=0.16.5'));
 for(const eventName of ['install','activate','fetch','message'])
  assert.equal(typeof events[eventName],'function','SW event missing: '+eventName);
@@ -140,7 +140,7 @@ async function exercise(){
   assert.ok(answer,'offline navigation intercepted');
   const page=await answer;
   const content=await page.text();
-  assert.match(content,/Unity Lab 0\.17\.6/,
+  assert.match(content,/Unity Lab 0\.18\.0/,
    '0.17 current cache wins over stale 0.16.5 HTML');
  }
  // Actual offline fetch path of the service worker: all three new SEC

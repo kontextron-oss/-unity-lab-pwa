@@ -28,4 +28,12 @@ assert.equal(summary.positive,1);
 assert.ok(summary.average>0);
 assert.match(vm.runInContext('unityDecisionReviewPanel(stock,buys)',box),/Historische Lernkontrolle/);
 assert.equal(record.decisionSnapshot.priceRef.price,100,'Historical review never changes original source');
+box.waits=[{...record,action:'HOLD',reasonCode:'no-entry',createdAt:'2026-01-01'},
+ {...record,action:'HOLD',reasonCode:'no-entry',createdAt:'2026-01-01T12:00:00Z'},
+ {...record,action:'BLOCKED',reasonCode:'risk-veto'},
+ {...record,action:'HOLD',reasonCode:'position-monitor'}];
+const waiting=vm.runInContext('unityWaitingOutcomeSummary(stock,waits)',box);
+assert.equal(waiting[0].evaluated,1);assert.equal(waiting[0].higher,1);
+assert.equal(waiting[1].evaluated,1);assert.equal(waiting[2].evaluated,0);
+assert.match(vm.runInContext('unityDecisionReviewPanel(stock,waits)',box),/Lernkontrolle Abwarten/);
 console.log('UNITY decision review: 5/20/60-session checkpoints, pending state and immutable snapshots passed.');

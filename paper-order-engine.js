@@ -181,8 +181,15 @@ async function unityPaperAtomicFill(order,s,side,quote,fx,approval){
       }
       const rate=Number(fx.rate),close=Number(quote.x.price),modelQty=side==='SELL'?
         unityPaperQtyFromRows(tradeRows,s.id):NaN;
-      const budget=Number(current.triggerAllocationEur||current.allocationEur),model=unityPaperFillModel(close,side,rate,policy,
-        budget,modelQty);
+      const armedBudget=Number(current.triggerAllocationEur||current.allocationEur);
+      // A subsequent strict decision may reduce a previously armed amount but never increase it.
+      const isStrictBuy=side==='BUY'&&current.mode==='strict';
+      const cap=Number(approval?.suggestedCapitalEur);
+      if(isStrictBuy&&(approval?.action!=='BUY'||approval?.testActionEligible!==true||!(cap>0))){
+        result={status:'blocked',reason:'Aktuelle strenge Testfreigabe oder Positionsgröße fehlt'};return;
+      }
+      const budget=isStrictBuy?Math.min(armedBudget,cap):armedBudget;
+      const model=unityPaperFillModel(close,side,rate,policy,budget,modelQty);
       if(!model){
         result={status:'blocked',reason:'Fester Betrag/Bestand reicht nicht für modellierte Gebühr'};return;
       }

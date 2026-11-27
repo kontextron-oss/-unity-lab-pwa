@@ -172,8 +172,22 @@ const assertContract=x=>{
  assert.match(html,/decision-engine\.js\?v=0\.17\.1-risklearn-20261115/);
  assert.match(sw,/decision-engine\.js\?v=0\.17\.1-risklearn-20261115/);
  assert.match(html,/decision-review\.js\?v=0\.17\.2-gaps-20261115/);
- assert.match(sw,/unity-lab-v0\.18\.0-rc1-chancen-20261127/);
+ assert.match(sw,/unity-lab-v0\.18\.0-rc2-slider-20261127/);
  assert.match(home,/unityDecisionPanel\(s\)/);
+ // RC2: exactly one shared control, above all analysis panels, not duplicated.
+ sandbox.unityIsCryptoAsset=()=>false;
+ sandbox.unityEntrySecurity=()=>80;
+ const slider=vm.runInContext('unityEntrySecurityPanel()',sandbox);
+ assert.match(slider,/min="70" max="100" step="5" value="80"/);
+ assert.match(slider,/Gilt für alle Aktien/);
+ assert.match(slider,/80 %/);
+ assert.doesNotMatch(vm.runInContext('unityDecisionPanel(stock)',sandbox),/data-unity-entry-security/);
+ const detail=home.slice(home.indexOf('function unityHomeDetail('),home.indexOf('function unityHomeSecurityDetails('));
+ const start=detail.indexOf('// The long horizon');
+ assert.ok(start>=0&&detail.indexOf('unityChartPanel(x)',start)<detail.indexOf('unityEntrySecurityPanel()',start));
+ assert.ok(detail.indexOf('unityEntrySecurityPanel()',start)<detail.indexOf('unityDecisionReadinessPanel(s)',start));
+ assert.ok(detail.indexOf('unityEntrySecurityPanel()',start)<detail.indexOf('unityDecisionPanel(s)',start));
+ assert.match(home,/put\('settings',\{id:'unity-entry-security-v1'/);
  assert.match(home,/approval\.testActionEligible/);
  assert.match(home,/unityDecisionLedgerCapture/);
  const preview=fs.readFileSync('unity-0173.html','utf8');

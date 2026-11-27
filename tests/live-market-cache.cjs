@@ -38,7 +38,7 @@ const cached={
  async addAll(){},
 };
 const fakeCaches={
- async open(name){assert.equal(name,'unity-lab-v0.18.0-rc1-chancen-20261127');return cached},
+ async open(name){assert.equal(name,'unity-lab-v0.18.0-rc2-slider-20261127');return cached},
  async match(req){return matching(oldCache,req)||matching(currentCache,req)}
 };
 const fakeFetch=async(request,opts)=>{
@@ -86,9 +86,9 @@ function request(url){
  assert.equal(intr.status,200,'intraday data uses network first');
  assert.equal(cachePuts.at(-1),key('./data/intraday.json'));
  const staticScript=new Response('/* precached */',{status:200});
- currentCache.set(key('./home.js?v=0.17.6-sixyear-default-20261125&rc=018'),staticScript);
+ currentCache.set(key('./home.js?v=0.17.6-sixyear-default-20261125&rc=0182'),staticScript);
  const beforeStatic=networkFetchCount;
- const staticResult=await request('./home.js?v=0.17.6-sixyear-default-20261125&rc=018');
+ const staticResult=await request('./home.js?v=0.17.6-sixyear-default-20261125&rc=0182');
  assert.match(await staticResult.text(),/precached/);
  assert.equal(networkFetchCount,beforeStatic,'unchanged scripts remain cache first');
  assert.doesNotMatch(home,/badge\.textContent\s*=\s*'0\.16\.5'/);

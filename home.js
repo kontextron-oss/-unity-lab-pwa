@@ -808,6 +808,7 @@ function unityHomeDetail(sid){
   // directly below the security heading, ahead of all score and action panels.
   if(x)h+=unityChartPanel(x);
   else h+='<p class="home-missing">'+(s.providerSymbol?(typeof unityDynamicErrors!=='undefined'&&unityDynamicErrors.get(s.providerSymbol.toUpperCase())?'Kursquelle derzeit nicht erreichbar: '+esc(unityDynamicErrors.get(s.providerSymbol.toUpperCase())):'Internationale Kursreihe wird geladen, sofern die externe Quelle erreichbar ist.'):'Kein überprüfbarer Tageskursverlauf vorhanden. Es wird keine Kurve erfunden.')+'</p>';
+  if(typeof unityEntrySecurityPanel==='function')h+=unityEntrySecurityPanel();
   if(['reached','blocked','watch'].includes(pullback.kind)){
     h+='<section class="home-pullback-detail home-pullback-'+pullback.kind+'"><strong>'+esc(pullback.label)+'</strong>'+
       '<p>'+esc(pullback.detail)+'</p>'+
@@ -911,6 +912,14 @@ function unityHomeManagePanel(){
   return h+'</section>';
 }
 
+document.addEventListener('input',e=>{
+  const el=e.target;
+  if(!el?.dataset?.unityEntrySecurity)return;
+  const value=Number(el.value)+' %';
+  const out=el.closest('.unity-entry-security-panel')?.querySelector('[data-unity-security-value]');
+  if(out)out.textContent=value;
+  el.setAttribute('aria-valuetext',value);
+});
 document.addEventListener('change',e=>{
   const el=e.target;
   if(!el?.dataset?.unityEntrySecurity)return;

@@ -23,7 +23,7 @@ function get(map,req,opts){
 }
 const caches={
  async open(cacheName){
-  assert.equal(cacheName,'unity-lab-v0.18.0-rc1-chancen-20261127');
+  assert.equal(cacheName,'unity-lab-v0.18.0-rc2-slider-20261127');
   return {
    match:async(req,opts)=>get(active,req,opts),
    put:async(req,response)=>{cacheWrites++;active.set(urlOf(req).href,response.clone())},

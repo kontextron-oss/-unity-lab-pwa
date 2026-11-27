@@ -10,7 +10,7 @@ const build=cp.spawnSync(process.execPath,['scripts/build-staging.cjs'],
 assert.equal(build.status,0,'Preview build failed: '+build.stderr);
 assert.match(build.stdout,/public assets/);
 const sw=fs.readFileSync(path.join(out,'sw.js'),'utf8');
-assert.match(sw,/const CACHE='unity-lab-v0\.18\.0-rc1-chancen-20261127'/);
+assert.match(sw,/const CACHE='unity-lab-v0\.18\.0-rc2-slider-20261127'/);
 assert.match(fs.readFileSync(path.join(out,'index.html'),'utf8'),/0\.18\.0/);
 const direct=fs.readFileSync(path.join(out,'unity-017.html'),'utf8');
 assert.match(direct,/Unity Lab 0\.17\.2 · Direktstart/);
@@ -21,7 +21,7 @@ const updatePage=fs.readFileSync(path.join(out,'update.html'),'utf8');
 assert.match(updatePage,/UNITY · Sichere Aktualisierung/);
 assert.match(updatePage,/UNITY_ACTIVATE_UPDATE/);
 assert.match(fs.readFileSync(path.join(out,'sw.js'),'utf8'),/'\.\/update\.html'/,'Safari update helper must be in deployed offline cache');
-assert.match(updatePage,/\.\/index\.html\?unity_update=0180/,'update opens current app on its original origin');
+assert.match(updatePage,/\.\/index\.html\?unity_update=0182/,'update opens current app on its original origin');
 assert.doesNotMatch(updatePage,/indexedDB\.deleteDatabase|caches\.delete|localStorage\.clear|\.unregister\(/);
 const main=fs.readFileSync(path.join(out,'manifest.webmanifest'),'utf8');
 assert.equal(JSON.parse(main).short_name,'UNITY RC1');

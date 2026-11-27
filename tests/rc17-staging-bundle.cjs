@@ -21,7 +21,7 @@ const updatePage=fs.readFileSync(path.join(out,'update.html'),'utf8');
 assert.match(updatePage,/UNITY · Sichere Aktualisierung/);
 assert.match(updatePage,/UNITY_ACTIVATE_UPDATE/);
 assert.match(fs.readFileSync(path.join(out,'sw.js'),'utf8'),/'\.\/update\.html'/,'Safari update helper must be in deployed offline cache');
-assert.match(updatePage,/\.\/unity-017\.html/,'update points to versioned direct launch');
+assert.match(updatePage,/\.\/index\.html\?unity_update=0180/,'update opens current app on its original origin');
 assert.doesNotMatch(updatePage,/indexedDB\.deleteDatabase|caches\.delete|localStorage\.clear|\.unregister\(/);
 const main=fs.readFileSync(path.join(out,'manifest.webmanifest'),'utf8');
 assert.equal(JSON.parse(main).short_name,'UNITY RC1');

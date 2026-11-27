@@ -29,7 +29,7 @@ function unityDecisionResolve(input){
     trigger:'',invalidation:'Bei neuer, verifizierter Datenlage erneut prüfen',
     capitalPct:null, // retained as a null compatibility field, no percent-based trading
     capitalEur:configuredCapital,suggestedCapitalEur:suggestedCapital,riskMultiplier:multiplier,
-    riskTier:String(input?.riskTier||''),
+    riskTier:String(input?.riskTier||''),entryLimit:Number.isFinite(unityDecisionSafeNum(input?.entryLimit))?Number(input.entryLimit):null,
     reviewPlan:UNITY_DECISION_REVIEW_CHECKPOINTS.map(sessions=>({sessions,label:sessions+' Handelstage'})),
     why:[],reasonCode:'missing-data',sourceRefs:Array.isArray(input?.sourceRefs)?input.sourceRefs.map(e=>({
       key:String(e.key||''),status:String(e.status||''),stamp:String(e.stamp||''),source:String(e.source||'')})):[],
@@ -208,7 +208,7 @@ function unityDecisionForStock(s,mode='strict'){
   const input={mode:chosen,positionQty:qty,quoteValid:valid,
     priceRef:ref,technicalReady,technicalSignal,technicalExit,exitLimit,
     entryLimit:chosen==='technical'?technicalLimit:
-      valueDiscountVerified?valueLimit:strictLimitOk?strictLimit:upper,
+      valueDiscountVerified?valueLimit:strictLimitOk?strictLimit:Number.isFinite(fair)&&fair>0?NaN:upper,
     verifiedValuationDiscount:chosen==='strict'&&valueDiscountVerified,
     deep,nearEarnings,verifiedFundamentalExit:fundamentalExit,exitReason:issuerRisk?.label||'',
     capitalEur:Number.isFinite(euro)&&euro>0?euro:null,
@@ -225,7 +225,7 @@ function unityDecisionLedgerKey(s,d){
   // Stable fingerprint of ACTUAL decision inputs: duplicate views do not create
   // a stream of redundant records or overwrite the first immutable snapshot.
   const state=JSON.stringify([s.id,d.mode,d.action,d.reasonCode,d.dataStatus,d.signalAt,
-    d.priceRef,d.scoreBand,d.veto,d.trigger,d.invalidation,d.why,d.positionQty,d.capitalPct,d.capitalEur,d.suggestedCapitalEur,d.riskMultiplier,d.reviewPlan,d.sourceRefs]);
+    d.priceRef,d.scoreBand,d.veto,d.entryLimit,d.trigger,d.invalidation,d.why,d.positionQty,d.capitalPct,d.capitalEur,d.suggestedCapitalEur,d.riskMultiplier,d.reviewPlan,d.sourceRefs]);
   let hash=2166136261;
   for(let i=0;i<state.length;i++){hash^=state.charCodeAt(i);hash=Math.imul(hash,16777619)}
   return 'unity-decision-0151-'+String(s.id)+'-'+(hash>>>0).toString(16);

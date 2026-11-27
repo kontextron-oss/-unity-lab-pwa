@@ -198,10 +198,12 @@ function unityCalculatedEntry(s){
       decision,a,price:Number(decision.valueEntryLimit),stop:stop>0?stop:NaN,valueLed:true};
   }
   if(!decision||!['positive','technical'].includes(decision.kind)||!(technical>0))return {ready:false,decision,a,price:NaN,stop:NaN};
-  const lower=Number(decision?.entryLower),raw=Math.min(technical,fair*.90); // 10 % safety margin, then technical timing
+  const lower=Number(decision?.entryLower),raw=Math.min(technical,fair*.90);
   const bounded=Number.isFinite(fair)&&fair>0?raw:technical;
-  const price=Number.isFinite(lower)?Math.max(lower,bounded):bounded;
-  return {ready:Number.isFinite(price)&&price>0,decision,a,price,stop:stop>0?stop:NaN};
+  const approval=typeof unityDecisionForStock==='function'?unityDecisionForStock(s,'strict'):null;
+  const validLimit=Number.isFinite(bounded)&&bounded>0&&(!Number.isFinite(lower)||bounded>=lower);
+  const ready=validLimit&&(approval?approval.action==='BUY'&&approval.testActionEligible===true:true);
+  return {ready,decision,a,price:validLimit?bounded:NaN,stop:stop>0?stop:NaN};
 }
 function unityTechnicalTestEntry(s){
   const signal=unityPullbackAlert(s);

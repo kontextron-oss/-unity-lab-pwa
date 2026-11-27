@@ -185,6 +185,7 @@ function unityDeepDecision(s,base=null,candidate=null){
     else if(c?.status==='candidate'&&!inZone){kind='wait';decision='NEIN – Einstiegskurs abwarten';reason='Der Kurs liegt derzeit außerhalb der definierten SMA50-Kaufzone.'}
     else if(!eligible){kind='no';decision='NEIN – derzeit kein Einstieg';reason='Mindestens eine technische Risiko- oder Trendbedingung ist nicht erfüllt.'}
     else if(investmentReady){kind='positive';decision='JA – geprüften Einstieg im Testdepot prüfen';reason='Technik, Bewertung, dokumentierte Unternehmenskennzahlen, Earnings und Risikoregeln erfüllen die hinterlegten Kriterien. Keine reale Orderfreigabe.'}
+    else if(security>=95){kind='wait';decision='ABWARTEN – Sicherheitsanspruch';reason='Bei defensiver Einstellung ist eine vollständige fundamentale Freigabe erforderlich.'}
     else {kind='technical';decision='JA – Chancen-Einstieg im Testdepot prüfen';reason='Die technischen Einstiegskriterien sind erfüllt. Offene Quellen- und Bewertungsfragen begrenzen die Positionsgröße; sie werden sichtbar nachgeführt.'}
   }
   const totalSources=[usable,filing.verified,valuationReady,
@@ -196,7 +197,7 @@ function unityDeepDecision(s,base=null,candidate=null){
   // negative company verdict. It reduces the proposed test exposure. Explicit
   // risk/event vetos above still prevent every fresh entry.
   const riskMultiplier=adverseIssuer?0:investmentReady?(a.score>=80&&a.margin>=20&&coverage===6?1:.5):
-    valueOpportunity?(valueDiscountPct>=20&&a.t.rsi>=30?.25:.1):eligible?(coverage>=4?.5:.25):0;
+    valueOpportunity?(valueDiscountPct>=20&&a.t.rsi>=30?.25:.1):eligible&&security<95?(coverage>=4?.5:.25):0;
   const riskTier=riskMultiplier>=1?'Normaler Einstieg':riskMultiplier>=.5?'Kleiner Einstieg':
     riskMultiplier>=.25?'Sehr kleine Testposition':riskMultiplier>0?'Früher Chanceneinstieg':'Kein Einstieg';
   const nextCondition=valueOpportunity?'Bewertungsgrenze bis '+unityPolicyFmt(valueEntryLimit,2)+' '+s.currency:

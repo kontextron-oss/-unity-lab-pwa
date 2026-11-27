@@ -2,7 +2,7 @@
 /* UNITY 0.15.1 – unified, reproducible paper-decision engine.
  * This module is deliberately read-only during evaluation.
  * No quote is a live executable market order; no broker approval exists. */
-const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.18 RC1';
+const UNITY_DECISION_ENGINE_VERSION='UNITY Decision Engine 0.18 RC2';
 const UNITY_DECISION_REVIEW_CHECKPOINTS=Object.freeze([5,20,60]);
 const UNITY_DECISION_ACTIONS={BUY:'Kaufen',SELL:'Verkaufen',HOLD:'Halten / Abwarten',BLOCKED:'Blockiert'};
 const unityDecisionSafeNum=v=>v===null||v===undefined||v===''?NaN:Number(v);
@@ -248,6 +248,16 @@ async function unityDecisionLedgerCapture(s,mode='strict',decision=null){
     return true;
   }finally{unityDecisionLedgerPending.delete(key)}
 }
+// One shared local preference, exposed immediately below the stock chart.
+function unityEntrySecurityPanel(){
+  if(typeof unityEntrySecurity!=='function')return '';
+  const value=unityEntrySecurity();
+  return '<section class="panel unity-entry-security-panel" aria-label="Sicherheitsanspruch">'+
+    '<label for="unity-entry-security"><span>Sicherheitsanspruch</span><output data-unity-security-value for="unity-entry-security">'+value+' %</output></label>'+
+    '<input id="unity-entry-security" type="range" min="70" max="100" step="5" value="'+value+'" data-unity-entry-security="1" aria-label="Sicherheitsanspruch" aria-valuetext="'+value+' %">'+
+    '<div class="unity-entry-security-scale"><span>70 % · Chancenorientiert</span><span>100 % · Defensiv</span></div>'+
+    '<p class="tiny muted">Gilt für alle Aktien. Keine Erfolgswahrscheinlichkeit. Harte Vetos bleiben aktiv.</p></section>';
+}
 function unityDecisionPanel(s){
   const deep=unityDecisionForStock(s,'strict'),tech=unityDecisionForStock(s,'technical');
   if(!deep||!tech)return '';
@@ -263,7 +273,7 @@ function unityDecisionPanel(s){
     .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
   const previous=archived.slice(0,3);
   let h='<section class="panel unity-engine-panel" aria-label="Verbindliche UNITY-Entscheidung">'+
-    '<small>UNITY 0.18 RC1 · Hierarchisches Entscheidungssystem</small>'+
+    '<small>UNITY 0.18 RC2 · Hierarchisches Entscheidungssystem</small>'+
     '<h3>Entscheidung: <span class="unity-engine-action '+style(deep)+'">'+escf(label(deep))+'</span></h3>'+
     '<p class="tiny muted">Strenge Anlageprüfung · Datenstatus '+escf(deep.dataStatus)+' · Scoreband '+escf(deep.scoreBand)+
     ' · Konfidenz '+escf(deep.confidence)+'</p>'+renderReasons(deep)+
@@ -274,8 +284,6 @@ function unityDecisionPanel(s){
       escf(String(Math.round((Number(deep.riskMultiplier)||0)*100)))+' % der eingestellten Testgröße'+
       (Number.isFinite(deep.suggestedCapitalEur)?' · maximal '+escf(depotMoney(deep.suggestedCapitalEur)):'')+
       '. Fehlende Evidenz begrenzt die Position und bleibt als Prüfpunkt sichtbar.</p>':'')+
-    (typeof unityEntrySecurity==='function'?
-      '<label class="tiny">Sicherheitsanspruch (keine Erfolgswahrscheinlichkeit): <b>'+unityEntrySecurity()+' %</b><input type="range" min="70" max="100" step="5" value="'+unityEntrySecurity()+'" data-unity-entry-security="1" aria-label="Sicherheitsanspruch"></label><p class="tiny muted">70 = chancenorientiert · 100 = defensiv. Harte Vetos bleiben aktiv.</p>':'')+
     '<p class="tiny"><b>Nächste Bedingung:</b> '+escf(deep.trigger||deep.invalidation)+'</p>'+
     (deep.action==='BUY'&&Number.isFinite(deep.suggestedCapitalEur)?'<p class="tiny"><b>Vorgeschlagener Testeinsatz:</b> '+escf(depotMoney(deep.suggestedCapitalEur))+' ('+Math.round(deep.riskMultiplier*100)+' % des vorgesehenen Betrags)</p>':'')+
     '<p class="tiny muted">Kurs: '+(deep.priceRef?
